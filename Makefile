@@ -3,12 +3,22 @@ DOCKER_IMAGE = theos-devenv
 DOCKER_IMAGE_TAG = latest
 DOCKER_CONTAINER = theos-devenv
 DOCKER_SHELL = /bin/sh
+GENIMG = genimg/genimg
+
+$(GENIMG):
+	make -C $(dir $@)
 
 build-devenv:
 	$(DOCKER) build --no-cache -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
 
+clean:
+	make clean -C $(dir $(GENIMG))
+
 login-devenv:
 	$(DOCKER) attach $(DOCKER_CONTAINER)
+
+rebuild: clean
+	make
 
 rebuild-devenv: remove-devenv
 	make build-devenv
@@ -30,4 +40,4 @@ start-devenv:
 stop-devenv:
 	$(DOCKER) stop $(DOCKER_CONTAINER)
 
-.PHONY: build-devenv rebuild-devenv remove-devenv run-devenv start-devenv stop-devenv
+.PHONY: build-devenv clean rebuild-devenv remove-devenv run-devenv start-devenv stop-devenv
