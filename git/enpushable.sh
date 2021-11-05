@@ -2,7 +2,7 @@
 
 # This program gives the push access right.
 # Only the developer can execute it.
-# Put the private key "~/.ssh/github" before the execution.
+# Put the private key "/root/.ssh/github" before the execution.
 
 currentdir=$(pwd)
 cd $(dirname $0)
