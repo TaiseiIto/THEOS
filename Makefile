@@ -7,6 +7,9 @@ DOCKER_SHELL = /bin/sh
 build-devenv:
 	$(DOCKER) build --no-cache -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
 
+login-devenv:
+	$(DOCKER) attach $(DOCKER_CONTAINER)
+
 rebuild-devenv: remove-devenv
 	make build-devenv
 
