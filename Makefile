@@ -1,12 +1,11 @@
 DOCKER = docker
-DOCKER_FILE = docker/Dockerfile
 DOCKER_IMAGE = theos-devenv
 DOCKER_IMAGE_TAG = latest
 DOCKER_CONTAINER = theos-devenv
 DOCKER_SHELL = /bin/sh
 
 build-devenv:
-	$(DOCKER) build --no-cache -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) $(dir $(DOCKER_FILE))
+	$(DOCKER) build --no-cache -t $(DOCKER_IMAGE):$(DOCKER_IMAGE_TAG) .
 
 rebuild-devenv: remove-devenv
 	make build-devenv
