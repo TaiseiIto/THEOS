@@ -6,7 +6,7 @@ RUN apk add --no-cache alpine-sdk
 RUN git config --global pull.rebase false
 # ssh
 RUN apk add --no-cache openssh
-COPY ssh ~/.ssh
+COPY ssh /~/ssh
 # editor
 RUN apk add --no-cache vim
 # set time zone UTC+9 (Japan)
