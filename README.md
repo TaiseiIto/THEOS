@@ -4,10 +4,10 @@ My original operating system made with reference to [MikanOS](https://github.com
 
 ## thoes-devenv
 
-To develop and use THEOS conveniently, I prepared [Dockerfile](/blob/main/Dockerfile).
+To develop and use THEOS conveniently, I prepared [Dockerfile](/Dockerfile).
 The docker image is built by the Dockerfile with `make build-devenv` and the container is run with `make run-devenv`.
 
-## [Makefile](/blob/main/Makefile)
+## [Makefile](/Makefile)
 
 The Makefile contains the following commands.
 
