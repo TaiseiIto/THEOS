@@ -13,6 +13,7 @@ read name
 git config --global user.email $email
 git config --global user.name $name
 git remote set-url origin git@github.com:TaiseiIto/THEOS.git
-chmod 600 ~/.ssh/github
+chmod 600 /~/ssh/github
+cp -r /~/ssh /root/.ssh
 cd $currentdir
 
