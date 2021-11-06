@@ -11,9 +11,6 @@ else
 SCRIPT_SUFFIX = .sh
 endif
 
-debug:
-	echo $(SCRIPT_SUFFIX)
-
 $(GENIMG):
 	make -C $(dir $@)
 
