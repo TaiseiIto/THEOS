@@ -1,7 +1,8 @@
 #!/bin/sh
 
+# Usage: $ ./clean_devenv.sh <docker command> <image name> <container name>
 # This program removes docker image "theos-devenv" and container "theos-devenv".
-# This program should be called from "../Makefile" with command "make remove-devenv".
+# This program should be called from "../Makefile" with command "make clean-devenv".
 
 if [ $# -eq 3 ]; then
 	docker=$1
@@ -10,10 +11,10 @@ if [ $# -eq 3 ]; then
 	if [ -n "$($docker ps -a | grep $container)" ]; then
 		$docker rm $container
 	fi
-	if [ -n "$($docker ps -a | grep $image)" ]; then
+	if [ -n "$($docker images | grep $image)" ]; then
 		$docker rmi $image
 	fi
 else
-	echo There should be 3 arguments
+	echo There should be 3 arguments.
 fi
 
