@@ -14,5 +14,8 @@ ECHO There should be 4 arguments.
 EXIT /B -1
 )
 
-ECHO HELLO
+SET CURRENTDIR=%~DP1
+ECHO %CURRENTDIR%
+CD %CURRENTDIR%
+ECHO %0
 
