@@ -24,12 +24,7 @@ rebuild-devenv: remove-devenv
 	make build-devenv
 
 remove-devenv:
-	if [ -n "$$($(DOCKER) ps -a | grep $(DOCKER_CONTAINER))" ]; then	\
-		$(DOCKER) rm $(DOCKER_CONTAINER);				\
-	fi;									\
-	if [ -n "$$($(DOCKER) images | grep $(DOCKER_IMAGE))" ]; then		\
-		$(DOCKER) rmi $(DOCKER_IMAGE);					\
-	fi
+	./script/remove-devenv.sh $(DOCKER) $(DOCKER_IMAGE) $(DOCKER_CONTAINER)
 
 run-devenv:
 	$(DOCKER) run --name $(DOCKER_CONTAINER) -i -t $(DOCKER_IMAGE)
