@@ -13,5 +13,11 @@ ECHO There should be 3 arguments.
 EXIT /B -1
 )
 
-ECHO Hello, World!
+SET DOCKER=%1
+SET IMAGE=%2
+SET CONTAINER=%3
+
+FOR /F "USEBACKQ DELIMS=" %%I IN (`%DOCKER% ps -a`) DO (
+ECHO %%I
+)
 
