@@ -1,6 +1,26 @@
+# Bibliographies
+# http://elm-chan.org/docs/fat.html
+# https://wiki.osdev.org/FAT
+
+# 0x0200 bytes per sector
+# 0x0008 sectors per cluster
+# 0x0001 clusters per track
+# 0x0100 clusters per disk
+
+# The disk layout
+# cluster 0x01 : First boot cluster
+#  sector 0x00 : Boot sector
+#  sector 0x01 : FSInfo sector
+# cluster 0x02 : Second boot cluster
+#  sector 0x00 : Boot sector
+#  sector 0x01 : FSInfo sector
+# cluster 0x03 : First FAT
+# cluster 0x04 : Second FAT
+# cluster 0x05 : Root directory
+
 	.set	bytes_per_sector,	0x0200
 	.set	sectors_per_cluster,	0x08
-	.set	boot_sectors,		0x0008
+	.set	boot_sectors,		0x0010
 	.set	fats,			0x02
 	.set	root_directory_entries,	0x0100
 	.set	sectors,		0x0800	# The drive size = 1 MiB = 0x800 sectors * 0x0200 bytes
@@ -11,6 +31,9 @@
 	.set	hidden_sectors,		0x00000000
 	.set	flags,			0x0000
 	.set	fat_version,		0x0000
+	.set	root_directory_cluster,	0x00000005
+	.set	fsinfo_sector,		0x0001
+	.set	backup_boot_sector,	0x0008
 
 legacy_bios_stack:
 	.code16
@@ -34,6 +57,9 @@ legacy_bios_entry:
 	.long	sectors_per_fat
 	.word	flags
 	.word	fat_version
+	.long	root_directory_cluster
+	.word	fsinfo_sector
+	.word	backup_boot_sector
 legacy_bios_main:
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
