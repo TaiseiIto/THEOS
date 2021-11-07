@@ -36,7 +36,7 @@
 	.set	backup_boot_sector,	0x0008
 	.set	drive_number,		0x80
 	.set	boot_signature,		0x29
-	.set	volume_serial_number,	0xffffffff	# This should be generated from compile time.
+	.include	"volume_serial_number.s"
 
 legacy_bios_stack:
 	.code16
