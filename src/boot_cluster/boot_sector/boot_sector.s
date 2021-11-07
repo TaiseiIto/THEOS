@@ -63,7 +63,7 @@ legacy_bios_entry:
 	.long	root_directory_cluster
 	.word	fsinfo_sector
 	.word	backup_boot_sector
-	.fill	0x0c, 0x01, 0x00	# Locate 12 bytes of 0x00
+	.fill	0x0c, 0x01, 0x00	# Locate 0x0c bytes of 0x00
 	.byte	drive_number
 	.byte	0x00
 	.byte	boot_signature

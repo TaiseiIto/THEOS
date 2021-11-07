@@ -1,3 +1,9 @@
+COMPILER = gcc
+COMPILER_DONT_LINK_OPTION = -c
+COMPILER_DONT_USE_STDLIB_OPTION = -nostdlib
+COMPILER_OUTPUT_OPTION = -o
+COMPILER_WARNING_OPTION = -Wall -Wextra
+
 LINKER = ld
 LINKER_MAP_OPTION = -Map
 LINKER_OUTPUT_OPTION = -o
@@ -7,6 +13,13 @@ TARGETS = fsinfo_sector.bin
 
 all: $(TARGETS)
 
-fsinfo_sector.bin: fsinfo_sector.ld
-	$(LINKER) $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $<
+fsinfo_sector.bin: fsinfo_sector.o
+	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)
+
+fsinfo_sector.o: fsinfo_sector.s
+	$(COMPILER) $< $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
+
+.PHONY: all
+
+.PRECIOUS: %.o %.map
 
