@@ -11,16 +11,15 @@
 # cluster 0x01 : First boot cluster
 #  sector 0x00 : Boot sector
 #  sector 0x01 : FSInfo sector
-# cluster 0x02 : Second boot cluster
-#  sector 0x00 : Boot sector
-#  sector 0x01 : FSInfo sector
-# cluster 0x03 : First FAT
-# cluster 0x04 : Second FAT
-# cluster 0x05 : Root directory
+#  sector 0x06 : Backup boot sector
+#  sector 0x07 : Backup FSInfo sector
+# cluster 0x02 : First FAT
+# cluster 0x03 : Second FAT
+# cluster 0x04 : Root directory
 
 	.set	bytes_per_sector,	0x0200
 	.set	sectors_per_cluster,	0x08
-	.set	boot_sectors,		0x0010
+	.set	boot_sectors,		0x0008
 	.set	fats,			0x02
 	.set	root_directory_entries,	0x0100
 	.set	sectors,		0x0800	# The drive size = 1 MiB = 0x800 sectors * 0x0200 bytes
@@ -31,9 +30,9 @@
 	.set	hidden_sectors,		0x00000000
 	.set	flags,			0x0000
 	.set	fat_version,		0x0000
-	.set	root_directory_cluster,	0x00000005
+	.set	root_directory_cluster,	0x00000004
 	.set	fsinfo_sector,		0x0001
-	.set	backup_boot_sector,	0x0008
+	.set	backup_boot_sector,	0x0006
 	.set	drive_number,		0x80
 	.set	boot_signature,		0x29
 	.include	"volume_serial_number.s"
