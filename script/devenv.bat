@@ -1,10 +1,10 @@
 @ECHO OFF
 
-SETLOCAL ENABLEDELAYEDEXPANSION
-
 REM Usage: ./devenv.sh <docker command> <image name> <image tag> <container name>
 REM This program creates and logs in to docker image "theos-devenv" and container "theos-devenv".
 REM This program should be called from "../Makefile" with command "make devenv".
+
+SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM CHECK ARGS
 SET ERROR=FALSE
@@ -33,16 +33,25 @@ FOR /F "USEBACKQ DELIMS=" %%I IN (`%DOCKER% images`) DO (
 	ECHO %%I | FIND /I "%IMAGE%" > NUL
 	IF NOT ERRORLEVEL 1 SET IMAGE_EXISTS=TRUE
 )
-IF "!IMAGE_EXISTS!" == "TRUE" ECHO The image exists
-IF "!IMAGE_EXISTS!" == "FALSE" ECHO The image doesn't exist
-
+IF "!IMAGE_EXISTS!" == "FALSE" (
+	%DOCKER% build --no-cache -t %IMAGE%:%TAG% ..
+)
 SET CONTAINER_EXISTS=FALSE
 FOR /F "USEBACKQ DELIMS=" %%I IN (`%DOCKER% ps -a`) DO (
 	ECHO %%I | FIND /I "%CONTAINER%" > NUL
-	IF NOT ERRORLEVEL 1 SET IMAGE_EXISTS=TRUE
+	IF NOT ERRORLEVEL 1 SET CONTAINER_EXISTS=TRUE
 )
-IF "!CONTAINER_EXISTS!" == "TRUE" ECHO The container exists
-IF "!CONTAINER_EXISTS!" == "FALSE" ECHO The container doesn't exist
+IF "!CONTAINER_EXISTS!" == "FALSE" (
+	%DOCKER% run --name %CONTAINER% -i -t %IMAGE%
+) ELSE (
+	SET RUNNING_CONTAINER_EXISTS=FALSE
+	FOR /F "USEBACKQ DELIMS=" %%I IN (`%DOCKER% ps`) DO (
+		ECHO %%I | FIND /I "%CONTAINER%" > NUL
+		IF NOT ERRORLEVEL 1 SET RUNNING_CONTAINER_EXISTS=TRUE
+	)
+	IF "!RUNNING_CONTAINER_EXISTS!" == "FALSE" %DOCKER% start %CONTAINER%
+	%DOCKER% attach %CONTAINER%
+)
 
 CD !CURRENTDIR!
 
