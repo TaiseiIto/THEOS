@@ -34,6 +34,9 @@
 	.set	root_directory_cluster,	0x00000005
 	.set	fsinfo_sector,		0x0001
 	.set	backup_boot_sector,	0x0008
+	.set	drive_number,		0x80
+	.set	boot_signature,		0x29
+	.set	volume_serial_number,	0xffffffff	# This should be generated from compile time.
 
 legacy_bios_stack:
 	.code16
@@ -60,6 +63,13 @@ legacy_bios_entry:
 	.long	root_directory_cluster
 	.word	fsinfo_sector
 	.word	backup_boot_sector
+	.fill	0x0c, 0x01, 0x00	# Locate 12 bytes of 0x00
+	.byte	drive_number
+	.byte	0x00
+	.byte	boot_signature
+	.long	volume_serial_number
+	.ascii	"THEOS      "
+	.ascii	"FAT32   "
 legacy_bios_main:
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
