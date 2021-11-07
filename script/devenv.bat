@@ -28,7 +28,7 @@ CD %DIRNAME%
 
 FOR /F "USEBACKQ DELIMS=" %%I IN ('%DOCKER% images') DO (
 	ECHO %%I | FIND /I "%IMAGE%" > NUL
-	IF ERRORLEVEL 1 ECHO There is not the image
+	IF ERRORLEVEL 1 %DOCKER% build --no-cache -t %IMAGE%:%TAG% ..
 )
 
 CD %CURRENTDIR%
