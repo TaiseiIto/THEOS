@@ -13,17 +13,19 @@ TARGETS = boot_sector.bin
 
 all: $(TARGETS)
 
-$(TARGETS): $(@:.bin=.o)
-
-$(TARGETS:.bin=.o): $(@:.o=.s)
-
-%.bin: %.o
+boot_sector.bin: boot_sector.o
 	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)
 
-%.o: %.s
-	$(COMPILER) $^ $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
+boot_sector.o: boot_sector.s volume_seroal_number.s
+	$(COMPILER) $< $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
 
-.PHONY: all
+clean:
+	./clean.sh *.bin *.map *.o volume_serial_number.s
 
-.PRECIOUS: %.o %.map
+volume_serial_number.s: volume_serial_number.sh
+	./volume_serial_number.sh
+
+.PHONY: all clean
+
+.PRECIOUS: %.o %.map volume_serial_number.s
 
