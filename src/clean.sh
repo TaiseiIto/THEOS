@@ -1,4 +1,6 @@
 #!/bin/sh
 
-echo $#
+for i in $(seq $#); do
+	echo $i
+done
 
