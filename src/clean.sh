@@ -1,6 +1,8 @@
 #!/bin/sh
 
-for i in $(seq $#); do
-	echo $i
+for i in $*; do
+	if [ -e $i ]; then
+		rm $i
+	fi
 done
 
