@@ -71,6 +71,7 @@ legacy_bios_entry:
 	.ascii	"THEOS      "
 	.ascii	"FAT32   "
 legacy_bios_main:
+0:
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
 	movw	%ax,	%cx
@@ -86,5 +87,55 @@ legacy_bios_main:
 	movw	$legacy_bios_stack,	%sp
 	pushw	%bp
 	movw	%sp,	%bp
+	pushw	%si
+	pushw	%di
+	subw	$0x0002,%sp
+	movw	%sp,	%di
+	movw	$message,(%di)
+	call	print
+1:
+	hlt
+	jmp	1b
+
+print:		# void print(char *string);
+0:
+	pushw	%bp
+	movw	%sp,	%bp
+	pushw	%si
+	pushw	%di
+	subw	$0x0002,%sp
+	movw	%sp,	%di
+	movw	0x04(%bp),%si
+1:
+	xorb	%ah,	%ah
+	movb	(%si),	%al
+	cmpb	$0x00,	%al
+	je	2f
+	movw	%ax,	(%di)
+	call	put_char
+	incw	%si
+	jmp	1b
+2:
+	addw	$0x0002,%sp
+	popw	%di
+	popw	%si
 	leave
+	ret
+
+put_char:	# void put_char(char c);
+0:
+	pushw	%bp
+	movw	%sp,	%bp
+	pushw	%bx
+	movb	0x04(%bp),%al
+	movb	$0x0e,	%ah
+	movw	$0x000f,%bx
+	int	$0x10
+	popw	%bx
+	leave
+	ret
+
+	.data
+message:
+	.string	"THEOS is bootable on not legacy BIOS mode but only UEFI mode.\nPlease push the power button to power off the Computer and boot up on UEFI mode."
 
