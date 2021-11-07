@@ -19,11 +19,7 @@ $(OBJECT_DIRECTORY)/%$(OBJECT_SUFFIX): $(SOURCE_DIRECTORY)/%$(SOURCE_SUFFIX)
 	$(COMPILER) $^ $(COMPILER_DONT_LINK_OPTION) $(COMPILER_WARNING_OPTION) $(COMPILER_OUTPUT_OPTION) $@
 
 clean:
-	for i in $(TARGET) $(OBJECTS); do	\
-		if [ -e $$i ]; then		\
-			rm $$i;			\
-		fi;				\
-	done
+	../script/clean.sh $(TARGET) $(OBJECTS)
 
 rebuild: clean
 	make
