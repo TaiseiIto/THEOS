@@ -1,6 +1,6 @@
 OUTPUT_FORMAT("binary");
 
-INCLUDE global.ld
+INCLUDE ../../global.ld
 
 BASE = LOADDEST;
 
@@ -16,8 +16,7 @@ SECTIONS
 	. += 0x00000000000001fe;
 	.boot_sector_sign :
 	{
-		BYTE(0x55);
-		BYTE(0xaa);
+		SHORT(0xaa55);
 	}
 	/DISCARD/:
 	{
