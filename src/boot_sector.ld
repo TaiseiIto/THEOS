@@ -2,9 +2,9 @@ OUTPUT_FORMAT("binary");
 
 INCLUDE global.ld
 
-BASE = LOADDEST
+BASE = LOADDEST;
 
-SECTION
+SECTIONS
 {
 	. = BASE;
 	.text:
