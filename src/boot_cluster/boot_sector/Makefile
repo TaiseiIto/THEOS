@@ -20,7 +20,7 @@ boot_sector.o: boot_sector.s volume_serial_number.s
 	$(COMPILER) $< $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
 
 clean:
-	./clean.sh *.bin *.map *.o volume_serial_number.s
+	../../../script/clean.sh *.bin *.map *.o volume_serial_number.s
 
 rebuild: clean
 	make
