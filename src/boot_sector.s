@@ -1,9 +1,39 @@
+	.set	bytes_per_sector,	0x0200
+	.set	sectors_per_cluster,	0x08
+	.set	boot_sectors,		0x0008
+	.set	fats,			0x02
+	.set	root_directory_entries,	0x0100
+	.set	sectors,		0x0800	# The drive size = 1 MiB = 0x800 sectors * 0x0200 bytes
+	.set	media_type,		0xf8
+	.set	sectors_per_fat,	0x0008
+	.set	sectors_per_track,	0x0008
+	.set	heads,			0x0002
+	.set	hidden_sectors,		0x00000000
+	.set	flags,			0x0000
+	.set	fat_version,		0x0000
+
 legacy_bios_stack:
 	.code16
 	.text
 legacy_bios_entry:
 	jmp legacy_bios_main
 	nop
+	.ascii	"THEOS   "
+	.word	bytes_per_sector
+	.byte	sectors_per_cluster
+	.word	boot_sectors
+	.byte	fats
+	.word	root_directory_entries
+	.word	sectors
+	.byte	media_type
+	.word	sectors_per_fat
+	.word	sectors_per_track
+	.word	heads
+	.long	hidden_sectors
+	.long	sectors
+	.long	sectors_per_fat
+	.word	flags
+	.word	fat_version
 legacy_bios_main:
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
