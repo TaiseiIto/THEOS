@@ -22,10 +22,13 @@ boot_sector.o: boot_sector.s volume_serial_number.s
 clean:
 	./clean.sh *.bin *.map *.o volume_serial_number.s
 
+rebuild: clean
+	make
+
 volume_serial_number.s: volume_serial_number.sh
 	./volume_serial_number.sh
 
-.PHONY: all clean
+.PHONY: all clean rebuild
 
 .PRECIOUS: %.o %.map volume_serial_number.s
 
