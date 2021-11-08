@@ -1,13 +1,14 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include "boot_sector.hpp"
 
 void print_binary(unsigned char const * const data, unsigned int size);
 
 int main(int argc, char const * const * const argv)
 {
-	char boot_sector[0x200];
-	char fsinfo_sector[0x200];
+	char boot_sector_raw[0x200];
+	char fsinfo_sector_raw[0x200];
 	std::ifstream boot_sector_file;
 	std::ifstream fsinfo_sector_file;
 	if(argc != 4)
@@ -21,17 +22,18 @@ int main(int argc, char const * const * const argv)
 		std::cerr << "Can't open" << argv[1] << std::endl;
 		return EXIT_FAILURE;
 	}
-	boot_sector_file.read(boot_sector, sizeof(boot_sector));
-	print_binary((unsigned char *)boot_sector, sizeof(boot_sector));
+	boot_sector_file.read(boot_sector_raw, sizeof(boot_sector_raw));
+	print_binary((unsigned char *)boot_sector_raw, sizeof(boot_sector_raw));
 	boot_sector_file.close();
+	BootSector boot_sector = BootSector((unsigned char *)boot_sector_raw);
 	fsinfo_sector_file.open(argv[2], std::ifstream::binary | std::ifstream::in);
 	if(!fsinfo_sector_file.is_open())
 	{
 		std::cerr << "Can't open" << argv[2] << std::endl;
 		return EXIT_FAILURE;
 	}
-	fsinfo_sector_file.read(fsinfo_sector, sizeof(fsinfo_sector));
-	print_binary((unsigned char *)fsinfo_sector, sizeof(fsinfo_sector));
+	fsinfo_sector_file.read(fsinfo_sector_raw, sizeof(fsinfo_sector_raw));
+	print_binary((unsigned char *)fsinfo_sector_raw, sizeof(fsinfo_sector_raw));
 	fsinfo_sector_file.close();
 	return EXIT_SUCCESS;
 }

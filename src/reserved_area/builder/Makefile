@@ -1,7 +1,7 @@
 BOOT_SECTOR = ../boot_sector.bin
 
 BUILDER = builder
-BUILDER_SOURCE = $(addsuffix .cpp, $(BUILDER))
+BUILDER_SOURCE = $(addsuffix .cpp, $(BUILDER)) boot_sector.cpp
 
 CLEANER = ../../../script/clean.sh
 
