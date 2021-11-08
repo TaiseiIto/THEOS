@@ -1,3 +1,5 @@
+CLEANER = ../../../script/clean.sh
+
 COMPILER = gcc
 COMPILER_DONT_LINK_OPTION = -c
 COMPILER_DONT_USE_STDLIB_OPTION = -nostdlib
@@ -14,7 +16,7 @@ TARGETS = fsinfo_sector.bin
 all: $(TARGETS)
 
 clean:
-	../../../script/clean.sh *.bin *.map *.o
+	$(CLEANER) *.bin *.map *.o
 
 fsinfo_sector.bin: fsinfo_sector.o
 	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)

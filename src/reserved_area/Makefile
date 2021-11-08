@@ -1,3 +1,4 @@
+CLEANER = ../../script/clean.sh
 TARGETS = boot_sector.bin fsinfo_sector.bin
 
 all: $(TARGETS)
@@ -17,7 +18,7 @@ fsinfo_sector/fsinfo_sector.bin:
 clean:
 	make clean -C boot_sector
 	make clean -C fsinfo_sector
-	../../script/clean.sh $(TARGETS)
+	$(CLEANER) $(TARGETS)
 
 rebuild: clean
 	make

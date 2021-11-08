@@ -1,3 +1,5 @@
+CLEANER = ../../../script/clean.sh
+
 COMPILER = gcc
 COMPILER_DONT_LINK_OPTION = -c
 COMPILER_DONT_USE_STDLIB_OPTION = -nostdlib
@@ -11,22 +13,25 @@ LINKER_SCRIPT_OPTION = -T
 
 TARGETS = boot_sector.bin
 
+VOLUME_SERIAL_NUMBER = volume_serial_number.s
+VOLUME_SERIAL_NUMBER_GENERATOR = $(patsubst %.s, %.sh, $(VOLUME_SERIAL_NUMBER))
+
 all: $(TARGETS)
 
 boot_sector.bin: boot_sector.o
 	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)
 
-boot_sector.o: boot_sector.s volume_serial_number.s
+boot_sector.o: boot_sector.s $(VOLUME_SERIAL_NUMBER)
 	$(COMPILER) $< $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
 
 clean:
-	../../../script/clean.sh *.bin *.map *.o volume_serial_number.s
+	$(CLEANER) *.bin *.map *.o volume_serial_number.s
 
 rebuild: clean
 	make
 
-volume_serial_number.s: volume_serial_number.sh
-	./volume_serial_number.sh
+$(VOLUME_SERIAL_NUMBER): $(VOLUME_SERIAL_NUMBER_GENERATOR)
+	./$<
 
 .PHONY: all clean rebuild
 
