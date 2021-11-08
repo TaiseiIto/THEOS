@@ -44,12 +44,12 @@ private:
 	static const unsigned int media_type_offset = short_sectors_offset + short_sectors_size;
 	static const unsigned int media_type_size = sizeof(media_type);
 
-	unsigned short sectors_per_fat;
-	static const unsigned int sectors_per_fat_offset = media_type_offset + media_type_size;
-	static const unsigned int sectors_per_fat_size = sizeof(sectors_per_fat);
+	unsigned short short_sectors_per_fat;
+	static const unsigned int short_sectors_per_fat_offset = media_type_offset + media_type_size;
+	static const unsigned int short_sectors_per_fat_size = sizeof(short_sectors_per_fat);
 
 	unsigned short sectors_per_track;
-	static const unsigned int sectors_per_track_offset = sectors_per_fat_offset + sectors_per_fat_size;
+	static const unsigned int sectors_per_track_offset = short_sectors_per_fat_offset + short_sectors_per_fat_size;
 	static const unsigned int sectors_per_track_size = sizeof(sectors_per_track);
 
 	unsigned short heads;
