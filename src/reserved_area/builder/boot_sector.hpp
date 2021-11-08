@@ -51,6 +51,10 @@ private:
 	unsigned short sectors_per_track;
 	static const unsigned int sectors_per_track_offset = sectors_per_fat_offset + sectors_per_fat_size;
 	static const unsigned int sectors_per_track_size = sizeof(sectors_per_track);
+
+	unsigned short heads;
+	static const unsigned int heads_offset = sectors_per_track_offset + sectors_per_track_size;
+	static const unsigned int heads_size = sizeof(heads);
 public:
 	BootSector(unsigned char const * const data);
 };
