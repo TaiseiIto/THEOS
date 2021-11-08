@@ -83,6 +83,10 @@ private:
 	unsigned short fsinfo_sector;
 	static const unsigned int fsinfo_sector_offset = root_dir_cluster_offset + root_dir_cluster_size;
 	static const unsigned int fsinfo_sector_size = sizeof(fsinfo_sector);
+
+	unsigned short backup_boot_sector;
+	static const unsigned int backup_boot_sector_offset = fsinfo_sector_offset + fsinfo_sector_size;
+	static const unsigned int backup_boot_sector_size = sizeof(backup_boot_sector);
 public:
 	BootSector(unsigned char const * const data);
 };
