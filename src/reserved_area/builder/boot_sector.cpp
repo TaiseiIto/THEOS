@@ -72,7 +72,11 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "volume_label = \"" << volume_label << "\"" << std::endl;
 	std::cout << "system_identifier = \"" << system_identifier << "\"" << std::endl;
 	std::cout << "boot_code = ";
-	for(unsigned int i = 0; i < sizeof(boot_code) / sizeof(boot_code[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)boot_code[i] << " ";
+	for(unsigned int i = 0; i < sizeof(boot_code) / sizeof(boot_code[0]); i++)
+	{
+		if(i % 0x10 == 0)std::cout << std::endl;
+		std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)boot_code[i] << " ";
+	}
 	std::cout << std::endl;
 }
 
