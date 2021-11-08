@@ -75,6 +75,10 @@ private:
 	unsigned short fat_version;
 	static const unsigned int fat_version_offset = flags_offset + flags_size;
 	static const unsigned int fat_version_size = sizeof(fat_version);
+
+	unsigned int root_dir_cluster;
+	static const unsigned int root_dir_cluster_offset = fat_version_offset + fat_version_size;
+	static const unsigned int root_dir_cluster_size = sizeof(root_dir_cluster);
 public:
 	BootSector(unsigned char const * const data);
 };
