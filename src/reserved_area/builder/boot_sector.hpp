@@ -31,6 +31,10 @@ private:
 	unsigned char fats;
 	static const unsigned int fats_offset = reserved_sectors_offset + reserved_sectors_size;
 	static const unsigned int fats_size = sizeof(fats);
+
+	unsigned short root_directory_entries;
+	static const unsigned int root_directory_entries_offset = fats_offset + fats_size;
+	static const unsigned int root_directory_entries_size = sizeof(root_directory_entries);
 public:
 	BootSector(unsigned char const * const data);
 };
