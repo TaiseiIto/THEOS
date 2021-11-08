@@ -23,6 +23,10 @@ private:
 	static const unsigned int sectors_per_cluster_offset = bytes_per_sector_offset + bytes_per_sector_size;
 	static const unsigned int sectors_per_cluster_size = 1;
 	unsigned char sectors_per_cluster;
+
+	static const unsigned int reserved_sectors_offset = sectors_per_cluster_offset + sectors_per_cluster_size;
+	static const unsigned int reserved_sectors_size = 2;
+	unsigned short reserved_sectors;
 public:
 	BootSector(unsigned char const * const data);
 };
