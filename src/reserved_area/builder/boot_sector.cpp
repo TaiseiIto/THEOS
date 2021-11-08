@@ -21,6 +21,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < sectors_per_fat_offset + sectors_per_fat_size)((unsigned char *)&sectors_per_fat)[i - sectors_per_fat_offset] = data[i];
 		else if(i < sectors_per_track_offset + sectors_per_track_size)((unsigned char *)&sectors_per_track)[i - sectors_per_track_offset] = data[i];
 		else if(i < heads_offset + heads_size)((unsigned char *)&heads)[i - heads_offset] = data[i];
+		else if(i < hidden_sectors_offset + hidden_sectors_size)((unsigned char *)&hidden_sectors)[i - hidden_sectors_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -37,5 +38,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "sectors_per_fat = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(sectors_per_fat) * hex_digits_per_byte) << (unsigned int)sectors_per_fat << std::endl;
 	std::cout << "sectors_per_track = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(sectors_per_track) * hex_digits_per_byte) << (unsigned int)sectors_per_track << std::endl;
 	std::cout << "heads = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(heads) * hex_digits_per_byte) << (unsigned int)heads << std::endl;
+	std::cout << "hidden_sectors = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(hidden_sectors) * hex_digits_per_byte) << (unsigned int)hidden_sectors << std::endl;
 }
 
