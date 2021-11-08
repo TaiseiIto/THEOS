@@ -47,6 +47,10 @@ private:
 	unsigned short sectors_per_fat;
 	static const unsigned int sectors_per_fat_offset = media_type_offset + media_type_size;
 	static const unsigned int sectors_per_fat_size = sizeof(sectors_per_fat);
+
+	unsigned short sectors_per_track;
+	static const unsigned int sectors_per_track_offset = sectors_per_fat_offset + sectors_per_fat_size;
+	static const unsigned int sectors_per_track_size = sizeof(sectors_per_track);
 public:
 	BootSector(unsigned char const * const data);
 };
