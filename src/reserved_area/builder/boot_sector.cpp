@@ -13,6 +13,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < bytes_per_sector_offset + bytes_per_sector_size)((unsigned char *)&bytes_per_sector)[i - bytes_per_sector_offset] = data[i];
 		else if(i < sectors_per_cluster_offset + sectors_per_cluster_size)((unsigned char *)&sectors_per_cluster)[i - sectors_per_cluster_offset] = data[i];
 		else if(i < reserved_sectors_offset + reserved_sectors_size)((unsigned char *)&reserved_sectors)[i - reserved_sectors_offset] = data[i];
+		else if(i < fats_offset + fats_size)((unsigned char *)&fats)[i - fats_offset] = data[i];
 	}
 
 	std::cout << "jump instructions = ";
@@ -22,5 +23,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "bytes per sector = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)bytes_per_sector << std::endl;
 	std::cout << "sectors per cluster = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)sectors_per_cluster << std::endl;
 	std::cout << "reserved sectors = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)reserved_sectors << std::endl;
+	std::cout << "fats = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)fats << std::endl;
 }
 

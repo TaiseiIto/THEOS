@@ -27,6 +27,10 @@ private:
 	static const unsigned int reserved_sectors_offset = sectors_per_cluster_offset + sectors_per_cluster_size;
 	static const unsigned int reserved_sectors_size = 2;
 	unsigned short reserved_sectors;
+
+	static const unsigned int fats_offset = reserved_sectors_offset + reserved_sectors_size;
+	static const unsigned int fats_size = 1;
+	unsigned char fats;
 public:
 	BootSector(unsigned char const * const data);
 };
