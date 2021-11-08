@@ -79,6 +79,10 @@ private:
 	unsigned int root_dir_cluster;
 	static const unsigned int root_dir_cluster_offset = fat_version_offset + fat_version_size;
 	static const unsigned int root_dir_cluster_size = sizeof(root_dir_cluster);
+
+	unsigned short fsinfo_sector;
+	static const unsigned int fsinfo_sector_offset = root_dir_cluster_offset + root_dir_cluster_size;
+	static const unsigned int fsinfo_sector_size = sizeof(fsinfo_sector);
 public:
 	BootSector(unsigned char const * const data);
 };
