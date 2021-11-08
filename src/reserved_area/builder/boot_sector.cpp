@@ -15,6 +15,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < reserved_sectors_offset + reserved_sectors_size)((unsigned char *)&reserved_sectors)[i - reserved_sectors_offset] = data[i];
 		else if(i < fats_offset + fats_size)((unsigned char *)&fats)[i - fats_offset] = data[i];
 		else if(i < root_directory_entries_offset + root_directory_entries_size)((unsigned char *)&root_directory_entries)[i - root_directory_entries_offset] = data[i];
+		else if(i < sectors_offset + sectors_size)((unsigned char *)&sectors)[i - sectors_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -26,5 +27,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "reserved_sectors = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)reserved_sectors << std::endl;
 	std::cout << "fats = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)fats << std::endl;
 	std::cout << "root_directory_entries = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)root_directory_entries << std::endl;
+	std::cout << "sectors = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)sectors << std::endl;
 }
 

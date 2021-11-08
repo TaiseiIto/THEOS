@@ -35,6 +35,10 @@ private:
 	unsigned short root_directory_entries;
 	static const unsigned int root_directory_entries_offset = fats_offset + fats_size;
 	static const unsigned int root_directory_entries_size = sizeof(root_directory_entries);
+
+	unsigned short sectors;
+	static const unsigned int sectors_offset = root_directory_entries_offset + root_directory_entries_size;
+	static const unsigned int sectors_size = sizeof(sectors);
 public:
 	BootSector(unsigned char const * const data);
 };
