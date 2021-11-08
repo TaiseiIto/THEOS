@@ -31,6 +31,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < backup_boot_sector_offset + backup_boot_sector_size)((unsigned char *)&backup_boot_sector)[i - backup_boot_sector_offset] = data[i];
 		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
 		else if(i < drive_number_offset + drive_number_size)((unsigned char *)&drive_number)[i - drive_number_offset] = data[i];
+		else if(i < reserved_2_offset + reserved_2_size)((unsigned char *)&reserved_2)[i - reserved_2_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -59,5 +60,6 @@ BootSector::BootSector(unsigned char const * const data)
 	for(unsigned int i = 0; i < sizeof(reserved_1) / sizeof(reserved_1[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)reserved_1[i] << " ";
 	std::cout << std::endl;
 	std::cout << "drive_number = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(drive_number) * hex_digits_per_byte) << (unsigned int)drive_number << std::endl;
+	std::cout << "reserved_2 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_2) * hex_digits_per_byte) << (unsigned int)reserved_2 << std::endl;
 }
 
