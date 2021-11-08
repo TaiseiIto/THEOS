@@ -5,6 +5,7 @@
 
 BootSector::BootSector(unsigned char const * const data)
 {
+	static const unsigned int hex_digits_per_byte = 2;
 	oem_identifier = "";
 	for(unsigned int i = 0; i < size; i++)
 	{
@@ -23,12 +24,12 @@ BootSector::BootSector(unsigned char const * const data)
 	for(unsigned int i = 0; i < sizeof(jump_instructions) / sizeof(jump_instructions[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)jump_instructions[i] << " ";
 	std::cout << std::endl;
 	std::cout << "oem_identifier = \"" << oem_identifier << "\"" << std::endl;
-	std::cout << "bytes_per_sector = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)bytes_per_sector << std::endl;
-	std::cout << "sectors_per_cluster = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)sectors_per_cluster << std::endl;
-	std::cout << "reserved_sectors = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)reserved_sectors << std::endl;
-	std::cout << "fats = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)fats << std::endl;
-	std::cout << "root_directory_entries = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)root_directory_entries << std::endl;
-	std::cout << "sectors = 0x" << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)sectors << std::endl;
-	std::cout << "media_type = 0x" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)media_type << std::endl;
+	std::cout << "bytes_per_sector = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(bytes_per_sector) * hex_digits_per_byte) << (unsigned int)bytes_per_sector << std::endl;
+	std::cout << "sectors_per_cluster = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(sectors_per_cluster) * hex_digits_per_byte) << (unsigned int)sectors_per_cluster << std::endl;
+	std::cout << "reserved_sectors = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_sectors) * hex_digits_per_byte) << (unsigned int)reserved_sectors << std::endl;
+	std::cout << "fats = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(fats) * hex_digits_per_byte) << (unsigned int)fats << std::endl;
+	std::cout << "root_directory_entries = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(root_directory_entries) * hex_digits_per_byte) << (unsigned int)root_directory_entries << std::endl;
+	std::cout << "sectors = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(sectors) * hex_digits_per_byte) << (unsigned int)sectors << std::endl;
+	std::cout << "media_type = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(media_type) * hex_digits_per_byte) << (unsigned int)media_type << std::endl;
 }
 
