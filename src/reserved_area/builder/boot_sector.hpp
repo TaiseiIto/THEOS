@@ -103,6 +103,10 @@ private:
 	unsigned char signature;
 	static const unsigned int signature_offset = reserved_2_offset + reserved_2_size;
 	static const unsigned int signature_size = sizeof(signature);
+
+	unsigned int volume_ID;
+	static const unsigned int volume_ID_offset = signature_offset + signature_size;
+	static const unsigned int volume_ID_size = sizeof(volume_ID);
 public:
 	BootSector(unsigned char const * const data);
 };
