@@ -8,13 +8,13 @@ class BootSector
 private:
 	static const unsigned int size = 0x200;
 
-	unsigned char jump_instructions[3];
+	unsigned char jump_instructions[0x03];
 	static const unsigned int jump_instructions_offset = 0;
 	static const unsigned int jump_instructions_size = sizeof(jump_instructions);
 
 	std::string oem_identifier;
 	static const unsigned int oem_identifier_offset = jump_instructions_offset + jump_instructions_size;
-	static const unsigned int oem_identifier_size = 8;
+	static const unsigned int oem_identifier_size = 0x08;
 
 	unsigned short bytes_per_sector;
 	static const unsigned int bytes_per_sector_offset = oem_identifier_offset + oem_identifier_size;
@@ -107,6 +107,10 @@ private:
 	unsigned int volume_ID;
 	static const unsigned int volume_ID_offset = signature_offset + signature_size;
 	static const unsigned int volume_ID_size = sizeof(volume_ID);
+
+	std::string volume_label;
+	static const unsigned int volume_label_offset = volume_ID_offset + volume_ID_size;
+	static const unsigned int volume_label_size = 0x0b;
 public:
 	BootSector(unsigned char const * const data);
 };

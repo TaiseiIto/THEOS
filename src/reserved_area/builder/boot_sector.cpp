@@ -7,6 +7,7 @@ BootSector::BootSector(unsigned char const * const data)
 {
 	static const unsigned int hex_digits_per_byte = 2;
 	oem_identifier = "";
+	volume_label = "";
 	for(unsigned int i = 0; i < size; i++)
 	{
 		if(i < jump_instructions_offset + jump_instructions_size)jump_instructions[i - jump_instructions_offset] = data[i];
@@ -34,6 +35,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < reserved_2_offset + reserved_2_size)((unsigned char *)&reserved_2)[i - reserved_2_offset] = data[i];
 		else if(i < signature_offset + signature_size)((unsigned char *)&signature)[i - signature_offset] = data[i];
 		else if(i < volume_ID_offset + volume_ID_size)((unsigned char *)&volume_ID)[i - volume_ID_offset] = data[i];
+		else if(i < volume_label_offset + volume_label_size)volume_label += data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -65,5 +67,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "reserved_2 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_2) * hex_digits_per_byte) << (unsigned int)reserved_2 << std::endl;
 	std::cout << "signature = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(signature) * hex_digits_per_byte) << (unsigned int)signature << std::endl;
 	std::cout << "volume_ID = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(volume_ID) * hex_digits_per_byte) << (unsigned int)volume_ID << std::endl;
+	std::cout << "volume_label = \"" << volume_label << "\"" << std::endl;
 }
 
