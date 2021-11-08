@@ -11,9 +11,9 @@ LINKER_MAP_OPTION = -Map
 LINKER_OUTPUT_OPTION = -o
 LINKER_SCRIPT_OPTION = -T
 
-TARGETS = fsinfo_sector.bin
+TARGET = fsinfo_sector.bin
 
-all: $(TARGETS)
+all: $(TARGET)
 
 clean:
 	$(CLEANER) *.bin *.map *.o

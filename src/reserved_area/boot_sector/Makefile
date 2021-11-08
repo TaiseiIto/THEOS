@@ -11,12 +11,12 @@ LINKER_MAP_OPTION = -Map
 LINKER_OUTPUT_OPTION = -o
 LINKER_SCRIPT_OPTION = -T
 
-TARGETS = boot_sector.bin
+TARGET = boot_sector.bin
 
 VOLUME_SERIAL_NUMBER = volume_serial_number.s
 VOLUME_SERIAL_NUMBER_GENERATOR = $(patsubst %.s, %.sh, $(VOLUME_SERIAL_NUMBER))
 
-all: $(TARGETS)
+all: $(TARGET)
 
 boot_sector.bin: boot_sector.o
 	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)
