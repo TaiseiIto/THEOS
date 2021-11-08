@@ -6,7 +6,8 @@ void print_binary(unsigned char const * const data, unsigned int size);
 
 int main(int argc, char const * const * const argv)
 {
-	char boot_sector[0x100];
+	char boot_sector[0x200];
+	char fsinfo_sector[0x200];
 	std::ifstream boot_sector_file;
 	std::ifstream fsinfo_sector_file;
 	if(argc != 4)
@@ -29,6 +30,8 @@ int main(int argc, char const * const * const argv)
 		std::cerr << "Can't open" << argv[2] << std::endl;
 		return EXIT_FAILURE;
 	}
+	fsinfo_sector_file.read(fsinfo_sector, sizeof(fsinfo_sector));
+	print_binary((unsigned char *)fsinfo_sector, sizeof(fsinfo_sector));
 	fsinfo_sector_file.close();
 	return EXIT_SUCCESS;
 }
