@@ -67,6 +67,10 @@ private:
 	unsigned int long_sectors_per_fat;
 	static const unsigned int long_sectors_per_fat_offset = long_sectors_offset + long_sectors_size;
 	static const unsigned int long_sectors_per_fat_size = sizeof(long_sectors_per_fat);
+
+	unsigned short flags;
+	static const unsigned int flags_offset = long_sectors_per_fat_offset + long_sectors_per_fat_size;
+	static const unsigned int flags_size = sizeof(flags);
 public:
 	BootSector(unsigned char const * const data);
 };
