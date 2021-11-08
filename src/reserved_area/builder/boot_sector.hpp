@@ -36,12 +36,12 @@ private:
 	static const unsigned int root_directory_entries_offset = fats_offset + fats_size;
 	static const unsigned int root_directory_entries_size = sizeof(root_directory_entries);
 
-	unsigned short sectors;
-	static const unsigned int sectors_offset = root_directory_entries_offset + root_directory_entries_size;
-	static const unsigned int sectors_size = sizeof(sectors);
+	unsigned short short_sectors;
+	static const unsigned int short_sectors_offset = root_directory_entries_offset + root_directory_entries_size;
+	static const unsigned int short_sectors_size = sizeof(short_sectors);
 
 	unsigned char media_type;
-	static const unsigned int media_type_offset = sectors_offset + sectors_size;
+	static const unsigned int media_type_offset = short_sectors_offset + short_sectors_size;
 	static const unsigned int media_type_size = sizeof(media_type);
 
 	unsigned short sectors_per_fat;
