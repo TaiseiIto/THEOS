@@ -5,12 +5,17 @@
 
 BootSector::BootSector(unsigned char const * const data)
 {
-	for(unsigned int i = 0; i < 0x200; i++)
+	oem_identifier = "";
+	for(unsigned int i = 0; i < size; i++)
 	{
 		if(i < jump_instructions_offset + jump_instructions_size)jump_instructions[i - jump_instructions_offset] = data[i];
+		else if(i < oem_identifier_offset + oem_identifier_size)oem_identifier += data[i];
 	}
+
 	std::cout << "jump instructions = ";
 	for(unsigned int i = 0; i < sizeof(jump_instructions) / sizeof(jump_instructions[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)jump_instructions[i] << " ";
 	std::cout << std::endl;
+
+	std::cout << "oem_identifier = \"" << oem_identifier << "\"" << std::endl;
 }
 

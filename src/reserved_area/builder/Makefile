@@ -22,7 +22,7 @@ SOURCE = $(addsuffix .cpp, $(TARGET))
 all: $(TARGET)
 
 clean:
-	$(CLEANER) $(BUILDER) $(TARGET)
+	$(CLEANER) $(BUILDER) $(TARGET) $(BUILDER_OBJECTS)
 
 rebuild: clean
 	make
