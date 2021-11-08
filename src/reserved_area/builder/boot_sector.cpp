@@ -36,6 +36,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < signature_offset + signature_size)((unsigned char *)&signature)[i - signature_offset] = data[i];
 		else if(i < volume_ID_offset + volume_ID_size)((unsigned char *)&volume_ID)[i - volume_ID_offset] = data[i];
 		else if(i < volume_label_offset + volume_label_size)volume_label += data[i];
+		else if(i < system_identifier_offset + system_identifier_size)system_identifier += data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -68,5 +69,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "signature = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(signature) * hex_digits_per_byte) << (unsigned int)signature << std::endl;
 	std::cout << "volume_ID = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(volume_ID) * hex_digits_per_byte) << (unsigned int)volume_ID << std::endl;
 	std::cout << "volume_label = \"" << volume_label << "\"" << std::endl;
+	std::cout << "system_identifier = \"" << system_identifier << "\"" << std::endl;
 }
 

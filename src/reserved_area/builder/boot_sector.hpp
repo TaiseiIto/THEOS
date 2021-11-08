@@ -111,6 +111,10 @@ private:
 	std::string volume_label;
 	static const unsigned int volume_label_offset = volume_ID_offset + volume_ID_size;
 	static const unsigned int volume_label_size = 0x0b;
+
+	std::string system_identifier;
+	static const unsigned int system_identifier_offset = volume_label_offset + volume_label_size;
+	static const unsigned int system_identifier_size = 0x08;
 public:
 	BootSector(unsigned char const * const data);
 };
