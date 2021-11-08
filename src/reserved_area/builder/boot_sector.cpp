@@ -38,6 +38,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < volume_label_offset + volume_label_size)volume_label += data[i];
 		else if(i < system_identifier_offset + system_identifier_size)system_identifier += data[i];
 		else if(i < boot_code_offset + boot_code_size)((unsigned char *)&boot_code)[i - boot_code_offset] = data[i];
+		else if(i < bootable_signature_offset + bootable_signature_size)((unsigned char *)&bootable_signature)[i - bootable_signature_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -78,5 +79,6 @@ BootSector::BootSector(unsigned char const * const data)
 		std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)boot_code[i] << " ";
 	}
 	std::cout << std::endl;
+	std::cout << "bootable_signature = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(bootable_signature) * hex_digits_per_byte) << (unsigned int)bootable_signature << std::endl;
 }
 

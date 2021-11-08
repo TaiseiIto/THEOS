@@ -119,6 +119,10 @@ private:
 	unsigned char boot_code[0x01a4];
 	static const unsigned int boot_code_offset = system_identifier_offset + system_identifier_size;
 	static const unsigned int boot_code_size = 0x08;
+
+	unsigned short bootable_signature;
+	static const unsigned int bootable_signature_offset = boot_code_offset + boot_code_size;
+	static const unsigned int bootable_signature_size = sizeof(bootable_signature);
 public:
 	BootSector(unsigned char const * const data);
 };
