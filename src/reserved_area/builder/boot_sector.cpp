@@ -29,6 +29,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < root_dir_cluster_offset + root_dir_cluster_size)((unsigned char *)&root_dir_cluster)[i - root_dir_cluster_offset] = data[i];
 		else if(i < fsinfo_sector_offset + fsinfo_sector_size)((unsigned char *)&fsinfo_sector)[i - fsinfo_sector_offset] = data[i];
 		else if(i < backup_boot_sector_offset + backup_boot_sector_size)((unsigned char *)&backup_boot_sector)[i - backup_boot_sector_offset] = data[i];
+		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -53,5 +54,8 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "root_dir_cluster = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(root_dir_cluster) * hex_digits_per_byte) << (unsigned int)root_dir_cluster << std::endl;
 	std::cout << "fsinfo_sector = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(fsinfo_sector) * hex_digits_per_byte) << (unsigned int)fsinfo_sector << std::endl;
 	std::cout << "backup_boot_sector = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(backup_boot_sector) * hex_digits_per_byte) << (unsigned int)backup_boot_sector << std::endl;
+	std::cout << "reserved_1 = ";
+	for(unsigned int i = 0; i < sizeof(reserved_1) / sizeof(reserved_1[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)reserved_1[i] << " ";
+	std::cout << std::endl;
 }
 

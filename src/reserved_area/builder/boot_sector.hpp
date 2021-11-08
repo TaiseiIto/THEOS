@@ -87,6 +87,10 @@ private:
 	unsigned short backup_boot_sector;
 	static const unsigned int backup_boot_sector_offset = fsinfo_sector_offset + fsinfo_sector_size;
 	static const unsigned int backup_boot_sector_size = sizeof(backup_boot_sector);
+
+	unsigned char reserved_1[0x0c];
+	static const unsigned int reserved_1_offset = backup_boot_sector_offset + backup_boot_sector_size;
+	static const unsigned int reserved_1_size = sizeof(reserved_1);
 public:
 	BootSector(unsigned char const * const data);
 };
