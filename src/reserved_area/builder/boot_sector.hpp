@@ -59,6 +59,10 @@ private:
 	unsigned int hidden_sectors;
 	static const unsigned int hidden_sectors_offset = heads_offset + heads_size;
 	static const unsigned int hidden_sectors_size = sizeof(hidden_sectors);
+
+	unsigned int long_sectors;
+	static const unsigned int long_sectors_offset = hidden_sectors_offset + hidden_sectors_size;
+	static const unsigned int long_sectors_size = sizeof(long_sectors);
 public:
 	BootSector(unsigned char const * const data);
 };
