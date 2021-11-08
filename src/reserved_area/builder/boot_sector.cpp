@@ -32,6 +32,7 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
 		else if(i < drive_number_offset + drive_number_size)((unsigned char *)&drive_number)[i - drive_number_offset] = data[i];
 		else if(i < reserved_2_offset + reserved_2_size)((unsigned char *)&reserved_2)[i - reserved_2_offset] = data[i];
+		else if(i < signature_offset + signature_size)((unsigned char *)&signature)[i - signature_offset] = data[i];
 	}
 
 	std::cout << "jump_instructions = ";
@@ -61,5 +62,6 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << std::endl;
 	std::cout << "drive_number = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(drive_number) * hex_digits_per_byte) << (unsigned int)drive_number << std::endl;
 	std::cout << "reserved_2 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_2) * hex_digits_per_byte) << (unsigned int)reserved_2 << std::endl;
+	std::cout << "signature = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(signature) * hex_digits_per_byte) << (unsigned int)signature << std::endl;
 }
 

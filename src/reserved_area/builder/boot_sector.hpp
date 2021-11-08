@@ -99,6 +99,10 @@ private:
 	unsigned char reserved_2;
 	static const unsigned int reserved_2_offset = drive_number_offset + drive_number_size;
 	static const unsigned int reserved_2_size = sizeof(reserved_2);
+
+	unsigned char signature;
+	static const unsigned int signature_offset = reserved_2_offset + reserved_2_size;
+	static const unsigned int signature_size = sizeof(signature);
 public:
 	BootSector(unsigned char const * const data);
 };
