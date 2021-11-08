@@ -71,6 +71,10 @@ private:
 	unsigned short flags;
 	static const unsigned int flags_offset = long_sectors_per_fat_offset + long_sectors_per_fat_size;
 	static const unsigned int flags_size = sizeof(flags);
+
+	unsigned short fat_version;
+	static const unsigned int fat_version_offset = flags_offset + flags_size;
+	static const unsigned int fat_version_size = sizeof(fat_version);
 public:
 	BootSector(unsigned char const * const data);
 };
