@@ -39,6 +39,10 @@ private:
 	unsigned short sectors;
 	static const unsigned int sectors_offset = root_directory_entries_offset + root_directory_entries_size;
 	static const unsigned int sectors_size = sizeof(sectors);
+
+	unsigned char media_type;
+	static const unsigned int media_type_offset = sectors_offset + sectors_size;
+	static const unsigned int media_type_size = sizeof(media_type);
 public:
 	BootSector(unsigned char const * const data);
 };
