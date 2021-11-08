@@ -91,6 +91,10 @@ private:
 	unsigned char reserved_1[0x0c];
 	static const unsigned int reserved_1_offset = backup_boot_sector_offset + backup_boot_sector_size;
 	static const unsigned int reserved_1_size = sizeof(reserved_1);
+
+	unsigned char drive_number;
+	static const unsigned int drive_number_offset = reserved_1_offset + reserved_1_size;
+	static const unsigned int drive_number_size = sizeof(drive_number);
 public:
 	BootSector(unsigned char const * const data);
 };
