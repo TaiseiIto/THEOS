@@ -1,4 +1,5 @@
-# Reserved area layout
+# FAT32 reserved area layout
+
 1 sector consists of 0x200 bytes.
 And 1 cluster consists of 0x8 sectors.
 So, 1 cluster is 4KiB.
