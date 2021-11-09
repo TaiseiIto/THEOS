@@ -6,7 +6,7 @@
 class BootSector
 {
 private:
-	static const unsigned int size = 0x200;
+	static const unsigned int size = 0x0200;
 
 	unsigned char jump_instructions[0x03];
 	static const unsigned int jump_instructions_offset = 0;
@@ -88,20 +88,20 @@ private:
 	static const unsigned int backup_boot_sector_offset = fsinfo_sector_offset + fsinfo_sector_size;
 	static const unsigned int backup_boot_sector_size = sizeof(backup_boot_sector);
 
-	unsigned char reserved_1[0x0c];
-	static const unsigned int reserved_1_offset = backup_boot_sector_offset + backup_boot_sector_size;
-	static const unsigned int reserved_1_size = sizeof(reserved_1);
+	unsigned char reserved_0[0x0c];
+	static const unsigned int reserved_0_offset = backup_boot_sector_offset + backup_boot_sector_size;
+	static const unsigned int reserved_0_size = sizeof(reserved_0);
 
 	unsigned char drive_number;
-	static const unsigned int drive_number_offset = reserved_1_offset + reserved_1_size;
+	static const unsigned int drive_number_offset = reserved_0_offset + reserved_0_size;
 	static const unsigned int drive_number_size = sizeof(drive_number);
 
-	unsigned char reserved_2;
-	static const unsigned int reserved_2_offset = drive_number_offset + drive_number_size;
-	static const unsigned int reserved_2_size = sizeof(reserved_2);
+	unsigned char reserved_1;
+	static const unsigned int reserved_1_offset = drive_number_offset + drive_number_size;
+	static const unsigned int reserved_1_size = sizeof(reserved_1);
 
 	unsigned char signature;
-	static const unsigned int signature_offset = reserved_2_offset + reserved_2_size;
+	static const unsigned int signature_offset = reserved_1_offset + reserved_1_size;
 	static const unsigned int signature_size = sizeof(signature);
 
 	unsigned int volume_ID;

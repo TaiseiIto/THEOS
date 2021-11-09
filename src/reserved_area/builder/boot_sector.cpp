@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include "boot_sector.hpp"
@@ -30,9 +29,9 @@ BootSector::BootSector(unsigned char const * const data)
 		else if(i < root_dir_cluster_offset + root_dir_cluster_size)((unsigned char *)&root_dir_cluster)[i - root_dir_cluster_offset] = data[i];
 		else if(i < fsinfo_sector_offset + fsinfo_sector_size)((unsigned char *)&fsinfo_sector)[i - fsinfo_sector_offset] = data[i];
 		else if(i < backup_boot_sector_offset + backup_boot_sector_size)((unsigned char *)&backup_boot_sector)[i - backup_boot_sector_offset] = data[i];
-		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
+		else if(i < reserved_0_offset + reserved_0_size)((unsigned char *)&reserved_0)[i - reserved_0_offset] = data[i];
 		else if(i < drive_number_offset + drive_number_size)((unsigned char *)&drive_number)[i - drive_number_offset] = data[i];
-		else if(i < reserved_2_offset + reserved_2_size)((unsigned char *)&reserved_2)[i - reserved_2_offset] = data[i];
+		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
 		else if(i < signature_offset + signature_size)((unsigned char *)&signature)[i - signature_offset] = data[i];
 		else if(i < volume_ID_offset + volume_ID_size)((unsigned char *)&volume_ID)[i - volume_ID_offset] = data[i];
 		else if(i < volume_label_offset + volume_label_size)volume_label += data[i];
@@ -63,11 +62,11 @@ BootSector::BootSector(unsigned char const * const data)
 	std::cout << "root_dir_cluster = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(root_dir_cluster) * hex_digits_per_byte) << (unsigned int)root_dir_cluster << std::endl;
 	std::cout << "fsinfo_sector = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(fsinfo_sector) * hex_digits_per_byte) << (unsigned int)fsinfo_sector << std::endl;
 	std::cout << "backup_boot_sector = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(backup_boot_sector) * hex_digits_per_byte) << (unsigned int)backup_boot_sector << std::endl;
-	std::cout << "reserved_1 = ";
-	for(unsigned int i = 0; i < sizeof(reserved_1) / sizeof(reserved_1[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)reserved_1[i] << " ";
+	std::cout << "reserved_0 = ";
+	for(unsigned int i = 0; i < sizeof(reserved_0) / sizeof(reserved_0[0]); i++)std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)reserved_0[i] << " ";
 	std::cout << std::endl;
 	std::cout << "drive_number = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(drive_number) * hex_digits_per_byte) << (unsigned int)drive_number << std::endl;
-	std::cout << "reserved_2 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_2) * hex_digits_per_byte) << (unsigned int)reserved_2 << std::endl;
+	std::cout << "reserved_1 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(reserved_1) * hex_digits_per_byte) << (unsigned int)reserved_1 << std::endl;
 	std::cout << "signature = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(signature) * hex_digits_per_byte) << (unsigned int)signature << std::endl;
 	std::cout << "volume_ID = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(volume_ID) * hex_digits_per_byte) << (unsigned int)volume_ID << std::endl;
 	std::cout << "volume_label = \"" << volume_label << "\"" << std::endl;
