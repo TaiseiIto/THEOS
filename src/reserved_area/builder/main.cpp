@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include "boot_sector.hpp"
+#include "fsinfo_sector.hpp"
 
 void print_binary(unsigned char const * const data, unsigned int size);
 
@@ -35,6 +36,7 @@ int main(int argc, char const * const * const argv)
 	fsinfo_sector_file.read(fsinfo_sector_raw, sizeof(fsinfo_sector_raw));
 	print_binary((unsigned char *)fsinfo_sector_raw, sizeof(fsinfo_sector_raw));
 	fsinfo_sector_file.close();
+	FSInfoSector fsinfo_sector = FSInfoSector((unsigned char *)fsinfo_sector_raw);
 	return EXIT_SUCCESS;
 }
 
