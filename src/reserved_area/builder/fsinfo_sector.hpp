@@ -13,6 +13,10 @@ private:
 	unsigned char reserved_0[0x01e0];
 	static const unsigned int reserved_0_offset = signature_0_offset + signature_0_size;
 	static const unsigned int reserved_0_size = sizeof(reserved_0);
+
+	unsigned int signature_1;
+	static const unsigned int signature_1_offset = reserved_0_offset + reserved_0_size;
+	static const unsigned int signature_1_size = sizeof(signature_1);
 public:
 	FSInfoSector(unsigned char const * const data);
 };
