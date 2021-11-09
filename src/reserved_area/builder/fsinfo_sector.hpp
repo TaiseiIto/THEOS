@@ -21,6 +21,10 @@ private:
 	unsigned int free_clusters;
 	static const unsigned int free_clusters_offset = signature_1_offset + signature_1_size;
 	static const unsigned int free_clusters_size = sizeof(free_clusters);
+
+	unsigned int last_cluster;
+	static const unsigned int last_cluster_offset = free_clusters_offset + free_clusters_size;
+	static const unsigned int last_cluster_size = sizeof(last_cluster);
 public:
 	FSInfoSector(unsigned char const * const data);
 };
