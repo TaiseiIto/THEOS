@@ -1,7 +1,7 @@
 BOOT_SECTOR = ../boot_sector.bin
 
 BUILDER = builder
-BUILDER_SOURCE = $(addsuffix .cpp, $(BUILDER)) boot_sector.cpp
+BUILDER_SOURCE = $(wildcard *.cpp)
 BUILDER_OBJECTS = $(patsubst %.cpp, %.o, $(BUILDER_SOURCE))
 
 CLEANER = ../../../script/clean.sh
@@ -17,7 +17,6 @@ LINKER = g++
 LINKER_OUTPUT_OPTION = -o
 
 TARGET = reserved_area.bin
-SOURCE = $(addsuffix .cpp, $(TARGET))
 
 all: $(TARGET)
 
