@@ -17,6 +17,10 @@ private:
 	unsigned int signature_1;
 	static const unsigned int signature_1_offset = reserved_0_offset + reserved_0_size;
 	static const unsigned int signature_1_size = sizeof(signature_1);
+
+	unsigned int free_clusters;
+	static const unsigned int free_clusters_offset = signature_1_offset + signature_1_size;
+	static const unsigned int free_clusters_size = sizeof(free_clusters);
 public:
 	FSInfoSector(unsigned char const * const data);
 };
