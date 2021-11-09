@@ -29,6 +29,10 @@ private:
 	unsigned char reserved_1[0x0c];
 	static const unsigned int reserved_1_offset = last_cluster_offset + last_cluster_size;
 	static const unsigned int reserved_1_size = sizeof(reserved_1);
+
+	unsigned int signature_2;
+	static const unsigned int signature_2_offset = reserved_1_offset + reserved_1_size;
+	static const unsigned int signature_2_size = sizeof(signature_2);
 public:
 	FSInfoSector(unsigned char const * const data);
 };

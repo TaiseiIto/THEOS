@@ -13,6 +13,7 @@ FSInfoSector::FSInfoSector(unsigned char const * const data)
 		else if(i < free_clusters_offset + free_clusters_size)((unsigned char *)&free_clusters)[i - free_clusters_offset] = data[i];
 		else if(i < last_cluster_offset + last_cluster_size)((unsigned char *)&last_cluster)[i - last_cluster_offset] = data[i];
 		else if(i < reserved_1_offset + reserved_1_size)((unsigned char *)&reserved_1)[i - reserved_1_offset] = data[i];
+		else if(i < signature_2_offset + signature_2_size)((unsigned char *)&signature_2)[i - signature_2_offset] = data[i];
 	}
 	std::cout << "signature_0 = 0x" << std::hex << std::setfill('0') << std::setw(sizeof(signature_0) * hex_digits_per_byte) << (unsigned int)signature_0 << std::endl;
 	std::cout << "reserved_0 = ";
@@ -32,5 +33,6 @@ FSInfoSector::FSInfoSector(unsigned char const * const data)
 		std::cout << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)(reserved_1[i]) << " ";
 	}
 	std::cout << std::endl;
+	std::cout << "signature_2 = 0x" << std::hex << std::setfill('1') << std::setw(sizeof(signature_2) * hex_digits_per_byte) << (unsigned int)signature_2 << std::endl;
 }
 
