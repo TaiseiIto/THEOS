@@ -24,7 +24,7 @@ TARGET = theos.img
 all: $(TARGET)
 
 clean:
-	$(CLEANER) $(GENIMG) $(TARGET) $(GENIMG_OBJECTS)
+	$(CLEANER) $(GENIMG) $(TARGET) $(GENIMG_OBJECTS) $(MAKE_OUT)
 	$(MAKE) $@ -C $(dir $(BOOT_SECTOR))
 	$(MAKE) $@ -C $(dir $(FSINFO_SECTOR))
 

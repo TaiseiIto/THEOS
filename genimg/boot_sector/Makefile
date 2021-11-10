@@ -28,7 +28,7 @@ boot_sector.o: boot_sector.s $(VOLUME_SERIAL_NUMBER)
 	$(COMPILER) $< $(COMPILER_DONT_LINK_OPTION) $(COMPILER_DONT_USE_STDLIB_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
 
 clean:
-	$(CLEANER) *.bin *.map *.o volume_serial_number.s
+	$(CLEANER) *.bin *.map *.o $(VOLUME_SERIAL_NUMBER) $(MAKE_OUT)
 
 rebuild: clean
 	$(MAKE) 2>&1 | tee $(MAKE_OUT)

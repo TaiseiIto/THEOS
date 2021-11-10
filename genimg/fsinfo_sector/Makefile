@@ -19,7 +19,7 @@ TARGET = fsinfo_sector.bin
 all: $(TARGET)
 
 clean:
-	$(CLEANER) *.bin *.map *.o
+	$(CLEANER) *.bin *.map *.o $(MAKE_OUT)
 
 fsinfo_sector.bin: fsinfo_sector.o
 	$(LINKER) $^ $(LINKER_MAP_OPTION) $(@:.bin=.map) $(LINKER_OUTPUT_OPTION) $@ $(LINKER_SCRIPT_OPTION) $(@:.bin=.ld)
