@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include "boot_sector.hpp"
+#include "directory.hpp"
 #include "fsinfo_sector.hpp"
 
 void print_binary(unsigned char const * const data, unsigned int size);
