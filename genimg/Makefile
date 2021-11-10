@@ -2,7 +2,7 @@ BOOT_SECTOR = boot_sector/boot_sector.bin
 
 CLEANER = ../script/clean.sh
 
-COMPILER = g++
+COMPILER = g++ --std=c++17
 COMPILER_DONT_LINK_OPTION = -c
 COMPILER_OUTPUT_OPTION = -o
 COMPILER_WARNING_OPTION = -Wall -Wextra

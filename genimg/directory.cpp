@@ -4,6 +4,6 @@
 
 Directory::Directory(std::string path)
 {
-	std::cout << "Directory:" << path << std::endl;
+	for(std::filesystem::directory_iterator i = std::filesystem::begin(std::filesystem::directory_iterator(path)); i != std::filesystem::end(std::filesystem::directory_iterator(path)); i++)std::cout << i->path() << std::endl;
 }
 
