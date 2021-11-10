@@ -12,9 +12,9 @@ int main(int argc, char const * const * const argv)
 	char fsinfo_sector_raw[0x200];
 	std::ifstream boot_sector_file;
 	std::ifstream fsinfo_sector_file;
-	if(argc != 4)
+	if(argc != 5)
 	{
-		std::cerr << "Usage : $ ./builder ../boot_sector.bin ../fsinfo_sector.bin ../reserved_area.bin" << std::endl;
+		std::cerr << "Usage : $ ./genimg boot_sector/boot_sector.bin fsinfo_sector/fsinfo_sector.bin ../disk_root theos.img" << std::endl;
 		return EXIT_FAILURE;
 	}
 	boot_sector_file.open(argv[1], std::ifstream::binary | std::ifstream::in);

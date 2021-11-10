@@ -7,6 +7,8 @@ COMPILER_DONT_LINK_OPTION = -c
 COMPILER_OUTPUT_OPTION = -o
 COMPILER_WARNING_OPTION = -Wall -Wextra
 
+DISK_ROOT = ../disk_root
+
 FSINFO_SECTOR = fsinfo_sector/fsinfo_sector.bin
 
 GENIMG = ./genimg
@@ -46,7 +48,7 @@ $(FSINFO_SECTOR):
 	$(MAKE) -C $(dir $@)
 
 $(TARGET): $(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR)
-	$(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR) $@
+	$(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR) $(DISK_ROOT) $@
 
 .PHONY: all clean rebuild
 

@@ -5,6 +5,6 @@ This tool generates FAT32 raw image file of the THEOS bootable drive containing 
 ## Usage
 
 ```
-$ ./genimg ../src/reserved_area/boot_sector.bin ../stc/reserved_area/fsingo_sector.bin input_root_directory theos.img
+$ ./genimg boot_sector/boot_sector.bin fsinfo_sector/fsinfo_sector.bin ../disk_root theos.img
 ```
 
