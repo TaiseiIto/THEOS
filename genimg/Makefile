@@ -1,4 +1,4 @@
-BOOT_SECTOR = ../src/reserved_area/boot_sector.bin
+BOOT_SECTOR = boot_sector/boot_sector.bin
 
 CLEANER = ../script/clean.sh
 
@@ -7,9 +7,9 @@ COMPILER_DONT_LINK_OPTION = -c
 COMPILER_OUTPUT_OPTION = -o
 COMPILER_WARNING_OPTION = -Wall -Wextra
 
-FSINFO_SECTOR = ../src/reserved_area/fsinfo_sector.bin
+FSINFO_SECTOR = fsinfo_sector/fsinfo_sector.bin
 
-GENIMG = genimg
+GENIMG = ./genimg
 GENIMG_SOURCE = $(wildcard *.cpp)
 GENIMG_OBJECTS = $(patsubst %.cpp, %.o, $(GENIMG_SOURCE))
 
@@ -25,6 +25,8 @@ all: $(TARGET)
 
 clean:
 	$(CLEANER) $(GENIMG) $(TARGET) $(GENIMG_OBJECTS)
+	$(MAKE) $@ -C $(dir $(BOOT_SECTOR))
+	$(MAKE) $@ -C $(dir $(FSINFO_SECTOR))
 
 rebuild: clean
 	$(MAKE) 2>&1 | tee $(MAKE_OUT)
@@ -37,8 +39,14 @@ $(GENIMG_OBJECTS): $(@:.o=.cpp)
 %.o: %.cpp
 	$(COMPILER) $^ $(COMPILER_DONT_LINK_OPTION) $(COMPILER_OUTPUT_OPTION) $@ $(COMPILER_WARNING_OPTION)
 
-$(TARGET): $(GENIMG)
-	./$(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR) $@
+$(BOOT_SECTOR):
+	$(MAKE) -C $(dir $@)
+
+$(FSINFO_SECTOR):
+	$(MAKE) -C $(dir $@)
+
+$(TARGET): $(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR)
+	$(GENIMG) $(BOOT_SECTOR) $(FSINFO_SECTOR) $@
 
 .PHONY: all clean rebuild
 
