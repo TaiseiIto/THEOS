@@ -38,6 +38,7 @@ int main(int argc, char const * const * const argv)
 	print_binary((unsigned char *)fsinfo_sector_raw, sizeof(fsinfo_sector_raw));
 	fsinfo_sector_file.close();
 	FSInfoSector fsinfo_sector = FSInfoSector((unsigned char *)fsinfo_sector_raw);
+	Directory root_directory = Directory(argv[3]);
 	return EXIT_SUCCESS;
 }
 
