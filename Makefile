@@ -1,4 +1,4 @@
-docker:
+run_docker:
 	make -C docker
 
 clean_docker:
