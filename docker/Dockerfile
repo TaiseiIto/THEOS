@@ -16,12 +16,12 @@ RUN apt install curl -y
 RUN apt install git -y
 RUN apt install git-email -y
 RUN git config --global pull.rebase false
-RUN mkdir ~/.ssh
-RUN mkdir ~/.github
+RUN mkdir /root/.ssh
+RUN mkdir /root/.github
 
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
-RUN mkdir ~/.crates.io
+RUN mkdir /root/.crates.io
 
 # Install a terminal multiplexer.
 RUN apt install tmux -y
@@ -30,7 +30,7 @@ RUN apt install tmux -y
 RUN apt install vim -y
 
 # Clone this repository.
-WORKDIR ~
+WORKDIR /root
 RUN git clone https://github.com/TaiseiIto/THEOS.git
 WORKDIR THEOS
 

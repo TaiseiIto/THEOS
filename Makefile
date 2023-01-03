@@ -8,5 +8,5 @@ rebuild_docker:
 	make rebuild -C docker
 
 empowerment:
-	make empowerment -C docker GITHUB=$(GITHUB) GITGPG=$(GITGPG) CRATESIO=$(CRATESIO)
+	make empowerment -C docker GITHUB=$(realpath $(GITHUB)) GITGPG=$(realpath $(GITGPG)) CRATESIO=$(realpath $(CRATESIO))
 
