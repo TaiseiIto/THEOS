@@ -35,11 +35,11 @@ RUN git clone https://github.com/TaiseiIto/THEOS.git
 WORKDIR THEOS
 
 # bash settings.
-RUN cat bash/.bashrc >> /root/.bashrc
+RUN cat .bash/.bashrc >> /root/.bashrc
 
 # tmux settings.
-RUN cat tmux/.tmux.conf >> /root/.tmux.conf
+RUN cat .tmux/.tmux.conf >> /root/.tmux.conf
 
 # vim settings.
-RUN cat vim/.vimrc >> /root/.vimrc
+RUN cat .vim/.vimrc >> /root/.vimrc
 

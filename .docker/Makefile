@@ -32,7 +32,7 @@ empowerment: $(CONTAINER)
 	$(DOCKER) cp $(GITGPG) $(CONTAINER_NAME):/root/.gnupg
 	$(DOCKER) cp $(CRATESIO) $(CONTAINER_NAME):/root/.crates.io/key
 	$(DOCKER) start $(CONTAINER_NAME)
-	$(DOCKER) exec -i -t $(CONTAINER_NAME) /root/THEOS/git/gitconfig.sh
+	$(DOCKER) exec -i -t $(CONTAINER_NAME) /root/THEOS/.git.conf/gitconfig.sh
 	$(DOCKER) stop $(CONTAINER_NAME)
 
 $(RUN_CONTAINER): $(CONTAINER)
