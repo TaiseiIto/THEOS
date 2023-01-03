@@ -29,7 +29,7 @@ git config --global --add commit.gpgsign true
 git remote set-url origin git@github.com:TaiseiIto/THEOS.git
 cat .gitconfig >> /root
 cat ../ssh/config >> /root/.ssh/config
-chmod 600 ../.github/key
+chmod 600 /root/.github/key
 chmod -R 600 /root/.gnupg
 /root/.cargo/bin/cargo login $(cat /root/.crates.io/key)
 cd $curdir
