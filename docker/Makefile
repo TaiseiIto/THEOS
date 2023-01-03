@@ -1,3 +1,11 @@
+ifeq ($(OS), Windows_NT)
+CLEAR = del
+DONE = copy nul
+else
+CLEAR = rm -f
+DONE = touch
+endif
+
 DOCKER = docker
 NAME = theos
 NO_PREFIX = .no
@@ -9,24 +17,24 @@ IMAGE_NAME = $(NAME)
 NO_IMAGE = $(NO_PREFIX)$(IMAGE)
 
 $(CONTAINER): $(IMAGE)
-	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME)
-	rm -f $(NO_CONTAINER)
-	touch $@
+	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME) /bin/bash
+	$(CLEAR) $(NO_CONTAINER)
+	$(DONE) $@
 
 $(IMAGE): Dockerfile
 	$(DOCKER) build --no-cache -t $(IMAGE_NAME) .
-	rm -f $(NO_IMAGE)
-	touch $@
+	$(CLEAR) $(NO_IMAGE)
+	$(DONE) $@
 
 clean: $(NO_CONTAINER) $(NO_IMAGE)
 	
 $(NO_CONTAINER):
 	$(DOCKER) rm -f $(CONTAINER_NAME)
-	rm -f $(CONTAINER)
-	touch $@
+	$(CLEAR) $(CONTAINER)
+	$(DONE) $@
 
 $(NO_IMAGE):
 	$(DOCKER) rmi -f $(IMAGE_NAME)
-	rm -f $(CONTAINER)
-	touch $@
+	$(CLEAR) $(CONTAINER)
+	$(DONE) $@
 
