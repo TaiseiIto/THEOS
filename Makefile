@@ -1,3 +1,3 @@
-docker_image:
+docker:
 	make $@ -C docker
 
