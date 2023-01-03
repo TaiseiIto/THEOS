@@ -37,6 +37,7 @@ empowerment: $(CONTAINER)
 
 $(RUN_CONTAINER): $(CONTAINER)
 	$(DOCKER) start $(CONTAINER_NAME)
+	$(DONE) $(RUN_CONTAINER)
 	
 $(CONTAINER): $(IMAGE)
 	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME) /bin/bash
