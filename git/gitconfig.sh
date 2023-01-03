@@ -27,7 +27,7 @@ git config --global user.name $name
 git config --global user.signingkey $(head -n1 /root/.gnupg/signingkey.txt)
 git config --global --add commit.gpgsign true
 git remote set-url origin git@github.com:TaiseiIto/THEOS.git
-cat .gitconfig >> /root
+cat .gitconfig >> /root/.gitconfig
 cat ../ssh/config >> /root/.ssh/config
 chmod 600 /root/.github/key
 chmod -R 600 /root/.gnupg
