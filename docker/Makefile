@@ -47,6 +47,6 @@ $(NO_CONTAINER):
 
 $(NO_IMAGE):
 	$(DOCKER) rmi -f $(IMAGE_NAME)
-	$(CLEAR) $(CONTAINER)
+	$(CLEAR) $(IMAGE)
 	$(DONE) $@
 
