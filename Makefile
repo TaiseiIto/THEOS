@@ -7,3 +7,5 @@ clean_docker:
 rebuild_docker:
 	make rebuild -C docker
 
+empowerment:
+	make empowerment -C docker

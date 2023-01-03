@@ -27,6 +27,14 @@ clean: $(NO_CONTAINER) $(NO_IMAGE)
 rebuild: clean
 	make
 
+empowerment: $(CONTAINER)
+	$(DOCKER) cp $(GITHUB) $(CONTAINER_NAME):/root/.github/key
+	$(DOCKER) cp $(GITGPG) $(CONTAINER_NAME):/root/.gnupg
+	$(DOCKER) cp $(CRATES) $(CONTAINER_NAME):/root/.crates.io/key
+	$(DOCKER) start $(CONTAINER_NAME)
+	$(DOCKER) exec -i -t $(CONTAINER_NAME) /root/THEOS/git/gitconfig.sh
+	$(DOCKER) stop $(CONTAINER_NAME)
+
 $(RUN_CONTAINER): $(CONTAINER)
 	$(DOCKER) start $(CONTAINER_NAME)
 	

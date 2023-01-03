@@ -1,0 +1,5 @@
+Host github github.com
+	HostName github.com
+	IdentityFile /root/.github/key
+	User git
+

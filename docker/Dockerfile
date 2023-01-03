@@ -17,9 +17,11 @@ RUN apt install git -y
 RUN apt install git-email -y
 RUN git config --global pull.rebase false
 RUN mkdir ~/.ssh
+RUN mkdir ~/.github
 
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+RUN mkdir ~/.crates.io
 
 # Install a terminal multiplexer.
 RUN apt install tmux -y
