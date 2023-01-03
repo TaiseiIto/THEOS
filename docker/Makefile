@@ -16,6 +16,14 @@ IMAGE = .image
 IMAGE_NAME = $(NAME)
 NO_IMAGE = $(NO_PREFIX)$(IMAGE)
 
+all: $(CONTAINER)
+	$(DOCKER) start $(CONTAINER_NAME)
+
+clean: $(NO_CONTAINER) $(NO_IMAGE)
+
+rebuild: clean
+	make
+	
 $(CONTAINER): $(IMAGE)
 	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME) /bin/bash
 	$(CLEAR) $(NO_CONTAINER)
@@ -26,8 +34,6 @@ $(IMAGE): Dockerfile
 	$(CLEAR) $(NO_IMAGE)
 	$(DONE) $@
 
-clean: $(NO_CONTAINER) $(NO_IMAGE)
-	
 $(NO_CONTAINER):
 	$(DOCKER) rm -f $(CONTAINER_NAME)
 	$(CLEAR) $(CONTAINER)
