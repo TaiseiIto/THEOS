@@ -17,7 +17,7 @@ volume_length:
 	.quad	0x0000000000000000
 
 fat_offset:
-	.long	0x00000000
+	.long	0x00000018
 
 fat_length:
 	.long	0x00000000
