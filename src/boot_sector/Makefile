@@ -7,9 +7,15 @@ TARGET = $(NAME).bin
 
 all: $(TARGET)
 
+clean:
+	rm -f $(MAP) $(OBJECT) $(TARGET)
+
+rebuild: clean
+	make
+
 $(TARGET): $(OBJECT) $(SCRIPT)
 	ld $(OBJECT) -Map $(MAP) -o $@ -T $(SCRIPT)
 
 $(OBJECT): $(SOURCE)
-	gcc $^ -c -nostdlib -o $@ -Wall -Wextra
+	as $^ -c -nostdlib -o $@
 
