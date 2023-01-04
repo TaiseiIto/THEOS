@@ -27,7 +27,7 @@ clean: $(NO_CONTAINER) $(NO_IMAGE)
 rebuild: clean
 	make
 
-empowerment: $(CONTAINER)
+permission: $(CONTAINER)
 	$(DOCKER) cp $(GITHUB) $(CONTAINER_NAME):/root/.github/key
 	$(DOCKER) cp $(GITGPG) $(CONTAINER_NAME):/root/.gnupg
 	$(DOCKER) cp $(CRATESIO) $(CONTAINER_NAME):/root/.crates.io/key
