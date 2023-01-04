@@ -103,5 +103,5 @@ putchar:	# void putchar(char c);
 	ret			# return;
 
 error_message:
-	.string "THEOS can work on not legacy BIOS but UEFI.\n"
+	.string "THEOS can work on not legacy BIOS but UEFI.\r\n"
 
