@@ -1,5 +1,6 @@
 use std::env;
-use std::path::Path;
+use std::fs;
+use std::path;
 
 fn main() {
     let args: Args = match analyse_args(env::args()) {
@@ -14,8 +15,8 @@ fn main() {
 #[derive(Debug)]
 struct Args {
     boot_sector: String,
-    src_dir: String,
-    destination: String,
+    src: String,
+    dst: String,
 }
 
 fn analyse_args(mut args: env::Args) -> Result<Args, String> {
@@ -28,43 +29,55 @@ fn analyse_args(mut args: env::Args) -> Result<Args, String> {
         Some(boot_sector) => boot_sector,
         None => return Err(format!("{}\n{}\n", "Boot sector is not specified.", usage)),
     };
-    let src_dir: String = match args.next() {
-        Some(src_dir) => src_dir,
+    let src: String = match args.next() {
+        Some(src) => src,
         None => return Err(format!("{}\n{}\n", "Source directory is not specified.", usage)),
     };
-    let destination: String = match args.next() {
-        Some(destination) => destination,
+    let dst: String = match args.next() {
+        Some(dst) => dst,
         None => return Err(format!("{}\n{}\n", "Boot sector is not specified.", usage)),
     };
     Ok(Args {
         boot_sector,
-        src_dir,
-        destination,
+        src,
+        dst,
     })
 }
 
 fn imager(args: Args) -> Result<(), String> {
-    let boot_sector = Path::new(&args.boot_sector);
-    let src_dir = Path::new(&args.src_dir);
-    let destination = Path::new(&args.destination);
+    let boot_sector = path::Path::new(&args.boot_sector);
+    let src = path::Path::new(&args.src);
+    let dst = path::Path::new(&args.dst);
     if !boot_sector.exists() {
         return Err(String::from(format!("{} doesn't exist.", boot_sector.display())));
     }
     if boot_sector.is_dir() {
         return Err(String::from(format!("{} is directory.", boot_sector.display())));
     }
-    if !src_dir.exists() {
-        return Err(String::from(format!("{} doesn't exist.", src_dir.display())));
+    if !src.exists() {
+        return Err(String::from(format!("{} doesn't exist.", src.display())));
     }
-    if src_dir.is_file() {
-        return Err(String::from(format!("{} is file.", src_dir.display())));
+    if src.is_file() {
+        return Err(String::from(format!("{} is file.", src.display())));
     }
-    if destination.exists() {
-        return Err(String::from(format!("{} exists already.", destination.display())));
+    if dst.exists() {
+        return Err(String::from(format!("{} exists already.", dst.display())));
     }
-    println!("boot_sector = {}", boot_sector.display());
-    println!("src_dir = {}", src_dir.display());
-    println!("destination = {}", destination.display());
+    read_boot_sector(&boot_sector)?;
+    println!("src = {}", src.display());
+    println!("dst = {}", dst.display());
+    Ok(())
+}
+
+fn read_boot_sector(boot_sector: &path::Path) -> Result<(), String> {
+    let boot_sector: Vec<u8> = match fs::read(boot_sector) {
+        Ok(boot_sector) => boot_sector,
+        Err(_) => return Err(format!("Failed to open {}", boot_sector.display())),
+    };
+    let boot_sector_len: usize = boot_sector.len();
+    if boot_sector_len != 0x200 {
+        return Err(format!("Size of the boot sector must be 0x200 bytes but actually {} bytes.", boot_sector_len));
+    }
     Ok(())
 }
 
