@@ -1,7 +1,6 @@
-        .boot_sector
-stack_floor:
-JumpBoot:
 	.code16
+stack_floor:
+jump_boot:
 	jmp	boot_code
 	nop
 
@@ -12,7 +11,7 @@ boot_code:	# Print error message when booting on legacy BIOS.
 	call	puts		# puts(error_message);
 infinite_loop:
 	hlt
-	jmp	$infinite_loop
+	jmp	infinite_loop
 
 puts:		# void puts(const char *s);
 	pushw	%bp
