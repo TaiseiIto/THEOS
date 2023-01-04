@@ -4,6 +4,60 @@ jump_boot:
 	jmp	boot_code
 	nop
 
+file_system_name:
+	.ascii	"EXFAT   "
+
+must_be_zero:
+	.fill	0x35,	0x1,	0x00
+
+partition_offset:
+	.quad	0x0000000000000000
+
+volume_length:
+	.quad	0x0000000000000000
+
+fat_offset:
+	.long	0x00000000
+
+fat_length:
+	.long	0x00000000
+
+cluster_heap_offset:
+	.long	0x00000000
+
+cluster_count:
+	.long	0x00000000
+
+first_cluster_of_root_directory:
+	.long	0x00000000
+
+volume_serial_number:
+	.long	0x00000000
+
+file_system_revision:
+	.word	0x0100
+
+volume_flags:
+	.word	0x0000
+
+bytes_per_sector_shift:
+	.byte	0x09
+
+sectors_per_cluster_shift:
+	.byte	0x08
+
+number_of_fats:
+	.byte	0x02
+
+drive_select:
+	.byte	0x80
+
+percent_in_use:
+	.byte	0xff
+
+reserved:
+	.fill	0x07,	0x1,	0x00
+
 boot_code:	# Print error message when booting on legacy BIOS.
 	movw	$stack_floor,%bp
 	movw	%bp,	%sp
