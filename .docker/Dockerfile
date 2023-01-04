@@ -1,3 +1,5 @@
+# This is Dockerfile to make development environment.
+
 FROM ubuntu
 
 # Don't ask stdin for anithing to install softwares automatically.

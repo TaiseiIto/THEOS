@@ -1,3 +1,6 @@
+# This makefile is called from ../Makefile
+# Don't execute it directly.
+
 ifeq ($(OS), Windows_NT)
 CLEAR = del
 DONE = copy nul
@@ -18,15 +21,19 @@ IMAGE = .image
 IMAGE_NAME = $(NAME)
 NO_IMAGE = $(NO_PREFIX)$(IMAGE)
 
+# Enter development environment.
 all: $(RUN_CONTAINER)
 	$(CLEAR) $(RUN_CONTAINER)
 	$(DOCKER) attach $(CONTAINER_NAME)
 
+# Clean development environment.
 clean: $(NO_CONTAINER) $(NO_IMAGE)
 
+# Rebuild development environment.
 rebuild: clean
 	make
 
+# Get development permission.
 permission: $(CONTAINER)
 	$(DOCKER) cp $(GITHUB) $(CONTAINER_NAME):/root/.github/key
 	$(DOCKER) cp $(GITGPG) $(CONTAINER_NAME):/root/.gnupg
@@ -35,25 +42,30 @@ permission: $(CONTAINER)
 	$(DOCKER) exec -i -t $(CONTAINER_NAME) /root/THEOS/.git.conf/gitconfig.sh
 	$(DOCKER) stop $(CONTAINER_NAME)
 
+# Start a Docker container.
 $(RUN_CONTAINER): $(CONTAINER)
 	$(DOCKER) start $(CONTAINER_NAME)
 	$(DONE) $(RUN_CONTAINER)
 	
+# Make a Docker container.
 $(CONTAINER): $(IMAGE)
 	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME) /bin/bash
 	$(CLEAR) $(NO_CONTAINER)
 	$(DONE) $@
 
+# Make a Docker image.
 $(IMAGE): Dockerfile
 	$(DOCKER) build --no-cache -t $(IMAGE_NAME) .
 	$(CLEAR) $(NO_IMAGE)
 	$(DONE) $@
 
+# Delete a Docker container.
 $(NO_CONTAINER):
 	$(DOCKER) rm -f $(CONTAINER_NAME)
 	$(CLEAR) $(CONTAINER)
 	$(DONE) $@
 
+# Delete a Docker image.
 $(NO_IMAGE):
 	$(DOCKER) rmi -f $(IMAGE_NAME)
 	$(CLEAR) $(IMAGE)

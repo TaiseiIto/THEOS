@@ -8,7 +8,7 @@ Pronunciation of the name is \[t&#x2B0;e.&#xF3;s\] in [IPA](https://en.wikipedia
 
 ## Development environment
 
-THEOS is developed on Docker container provided by [.docker](.docker) directory.
+THEOS is developed on Docker container provided by [`.docker`](.docker) directory.
 
 You can make Docker image and container and enter it.
 
@@ -25,9 +25,9 @@ Now you are in the development environment!
 
 To get development permission, you need to prepare below.
 
-* SSH key to push to [remote repository](http://github.com/TaiseiIto/THEOS).
+* SSH key to push to [the remote repository](https://github.com/TaiseiIto/THEOS).
 * .gnupg directory to verify your commitments.
-* API key to log in [crates.io](https://crates.io/).
+* API key to log in [`crates.io`](https://crates.io/).
 
 And `make permission` as below.
 
