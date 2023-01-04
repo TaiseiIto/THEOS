@@ -1,3 +1,7 @@
+# Build THEOS
+all:
+	make -C src
+
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
 docker:
