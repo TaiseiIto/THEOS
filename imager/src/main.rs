@@ -34,7 +34,7 @@ fn imager(args: Args) {
     let dst = path::Path::new(&args.dst);
     println!("src = {}", src.display());
     println!("dst = {}", dst.display());
-    let boot_sector: BootSector = read_boot_sector(&boot_sector);
+    let boot_sector = BootSector::new(&boot_sector);
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.boot_signature = {:#x}", boot_sector.boot_signature);
 }
@@ -62,6 +62,15 @@ struct BootSector {
     reserved: [u8; 0x7],
     boot_code: [u8; 0x186],
     boot_signature: u16,
+}
+
+impl BootSector {
+    fn new(file: &path::Path) -> Self {
+        let boot_sector: Vec<u8> = fs::read(file).expect(&format!("Failed to open {}", file.display()));
+        let boot_sector: [u8; mem::size_of::<PackedBootSector>()] = boot_sector.try_into().expect(&format!("The length of boot sector must be {}.", mem::size_of::<PackedBootSector>()));
+        let boot_sector = PackedBootSector::new(boot_sector);
+        boot_sector.unpack()
+    }
 }
 
 #[repr(packed)]
@@ -121,12 +130,5 @@ impl PackedBootSector {
             boot_signature: self.boot_signature,
         }
     }
-}
-
-fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
-    let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Failed to open {}", boot_sector.display()));
-    let boot_sector: [u8; mem::size_of::<PackedBootSector>()] = boot_sector.try_into().expect(&format!("The length of boot sector must be {}.", mem::size_of::<PackedBootSector>()));
-    let boot_sector = PackedBootSector::new(boot_sector);
-    boot_sector.unpack()
 }
 
