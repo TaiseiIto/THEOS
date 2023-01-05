@@ -3,11 +3,8 @@ use std::fs;
 use std::path;
 
 fn main() {
-    let args: Args = match analyse_args(env::args()) {
-        Ok(args) => args,
-        Err(msg) => panic!("{}", msg),
-    };
-    imager(args)
+    let args: Args = analyse_args(env::args());
+    imager(args);
 }
 
 #[derive(Debug)]
@@ -17,29 +14,17 @@ struct Args {
     dst: String,
 }
 
-fn analyse_args(mut args: env::Args) -> Result<Args, String> {
+fn analyse_args(mut args: env::Args) -> Args {
     let usage: String = String::from("Usage: $ ./imager /path/to/boot/sector /path/to/source/directory /path/to/destination");
-    let _my_path: String = match args.next() {
-        Some(my_path) => my_path,
-        None => return Err(format!("{}\n{}\n", "Program path is not specified.", usage)),
-    };
-    let boot_sector: String = match args.next() {
-        Some(boot_sector) => boot_sector,
-        None => return Err(format!("{}\n{}\n", "Boot sector is not specified.", usage)),
-    };
-    let src: String = match args.next() {
-        Some(src) => src,
-        None => return Err(format!("{}\n{}\n", "Source directory is not specified.", usage)),
-    };
-    let dst: String = match args.next() {
-        Some(dst) => dst,
-        None => return Err(format!("{}\n{}\n", "Boot sector is not specified.", usage)),
-    };
-    Ok(Args {
+    let _my_path: String = args.next().expect(&format!("{}\n{}\n", "Program path is not specified.", usage));
+    let boot_sector: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
+    let src: String = args.next().expect(&format!("{}\n{}\n", "Source directory is not specified.", usage));
+    let dst: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
+    Args {
         boot_sector,
         src,
         dst,
-    })
+    }
 }
 
 fn imager(args: Args) {
