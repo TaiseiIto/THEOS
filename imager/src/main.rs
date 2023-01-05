@@ -63,21 +63,44 @@ fn imager(args: Args) -> Result<(), String> {
     if dst.exists() {
         return Err(String::from(format!("{} exists already.", dst.display())));
     }
-    read_boot_sector(&boot_sector)?;
     println!("src = {}", src.display());
     println!("dst = {}", dst.display());
+    let boot_sector: BootSector = match read_boot_sector(&boot_sector) {
+        Ok(boot_sector) => boot_sector,
+        Err(message) => return Err(message),
+    };
+    println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
+    println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
     Ok(())
 }
 
-fn read_boot_sector(boot_sector: &path::Path) -> Result<(), String> {
+const BOOT_SECTOR_SIZE: usize = 0x200;
+const JUMP_BOOT_SIZE: usize = 3;
+const FILE_SYSTEM_NAME_SIZE: usize = 8;
+
+#[derive(Debug)]
+struct BootSector {
+    jump_boot: [u8; JUMP_BOOT_SIZE],
+    file_system_name: [char; FILE_SYSTEM_NAME_SIZE],
+}
+
+fn read_boot_sector(boot_sector: &path::Path) -> Result<BootSector, String> {
     let boot_sector: Vec<u8> = match fs::read(boot_sector) {
         Ok(boot_sector) => boot_sector,
         Err(_) => return Err(format!("Failed to open {}", boot_sector.display())),
     };
-    let boot_sector_len: usize = boot_sector.len();
-    if boot_sector_len != 0x200 {
-        return Err(format!("Size of the boot sector must be 0x200 bytes but actually {} bytes.", boot_sector_len));
-    }
-    Ok(())
+    let boot_sector: [u8; BOOT_SECTOR_SIZE] = match boot_sector.try_into() {
+        Ok(boot_sector) => boot_sector,
+        Err(_) => return Err(format!("The length of boot sector must be {}.", BOOT_SECTOR_SIZE)),
+    };
+    let mut offset: usize = 0;
+    let jump_boot: [u8; JUMP_BOOT_SIZE] = boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into().unwrap();
+    offset += JUMP_BOOT_SIZE;
+    let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into().unwrap();
+    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into().unwrap();
+    Ok(BootSector {
+        jump_boot,
+        file_system_name,
+    })
 }
 
