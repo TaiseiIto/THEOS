@@ -133,12 +133,7 @@ impl BootSector {
     fn pack(self) -> PackedBootSector {
         PackedBootSector {
             jump_boot: self.jump_boot,
-            file_system_name: self.file_system_name
-                .iter()
-                .map(|c| *c as u8)
-                .collect::<Vec<u8>>()
-                .try_into()
-                .expect("Can't interpret FileSystemName as [u8; 0x8]"),
+            file_system_name: self.file_system_name.map(|c| c as u8),
             must_be_zero: self.must_be_zero,
             partition_offset: self.partition_offset,
             volume_length: self.volume_length,
@@ -229,12 +224,7 @@ impl PackedBootSector {
     fn unpack(self) -> BootSector {
         BootSector {
             jump_boot: self.jump_boot,
-            file_system_name: self.file_system_name
-                .iter()
-                .map(|byte| char::from(*byte))
-                .collect::<Vec<char>>()
-                .try_into()
-                .expect("Can't interpret FileSystemName as [char; 0x8]"),
+            file_system_name: self.file_system_name.map(|byte| char::from(byte)),
             must_be_zero: self.must_be_zero,
             partition_offset: self.partition_offset,
             volume_length: self.volume_length,
@@ -370,10 +360,6 @@ impl OemParameter {
         }
     }
 
-    fn into_bytes(self) -> Vec<u8> {
-        self.pack().into_bytes().to_vec()
-    }
-
     fn pack(self) -> PackedOemParameter {
         PackedOemParameter {
             parameters_guid: self.parameters_guid,
@@ -393,13 +379,5 @@ impl fmt::Display for OemParameter {
 struct PackedOemParameter {
     parameters_guid: u16,
     custom_defined: u32,
-}
-
-impl PackedOemParameter {
-    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
-        }
-    }
 }
 
