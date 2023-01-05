@@ -72,6 +72,7 @@ impl Exfat {
         for extended_boot_sector in self.extended_boot_sectors {
             bytes.append(&mut extended_boot_sector.into_bytes());
         }
+        bytes.append(&mut self.oem_parameters.into_bytes());
         bytes
     }
 }
@@ -317,6 +318,17 @@ impl OemParameters {
             reserved: [0; 0x20],
         }
     }
+
+    fn into_bytes(self) -> Vec<u8> {
+        self.pack().into_bytes().to_vec()
+    }
+
+    fn pack(self) -> PackedOemParameters {
+        PackedOemParameters {
+            parameters: self.parameters,
+            reserved: self.reserved,
+        }
+    }
 }
 
 impl fmt::Display for OemParameters {
@@ -327,6 +339,20 @@ impl fmt::Display for OemParameters {
             write!(f, "{}\n", parameter)?;
         }
         write!(f, "oem_parameters.reserved = {:x?}", self.reserved)
+    }
+}
+
+#[repr(packed)]
+struct PackedOemParameters {
+    parameters: [OemParameter; 0xa],
+    reserved: [u8; 0x20],
+}
+
+impl PackedOemParameters {
+    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+        }
     }
 }
 
@@ -343,12 +369,37 @@ impl OemParameter {
             custom_defined: 0,
         }
     }
+
+    fn into_bytes(self) -> Vec<u8> {
+        self.packed().into_bytes().to_vec()
+    }
+
+    fn packed(self) -> PackedOemParameter {
+        PackedOemParameter {
+            parameters_guid: self.parameters_guid,
+            custom_defined: self.custom_defined,
+        }
+    }
 }
 
 impl fmt::Display for OemParameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "oem_parameter.parameters_guid = {:#x}\n", self.parameters_guid)?;
         write!(f, "oem_parameter.custom_defined = {:#x}", self.custom_defined)
+    }
+}
+
+#[repr(packed)]
+struct PackedOemParameter {
+    parameters_guid: u16,
+    custom_defined: u32,
+}
+
+impl PackedOemParameter {
+    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+        }
     }
 }
 
