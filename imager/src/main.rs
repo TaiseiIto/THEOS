@@ -90,6 +90,12 @@ struct PackedBootSector {
 }
 
 impl PackedBootSector {
+    fn new(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; mem::size_of::<Self>()], Self>(bytes)
+        }
+    }
+
     fn unpack(self) -> BootSector {
         BootSector {
             jump_boot: self.jump_boot,
@@ -120,9 +126,7 @@ impl PackedBootSector {
 fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Failed to open {}", boot_sector.display()));
     let boot_sector: [u8; mem::size_of::<PackedBootSector>()] = boot_sector.try_into().expect(&format!("The length of boot sector must be {}.", mem::size_of::<PackedBootSector>()));
-    let boot_sector: PackedBootSector = unsafe {
-        mem::transmute::<[u8; mem::size_of::<PackedBootSector>()], PackedBootSector>(boot_sector)
-    };
+    let boot_sector = PackedBootSector::new(boot_sector);
     boot_sector.unpack()
 }
 
