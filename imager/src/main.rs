@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::mem;
 use std::path;
 
 fn main() {
@@ -37,7 +38,10 @@ fn imager(args: Args) {
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
     println!("boot_sector.must_be_zero = {:x?}", boot_sector.must_be_zero);
-    println!("boot_sector.partition_offset = {:x}", boot_sector.partition_offset);
+    println!("boot_sector.partition_offset = {:#x}", boot_sector.partition_offset);
+    println!("boot_sector.volume_length = {:#x}", boot_sector.volume_length);
+    println!("boot_sector.fat_offset = {:#x}", boot_sector.fat_offset);
+    println!("boot_sector.fat_length = {:#x}", boot_sector.fat_length);
 }
 
 const SECTOR_SIZE: usize = 0x200;
@@ -51,6 +55,9 @@ struct BootSector {
     file_system_name: [char; FILE_SYSTEM_NAME_SIZE],
     must_be_zero: [u8; MUST_BE_ZERO_SIZE],
     partition_offset: u64,
+    volume_length: u64,
+    fat_offset: u32,
+    fat_length: u32,
 }
 
 fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
@@ -65,12 +72,21 @@ fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     offset += FILE_SYSTEM_NAME_SIZE;
     let must_be_zero: [u8; MUST_BE_ZERO_SIZE] = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].try_into().expect("Can't read MustBeZero.");
     offset += MUST_BE_ZERO_SIZE;
-    let partition_offset: u64 = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].iter().rev().fold(0, |partition_offset, byte| (partition_offset << 8) + *byte as u64);
+    let partition_offset: u64 = boot_sector[offset..offset + mem::size_of::<u64>()].iter().rev().fold(0, |acc, byte| (acc << 8) + *byte as u64);
+    offset += mem::size_of_val(&partition_offset);
+    let volume_length: u64 = boot_sector[offset..offset + mem::size_of::<u64>()].iter().rev().fold(0, |acc, byte| (acc << 8) + *byte as u64);
+    offset += mem::size_of_val(&volume_length);
+    let fat_offset: u32 = boot_sector[offset..offset + mem::size_of::<u32>()].iter().rev().fold(0, |acc, byte| (acc << 8) + *byte as u32);
+    offset += mem::size_of_val(&fat_offset);
+    let fat_length: u32 = boot_sector[offset..offset + mem::size_of::<u32>()].iter().rev().fold(0, |acc, byte| (acc << 8) + *byte as u32);
     BootSector {
         jump_boot,
         file_system_name,
         must_be_zero,
         partition_offset,
+        volume_length,
+        fat_offset,
+        fat_length,
     }
 }
 
