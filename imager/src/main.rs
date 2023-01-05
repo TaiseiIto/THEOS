@@ -348,15 +348,15 @@ impl PackedOemParameters {
 
 #[derive(Clone, Copy, Debug)]
 struct OemParameter {
-    parameters_guid: u16,
-    custom_defined: u32,
+    parameters_guid: [u8; 0x10],
+    custom_defined: [u8; 0x20],
 }
 
 impl OemParameter {
     fn null_parameter() -> Self {
         Self {
-            parameters_guid: 0x1234,
-            custom_defined: 0x12345678,
+            parameters_guid: [0; 0x10],
+            custom_defined: [0; 0x20],
         }
     }
 
@@ -370,14 +370,14 @@ impl OemParameter {
 
 impl fmt::Display for OemParameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "oem_parameter.parameters_guid = {:#x}\n", self.parameters_guid)?;
-        write!(f, "oem_parameter.custom_defined = {:#x}", self.custom_defined)
+        write!(f, "oem_parameter.parameters_guid = {:x?}\n", self.parameters_guid)?;
+        write!(f, "oem_parameter.custom_defined = {:x?}", self.custom_defined)
     }
 }
 
 #[repr(packed)]
 struct PackedOemParameter {
-    parameters_guid: u16,
-    custom_defined: u32,
+    parameters_guid: [u8; 0x10],
+    custom_defined: [u8; 0x20],
 }
 
