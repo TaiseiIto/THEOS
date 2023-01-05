@@ -293,6 +293,19 @@ impl PackedExtendedBootSector {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
+
+    fn unpack(&self) -> ExtendedBootSector {
+        ExtendedBootSector {
+            boot_code: self.boot_code,
+            boot_signature: self.boot_signature,
+        }
+    }
+}
+
+impl fmt::Display for PackedExtendedBootSector {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.unpack().fmt(f)
+    }
 }
 
 #[derive(Debug)]
@@ -344,6 +357,19 @@ impl PackedOemParameters {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
+
+    fn unpack(&self) -> OemParameters {
+        OemParameters {
+            parameters: self.parameters.map(|parameter| parameter.unpack()),
+            reserved: self.reserved,
+        }
+    }
+}
+
+impl fmt::Display for PackedOemParameters {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.unpack().fmt(f)
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -375,9 +401,25 @@ impl fmt::Display for OemParameter {
     }
 }
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct PackedOemParameter {
     parameters_guid: [u8; 0x10],
     custom_defined: [u8; 0x20],
+}
+
+impl PackedOemParameter {
+    fn unpack(&self) -> OemParameter {
+        OemParameter {
+            parameters_guid: self.parameters_guid,
+            custom_defined: self.custom_defined,
+        }
+    }
+}
+
+impl fmt::Display for PackedOemParameter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.unpack().fmt(f)
+    }
 }
 
