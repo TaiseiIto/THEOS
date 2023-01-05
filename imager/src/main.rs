@@ -65,7 +65,7 @@ fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     offset += FILE_SYSTEM_NAME_SIZE;
     let must_be_zero: [u8; MUST_BE_ZERO_SIZE] = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].try_into().expect("Can't read MustBeZero.");
     offset += MUST_BE_ZERO_SIZE;
-    let partition_offset: u64 = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].iter().rev().fold(0, |partition_offset, byte| partition_offset << 8 + *byte as u64);
+    let partition_offset: u64 = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].iter().rev().fold(0, |partition_offset, byte| (partition_offset << 8) + *byte as u64);
     BootSector {
         jump_boot,
         file_system_name,
