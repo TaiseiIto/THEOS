@@ -48,6 +48,7 @@ impl fmt::Display for Args {
 #[derive(Debug)]
 struct Exfat {
     boot_sector: BootSector,
+    extended_boot_sectors: [ExtendedBootSector; 0x8],
 }
 
 impl Exfat {
@@ -55,12 +56,13 @@ impl Exfat {
         let boot_sector = BootSector::new(&boot_sector);
         Self {
             boot_sector,
+            extended_boot_sectors: [ExtendedBootSector::new(); 0x8],
         }
     }
 
     fn dump(self, dst_file: &path::Path) {
         let dst_file_name: String = dst_file.display().to_string();
-        let mut dst_file = fs::write(dst_file, self.into_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
+        fs::write(dst_file, self.into_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
     fn into_bytes(self) -> Vec<u8> {
@@ -72,7 +74,11 @@ impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = format!("{}", self.boot_sector);
         let s = s.replace("boot_sector", "exfat.boot_sector");
-        write!(f, "{}", s)
+        write!(f, "{}\n", s);
+        for extended_boot_sector in self.extended_boot_sectors {
+            write!(f, "{}\n", extended_boot_sector);
+        }
+        write!(f, "")
     }
 }
 
@@ -237,6 +243,53 @@ impl PackedBootSector {
             reserved: self.reserved,
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ExtendedBootSector {
+    boot_code: [u8; 0x1fc],
+    boot_signature: u32,
+}
+
+impl ExtendedBootSector {
+    fn new() -> Self {
+        Self {
+            boot_code: [0; 0x1fc],
+            boot_signature: 0xaa550000,
+        }
+    }
+
+    fn into_bytes(self) -> [u8; mem::size_of::<PackedExtendedBootSector>()] {
+        self.pack().into_bytes()
+    }
+
+    fn pack(self) -> PackedExtendedBootSector {
+        PackedExtendedBootSector {
+            boot_code: self.boot_code,
+            boot_signature: self.boot_signature,
+        }
+    }
+}
+
+impl fmt::Display for ExtendedBootSector {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "extended_boot_sector.boot_code = {:x?}\n", self.boot_code)?;
+        write!(f, "extended_boot_sector.boot_signature = {:x?}", self.boot_signature)
+    }
+}
+
+#[repr(packed)]
+struct PackedExtendedBootSector {
+    boot_code: [u8; 0x1fc],
+    boot_signature: u32,
+}
+
+impl PackedExtendedBootSector {
+    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
 }
