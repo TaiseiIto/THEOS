@@ -58,7 +58,8 @@ fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     let jump_boot: [u8; JUMP_BOOT_SIZE] = boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into().expect("Can't read JumpBoot.");
     offset += JUMP_BOOT_SIZE;
     let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into().expect("Can't read FileSystemName.");
-    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into().expect("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].");
+    let file_system_name: Vec<char> = file_system_name.iter().map(|c| char::from(*c)).collect();
+    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.try_into().expect("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].");
     offset += FILE_SYSTEM_NAME_SIZE;
     let must_be_zero: [u8; MUST_BE_ZERO_SIZE] = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].try_into().expect("Can't read MustBeZero.");
     BootSector {
