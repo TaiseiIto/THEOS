@@ -37,6 +37,7 @@ fn imager(args: Args) {
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
     println!("boot_sector.must_be_zero = {:x?}", boot_sector.must_be_zero);
+    println!("boot_sector.partition_offset = {:x}", boot_sector.partition_offset);
 }
 
 const SECTOR_SIZE: usize = 0x200;
@@ -49,6 +50,7 @@ struct BootSector {
     jump_boot: [u8; JUMP_BOOT_SIZE],
     file_system_name: [char; FILE_SYSTEM_NAME_SIZE],
     must_be_zero: [u8; MUST_BE_ZERO_SIZE],
+    partition_offset: u64,
 }
 
 fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
@@ -62,10 +64,13 @@ fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.try_into().expect("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].");
     offset += FILE_SYSTEM_NAME_SIZE;
     let must_be_zero: [u8; MUST_BE_ZERO_SIZE] = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].try_into().expect("Can't read MustBeZero.");
+    offset += MUST_BE_ZERO_SIZE;
+    let partition_offset: u64 = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].iter().rev().fold(0, |partition_offset, byte| partition_offset << 8 + *byte as u64);
     BootSector {
         jump_boot,
         file_system_name,
         must_be_zero,
+        partition_offset,
     }
 }
 
