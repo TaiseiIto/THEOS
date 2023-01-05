@@ -5,7 +5,10 @@ use std::path;
 
 fn main() {
     let args = Args::new(env::args());
-    let exfat = Exfat::new(args);
+    let exfat = Exfat::new(
+        path::Path::new(&args.boot_sector),
+        path::Path::new(&args.src),
+    );
 }
 
 #[derive(Debug)]
@@ -36,12 +39,7 @@ struct Exfat {
 }
 
 impl Exfat {
-    fn new(args: Args) -> Self {
-        let boot_sector = path::Path::new(&args.boot_sector);
-        let src = path::Path::new(&args.src);
-        let dst = path::Path::new(&args.dst);
-        println!("src = {}", src.display());
-        println!("dst = {}", dst.display());
+    fn new(boot_sector: &path::Path, src: &path::Path) -> Self {
         let boot_sector = BootSector::new(&boot_sector);
         println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
         println!("boot_sector.file_system_name = \"{}\"", boot_sector.file_system_name.iter().collect::<String>());
