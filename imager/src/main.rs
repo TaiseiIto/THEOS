@@ -36,6 +36,25 @@ fn imager(args: Args) {
     println!("dst = {}", dst.display());
     let boot_sector = BootSector::new(&boot_sector);
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
+    println!("boot_sector.file_system_name = \"{}\"", boot_sector.file_system_name.iter().collect::<String>());
+    println!("boot_sector.must_be_zero = {:x?}", boot_sector.must_be_zero);
+    println!("boot_sector.partition_offset = {:#x}", boot_sector.partition_offset);
+    println!("boot_sector.volume_length = {:#x}", boot_sector.volume_length);
+    println!("boot_sector.fat_offset = {:#x}", boot_sector.fat_offset);
+    println!("boot_sector.fat_length = {:#x}", boot_sector.fat_length);
+    println!("boot_sector.cluster_heap_offset = {:#x}", boot_sector.cluster_heap_offset);
+    println!("boot_sector.cluster_count = {:#x}", boot_sector.cluster_count);
+    println!("boot_sector.first_cluster_of_root_directory = {:#x}", boot_sector.first_cluster_of_root_directory);
+    println!("boot_sector.volume_serial_number = {:#x}", boot_sector.volume_serial_number);
+    println!("boot_sector.file_system_revision = {:#x}", boot_sector.file_system_revision);
+    println!("boot_sector.volume_flags = {:#x}", boot_sector.volume_flags);
+    println!("boot_sector.bytes_per_sector_shift = {:#x}", boot_sector.bytes_per_sector_shift);
+    println!("boot_sector.sector_per_cluster_shift = {:#x}", boot_sector.sector_per_cluster_shift);
+    println!("boot_sector.number_of_fats = {:#x}", boot_sector.number_of_fats);
+    println!("boot_sector.drive_select = {:#x}", boot_sector.drive_select);
+    println!("boot_sector.percent_in_use = {:#x}", boot_sector.percent_in_use);
+    println!("boot_sector.reserved = {:x?}", boot_sector.reserved);
+    println!("boot_sector.boot_code = {:x?}", boot_sector.boot_code);
     println!("boot_sector.boot_signature = {:#x}", boot_sector.boot_signature);
 }
 
