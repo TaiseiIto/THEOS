@@ -7,9 +7,7 @@ fn main() {
         Ok(args) => args,
         Err(msg) => panic!("{}", msg),
     };
-    if let Err(msg) = imager(args) {
-        panic!("{}", msg);
-    }
+    imager(args)
 }
 
 #[derive(Debug)]
@@ -44,31 +42,15 @@ fn analyse_args(mut args: env::Args) -> Result<Args, String> {
     })
 }
 
-fn imager(args: Args) -> Result<(), String> {
+fn imager(args: Args) {
     let boot_sector = path::Path::new(&args.boot_sector);
     let src = path::Path::new(&args.src);
     let dst = path::Path::new(&args.dst);
-    if !boot_sector.exists() {
-        return Err(String::from(format!("{} doesn't exist.", boot_sector.display())));
-    }
-    if boot_sector.is_dir() {
-        return Err(String::from(format!("{} is directory.", boot_sector.display())));
-    }
-    if !src.exists() {
-        return Err(String::from(format!("{} doesn't exist.", src.display())));
-    }
-    if src.is_file() {
-        return Err(String::from(format!("{} is file.", src.display())));
-    }
-    if dst.exists() {
-        return Err(String::from(format!("{} exists already.", dst.display())));
-    }
     println!("src = {}", src.display());
     println!("dst = {}", dst.display());
-    let boot_sector: BootSector = read_boot_sector(&boot_sector)?;
+    let boot_sector: BootSector = read_boot_sector(&boot_sector);
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
-    Ok(())
 }
 
 const SECTOR_SIZE: usize = 0x200;
@@ -81,32 +63,17 @@ struct BootSector {
     file_system_name: [char; FILE_SYSTEM_NAME_SIZE],
 }
 
-fn read_boot_sector(boot_sector: &path::Path) -> Result<BootSector, String> {
-    let boot_sector: Vec<u8> = match fs::read(boot_sector) {
-        Ok(boot_sector) => boot_sector,
-        Err(_) => return Err(format!("Failed to open {}", boot_sector.display())),
-    };
-    let boot_sector: [u8; SECTOR_SIZE] = match boot_sector.try_into() {
-        Ok(boot_sector) => boot_sector,
-        Err(_) => return Err(format!("The length of boot sector must be {}.", SECTOR_SIZE)),
-    };
+fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
+    let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Failed to open {}", boot_sector.display()));
+    let boot_sector: [u8; SECTOR_SIZE] = boot_sector.try_into().expect(&format!("The length of boot sector must be {}.", SECTOR_SIZE));
     let mut offset: usize = 0;
-    let jump_boot: [u8; JUMP_BOOT_SIZE] = match boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into() {
-        Ok(jump_boot) => jump_boot,
-        Err(_) => return Err(String::from("Can't read JumpBoot.")),
-    };
+    let jump_boot: [u8; JUMP_BOOT_SIZE] = boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into().expect("Can't read JumpBoot.");
     offset += JUMP_BOOT_SIZE;
-    let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = match boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into() {
-        Ok(file_system_name) => file_system_name,
-        Err(_) => return Err(String::from("Can't read FileSystemName.")),
-    };
-    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = match file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into() {
-        Ok(file_system_name) => file_system_name,
-        Err(_) => return Err(String::from("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].")),
-    };
-    Ok(BootSector {
+    let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into().expect("Can't read FileSystemName.");
+    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into().expect("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].");
+    BootSector {
         jump_boot,
         file_system_name,
-    })
+    }
 }
 
