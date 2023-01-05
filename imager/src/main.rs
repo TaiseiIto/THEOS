@@ -49,6 +49,7 @@ impl fmt::Display for Args {
 struct Exfat {
     boot_sector: BootSector,
     extended_boot_sectors: [ExtendedBootSector; 0x8],
+    oem_parameters: OemParameters,
 }
 
 impl Exfat {
@@ -57,6 +58,7 @@ impl Exfat {
         Self {
             boot_sector,
             extended_boot_sectors: [ExtendedBootSector::new(); 0x8],
+            oem_parameters: OemParameters::null_parameters(),
         }
     }
 
@@ -76,13 +78,17 @@ impl Exfat {
 
 impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let s = format!("{}", self.boot_sector);
-        let s = s.replace("boot_sector", "exfat.boot_sector");
-        write!(f, "{}\n", s);
+        let boot_sector = format!("{}", self.boot_sector);
+        let boot_sector = boot_sector.replace("boot_sector", "exfat.boot_sector");
+        write!(f, "{}\n", boot_sector)?;
         for extended_boot_sector in self.extended_boot_sectors {
-            write!(f, "{}\n", extended_boot_sector);
+            let extended_boot_sector = format!("{}", extended_boot_sector);
+            let extended_boot_sector = extended_boot_sector.replace("extended_boot_sector", "exfat.extended_boot_sector");
+            write!(f, "{}\n", extended_boot_sector)?;
         }
-        write!(f, "")
+        let oem_parameters = format!("{}", self.oem_parameters);
+        let oem_parameters = oem_parameters.replace("oem_parameters", "exfat.oem_parameters");
+        write!(f, "{}", oem_parameters)
     }
 }
 
@@ -295,6 +301,54 @@ impl PackedExtendedBootSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
+    }
+}
+
+#[derive(Debug)]
+struct OemParameters {
+    parameters: [OemParameter; 0xa],
+    reserved: [u8; 0x20],
+}
+
+impl OemParameters {
+    fn null_parameters() -> Self {
+        Self {
+            parameters: [OemParameter::null_parameter(); 0xa],
+            reserved: [0; 0x20],
+        }
+    }
+}
+
+impl fmt::Display for OemParameters {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for (i, parameter) in self.parameters.iter().enumerate() {
+            let parameter = format!("{}", parameter);
+            let parameter = parameter.replace("oem_parameter", &format!("opem_parameters.oem_parameter[{}]", i));
+            write!(f, "{}\n", parameter)?;
+        }
+        write!(f, "oem_parameters.reserved = {:x?}", self.reserved)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct OemParameter {
+    parameters_guid: u16,
+    custom_defined: u32,
+}
+
+impl OemParameter {
+    fn null_parameter() -> Self {
+        Self {
+            parameters_guid: 0,
+            custom_defined: 0,
+        }
+    }
+}
+
+impl fmt::Display for OemParameter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "oem_parameter.parameters_guid = {:#x}\n", self.parameters_guid)?;
+        write!(f, "oem_parameter.custom_defined = {:#x}", self.custom_defined)
     }
 }
 
