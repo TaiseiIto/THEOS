@@ -12,6 +12,7 @@ fn main() {
         path::Path::new(&args.src),
     );
     println!("{}", exfat);
+    exfat.dump(path::Path::new(&args.dst));
 }
 
 #[derive(Debug)]
@@ -55,6 +56,11 @@ impl Exfat {
         Self {
             boot_sector,
         }
+    }
+
+    fn dump(self, dst_file: &path::Path) {
+        let dst_file_name: String = dst_file.display().to_string();
+        let mut dst_file = fs::write(dst_file, self.into_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
     fn into_bytes(self) -> Vec<u8> {
