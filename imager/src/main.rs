@@ -42,7 +42,7 @@ fn imager(args: Args) {
 #[derive(Debug)]
 struct BootSector {
     jump_boot: [u8; 0x3],
-    file_system_name: [u8; 0x8],
+    file_system_name: [char; 0x8],
     must_be_zero: [u8; 0x35],
     partition_offset: u64,
     volume_length: u64,
@@ -108,7 +108,12 @@ impl PackedBootSector {
     fn unpack(self) -> BootSector {
         BootSector {
             jump_boot: self.jump_boot,
-            file_system_name: self.file_system_name,
+            file_system_name: self.file_system_name
+                .iter()
+                .map(|byte| char::from(*byte))
+                .collect::<Vec<char>>()
+                .try_into()
+                .expect("Can't interpret FileSystemName as [char; 0x8]"),
             must_be_zero: self.must_be_zero,
             partition_offset: self.partition_offset,
             volume_length: self.volume_length,
