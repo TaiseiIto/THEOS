@@ -66,7 +66,11 @@ impl Exfat {
     }
 
     fn into_bytes(self) -> Vec<u8> {
-        self.boot_sector.into_bytes()
+        let mut bytes: Vec<u8> = self.boot_sector.into_bytes();
+        for extended_boot_sector in self.extended_boot_sectors {
+            bytes.append(&mut extended_boot_sector.into_bytes());
+        }
+        bytes
     }
 }
 
@@ -261,8 +265,8 @@ impl ExtendedBootSector {
         }
     }
 
-    fn into_bytes(self) -> [u8; mem::size_of::<PackedExtendedBootSector>()] {
-        self.pack().into_bytes()
+    fn into_bytes(self) -> Vec<u8> {
+        self.pack().into_bytes().to_vec()
     }
 
     fn pack(self) -> PackedExtendedBootSector {
