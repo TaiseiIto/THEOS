@@ -51,16 +51,19 @@ fn imager(args: Args) {
     let boot_sector: BootSector = read_boot_sector(&boot_sector);
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
+    println!("boot_sector.must_be_zero = {:x?}", boot_sector.must_be_zero);
 }
 
 const SECTOR_SIZE: usize = 0x200;
-const JUMP_BOOT_SIZE: usize = 3;
-const FILE_SYSTEM_NAME_SIZE: usize = 8;
+const JUMP_BOOT_SIZE: usize = 0x3;
+const FILE_SYSTEM_NAME_SIZE: usize = 0x8;
+const MUST_BE_ZERO_SIZE: usize = 0x35;
 
 #[derive(Debug)]
 struct BootSector {
     jump_boot: [u8; JUMP_BOOT_SIZE],
     file_system_name: [char; FILE_SYSTEM_NAME_SIZE],
+    must_be_zero: [u8; MUST_BE_ZERO_SIZE],
 }
 
 fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
@@ -71,9 +74,12 @@ fn read_boot_sector(boot_sector: &path::Path) -> BootSector {
     offset += JUMP_BOOT_SIZE;
     let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into().expect("Can't read FileSystemName.");
     let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into().expect("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].");
+    offset += FILE_SYSTEM_NAME_SIZE;
+    let must_be_zero: [u8; MUST_BE_ZERO_SIZE] = boot_sector[offset..offset + MUST_BE_ZERO_SIZE].try_into().expect("Can't read MustBeZero.");
     BootSector {
         jump_boot,
         file_system_name,
+        must_be_zero,
     }
 }
 
