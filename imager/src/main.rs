@@ -4,7 +4,7 @@ use std::mem;
 use std::path;
 
 fn main() {
-    let args: Args = analyse_args(env::args());
+    let args = Args::new(env::args());
     let exfat = Exfat::new(args);
 }
 
@@ -15,16 +15,18 @@ struct Args {
     dst: String,
 }
 
-fn analyse_args(mut args: env::Args) -> Args {
-    let usage: String = String::from("Usage: $ ./imager /path/to/boot/sector /path/to/source/directory /path/to/destination");
-    let _my_path: String = args.next().expect(&format!("{}\n{}\n", "Program path is not specified.", usage));
-    let boot_sector: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
-    let src: String = args.next().expect(&format!("{}\n{}\n", "Source directory is not specified.", usage));
-    let dst: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
-    Args {
-        boot_sector,
-        src,
-        dst,
+impl Args {
+    fn new(mut args: env::Args) -> Self {
+        let usage: String = String::from("Usage: $ ./imager /path/to/boot/sector /path/to/source/directory /path/to/destination");
+        let _my_path: String = args.next().expect(&format!("{}\n{}\n", "Program path is not specified.", usage));
+        let boot_sector: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
+        let src: String = args.next().expect(&format!("{}\n{}\n", "Source directory is not specified.", usage));
+        let dst: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified.", usage));
+        Self {
+            boot_sector,
+            src,
+            dst,
+        }
     }
 }
 
@@ -34,7 +36,7 @@ struct Exfat {
 }
 
 impl Exfat {
-    fn new(args: Args) -> Exfat {
+    fn new(args: Args) -> Self {
         let boot_sector = path::Path::new(&args.boot_sector);
         let src = path::Path::new(&args.src);
         let dst = path::Path::new(&args.dst);
@@ -62,7 +64,7 @@ impl Exfat {
         println!("boot_sector.reserved = {:x?}", boot_sector.reserved);
         println!("boot_sector.boot_code = {:x?}", boot_sector.boot_code);
         println!("boot_sector.boot_signature = {:#x}", boot_sector.boot_signature);
-        Exfat {
+        Self {
             boot_sector,
         }
     }
