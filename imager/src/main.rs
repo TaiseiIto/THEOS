@@ -68,6 +68,10 @@ impl Exfat {
             boot_sector,
         }
     }
+
+    fn into_bytes(self) -> Vec<u8> {
+        self.boot_sector.into_bytes()
+    }
 }
 
 #[derive(Debug)]
@@ -102,6 +106,41 @@ impl BootSector {
         let boot_sector = PackedBootSector::new(boot_sector);
         boot_sector.unpack()
     }
+
+    fn into_bytes(self) -> Vec<u8> {
+        self.pack().into_bytes().to_vec()
+    }
+
+    fn pack(self) -> PackedBootSector {
+        PackedBootSector {
+            jump_boot: self.jump_boot,
+            file_system_name: self.file_system_name
+                .iter()
+                .map(|c| *c as u8)
+                .collect::<Vec<u8>>()
+                .try_into()
+                .expect("Can't interpret FileSystemName as [u8; 0x8]"),
+            must_be_zero: self.must_be_zero,
+            partition_offset: self.partition_offset,
+            volume_length: self.volume_length,
+            fat_offset: self.fat_offset,
+            fat_length: self.fat_length,
+            cluster_heap_offset: self.cluster_heap_offset,
+            cluster_count: self.cluster_count,
+            first_cluster_of_root_directory: self.first_cluster_of_root_directory,
+            volume_serial_number: self.volume_serial_number,
+            file_system_revision: self.file_system_revision,
+            volume_flags: self.volume_flags,
+            bytes_per_sector_shift: self.bytes_per_sector_shift,
+            sector_per_cluster_shift: self.sector_per_cluster_shift,
+            number_of_fats: self.number_of_fats,
+            drive_select: self.drive_select,
+            percent_in_use: self.percent_in_use,
+            reserved: self.reserved,
+            boot_code: self.boot_code,
+            boot_signature: self.boot_signature,
+        }
+    }
 }
 
 #[repr(packed)]
@@ -133,6 +172,12 @@ impl PackedBootSector {
     fn new(bytes: [u8; mem::size_of::<Self>()]) -> Self {
         unsafe {
             mem::transmute::<[u8; mem::size_of::<Self>()], Self>(bytes)
+        }
+    }
+
+    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
 
