@@ -325,7 +325,7 @@ impl OemParameters {
 
     fn pack(self) -> PackedOemParameters {
         PackedOemParameters {
-            parameters: self.parameters,
+            parameters: self.parameters.map(|parameter| parameter.pack()),
             reserved: self.reserved,
         }
     }
@@ -344,7 +344,7 @@ impl fmt::Display for OemParameters {
 
 #[repr(packed)]
 struct PackedOemParameters {
-    parameters: [OemParameter; 0xa],
+    parameters: [PackedOemParameter; 0xa],
     reserved: [u8; 0x20],
 }
 
