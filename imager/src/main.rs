@@ -65,16 +65,13 @@ fn imager(args: Args) -> Result<(), String> {
     }
     println!("src = {}", src.display());
     println!("dst = {}", dst.display());
-    let boot_sector: BootSector = match read_boot_sector(&boot_sector) {
-        Ok(boot_sector) => boot_sector,
-        Err(message) => return Err(message),
-    };
+    let boot_sector: BootSector = read_boot_sector(&boot_sector)?;
     println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
     println!("boot_sector.file_system_name = {:?}", boot_sector.file_system_name);
     Ok(())
 }
 
-const BOOT_SECTOR_SIZE: usize = 0x200;
+const SECTOR_SIZE: usize = 0x200;
 const JUMP_BOOT_SIZE: usize = 3;
 const FILE_SYSTEM_NAME_SIZE: usize = 8;
 
@@ -89,15 +86,24 @@ fn read_boot_sector(boot_sector: &path::Path) -> Result<BootSector, String> {
         Ok(boot_sector) => boot_sector,
         Err(_) => return Err(format!("Failed to open {}", boot_sector.display())),
     };
-    let boot_sector: [u8; BOOT_SECTOR_SIZE] = match boot_sector.try_into() {
+    let boot_sector: [u8; SECTOR_SIZE] = match boot_sector.try_into() {
         Ok(boot_sector) => boot_sector,
-        Err(_) => return Err(format!("The length of boot sector must be {}.", BOOT_SECTOR_SIZE)),
+        Err(_) => return Err(format!("The length of boot sector must be {}.", SECTOR_SIZE)),
     };
     let mut offset: usize = 0;
-    let jump_boot: [u8; JUMP_BOOT_SIZE] = boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into().unwrap();
+    let jump_boot: [u8; JUMP_BOOT_SIZE] = match boot_sector[offset..offset + JUMP_BOOT_SIZE].try_into() {
+        Ok(jump_boot) => jump_boot,
+        Err(_) => return Err(String::from("Can't read JumpBoot.")),
+    };
     offset += JUMP_BOOT_SIZE;
-    let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into().unwrap();
-    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into().unwrap();
+    let file_system_name: [u8; FILE_SYSTEM_NAME_SIZE] = match boot_sector[offset..offset + FILE_SYSTEM_NAME_SIZE].try_into() {
+        Ok(file_system_name) => file_system_name,
+        Err(_) => return Err(String::from("Can't read FileSystemName.")),
+    };
+    let file_system_name: [char; FILE_SYSTEM_NAME_SIZE] = match file_system_name.iter().map(|c| char::from(*c)).collect::<Vec<char>>().try_into() {
+        Ok(file_system_name) => file_system_name,
+        Err(_) => return Err(String::from("Can't interpret FileSystemName as [char; FILE_SYSTEM_NAME_SIZE].")),
+    };
     Ok(BootSector {
         jump_boot,
         file_system_name,
