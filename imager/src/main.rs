@@ -365,16 +365,16 @@ struct OemParameter {
 impl OemParameter {
     fn null_parameter() -> Self {
         Self {
-            parameters_guid: 0,
-            custom_defined: 0,
+            parameters_guid: 0x1234,
+            custom_defined: 0x12345678,
         }
     }
 
     fn into_bytes(self) -> Vec<u8> {
-        self.packed().into_bytes().to_vec()
+        self.pack().into_bytes().to_vec()
     }
 
-    fn packed(self) -> PackedOemParameter {
+    fn pack(self) -> PackedOemParameter {
         PackedOemParameter {
             parameters_guid: self.parameters_guid,
             custom_defined: self.custom_defined,
