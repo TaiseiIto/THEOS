@@ -1,14 +1,17 @@
 use std::env;
+use std::fmt;
 use std::fs;
 use std::mem;
 use std::path;
 
 fn main() {
     let args = Args::new(env::args());
+    println!("{}", args);
     let exfat = Exfat::new(
         path::Path::new(&args.boot_sector),
         path::Path::new(&args.src),
     );
+    println!("{}", exfat);
 }
 
 #[derive(Debug)]
@@ -33,6 +36,14 @@ impl Args {
     }
 }
 
+impl fmt::Display for Args {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "arg.boot_sector = {}\n", self.boot_sector)?;
+        write!(f, "arg.src = {}\n", self.src)?;
+        write!(f, "arg.dst = {}", self.dst)
+    }
+}
+
 #[derive(Debug)]
 struct Exfat {
     boot_sector: BootSector,
@@ -41,27 +52,6 @@ struct Exfat {
 impl Exfat {
     fn new(boot_sector: &path::Path, src: &path::Path) -> Self {
         let boot_sector = BootSector::new(&boot_sector);
-        println!("boot_sector.jump_boot = {:x?}", boot_sector.jump_boot);
-        println!("boot_sector.file_system_name = \"{}\"", boot_sector.file_system_name.iter().collect::<String>());
-        println!("boot_sector.must_be_zero = {:x?}", boot_sector.must_be_zero);
-        println!("boot_sector.partition_offset = {:#x}", boot_sector.partition_offset);
-        println!("boot_sector.volume_length = {:#x}", boot_sector.volume_length);
-        println!("boot_sector.fat_offset = {:#x}", boot_sector.fat_offset);
-        println!("boot_sector.fat_length = {:#x}", boot_sector.fat_length);
-        println!("boot_sector.cluster_heap_offset = {:#x}", boot_sector.cluster_heap_offset);
-        println!("boot_sector.cluster_count = {:#x}", boot_sector.cluster_count);
-        println!("boot_sector.first_cluster_of_root_directory = {:#x}", boot_sector.first_cluster_of_root_directory);
-        println!("boot_sector.volume_serial_number = {:#x}", boot_sector.volume_serial_number);
-        println!("boot_sector.file_system_revision = {:#x}", boot_sector.file_system_revision);
-        println!("boot_sector.volume_flags = {:#x}", boot_sector.volume_flags);
-        println!("boot_sector.bytes_per_sector_shift = {:#x}", boot_sector.bytes_per_sector_shift);
-        println!("boot_sector.sector_per_cluster_shift = {:#x}", boot_sector.sector_per_cluster_shift);
-        println!("boot_sector.number_of_fats = {:#x}", boot_sector.number_of_fats);
-        println!("boot_sector.drive_select = {:#x}", boot_sector.drive_select);
-        println!("boot_sector.percent_in_use = {:#x}", boot_sector.percent_in_use);
-        println!("boot_sector.reserved = {:x?}", boot_sector.reserved);
-        println!("boot_sector.boot_code = {:x?}", boot_sector.boot_code);
-        println!("boot_sector.boot_signature = {:#x}", boot_sector.boot_signature);
         Self {
             boot_sector,
         }
@@ -69,6 +59,14 @@ impl Exfat {
 
     fn into_bytes(self) -> Vec<u8> {
         self.boot_sector.into_bytes()
+    }
+}
+
+impl fmt::Display for Exfat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = format!("{}", self.boot_sector);
+        let s = s.replace("boot_sector", "exfat.boot_sector");
+        write!(f, "{}", s)
     }
 }
 
@@ -138,6 +136,32 @@ impl BootSector {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
+    }
+}
+
+impl fmt::Display for BootSector {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "boot_sector.jump_boot = {:x?}\n", self.jump_boot)?;
+        write!(f, "boot_sector.file_system_name = \"{}\"\n", self.file_system_name.iter().collect::<String>())?;
+        write!(f, "boot_sector.must_be_zero = {:x?}\n", self.must_be_zero)?;
+        write!(f, "boot_sector.partition_offset = {:#x}\n", self.partition_offset)?;
+        write!(f, "boot_sector.volume_length = {:#x}\n", self.volume_length)?;
+        write!(f, "boot_sector.fat_offset = {:#x}\n", self.fat_offset)?;
+        write!(f, "boot_sector.fat_length = {:#x}\n", self.fat_length)?;
+        write!(f, "boot_sector.cluster_heap_offset = {:#x}\n", self.cluster_heap_offset)?;
+        write!(f, "boot_sector.cluster_count = {:#x}\n", self.cluster_count)?;
+        write!(f, "boot_sector.first_cluster_of_root_directory = {:#x}\n", self.first_cluster_of_root_directory)?;
+        write!(f, "boot_sector.volume_serial_number = {:#x}\n", self.volume_serial_number)?;
+        write!(f, "boot_sector.file_system_revision = {:#x}\n", self.file_system_revision)?;
+        write!(f, "boot_sector.volume_flags = {:#x}\n", self.volume_flags)?;
+        write!(f, "boot_sector.bytes_per_sector_shift = {:#x}\n", self.bytes_per_sector_shift)?;
+        write!(f, "boot_sector.sector_per_cluster_shift = {:#x}\n", self.sector_per_cluster_shift)?;
+        write!(f, "boot_sector.number_of_fats = {:#x}\n", self.number_of_fats)?;
+        write!(f, "boot_sector.drive_select = {:#x}\n", self.drive_select)?;
+        write!(f, "boot_sector.percent_in_use = {:#x}\n", self.percent_in_use)?;
+        write!(f, "boot_sector.reserved = {:x?}\n", self.reserved)?;
+        write!(f, "boot_sector.boot_code = {:x?}\n", self.boot_code)?;
+        write!(f, "boot_sector.boot_signature = {:#x}", self.boot_signature)
     }
 }
 
