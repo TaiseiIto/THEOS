@@ -64,17 +64,17 @@ impl Exfat {
 
     fn dump(self, dst_file: &path::Path) {
         let dst_file_name: String = dst_file.display().to_string();
-        fs::write(dst_file, self.into_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
+        fs::write(dst_file, self.to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
-    fn into_bytes(self) -> Vec<u8> {
+    fn to_bytes(self) -> Vec<u8> {
         let mut sectors: Vec<Box<dyn Sector>> = vec![];
         sectors.push(Box::new(self.boot_sector));
         for extended_boot_sector in self.extended_boot_sectors {
             sectors.push(Box::new(extended_boot_sector));
         }
         sectors.push(Box::new(self.oem_parameters));
-        sectors.into_iter().map(|sector| sector.into_bytes().to_vec()).flatten().collect()
+        sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
 }
 
@@ -97,7 +97,7 @@ impl fmt::Display for Exfat {
 type RawSector = [u8; 0x200];
 
 trait Sector {
-    fn into_bytes(&self) -> RawSector;
+    fn to_bytes(&self) -> RawSector;
 }
 
 trait Packable {
@@ -145,8 +145,8 @@ impl BootSector {
 }
 
 impl Sector for BootSector {
-    fn into_bytes(&self) -> RawSector {
-        self.pack().into_bytes()
+    fn to_bytes(&self) -> RawSector {
+        self.pack().to_bytes()
     }
 }
 
@@ -271,7 +271,7 @@ impl Unpackable for PackedBootSector {
 }
 
 impl Sector for PackedBootSector {
-    fn into_bytes(&self) -> RawSector {
+    fn to_bytes(&self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -305,8 +305,8 @@ impl Packable for ExtendedBootSector {
 }
 
 impl Sector for ExtendedBootSector {
-    fn into_bytes(&self) -> RawSector {
-        self.pack().into_bytes()
+    fn to_bytes(&self) -> RawSector {
+        self.pack().to_bytes()
     }
 }
 
@@ -336,7 +336,7 @@ impl Unpackable for PackedExtendedBootSector {
 }
 
 impl Sector for PackedExtendedBootSector {
-    fn into_bytes(&self) -> RawSector {
+    fn to_bytes(&self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -376,8 +376,8 @@ impl Packable for OemParameters {
 }
 
 impl Sector for OemParameters {
-    fn into_bytes(&self) -> RawSector {
-        self.pack().into_bytes()
+    fn to_bytes(&self) -> RawSector {
+        self.pack().to_bytes()
     }
 }
 
@@ -411,7 +411,7 @@ impl Unpackable for PackedOemParameters {
 }
 
 impl Sector for PackedOemParameters {
-    fn into_bytes(&self) -> RawSector {
+    fn to_bytes(&self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
