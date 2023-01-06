@@ -99,6 +99,16 @@ trait Sector where Self: Sized {
     fn into_bytes(self) -> RawSector;
 }
 
+trait Packable where Self: Sized {
+    type Packed;
+    fn pack(&self) -> Self::Packed;
+}
+
+trait Unpackable where Self: Sized {
+    type Unpacked;
+    fn unpack(&self) -> Self::Unpacked;
+}
+
 #[derive(Debug)]
 struct BootSector {
     jump_boot: [u8; 0x3],
@@ -131,9 +141,19 @@ impl BootSector {
         let boot_sector = PackedBootSector::new(boot_sector);
         boot_sector.unpack()
     }
+}
 
-    fn pack(self) -> PackedBootSector {
-        PackedBootSector {
+impl Sector for BootSector {
+    fn into_bytes(self) -> RawSector {
+        self.pack().into_bytes()
+    }
+}
+
+impl Packable for BootSector {
+    type Packed = PackedBootSector;
+
+    fn pack(&self) -> Self::Packed {
+        Self::Packed {
             jump_boot: self.jump_boot,
             file_system_name: self.file_system_name.map(|c| c as u8),
             must_be_zero: self.must_be_zero,
@@ -156,12 +176,6 @@ impl BootSector {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
-    }
-}
-
-impl Sector for BootSector {
-    fn into_bytes(self) -> RawSector {
-        self.pack().into_bytes()
     }
 }
 
@@ -222,9 +236,13 @@ impl PackedBootSector {
             mem::transmute::<[u8; mem::size_of::<Self>()], Self>(bytes)
         }
     }
+}
 
-    fn unpack(self) -> BootSector {
-        BootSector {
+impl Unpackable for PackedBootSector {
+    type Unpacked = BootSector;
+
+    fn unpack(&self) -> Self::Unpacked {
+        Self::Unpacked {
             jump_boot: self.jump_boot,
             file_system_name: self.file_system_name.map(|byte| char::from(byte)),
             must_be_zero: self.must_be_zero,
@@ -271,9 +289,13 @@ impl ExtendedBootSector {
             boot_signature: 0xaa550000,
         }
     }
+}
 
-    fn pack(self) -> PackedExtendedBootSector {
-        PackedExtendedBootSector {
+impl Packable for ExtendedBootSector {
+    type Packed = PackedExtendedBootSector;
+
+    fn pack(&self) -> Self::Packed {
+        Self::Packed {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
@@ -299,9 +321,11 @@ struct PackedExtendedBootSector {
     boot_signature: u32,
 }
 
-impl PackedExtendedBootSector {
-    fn unpack(&self) -> ExtendedBootSector {
-        ExtendedBootSector {
+impl Unpackable for PackedExtendedBootSector {
+    type Unpacked = ExtendedBootSector;
+
+    fn unpack(&self) -> Self::Unpacked {
+        Self::Unpacked {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
@@ -335,9 +359,13 @@ impl OemParameters {
             reserved: [0; 0x20],
         }
     }
+}
 
-    fn pack(self) -> PackedOemParameters {
-        PackedOemParameters {
+impl Packable for OemParameters {
+    type Packed = PackedOemParameters;
+
+    fn pack(&self) -> Self::Packed {
+        Self::Packed {
             parameters: self.parameters.map(|parameter| parameter.pack()),
             reserved: self.reserved,
         }
@@ -367,9 +395,11 @@ struct PackedOemParameters {
     reserved: [u8; 0x20],
 }
 
-impl PackedOemParameters {
-    fn unpack(&self) -> OemParameters {
-        OemParameters {
+impl Unpackable for PackedOemParameters {
+    type Unpacked = OemParameters;
+
+    fn unpack(&self) -> Self::Unpacked {
+        Self::Unpacked {
             parameters: self.parameters.map(|parameter| parameter.unpack()),
             reserved: self.reserved,
         }
@@ -403,9 +433,13 @@ impl OemParameter {
             custom_defined: [0; 0x20],
         }
     }
+}
 
-    fn pack(self) -> PackedOemParameter {
-        PackedOemParameter {
+impl Packable for OemParameter {
+    type Packed = PackedOemParameter;
+
+    fn pack(&self) -> Self::Packed {
+        Self::Packed {
             parameters_guid: self.parameters_guid,
             custom_defined: self.custom_defined,
         }
@@ -426,9 +460,11 @@ struct PackedOemParameter {
     custom_defined: [u8; 0x20],
 }
 
-impl PackedOemParameter {
-    fn unpack(&self) -> OemParameter {
-        OemParameter {
+impl Unpackable for PackedOemParameter {
+    type Unpacked = OemParameter;
+
+    fn unpack(&self) -> Self::Unpacked {
+        Self::Unpacked {
             parameters_guid: self.parameters_guid,
             custom_defined: self.custom_defined,
         }
