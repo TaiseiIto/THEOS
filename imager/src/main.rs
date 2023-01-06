@@ -70,9 +70,7 @@ impl Exfat {
     fn to_bytes(self) -> Vec<u8> {
         let mut sectors: Vec<Box<dyn Sector>> = vec![];
         sectors.push(Box::new(self.boot_sector));
-        for extended_boot_sector in self.extended_boot_sectors {
-            sectors.push(Box::new(extended_boot_sector));
-        }
+        self.extended_boot_sectors.map(|sector| sectors.push(Box::new(sector)));
         sectors.push(Box::new(self.oem_parameters));
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
