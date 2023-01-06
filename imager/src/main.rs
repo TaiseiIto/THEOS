@@ -84,16 +84,18 @@ impl Exfat {
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut sectors: Vec<Box<dyn Sector>> = vec![];
-        sectors.push(Box::new(self.boot_sector));
-        for extended_boot_sector in self.extended_boot_sectors {
-            sectors.push(Box::new(extended_boot_sector));
-        }
-        sectors.push(Box::new(self.oem_parameter_sector));
-        sectors.push(Box::new(self.reserved_sector));
-        if let Some(boot_checksum_sector) = self.boot_checksum_sector {
-            sectors.push(Box::new(boot_checksum_sector));
-        } else {
-            panic!("Can't convert ExFAT into bytes.");
+        for _ in 0..2 {
+            sectors.push(Box::new(self.boot_sector));
+            for extended_boot_sector in self.extended_boot_sectors {
+                sectors.push(Box::new(extended_boot_sector));
+            }
+            sectors.push(Box::new(self.oem_parameter_sector));
+            sectors.push(Box::new(self.reserved_sector));
+            if let Some(boot_checksum_sector) = self.boot_checksum_sector {
+                sectors.push(Box::new(boot_checksum_sector));
+            } else {
+                panic!("Can't convert ExFAT into bytes.");
+            }
         }
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
@@ -118,7 +120,7 @@ impl fmt::Display for Exfat {
         if let Some(ref boot_checksum_sector) = self.boot_checksum_sector {
             let boot_checksum_sector = format!("{}", boot_checksum_sector);
             let boot_checksum_sector = boot_checksum_sector.replace("boot_checksum_sector", "exfat.boot_checksum_sector");
-            write!(f, "{}\n", boot_checksum_sector);
+            write!(f, "{}\n", boot_checksum_sector)?;
         }
         write!(f, "")
     }
