@@ -49,7 +49,7 @@ impl fmt::Display for Args {
 struct Exfat {
     boot_sector: BootSector,
     extended_boot_sectors: [ExtendedBootSector; 0x8],
-    oem_parameters: OemParameters,
+    oem_parameter_sector: OemParameterSector,
     reserved_sector: ReservedSector,
 }
 
@@ -59,7 +59,7 @@ impl Exfat {
         Self {
             boot_sector,
             extended_boot_sectors: [ExtendedBootSector::new(); 0x8],
-            oem_parameters: OemParameters::null_parameters(),
+            oem_parameter_sector: OemParameterSector::null_parameters(),
             reserved_sector: ReservedSector::new(),
         }
     }
@@ -75,7 +75,7 @@ impl Exfat {
         for extended_boot_sector in self.extended_boot_sectors {
             sectors.push(Box::new(extended_boot_sector));
         }
-        sectors.push(Box::new(self.oem_parameters));
+        sectors.push(Box::new(self.oem_parameter_sector));
         sectors.push(Box::new(self.reserved_sector));
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
@@ -91,9 +91,9 @@ impl fmt::Display for Exfat {
             let extended_boot_sector = extended_boot_sector.replace("extended_boot_sector", "exfat.extended_boot_sector");
             write!(f, "{}\n", extended_boot_sector)?;
         }
-        let oem_parameters = format!("{}", self.oem_parameters);
-        let oem_parameters = oem_parameters.replace("oem_parameters", "exfat.oem_parameters");
-        write!(f, "{}\n", oem_parameters);
+        let oem_parameter_sector = format!("{}", self.oem_parameter_sector);
+        let oem_parameter_sector = oem_parameter_sector.replace("oem_parameter_sector", "exfat.oem_parameter_sector");
+        write!(f, "{}\n", oem_parameter_sector);
         let reserved_sector = format!("{}", self.reserved_sector);
         let reserved_sector = reserved_sector.replace("reserved_sector", "exfat.reserved_sector");
         write!(f, "{}", reserved_sector)
@@ -356,12 +356,12 @@ impl fmt::Display for PackedExtendedBootSector {
 }
 
 #[derive(Clone, Copy, Debug)]
-struct OemParameters {
+struct OemParameterSector {
     parameters: [OemParameter; 0xa],
     reserved: [u8; 0x20],
 }
 
-impl OemParameters {
+impl OemParameterSector {
     fn null_parameters() -> Self {
         Self {
             parameters: [OemParameter::null_parameter(); 0xa],
@@ -370,8 +370,8 @@ impl OemParameters {
     }
 }
 
-impl Packable for OemParameters {
-    type Packed = PackedOemParameters;
+impl Packable for OemParameterSector {
+    type Packed = PackedOemParameterSector;
 
     fn pack(&self) -> Self::Packed {
         Self::Packed {
@@ -381,32 +381,32 @@ impl Packable for OemParameters {
     }
 }
 
-impl Sector for OemParameters {
+impl Sector for OemParameterSector {
     fn to_bytes(&self) -> RawSector {
         self.pack().to_bytes()
     }
 }
 
-impl fmt::Display for OemParameters {
+impl fmt::Display for OemParameterSector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (i, parameter) in self.parameters.iter().enumerate() {
             let parameter = format!("{}", parameter);
             let parameter = parameter.replace("oem_parameter", &format!("opem_parameters.oem_parameter[{}]", i));
             write!(f, "{}\n", parameter)?;
         }
-        write!(f, "oem_parameters.reserved = {:x?}", self.reserved)
+        write!(f, "oem_parameter_sector.reserved = {:x?}", self.reserved)
     }
 }
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
-struct PackedOemParameters {
+struct PackedOemParameterSector {
     parameters: [PackedOemParameter; 0xa],
     reserved: [u8; 0x20],
 }
 
-impl Unpackable for PackedOemParameters {
-    type Unpacked = OemParameters;
+impl Unpackable for PackedOemParameterSector {
+    type Unpacked = OemParameterSector;
 
     fn unpack(&self) -> Self::Unpacked {
         Self::Unpacked {
@@ -416,7 +416,7 @@ impl Unpackable for PackedOemParameters {
     }
 }
 
-impl Sector for PackedOemParameters {
+impl Sector for PackedOemParameterSector {
     fn to_bytes(&self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
@@ -424,7 +424,7 @@ impl Sector for PackedOemParameters {
     }
 }
 
-impl fmt::Display for PackedOemParameters {
+impl fmt::Display for PackedOemParameterSector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.unpack().fmt(f)
     }
