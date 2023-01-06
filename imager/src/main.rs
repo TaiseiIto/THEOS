@@ -93,8 +93,10 @@ impl fmt::Display for Exfat {
     }
 }
 
+type RawSector = [u8; 0x200];
+
 trait Sector where Self: Sized {
-    fn into_bytes(self) -> [u8; 0x200];
+    fn into_bytes(self) -> RawSector;
 }
 
 #[derive(Debug)]
@@ -158,7 +160,7 @@ impl BootSector {
 }
 
 impl Sector for BootSector {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -249,7 +251,7 @@ impl PackedBootSector {
 }
 
 impl Sector for PackedBootSector {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
@@ -279,7 +281,7 @@ impl ExtendedBootSector {
 }
 
 impl Sector for ExtendedBootSector {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -307,7 +309,7 @@ impl PackedExtendedBootSector {
 }
 
 impl Sector for PackedExtendedBootSector {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
@@ -343,7 +345,7 @@ impl OemParameters {
 }
 
 impl Sector for OemParameters {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -375,7 +377,7 @@ impl PackedOemParameters {
 }
 
 impl Sector for PackedOemParameters {
-    fn into_bytes(self) -> [u8; 0x200] {
+    fn into_bytes(self) -> RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
