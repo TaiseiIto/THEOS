@@ -50,6 +50,7 @@ struct Exfat {
     boot_sector: BootSector,
     extended_boot_sectors: [ExtendedBootSector; 0x8],
     oem_parameters: OemParameters,
+    reserved_sector: ReservedSector,
 }
 
 impl Exfat {
@@ -59,6 +60,7 @@ impl Exfat {
             boot_sector,
             extended_boot_sectors: [ExtendedBootSector::new(); 0x8],
             oem_parameters: OemParameters::null_parameters(),
+            reserved_sector: ReservedSector::new(),
         }
     }
 
@@ -74,6 +76,7 @@ impl Exfat {
             sectors.push(Box::new(extended_boot_sector));
         }
         sectors.push(Box::new(self.oem_parameters));
+        sectors.push(Box::new(self.reserved_sector));
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
 }
@@ -90,7 +93,10 @@ impl fmt::Display for Exfat {
         }
         let oem_parameters = format!("{}", self.oem_parameters);
         let oem_parameters = oem_parameters.replace("oem_parameters", "exfat.oem_parameters");
-        write!(f, "{}", oem_parameters)
+        write!(f, "{}\n", oem_parameters);
+        let reserved_sector = format!("{}", self.reserved_sector);
+        let reserved_sector = reserved_sector.replace("reserved_sector", "exfat.reserved_sector");
+        write!(f, "{}", reserved_sector)
     }
 }
 
@@ -478,6 +484,31 @@ impl Unpackable for PackedOemParameter {
 impl fmt::Display for PackedOemParameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.unpack().fmt(f)
+    }
+}
+
+#[derive(Debug)]
+struct ReservedSector {
+    bytes: [u8; mem::size_of::<RawSector>()],
+}
+
+impl ReservedSector {
+    fn new() -> Self {
+        Self {
+            bytes: [0; mem::size_of::<RawSector>()],
+        }
+    }
+}
+
+impl Sector for ReservedSector {
+    fn to_bytes(&self) -> RawSector {
+        self.bytes
+    }
+}
+
+impl fmt::Display for ReservedSector {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "reserved_sector.bytes = {:x?}", self.bytes)
     }
 }
 
