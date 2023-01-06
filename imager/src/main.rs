@@ -51,6 +51,7 @@ struct Exfat {
     extended_boot_sectors: [ExtendedBootSector; 0x8],
     oem_parameter_sector: OemParameterSector,
     reserved_sector: ReservedSector,
+    boot_checksum_sector: Option<BootChecksumSector>,
 }
 
 impl Exfat {
@@ -61,12 +62,24 @@ impl Exfat {
             extended_boot_sectors: [ExtendedBootSector::new(); 0x8],
             oem_parameter_sector: OemParameterSector::null_parameters(),
             reserved_sector: ReservedSector::new(),
+            boot_checksum_sector: None,
+        }
+    }
+
+    fn checksum(self) -> Self {
+        let boot_checksum_sector = BootChecksumSector::new(&self);
+        Self {
+            boot_sector: self.boot_sector,
+            extended_boot_sectors: self.extended_boot_sectors,
+            oem_parameter_sector: self.oem_parameter_sector,
+            reserved_sector: self.reserved_sector,
+            boot_checksum_sector: Some(boot_checksum_sector),
         }
     }
 
     fn dump(self, dst_file: &path::Path) {
         let dst_file_name: String = dst_file.display().to_string();
-        fs::write(dst_file, self.to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
+        fs::write(dst_file, self.checksum().to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
     fn to_bytes(&self) -> Vec<u8> {
@@ -96,7 +109,13 @@ impl fmt::Display for Exfat {
         write!(f, "{}\n", oem_parameter_sector)?;
         let reserved_sector = format!("{}", self.reserved_sector);
         let reserved_sector = reserved_sector.replace("reserved_sector", "exfat.reserved_sector");
-        write!(f, "{}", reserved_sector)
+        write!(f, "{}\n", reserved_sector)?;
+        if let Some(ref boot_checksum_sector) = self.boot_checksum_sector {
+            let boot_checksum_sector = format!("{}", boot_checksum_sector);
+            let boot_checksum_sector = boot_checksum_sector.replace("boot_checksum_sector", "exfat.boot_checksum_sector");
+            write!(f, "{}\n", boot_checksum_sector);
+        }
+        write!(f, "")
     }
 }
 
@@ -512,6 +531,7 @@ impl fmt::Display for ReservedSector {
     }
 }
 
+#[derive(Debug)]
 struct BootChecksumSector {
     checksum: [u32; mem::size_of::<RawSector>() / mem::size_of::<u32>()],
 }
@@ -543,6 +563,12 @@ impl BootChecksumSector {
         Self {
             checksum: [checksum; 0x80],
         }
+    }
+}
+
+impl fmt::Display for BootChecksumSector {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "boot_checksum_sector.checksum = {:x?}", self.checksum)
     }
 }
 
