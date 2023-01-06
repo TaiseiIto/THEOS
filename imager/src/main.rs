@@ -68,12 +68,13 @@ impl Exfat {
     }
 
     fn into_bytes(self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = self.boot_sector.into_bytes().to_vec();
+        let mut sectors: Vec<Box<dyn Sector>> = vec![];
+        sectors.push(Box::new(self.boot_sector));
         for extended_boot_sector in self.extended_boot_sectors {
-            bytes.append(&mut extended_boot_sector.into_bytes().to_vec());
+            sectors.push(Box::new(extended_boot_sector));
         }
-        bytes.append(&mut self.oem_parameters.into_bytes().to_vec());
-        bytes
+        sectors.push(Box::new(self.oem_parameters));
+        sectors.into_iter().map(|sector| sector.into_bytes().to_vec()).flatten().collect()
     }
 }
 
@@ -95,21 +96,21 @@ impl fmt::Display for Exfat {
 
 type RawSector = [u8; 0x200];
 
-trait Sector where Self: Sized {
-    fn into_bytes(self) -> RawSector;
+trait Sector {
+    fn into_bytes(&self) -> RawSector;
 }
 
-trait Packable where Self: Sized {
+trait Packable {
     type Packed;
     fn pack(&self) -> Self::Packed;
 }
 
-trait Unpackable where Self: Sized {
+trait Unpackable {
     type Unpacked;
     fn unpack(&self) -> Self::Unpacked;
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 struct BootSector {
     jump_boot: [u8; 0x3],
     file_system_name: [char; 0x8],
@@ -144,7 +145,7 @@ impl BootSector {
 }
 
 impl Sector for BootSector {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -205,6 +206,7 @@ impl fmt::Display for BootSector {
     }
 }
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct PackedBootSector {
     jump_boot: [u8; 0x3],
@@ -269,9 +271,9 @@ impl Unpackable for PackedBootSector {
 }
 
 impl Sector for PackedBootSector {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
     }
 }
@@ -303,7 +305,7 @@ impl Packable for ExtendedBootSector {
 }
 
 impl Sector for ExtendedBootSector {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -315,6 +317,7 @@ impl fmt::Display for ExtendedBootSector {
     }
 }
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct PackedExtendedBootSector {
     boot_code: [u8; 0x1fc],
@@ -333,9 +336,9 @@ impl Unpackable for PackedExtendedBootSector {
 }
 
 impl Sector for PackedExtendedBootSector {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
     }
 }
@@ -346,7 +349,7 @@ impl fmt::Display for PackedExtendedBootSector {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 struct OemParameters {
     parameters: [OemParameter; 0xa],
     reserved: [u8; 0x20],
@@ -373,7 +376,7 @@ impl Packable for OemParameters {
 }
 
 impl Sector for OemParameters {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         self.pack().into_bytes()
     }
 }
@@ -389,6 +392,7 @@ impl fmt::Display for OemParameters {
     }
 }
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct PackedOemParameters {
     parameters: [PackedOemParameter; 0xa],
@@ -407,9 +411,9 @@ impl Unpackable for PackedOemParameters {
 }
 
 impl Sector for PackedOemParameters {
-    fn into_bytes(self) -> RawSector {
+    fn into_bytes(&self) -> RawSector {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
     }
 }
