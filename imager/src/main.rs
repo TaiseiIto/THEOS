@@ -68,11 +68,11 @@ impl Exfat {
     }
 
     fn into_bytes(self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = self.boot_sector.into_bytes();
+        let mut bytes: Vec<u8> = self.boot_sector.into_bytes().to_vec();
         for extended_boot_sector in self.extended_boot_sectors {
-            bytes.append(&mut extended_boot_sector.into_bytes());
+            bytes.append(&mut extended_boot_sector.into_bytes().to_vec());
         }
-        bytes.append(&mut self.oem_parameters.into_bytes());
+        bytes.append(&mut self.oem_parameters.into_bytes().to_vec());
         bytes
     }
 }
@@ -91,6 +91,10 @@ impl fmt::Display for Exfat {
         let oem_parameters = oem_parameters.replace("oem_parameters", "exfat.oem_parameters");
         write!(f, "{}", oem_parameters)
     }
+}
+
+trait Sector where Self: Sized {
+    fn into_bytes(self) -> [u8; 0x200];
 }
 
 #[derive(Debug)]
@@ -126,10 +130,6 @@ impl BootSector {
         boot_sector.unpack()
     }
 
-    fn into_bytes(self) -> Vec<u8> {
-        self.pack().into_bytes().to_vec()
-    }
-
     fn pack(self) -> PackedBootSector {
         PackedBootSector {
             jump_boot: self.jump_boot,
@@ -154,6 +154,12 @@ impl BootSector {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
+    }
+}
+
+impl Sector for BootSector {
+    fn into_bytes(self) -> [u8; 0x200] {
+        self.pack().into_bytes()
     }
 }
 
@@ -215,12 +221,6 @@ impl PackedBootSector {
         }
     }
 
-    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
-        }
-    }
-
     fn unpack(self) -> BootSector {
         BootSector {
             jump_boot: self.jump_boot,
@@ -248,6 +248,14 @@ impl PackedBootSector {
     }
 }
 
+impl Sector for PackedBootSector {
+    fn into_bytes(self) -> [u8; 0x200] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 struct ExtendedBootSector {
     boot_code: [u8; 0x1fc],
@@ -262,15 +270,17 @@ impl ExtendedBootSector {
         }
     }
 
-    fn into_bytes(self) -> Vec<u8> {
-        self.pack().into_bytes().to_vec()
-    }
-
     fn pack(self) -> PackedExtendedBootSector {
         PackedExtendedBootSector {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
         }
+    }
+}
+
+impl Sector for ExtendedBootSector {
+    fn into_bytes(self) -> [u8; 0x200] {
+        self.pack().into_bytes()
     }
 }
 
@@ -288,16 +298,18 @@ struct PackedExtendedBootSector {
 }
 
 impl PackedExtendedBootSector {
-    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
-        }
-    }
-
     fn unpack(&self) -> ExtendedBootSector {
         ExtendedBootSector {
             boot_code: self.boot_code,
             boot_signature: self.boot_signature,
+        }
+    }
+}
+
+impl Sector for PackedExtendedBootSector {
+    fn into_bytes(self) -> [u8; 0x200] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
 }
@@ -322,15 +334,17 @@ impl OemParameters {
         }
     }
 
-    fn into_bytes(self) -> Vec<u8> {
-        self.pack().into_bytes().to_vec()
-    }
-
     fn pack(self) -> PackedOemParameters {
         PackedOemParameters {
             parameters: self.parameters.map(|parameter| parameter.pack()),
             reserved: self.reserved,
         }
+    }
+}
+
+impl Sector for OemParameters {
+    fn into_bytes(self) -> [u8; 0x200] {
+        self.pack().into_bytes()
     }
 }
 
@@ -352,16 +366,18 @@ struct PackedOemParameters {
 }
 
 impl PackedOemParameters {
-    fn into_bytes(self) -> [u8; mem::size_of::<Self>()] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
-        }
-    }
-
     fn unpack(&self) -> OemParameters {
         OemParameters {
             parameters: self.parameters.map(|parameter| parameter.unpack()),
             reserved: self.reserved,
+        }
+    }
+}
+
+impl Sector for PackedOemParameters {
+    fn into_bytes(self) -> [u8; 0x200] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(self)
         }
     }
 }
