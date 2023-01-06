@@ -69,7 +69,7 @@ impl Exfat {
         fs::write(dst_file, self.to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
-    fn to_bytes(self) -> Vec<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut sectors: Vec<Box<dyn Sector>> = vec![];
         sectors.push(Box::new(self.boot_sector));
         for extended_boot_sector in self.extended_boot_sectors {
@@ -93,7 +93,7 @@ impl fmt::Display for Exfat {
         }
         let oem_parameter_sector = format!("{}", self.oem_parameter_sector);
         let oem_parameter_sector = oem_parameter_sector.replace("oem_parameter_sector", "exfat.oem_parameter_sector");
-        write!(f, "{}\n", oem_parameter_sector);
+        write!(f, "{}\n", oem_parameter_sector)?;
         let reserved_sector = format!("{}", self.reserved_sector);
         let reserved_sector = reserved_sector.replace("reserved_sector", "exfat.reserved_sector");
         write!(f, "{}", reserved_sector)
@@ -487,7 +487,7 @@ impl fmt::Display for PackedOemParameter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 struct ReservedSector {
     bytes: [u8; mem::size_of::<RawSector>()],
 }
@@ -509,6 +509,40 @@ impl Sector for ReservedSector {
 impl fmt::Display for ReservedSector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "reserved_sector.bytes = {:x?}", self.bytes)
+    }
+}
+
+struct BootChecksumSector {
+    checksum: [u32; mem::size_of::<RawSector>() / mem::size_of::<u32>()],
+}
+
+impl BootChecksumSector {
+    fn new(exfat: &Exfat) -> Self {
+        let mut sectors: Vec<Box<dyn Sector>> = vec![];
+        sectors.push(Box::new(exfat.boot_sector));
+        for extended_boot_sector in exfat.extended_boot_sectors {
+            sectors.push(Box::new(extended_boot_sector));
+        }
+        sectors.push(Box::new(exfat.oem_parameter_sector));
+        sectors.push(Box::new(exfat.reserved_sector));
+        let checksum: u32 = sectors
+            .into_iter()
+            .map(|sector| sector.to_bytes().to_vec())
+            .flatten()
+            .enumerate()
+            .filter(|(i, _)| match i {
+                106 | 107 | 112 => false,
+                _ => true,
+            })
+            .map(|(_, byte)| byte)
+            .fold(0 as u32, |checksum, byte| match checksum & 1 {
+                1 => 0x80000000,
+                0 => 0,
+                _ => panic!("Can't create checksum sector."),
+            } + (checksum >> 1) + (byte as u32));
+        Self {
+            checksum: [checksum; 0x80],
+        }
     }
 }
 
