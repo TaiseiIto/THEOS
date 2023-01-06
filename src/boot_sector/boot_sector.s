@@ -44,7 +44,7 @@ bytes_per_sector_shift:
 	.byte	0x09
 
 sectors_per_cluster_shift:
-	.byte	0x08
+	.byte	0x03
 
 number_of_fats:
 	.byte	0x02
