@@ -63,7 +63,7 @@ impl Exfat {
             oem_parameter_sector: OemParameterSector::null_parameters(),
             reserved_sector: ReservedSector::new(),
             boot_checksum_sector: None,
-        }
+        }.checksum()
     }
 
     fn checksum(self) -> Self {
@@ -79,7 +79,7 @@ impl Exfat {
 
     fn dump(self, dst_file: &path::Path) {
         let dst_file_name: String = dst_file.display().to_string();
-        fs::write(dst_file, self.checksum().to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
+        fs::write(dst_file, self.to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
 
     fn to_bytes(&self) -> Vec<u8> {
@@ -90,6 +90,11 @@ impl Exfat {
         }
         sectors.push(Box::new(self.oem_parameter_sector));
         sectors.push(Box::new(self.reserved_sector));
+        if let Some(boot_checksum_sector) = self.boot_checksum_sector {
+            sectors.push(Box::new(boot_checksum_sector));
+        } else {
+            panic!("Can't convert ExFAT into bytes.");
+        }
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
 }
@@ -531,7 +536,7 @@ impl fmt::Display for ReservedSector {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 struct BootChecksumSector {
     checksum: [u32; mem::size_of::<RawSector>() / mem::size_of::<u32>()],
 }
@@ -562,6 +567,14 @@ impl BootChecksumSector {
             } + (checksum >> 1) + (byte as u32));
         Self {
             checksum: [checksum; 0x80],
+        }
+    }
+}
+
+impl Sector for BootChecksumSector {
+    fn to_bytes(&self) -> RawSector {
+        unsafe {
+            mem::transmute::<Self, RawSector>(*self)
         }
     }
 }
