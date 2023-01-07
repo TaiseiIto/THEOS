@@ -35,21 +35,26 @@ impl Sectors for UpcaseTable {
             .filter(|(c, u)| c != u)
             .collect::<Vec<(u16, u16)>>();
         map.sort_by(|(left, _), (right, _)| left.partial_cmp(&right).unwrap());
-        let (mut bytes, last_c): (Vec<u16>, u16) = map
+        let (mut words, last_c): (Vec<u16>, u16) = map
             .iter()
-            .fold((vec![], 0), |(bytes, last_c), (c, u)| {
-                let mut bytes: Vec<u16> = bytes;
+            .fold((vec![], 0), |(words, last_c), (c, u)| {
+                let mut words: Vec<u16> = words;
                 if last_c + 1 < *c {
-                    bytes.push(0xffff);
-                    bytes.push(c - last_c);
+                    words.push(0xffff);
+                    words.push(c - last_c);
                 }
-                bytes.push(*u);
-                (bytes, *c)
+                words.push(*u);
+                (words, *c)
             });
         if last_c != 0xffff {
-            bytes.push(0xffff);
-            bytes.push(0 - last_c);
+            words.push(0xffff);
+            words.push(0 - last_c);
         }
+        let bytes: Vec<u8> = words
+            .iter()
+            .map(|w| vec![*w as u8, (*w >> 8) as u8])
+            .flatten()
+            .collect();
         vec![]
     }
 }
