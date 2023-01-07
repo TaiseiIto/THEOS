@@ -1,7 +1,9 @@
-use std::fmt;
-use std::fs;
-use std::mem;
-use std::path;
+use std::{
+    fmt,
+    fs,
+    mem,
+    path,
+};
 
 mod boot_sector;
 mod extended_boot_sector;

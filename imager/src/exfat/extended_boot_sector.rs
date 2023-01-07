@@ -1,7 +1,12 @@
-use std::fmt;
-use std::mem;
-use super::Packable;
-use super::Unpackable;
+use std::{
+    fmt,
+    mem,
+};
+use super::{
+        Sector,
+        Packable,
+        Unpackable,
+    };
 
 #[derive(Clone, Copy, Debug)]
 pub struct ExtendedBootSector {
@@ -29,7 +34,7 @@ impl Packable for ExtendedBootSector {
     }
 }
 
-impl super::Sector for ExtendedBootSector {
+impl Sector for ExtendedBootSector {
     fn to_bytes(&self) -> super::RawSector {
         self.pack().to_bytes()
     }
@@ -60,7 +65,7 @@ impl Unpackable for PackedExtendedBootSector {
     }
 }
 
-impl super::Sector for PackedExtendedBootSector {
+impl Sector for PackedExtendedBootSector {
     fn to_bytes(&self) -> super::RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)

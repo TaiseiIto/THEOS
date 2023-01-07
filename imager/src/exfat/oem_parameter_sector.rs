@@ -1,4 +1,12 @@
-use super::*;
+use std::{
+    fmt,
+    mem,
+};
+use super::{
+    Sector,
+    Packable,
+    Unpackable,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct OemParameterSector {
@@ -27,7 +35,7 @@ impl Packable for OemParameterSector {
 }
 
 impl Sector for OemParameterSector {
-    fn to_bytes(&self) -> RawSector {
+    fn to_bytes(&self) -> super::RawSector {
         self.pack().to_bytes()
     }
 }
@@ -62,7 +70,7 @@ impl Unpackable for PackedOemParameterSector {
 }
 
 impl Sector for PackedOemParameterSector {
-    fn to_bytes(&self) -> RawSector {
+    fn to_bytes(&self) -> super::RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }

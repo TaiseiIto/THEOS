@@ -1,6 +1,8 @@
-use std::env;
-use std::fmt;
-use std::path;
+use std::{
+    env,
+    fmt,
+    path,
+};
 
 mod exfat;
 
