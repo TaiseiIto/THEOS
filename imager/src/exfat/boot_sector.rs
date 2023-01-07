@@ -1,4 +1,9 @@
-use super::*;
+use std::fmt;
+use std::fs;
+use std::mem;
+use std::path;
+use super::Packable;
+use super::Unpackable;
 
 #[derive(Clone, Copy, Debug)]
 pub struct BootSector {
@@ -34,13 +39,13 @@ impl BootSector {
     }
 }
 
-impl Sector for BootSector {
-    fn to_bytes(&self) -> RawSector {
+impl super::Sector for BootSector {
+    fn to_bytes(&self) -> super::RawSector {
         self.pack().to_bytes()
     }
 }
 
-impl Packable for BootSector {
+impl super::Packable for BootSector {
     type Packed = PackedBootSector;
 
     fn pack(&self) -> Self::Packed {
@@ -130,7 +135,7 @@ impl PackedBootSector {
     }
 }
 
-impl Unpackable for PackedBootSector {
+impl super::Unpackable for PackedBootSector {
     type Unpacked = BootSector;
 
     fn unpack(&self) -> Self::Unpacked {
@@ -160,12 +165,11 @@ impl Unpackable for PackedBootSector {
     }
 }
 
-impl Sector for PackedBootSector {
-    fn to_bytes(&self) -> RawSector {
+impl super::Sector for PackedBootSector {
+    fn to_bytes(&self) -> super::RawSector {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
     }
 }
-
 
