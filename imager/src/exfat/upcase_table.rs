@@ -61,7 +61,7 @@ impl Sectors for UpcaseTable {
         while bytes.len() % mem::size_of::<super::RawSector>() != 0 {
             bytes.push(0x0000);
         }
-        let sectors: Vec<super::RawSector> = bytes
+        bytes
             .chunks(mem::size_of::<super::RawSector>())
             .map(|bytes| {
                 let mut sector: super::RawSector = [0; mem::size_of::<super::RawSector>()];
@@ -70,8 +70,7 @@ impl Sectors for UpcaseTable {
                 }
                 sector
             })
-            .collect();
-        vec![]
+            .collect()
     }
 }
 
