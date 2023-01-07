@@ -13,7 +13,7 @@ pub struct UpcaseTable {
 impl UpcaseTable {
     pub fn new() -> Self {
         Self {
-            map: (0x0000..0xffff)
+            map: (0x0000..0x007f)
                 .filter_map(|n| std::char::from_u32(n))
                 .map(|c| (c, c.to_uppercase().collect()))
                 .collect(),
