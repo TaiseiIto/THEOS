@@ -3,10 +3,10 @@ use std::{
     mem,
 };
 use super::{
-        Sector,
-        Packable,
-        Unpackable,
-    };
+    Sector,
+    Packable,
+    Unpackable,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct ExtendedBootSector {

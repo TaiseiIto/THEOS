@@ -8,13 +8,14 @@ use std::{
 mod boot_sector;
 mod extended_boot_sector;
 mod oem_parameter_sector;
+mod reserved_sector;
 
 #[derive(Debug)]
 pub struct Exfat {
     boot_sector: boot_sector::BootSector,
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; 0x8],
     oem_parameter_sector: oem_parameter_sector::OemParameterSector,
-    reserved_sector: ReservedSector,
+    reserved_sector: reserved_sector::ReservedSector,
     boot_checksum_sector: Option<BootChecksumSector>,
 }
 
@@ -25,7 +26,7 @@ impl Exfat {
             boot_sector,
             extended_boot_sectors: [extended_boot_sector::ExtendedBootSector::new(); 0x8],
             oem_parameter_sector: oem_parameter_sector::OemParameterSector::null_parameters(),
-            reserved_sector: ReservedSector::new(),
+            reserved_sector: reserved_sector::ReservedSector::new(),
             boot_checksum_sector: None,
         }.checksum()
     }
@@ -104,31 +105,6 @@ trait Packable {
 trait Unpackable {
     type Unpacked;
     fn unpack(&self) -> Self::Unpacked;
-}
-
-#[derive(Clone, Copy, Debug)]
-struct ReservedSector {
-    bytes: [u8; mem::size_of::<RawSector>()],
-}
-
-impl ReservedSector {
-    fn new() -> Self {
-        Self {
-            bytes: [0; mem::size_of::<RawSector>()],
-        }
-    }
-}
-
-impl Sector for ReservedSector {
-    fn to_bytes(&self) -> RawSector {
-        self.bytes
-    }
-}
-
-impl fmt::Display for ReservedSector {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "reserved_sector.bytes = {:x?}", self.bytes)
-    }
 }
 
 #[derive(Clone, Copy, Debug)]
