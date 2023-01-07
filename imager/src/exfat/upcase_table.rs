@@ -18,7 +18,7 @@ impl UpcaseTable {
 
 impl Sectors for UpcaseTable {
     fn to_bytes(&self) -> Vec<super::RawSector> {
-        let mut bytes: Vec<(u16, u16)> = self.map
+        let mut map: Vec<(u16, u16)> = self.map
             .iter()
             .map(|(c, u)| (*c as u16, u.as_bytes().to_vec()))
             .filter(|(_, u)| 2 <= u.len())
@@ -34,19 +34,22 @@ impl Sectors for UpcaseTable {
             })
             .filter(|(c, u)| c != u)
             .collect::<Vec<(u16, u16)>>();
-        bytes.sort_by(|(left, _), (right, _)| left.partial_cmp(&right).unwrap());
-        let bytes: Vec<u16> = bytes
+        map.sort_by(|(left, _), (right, _)| left.partial_cmp(&right).unwrap());
+        let (mut bytes, last_c): (Vec<u16>, u16) = map
             .iter()
             .fold((vec![], 0), |(bytes, last_c), (c, u)| {
                 let mut bytes: Vec<u16> = bytes;
                 if last_c + 1 < *c {
                     bytes.push(0xffff);
-                    bytes.push(c - (last_c + 1));
+                    bytes.push(c - last_c);
                 }
                 bytes.push(*u);
                 (bytes, *c)
-            })
-            .0;
+            });
+        if last_c != 0xffff {
+            bytes.push(0xffff);
+            bytes.push(0 - last_c);
+        }
         vec![]
     }
 }
