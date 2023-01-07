@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt,
     mem,
 };
 use super::Sectors;
@@ -73,6 +74,15 @@ impl Sectors for UpcaseTable {
                 sector
             })
             .collect()
+    }
+}
+
+impl fmt::Display for UpcaseTable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for (c, s) in &self.map {
+            write!(f, "to_upper('{}') = '{}'\n", c, s)?;
+        }
+        write!(f, "")
     }
 }
 

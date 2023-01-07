@@ -92,7 +92,7 @@ impl fmt::Display for Exfat {
             let boot_checksum_sector = boot_checksum_sector.replace("boot_checksum_sector", "exfat.boot_checksum_sector");
             write!(f, "{}\n", boot_checksum_sector)?;
         }
-        write!(f, "")
+        write!(f, "{}", self.upcase_table)
     }
 }
 
