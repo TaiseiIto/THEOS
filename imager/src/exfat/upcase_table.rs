@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    mem,
+};
 use super::Sectors;
 
 pub struct UpcaseTable {
@@ -50,11 +53,14 @@ impl Sectors for UpcaseTable {
             words.push(0xffff);
             words.push(0 - last_c);
         }
-        let bytes: Vec<u8> = words
+        let mut bytes: Vec<u8> = words
             .iter()
             .map(|w| vec![*w as u8, (*w >> 8) as u8])
             .flatten()
             .collect();
+        while bytes.len() % mem::size_of::<super::RawSector>() != 0 {
+            bytes.push(0x0000);
+        }
         vec![]
     }
 }
