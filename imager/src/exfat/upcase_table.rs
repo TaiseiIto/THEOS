@@ -70,8 +70,7 @@ impl Sectors for UpcaseTable {
                 for i in 0..mem::size_of::<super::RawSector>() {
                     sector[i] = bytes[i];
                 }
-                let sector: Box<dyn super::Sector> = Box::new(sector);
-                sector
+                Box::new(sector) as Box<dyn super::Sector>
             })
             .collect()
     }
