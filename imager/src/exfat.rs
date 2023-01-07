@@ -18,6 +18,7 @@ pub struct Exfat {
     oem_parameter_sector: oem_parameter_sector::OemParameterSector,
     reserved_sector: reserved_sector::ReservedSector,
     boot_checksum_sector: Option<boot_checksum_sector::BootChecksumSector>,
+    upcase_table: upcase_table::UpcaseTable,
 }
 
 impl Exfat {
@@ -29,6 +30,7 @@ impl Exfat {
             oem_parameter_sector: oem_parameter_sector::OemParameterSector::null_parameters(),
             reserved_sector: reserved_sector::ReservedSector::new(),
             boot_checksum_sector: None,
+            upcase_table: upcase_table::UpcaseTable::new(),
         }.checksum()
     }
 
@@ -40,6 +42,7 @@ impl Exfat {
             oem_parameter_sector: self.oem_parameter_sector,
             reserved_sector: self.reserved_sector,
             boot_checksum_sector: Some(boot_checksum_sector),
+            upcase_table: self.upcase_table,
         }
     }
 
@@ -63,6 +66,7 @@ impl Exfat {
                 panic!("Can't convert ExFAT into bytes.");
             }
         }
+        sectors.append(&mut self.upcase_table.to_sectors());
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
     }
 }
@@ -98,8 +102,14 @@ trait Sector {
     fn to_bytes(&self) -> RawSector;
 }
 
+impl Sector for RawSector {
+    fn to_bytes(&self) -> RawSector {
+        *self
+    }
+}
+
 trait Sectors {
-    fn to_bytes(&self) -> Vec<RawSector>;
+    fn to_sectors(&self) -> Vec<Box<dyn Sector>>;
 }
 
 trait Packable {

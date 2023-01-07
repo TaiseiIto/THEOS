@@ -4,6 +4,7 @@ use std::{
 };
 use super::Sectors;
 
+#[derive(Debug)]
 pub struct UpcaseTable {
     map: HashMap<char, String>,
 }
@@ -20,7 +21,7 @@ impl UpcaseTable {
 }
 
 impl Sectors for UpcaseTable {
-    fn to_bytes(&self) -> Vec<super::RawSector> {
+    fn to_sectors(&self) -> Vec<Box<dyn super::Sector>> {
         let mut map: Vec<(u16, u16)> = self.map
             .iter()
             .map(|(c, u)| (*c as u16, u.as_bytes().to_vec()))
@@ -68,6 +69,7 @@ impl Sectors for UpcaseTable {
                 for i in 0..mem::size_of::<super::RawSector>() {
                     sector[i] = bytes[i];
                 }
+                let sector: Box<dyn super::Sector> = Box::new(sector);
                 sector
             })
             .collect()
