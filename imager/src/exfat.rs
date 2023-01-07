@@ -5,12 +5,13 @@ use std::path;
 
 mod boot_sector;
 mod extended_boot_sector;
+mod oem_parameter_sector;
 
 #[derive(Debug)]
 pub struct Exfat {
     boot_sector: boot_sector::BootSector,
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; 0x8],
-    oem_parameter_sector: OemParameterSector,
+    oem_parameter_sector: oem_parameter_sector::OemParameterSector,
     reserved_sector: ReservedSector,
     boot_checksum_sector: Option<BootChecksumSector>,
 }
@@ -21,7 +22,7 @@ impl Exfat {
         Self {
             boot_sector,
             extended_boot_sectors: [extended_boot_sector::ExtendedBootSector::new(); 0x8],
-            oem_parameter_sector: OemParameterSector::null_parameters(),
+            oem_parameter_sector: oem_parameter_sector::OemParameterSector::null_parameters(),
             reserved_sector: ReservedSector::new(),
             boot_checksum_sector: None,
         }.checksum()
@@ -101,138 +102,6 @@ trait Packable {
 trait Unpackable {
     type Unpacked;
     fn unpack(&self) -> Self::Unpacked;
-}
-
-#[derive(Clone, Copy, Debug)]
-struct OemParameterSector {
-    parameters: [OemParameter; 0xa],
-    reserved: [u8; 0x20],
-}
-
-impl OemParameterSector {
-    fn null_parameters() -> Self {
-        Self {
-            parameters: [OemParameter::null_parameter(); 0xa],
-            reserved: [0; 0x20],
-        }
-    }
-}
-
-impl Packable for OemParameterSector {
-    type Packed = PackedOemParameterSector;
-
-    fn pack(&self) -> Self::Packed {
-        Self::Packed {
-            parameters: self.parameters.map(|parameter| parameter.pack()),
-            reserved: self.reserved,
-        }
-    }
-}
-
-impl Sector for OemParameterSector {
-    fn to_bytes(&self) -> RawSector {
-        self.pack().to_bytes()
-    }
-}
-
-impl fmt::Display for OemParameterSector {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for (i, parameter) in self.parameters.iter().enumerate() {
-            let parameter = format!("{}", parameter);
-            let parameter = parameter.replace("oem_parameter", &format!("opem_parameters.oem_parameter[{}]", i));
-            write!(f, "{}\n", parameter)?;
-        }
-        write!(f, "oem_parameter_sector.reserved = {:x?}", self.reserved)
-    }
-}
-
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct PackedOemParameterSector {
-    parameters: [PackedOemParameter; 0xa],
-    reserved: [u8; 0x20],
-}
-
-impl Unpackable for PackedOemParameterSector {
-    type Unpacked = OemParameterSector;
-
-    fn unpack(&self) -> Self::Unpacked {
-        Self::Unpacked {
-            parameters: self.parameters.map(|parameter| parameter.unpack()),
-            reserved: self.reserved,
-        }
-    }
-}
-
-impl Sector for PackedOemParameterSector {
-    fn to_bytes(&self) -> RawSector {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
-        }
-    }
-}
-
-impl fmt::Display for PackedOemParameterSector {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.unpack().fmt(f)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-struct OemParameter {
-    parameters_guid: [u8; 0x10],
-    custom_defined: [u8; 0x20],
-}
-
-impl OemParameter {
-    fn null_parameter() -> Self {
-        Self {
-            parameters_guid: [0; 0x10],
-            custom_defined: [0; 0x20],
-        }
-    }
-}
-
-impl Packable for OemParameter {
-    type Packed = PackedOemParameter;
-
-    fn pack(&self) -> Self::Packed {
-        Self::Packed {
-            parameters_guid: self.parameters_guid,
-            custom_defined: self.custom_defined,
-        }
-    }
-}
-
-impl fmt::Display for OemParameter {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "oem_parameter.parameters_guid = {:x?}\n", self.parameters_guid)?;
-        write!(f, "oem_parameter.custom_defined = {:x?}", self.custom_defined)
-    }
-}
-
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct PackedOemParameter {
-    parameters_guid: [u8; 0x10],
-    custom_defined: [u8; 0x20],
-}
-
-impl Unpackable for PackedOemParameter {
-    type Unpacked = OemParameter;
-
-    fn unpack(&self) -> Self::Unpacked {
-        Self::Unpacked {
-            parameters_guid: self.parameters_guid,
-            custom_defined: self.custom_defined,
-        }
-    }
-}
-
-impl fmt::Display for PackedOemParameter {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.unpack().fmt(f)
-    }
 }
 
 #[derive(Clone, Copy, Debug)]
