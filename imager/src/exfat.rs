@@ -9,6 +9,7 @@ mod boot_sector;
 mod extended_boot_sector;
 mod oem_parameter_sector;
 mod reserved_sector;
+mod upcase_table;
 
 #[derive(Debug)]
 pub struct Exfat {
@@ -95,6 +96,10 @@ type RawSector = [u8; 0x200];
 
 trait Sector {
     fn to_bytes(&self) -> RawSector;
+}
+
+trait Sectors {
+    fn to_bytes(&self) -> Vec<RawSector>;
 }
 
 trait Packable {
