@@ -1,5 +1,5 @@
 TARGET = target/release/imager
-SOURCE = src/main.rs
+SOURCE = $(shell find src | grep ^.*\.rs$$)
 
 all: $(TARGET)
 
