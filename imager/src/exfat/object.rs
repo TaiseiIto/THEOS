@@ -1,6 +1,10 @@
 use std::{
     fmt,
     fs,
+    io::{
+        BufReader,
+        Read,
+    },
     path,
 };
 
@@ -15,7 +19,7 @@ pub struct Object {
 impl Object {
     pub fn new(path: path::PathBuf) -> Self {
         if !path.exists() {
-            panic!("No such a file or directory \"{}\".", path.display());
+            panic!("\"{}\" is not found.", path.display());
         }
         Self {
             path: path.to_path_buf(),
@@ -27,7 +31,13 @@ impl Object {
                 None => String::from(""),
             },
             content: if path.is_file() {
-                FileOrDirectory::File
+                let file = fs::File::open(&path).expect(&format!("\"{}\" is not found.", path.display()));
+                let mut file = BufReader::new(file);
+                let mut bytes = Vec::<u8>::new();
+                file.read_to_end(&mut bytes).expect(&format!("Can't read \"{}\".", path.display()));
+                FileOrDirectory::File {
+                    bytes,
+                }
             } else if path.is_dir() {
                 FileOrDirectory::Directory
             } else {
@@ -63,14 +73,18 @@ impl fmt::Display for Object {
 
 #[derive(Debug)]
 enum FileOrDirectory {
-    File,
+    File {
+        bytes: Vec<u8>,
+    },
     Directory,
 }
 
 impl fmt::Display for FileOrDirectory {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            FileOrDirectory::File => write!(f, "File"),
+            FileOrDirectory::File {
+                bytes,
+            } => write!(f, "File\n{:x?}", bytes),
             FileOrDirectory::Directory => write!(f, "Directory"),
         }
     }
