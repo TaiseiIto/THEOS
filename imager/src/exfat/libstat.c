@@ -8,7 +8,7 @@ time_t get_access_time(char const *path) {
 	return st.st_atime;
 }
 
-time_t get_change_itime(char const *path) {
+time_t get_change_time(char const *path) {
 	struct stat st;
 	stat(path, &st);
 	return st.st_ctime;
