@@ -1,25 +1,13 @@
 use std::{
-    ffi,
     fmt,
     fs,
     io::{
         BufReader,
         Read,
     },
-    os::raw,
     path,
 };
 use super::super::time;
-
-#[link(name="stat", kind="static")]
-extern "C" {
-    fn get_access_time_sec(path: *const raw::c_char) -> u32;
-    fn get_access_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_change_time_sec(path: *const raw::c_char) -> u32;
-    fn get_change_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_modification_time_sec(path: *const raw::c_char) -> u32;
-    fn get_modification_time_nsec(path: *const raw::c_char) -> u32;
-}
 
 #[derive(Debug)]
 pub struct Object {
@@ -46,30 +34,9 @@ impl Object {
                 },
                 None => String::from(""),
             },
-            access_time: {
-                let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-                let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const raw::c_char = path.as_ptr();
-                unsafe {
-                    time::Time::new(get_access_time_sec(path), get_access_time_nsec(path))
-                }
-            },
-            change_time: {
-                let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-                let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const raw::c_char = path.as_ptr();
-                unsafe {
-                    time::Time::new(get_change_time_sec(path), get_change_time_nsec(path))
-                }
-            },
-            modification_time: {
-                let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-                let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const raw::c_char = path.as_ptr();
-                unsafe {
-                    time::Time::new(get_modification_time_sec(path), get_modification_time_nsec(path))
-                }
-            },
+            access_time: time::Time::get_access_time(&path),
+            change_time: time::Time::get_change_time(&path),
+            modification_time: time::Time::get_modification_time(&path),
             content: if path.is_file() {
                 let file = fs::File::open(&path).expect(&format!("\"{}\" is not found.", path.display()));
                 let mut file = BufReader::new(file);

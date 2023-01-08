@@ -1,4 +1,19 @@
-use std::fmt;
+use std::{
+    ffi,
+    fmt,
+    os::raw,
+    path,
+};
+
+#[link(name="stat", kind="static")]
+extern "C" {
+    fn get_access_time_sec(path: *const raw::c_char) -> u32;
+    fn get_access_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_change_time_sec(path: *const raw::c_char) -> u32;
+    fn get_change_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_modification_time_sec(path: *const raw::c_char) -> u32;
+    fn get_modification_time_nsec(path: *const raw::c_char) -> u32;
+}
 
 #[derive(Debug)]
 pub struct Time {
@@ -47,6 +62,42 @@ impl Time {
             min,
             sec,
             nsec,
+        }
+    }
+
+    pub fn get_access_time(path: &path::Path) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::new(get_access_time_sec(path), get_access_time_nsec(path))
+        }
+    }
+
+    pub fn get_change_time(path: &path::Path) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::new(get_change_time_sec(path), get_change_time_nsec(path))
+        }
+    }
+
+    pub fn get_modification_time(path: &path::Path) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::new(get_modification_time_sec(path), get_modification_time_nsec(path))
         }
     }
 }
