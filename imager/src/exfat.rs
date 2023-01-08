@@ -1,9 +1,3 @@
-use std::{
-    fmt,
-    fs,
-    path,
-};
-
 mod boot_checksum_sector;
 mod boot_sector;
 mod extended_boot_sector;
@@ -11,6 +5,12 @@ mod object;
 mod oem_parameter_sector;
 mod reserved_sector;
 mod upcase_table;
+
+use std::{
+    fmt,
+    fs,
+    path,
+};
 
 #[derive(Debug)]
 pub struct Exfat {

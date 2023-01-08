@@ -1,3 +1,6 @@
+use std::fmt;
+
+#[derive(Debug)]
 pub struct Time {
     year: u32,
     month: u8,
@@ -22,8 +25,8 @@ impl Time {
         let mut year = 1970;
         let mut month = 1;
         let mut day = unix_epoch_day;
-        while day_per_month(year, month) < day {
-            day -= day_per_month(year, month);
+        while (day_per_month(year, month) as u32) < day {
+            day -= day_per_month(year, month) as u32;
             if month < 12 {
                 month += 1;
             } else if month == 12 {
@@ -31,6 +34,11 @@ impl Time {
                 month = 1;
             }
         }
+        let month: u8 = month as u8;
+        let day: u8 = day as u8;
+        let hour: u8 = hour as u8;
+        let min: u8 = min as u8;
+        let sec: u8 = sec as u8;
         Self {
             year,
             month,
@@ -43,7 +51,19 @@ impl Time {
     }
 }
 
-fn day_per_month(year: i32, month: u8) => u8 {
+impl fmt::Display for Time {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "time.year = {}\n", self.year)?;
+        write!(f, "time.month = {}\n", self.month)?;
+        write!(f, "time.day = {}\n", self.day)?;
+        write!(f, "time.hour = {}\n", self.hour)?;
+        write!(f, "time.min = {}\n", self.min)?;
+        write!(f, "time.sec = {}\n", self.sec)?;
+        write!(f, "time.nsec = {}", self.nsec)
+    }
+}
+
+fn day_per_month(year: u32, month: u8) -> u8 {
     match month {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
@@ -56,7 +76,7 @@ fn day_per_month(year: i32, month: u8) => u8 {
     }
 }
 
-fn is_leap_year(year: i32) -> bool {
+fn is_leap_year(year: u32) -> bool {
     if year % 4 == 0 {
         if year % 100 == 0 {
             if year % 400 == 0 {

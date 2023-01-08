@@ -1,10 +1,11 @@
+mod exfat;
+mod time;
+
 use std::{
     env,
     fmt,
     path,
 };
-
-mod exfat;
 
 fn main() {
     let args = Args::new(env::args());

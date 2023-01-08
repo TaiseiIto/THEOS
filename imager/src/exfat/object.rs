@@ -9,6 +9,7 @@ use std::{
     os::raw,
     path,
 };
+use super::super::time;
 
 #[link(name="stat", kind="static")]
 extern "C" {
@@ -24,9 +25,9 @@ extern "C" {
 pub struct Object {
     path: path::PathBuf,
     name: String,
-    access_time: u32,
-    change_time: u32,
-    modification_time: u32,
+    access_time: time::Time,
+    change_time: time::Time,
+    modification_time: time::Time,
     content: FileOrDirectory,
     children: Vec<Object>,
 }
@@ -50,7 +51,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_access_time_sec(path)
+                    time::Time::new(get_access_time_sec(path), get_access_time_nsec(path))
                 }
             },
             change_time: {
@@ -58,7 +59,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_change_time_sec(path)
+                    time::Time::new(get_change_time_sec(path), get_change_time_nsec(path))
                 }
             },
             modification_time: {
@@ -66,7 +67,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_modification_time_sec(path)
+                    time::Time::new(get_modification_time_sec(path), get_modification_time_nsec(path))
                 }
             },
             content: if path.is_file() {
@@ -100,9 +101,15 @@ impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "object.path = {}\n", self.path.display())?;
         write!(f, "object.name = {}\n", self.name)?;
-        write!(f, "object.access_time = {}\n", self.access_time)?;
-        write!(f, "object.change_time = {}\n", self.change_time)?;
-        write!(f, "object.modification_time = {}\n", self.modification_time)?;
+        let access_time: String = format!("{}", self.access_time)
+            .replace("time", "object.access_time");
+        let change_time: String = format!("{}", self.change_time)
+            .replace("time", "object.change_time");
+        let modification_time: String = format!("{}", self.modification_time)
+            .replace("time", "object.modification_time");
+        write!(f, "{}\n", access_time)?;
+        write!(f, "{}\n", change_time)?;
+        write!(f, "{}\n", modification_time)?;
         write!(f, "object.content = {}\n", self.content)?;
         for (i, child) in self.children.iter().enumerate() {
             let child = format!("{}", child)
