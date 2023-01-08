@@ -7,6 +7,7 @@ use std::{
 #[derive(Debug)]
 pub struct Object {
     path: path::PathBuf,
+    name: String,
     content: FileOrDirectory,
     children: Vec<Object>,
 }
@@ -18,6 +19,13 @@ impl Object {
         }
         Self {
             path: path.to_path_buf(),
+            name: match path.file_name() {
+                Some(name) => match name.to_os_string().into_string() {
+                    Ok(name) => name,
+                    _ => String::from(""),
+                },
+                None => String::from(""),
+            },
             content: if path.is_file() {
                 FileOrDirectory::File
             } else if path.is_dir() {
@@ -42,6 +50,7 @@ impl Object {
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "object.path = {}\n", self.path.display())?;
+        write!(f, "object.name = {}\n", self.name)?;
         write!(f, "object.content = {}\n", self.content)?;
         for (i, child) in self.children.iter().enumerate() {
             let child = format!("{}", child)
