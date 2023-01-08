@@ -12,9 +12,12 @@ use std::{
 
 #[link(name="stat", kind="static")]
 extern "C" {
-    fn get_access_time(path: *const raw::c_char) -> u32;
-    fn get_change_time(path: *const raw::c_char) -> u32;
-    fn get_modification_time(path: *const raw::c_char) -> u32;
+    fn get_access_time_sec(path: *const raw::c_char) -> u32;
+    fn get_access_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_change_time_sec(path: *const raw::c_char) -> u32;
+    fn get_change_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_modification_time_sec(path: *const raw::c_char) -> u32;
+    fn get_modification_time_nsec(path: *const raw::c_char) -> u32;
 }
 
 #[derive(Debug)]
@@ -47,7 +50,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_access_time(path)
+                    get_access_time_sec(path)
                 }
             },
             change_time: {
@@ -55,7 +58,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_change_time(path)
+                    get_change_time_sec(path)
                 }
             },
             modification_time: {
@@ -63,7 +66,7 @@ impl Object {
                 let path = ffi::CString::new(path).expect("Can't create CString.");
                 let path: *const raw::c_char = path.as_ptr();
                 unsafe {
-                    get_modification_time(path)
+                    get_modification_time_sec(path)
                 }
             },
             content: if path.is_file() {
