@@ -44,7 +44,7 @@ impl Object {
             access_time: {
                 let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
                 let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const c_char = path.as_ptr();
+                let path: *const raw::c_char = path.as_ptr();
                 unsafe {
                     get_access_time(path)
                 }
@@ -52,7 +52,7 @@ impl Object {
             change_time: {
                 let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
                 let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const c_char = path.as_ptr();
+                let path: *const raw::c_char = path.as_ptr();
                 unsafe {
                     get_change_time(path)
                 }
@@ -60,7 +60,7 @@ impl Object {
             modification_time: {
                 let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
                 let path = ffi::CString::new(path).expect("Can't create CString.");
-                let path: *const c_char = path.as_ptr();
+                let path: *const raw::c_char = path.as_ptr();
                 unsafe {
                     get_modification_time(path)
                 }
@@ -98,7 +98,7 @@ impl fmt::Display for Object {
         write!(f, "object.name = {}\n", self.name)?;
         write!(f, "object.access_time = {}\n", self.access_time)?;
         write!(f, "object.change_time = {}\n", self.change_time)?;
-        write!(f, "object.modigication_time = {}\n", self.modigication_time)?;
+        write!(f, "object.modification_time = {}\n", self.modification_time)?;
         write!(f, "object.content = {}\n", self.content)?;
         for (i, child) in self.children.iter().enumerate() {
             let child = format!("{}", child)
