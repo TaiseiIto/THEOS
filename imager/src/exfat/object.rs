@@ -45,7 +45,7 @@ impl fmt::Display for Object {
         write!(f, "object.content = {}\n", self.content)?;
         for (i, child) in self.children.iter().enumerate() {
             let child = format!("{}", child)
-                .replace("object", &format!("child[{}]", i));
+                .replace("object", &format!("object.child[{}]", i));
             write!(f, "{}\n", child)?;
         }
         write!(f, "")
