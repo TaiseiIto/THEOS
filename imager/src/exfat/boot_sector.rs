@@ -36,8 +36,8 @@ pub struct BootSector {
 }
 
 impl BootSector {
-    pub fn new(file: &path::Path) -> Self {
-        let boot_sector: Vec<u8> = fs::read(file).expect(&format!("Failed to open {}", file.display()));
+    pub fn new(file: path::PathBuf) -> Self {
+        let boot_sector: Vec<u8> = fs::read(&file).expect(&format!("Failed to open {}", file.display()));
         let boot_sector: [u8; mem::size_of::<PackedBootSector>()] = boot_sector.try_into().expect(&format!("The length of boot sector must be {}.", mem::size_of::<PackedBootSector>()));
         let boot_sector = PackedBootSector::new(boot_sector);
         boot_sector.unpack()

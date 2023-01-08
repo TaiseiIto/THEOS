@@ -7,6 +7,7 @@ use std::{
 mod boot_checksum_sector;
 mod boot_sector;
 mod extended_boot_sector;
+mod object;
 mod oem_parameter_sector;
 mod reserved_sector;
 mod upcase_table;
@@ -22,8 +23,8 @@ pub struct Exfat {
 }
 
 impl Exfat {
-    pub fn new(boot_sector: &path::Path, src: &path::Path) -> Self {
-        let boot_sector = boot_sector::BootSector::new(&boot_sector);
+    pub fn new(boot_sector: path::PathBuf, src: path::PathBuf) -> Self {
+        let boot_sector = boot_sector::BootSector::new(boot_sector);
         Self {
             boot_sector,
             extended_boot_sectors: [extended_boot_sector::ExtendedBootSector::new(); 0x8],
@@ -46,7 +47,7 @@ impl Exfat {
         }
     }
 
-    pub fn dump(self, dst_file: &path::Path) {
+    pub fn dump(self, dst_file: path::PathBuf) {
         let dst_file_name: String = dst_file.display().to_string();
         fs::write(dst_file, self.to_bytes()).expect(&format!("Can't create a new file {}.", dst_file_name));
     }
