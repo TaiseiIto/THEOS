@@ -1,9 +1,9 @@
 TARGET = target/release/imager
 TARGET_DIR = target
 SOURCE = $(shell find src | grep ^.*\.rs$$)
-LIBSTAT_ARCHIVE = target/libstat.a
-LIBSTAT_OBJECT = target/libstat.o
-LIBSTAT_SOURCE = src/exfat/libstat.c
+LIBSTAT_ARCHIVE = lib/libstat.a
+LIBSTAT_OBJECT = lib/libstat.o
+LIBSTAT_SOURCE = lib/libstat.c
 
 all: $(TARGET)
 
