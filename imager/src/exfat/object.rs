@@ -1,5 +1,6 @@
 use std::{
     fmt,
+    fs,
     path,
 };
 
@@ -7,6 +8,7 @@ use std::{
 pub struct Object {
     path: path::PathBuf,
     content: FileOrDirectory,
+    children: Vec<Object>,
 }
 
 impl Object {
@@ -23,6 +25,16 @@ impl Object {
             } else {
                 panic!("\"{}\" is not a file or directory.", path.display());
             },
+            children: {
+                match fs::read_dir(path) {
+                    Ok(dir) => dir
+                        .into_iter()
+                        .filter_map(|dir| dir.ok())
+                        .map(|dir| Self::new(dir.path()))
+                        .collect(),
+                    _ => vec![],
+                }
+            },
         }
     }
 }
@@ -30,7 +42,13 @@ impl Object {
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "object.path = {}\n", self.path.display())?;
-        write!(f, "object.content = {}", self.content)
+        write!(f, "object.content = {}\n", self.content)?;
+        for (i, child) in self.children.iter().enumerate() {
+            let child = format!("{}", child)
+                .replace("object", &format!("child[{}]", i));
+            write!(f, "{}\n", child)?;
+        }
+        write!(f, "")
     }
 }
 
