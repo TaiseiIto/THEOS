@@ -43,8 +43,8 @@ impl Sector for OemParameterSector {
 impl fmt::Display for OemParameterSector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (i, parameter) in self.parameters.iter().enumerate() {
-            let parameter = format!("{}", parameter);
-            let parameter = parameter.replace("oem_parameter", &format!("opem_parameters.oem_parameter[{}]", i));
+            let parameter = format!("{}", parameter)
+                .replace("oem_parameter", &format!("opem_parameters.oem_parameter[{}]", i));
             write!(f, "{}\n", parameter)?;
         }
         write!(f, "oem_parameter_sector.reserved = {:x?}", self.reserved)

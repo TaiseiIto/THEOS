@@ -77,23 +77,23 @@ impl Exfat {
 
 impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let boot_sector = format!("{}", self.boot_sector);
-        let boot_sector = boot_sector.replace("boot_sector", "exfat.boot_sector");
+        let boot_sector = format!("{}", self.boot_sector)
+            .replace("boot_sector", "exfat.boot_sector");
         write!(f, "{}\n", boot_sector)?;
         for extended_boot_sector in self.extended_boot_sectors {
-            let extended_boot_sector = format!("{}", extended_boot_sector);
-            let extended_boot_sector = extended_boot_sector.replace("extended_boot_sector", "exfat.extended_boot_sector");
+            let extended_boot_sector = format!("{}", extended_boot_sector)
+                .replace("extended_boot_sector", "exfat.extended_boot_sector");
             write!(f, "{}\n", extended_boot_sector)?;
         }
-        let oem_parameter_sector = format!("{}", self.oem_parameter_sector);
-        let oem_parameter_sector = oem_parameter_sector.replace("oem_parameter_sector", "exfat.oem_parameter_sector");
+        let oem_parameter_sector = format!("{}", self.oem_parameter_sector)
+            .replace("oem_parameter_sector", "exfat.oem_parameter_sector");
         write!(f, "{}\n", oem_parameter_sector)?;
-        let reserved_sector = format!("{}", self.reserved_sector);
-        let reserved_sector = reserved_sector.replace("reserved_sector", "exfat.reserved_sector");
+        let reserved_sector = format!("{}", self.reserved_sector)
+            .replace("reserved_sector", "exfat.reserved_sector");
         write!(f, "{}\n", reserved_sector)?;
         if let Some(ref boot_checksum_sector) = self.boot_checksum_sector {
-            let boot_checksum_sector = format!("{}", boot_checksum_sector);
-            let boot_checksum_sector = boot_checksum_sector.replace("boot_checksum_sector", "exfat.boot_checksum_sector");
+            let boot_checksum_sector = format!("{}", boot_checksum_sector)
+                .replace("boot_checksum_sector", "exfat.boot_checksum_sector");
             write!(f, "{}\n", boot_checksum_sector)?;
         }
         write!(f, "{}\n", self.upcase_table)?;
