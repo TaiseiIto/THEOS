@@ -20,6 +20,7 @@ pub struct Exfat {
     reserved_sector: reserved_sector::ReservedSector,
     boot_checksum_sector: Option<boot_checksum_sector::BootChecksumSector>,
     upcase_table: upcase_table::UpcaseTable,
+    object: object::Object,
 }
 
 impl Exfat {
@@ -32,6 +33,7 @@ impl Exfat {
             reserved_sector: reserved_sector::ReservedSector::new(),
             boot_checksum_sector: None,
             upcase_table: upcase_table::UpcaseTable::new(),
+            object: object::Object::new(src),
         }.checksum()
     }
 
@@ -44,6 +46,7 @@ impl Exfat {
             reserved_sector: self.reserved_sector,
             boot_checksum_sector: Some(boot_checksum_sector),
             upcase_table: self.upcase_table,
+            object: self.object,
         }
     }
 
@@ -93,7 +96,8 @@ impl fmt::Display for Exfat {
             let boot_checksum_sector = boot_checksum_sector.replace("boot_checksum_sector", "exfat.boot_checksum_sector");
             write!(f, "{}\n", boot_checksum_sector)?;
         }
-        write!(f, "{}", self.upcase_table)
+        write!(f, "{}\n", self.upcase_table)?;
+        write!(f, "{}", self.object)
     }
 }
 

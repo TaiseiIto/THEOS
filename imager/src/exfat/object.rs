@@ -1,4 +1,7 @@
-use std::path;
+use std::{
+    fmt,
+    path,
+};
 
 #[derive(Debug)]
 pub struct Object {
@@ -6,14 +9,8 @@ pub struct Object {
     content: FileOrDirectory,
 }
 
-#[derive(Debug)]
-enum FileOrDirectory {
-    File,
-    Directory,
-}
-
 impl Object {
-    pub fn new(path: &path::PathBuf) -> Self {
+    pub fn new(path: path::PathBuf) -> Self {
         if !path.exists() {
             panic!("No such a file or directory \"{}\".", path.display());
         }
@@ -26,6 +23,28 @@ impl Object {
             } else {
                 panic!("\"{}\" is not a file or directory.", path.display());
             },
+        }
+    }
+}
+
+impl fmt::Display for Object {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "object.path = {}\n", self.path.display())?;
+        write!(f, "object.content = {}", self.content)
+    }
+}
+
+#[derive(Debug)]
+enum FileOrDirectory {
+    File,
+    Directory,
+}
+
+impl fmt::Display for FileOrDirectory {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            FileOrDirectory::File => write!(f, "File"),
+            FileOrDirectory::Directory => write!(f, "Directory"),
         }
     }
 }
