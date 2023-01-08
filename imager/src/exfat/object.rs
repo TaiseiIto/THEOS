@@ -10,6 +10,7 @@ use std::{
     path,
 };
 
+#[link(name="libstat")]
 extern "C" {
     fn get_access_time(path: *const raw::c_char) -> u32;
     fn get_change_time(path: *const raw::c_char) -> u32;
