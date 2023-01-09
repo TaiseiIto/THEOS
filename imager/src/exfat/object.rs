@@ -110,15 +110,13 @@ impl FileOrDirectory {
             }
         } else if path.is_dir() {
             Self::Directory {
-                children: {
-                    match fs::read_dir(path) {
-                        Ok(dir) => dir
-                            .into_iter()
-                            .filter_map(|dir| dir.ok())
-                            .map(|dir| Object::new(&dir.path()))
-                            .collect(),
-                        _ => vec![],
-                    }
+                children: match fs::read_dir(path) {
+                    Ok(dir) => dir
+                        .into_iter()
+                        .filter_map(|dir| dir.ok())
+                        .map(|dir| Object::new(&dir.path()))
+                        .collect(),
+                    _ => vec![],
                 },
             }
         } else {
