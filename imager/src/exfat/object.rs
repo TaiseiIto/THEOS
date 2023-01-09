@@ -68,18 +68,21 @@ impl Object {
 
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
         write!(f, "object.path = {}\n", self.path.display())?;
         write!(f, "object.name = {}\n", self.name)?;
-        let access_time: String = format!("{}", self.access_time)
-            .replace("time", "object.access_time");
-        let change_time: String = format!("{}", self.change_time)
-            .replace("time", "object.change_time");
-        let modification_time: String = format!("{}", self.modification_time)
-            .replace("time", "object.modification_time");
+        let access_time: String = format!("{}", self.access_time);
+        let access_time: String = regex.replace_all(&access_time, "$0object.access.");
         write!(f, "{}\n", access_time)?;
+        let change_time: String = format!("{}", self.change_time);
+        let change_time: String = regex.replace_all(&change_time, "$0object.change.");
         write!(f, "{}\n", change_time)?;
+        let modification_time: String = format!("{}", self.modification_time);
+        let modification_time: String = regex.replace_all(&modification_time, "$0object.modification.");
         write!(f, "{}\n", modification_time)?;
-        write!(f, "object.content = {}", self.content)
+        let content: String = format!("{}", self.content);
+        let content: String = regex.replace_all(&content, "$0object.content.");
+        write!(f, "{}", content)
     }
 }
 
@@ -103,8 +106,8 @@ impl fmt::Display for FileOrDirectory {
                 children,
             } => {
                 for (i, child) in children.iter().enumerate() {
-                    let child: String = format!("{}", child);
                     let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
+                    let child: String = format!("{}", child);
                     let child: String = regex.replace_all(&child, &format!("$0child[{}].", i) as &str);
                     write!(f, "{}", child)?;
                 }
