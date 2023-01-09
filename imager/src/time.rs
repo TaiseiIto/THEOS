@@ -15,7 +15,7 @@ extern "C" {
     fn get_modification_time_nsec(path: *const raw::c_char) -> u32;
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Time {
     year: u32,
     month: u8,

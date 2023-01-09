@@ -1,7 +1,10 @@
 extern crate regex;
 
 use std::fmt;
-use super::object;
+use super::{
+    object,
+    super::time,
+};
 
 #[derive(Debug)]
 pub struct DirectoryEntry {
@@ -10,10 +13,20 @@ pub struct DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file_directory(object: &object::FileOrDirectory) -> Self {
+    pub fn file_directory(
+        object: &object::FileOrDirectory,
+        create_time: &time::Time,
+        modified_time: &time::Time,
+        accessed_time: &time::Time,
+    ) -> Self {
         Self {
             entry_type: EntryType::file_directory(object),
-            inner: DirectoryEntryEnum::file_directory(object),
+            inner: DirectoryEntryEnum::file_directory(
+                object,
+                create_time,
+                modified_time,
+                accessed_time,
+            ),
         }
     }
 }
@@ -90,17 +103,28 @@ enum DirectoryEntryEnum {
         secondary_count: u8,
         set_checksum: u16,
         file_attributes: FileAttributes,
+        create_time: time::Time,
+        modified_time: time::Time,
+        accessed_time: time::Time,
     },
     StreamExtension,
     FileName,
 }
 
 impl DirectoryEntryEnum {
-    fn file_directory(object: &object::FileOrDirectory) -> Self {
+    fn file_directory(
+        object: &object::FileOrDirectory,
+        create_time: &time::Time,
+        modified_time: &time::Time,
+        accessed_time: &time::Time,
+    ) -> Self {
         Self::FileDirectory {
             secondary_count: 0,
             set_checksum: 0,
             file_attributes: FileAttributes::file_directory(object),
+            create_time: *create_time,
+            modified_time: *modified_time,
+            accessed_time: *accessed_time,
         }
     }
 }
@@ -115,13 +139,25 @@ impl fmt::Display for DirectoryEntryEnum {
                 secondary_count,
                 set_checksum,
                 file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
             } => {
                 let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
                 write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
                 write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)?;
                 let file_attributes: String = format!("{}", file_attributes);
                 let file_attributes: String = regex.replace_all(&file_attributes, "$0FileDirectory.");
-                write!(f, "{}", file_attributes)
+                write!(f, "{}\n", file_attributes)?;
+                let create_time: String = format!("{}", create_time);
+                let create_time: String = regex.replace_all(&file_attributes, "$0create_time.");
+                write!(f, "{}\n", create_time)?;
+                let modified_time: String = format!("{}", modified_time);
+                let modified_time: String = regex.replace_all(&file_attributes, "$0modified_time.");
+                write!(f, "{}\n", modified_time)?;
+                let accessed_time: String = format!("{}", accessed_time);
+                let accessed_time: String = regex.replace_all(&file_attributes, "$0accessed_time.");
+                write!(f, "{}", accessed_time)
             },
             Self::StreamExtension => write!(f, "StreamExtension"),
             Self::FileName => write!(f, "FileName"),

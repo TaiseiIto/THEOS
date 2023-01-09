@@ -43,7 +43,12 @@ impl Object {
         let modification_time = time::Time::get_modification_time(&path);
         let content = FileOrDirectory::new(&path);
         let directory_entries = vec![
-            directory_entry::DirectoryEntry::file_directory(&content),
+            directory_entry::DirectoryEntry::file_directory(
+                &content,
+                &change_time,
+                &modification_time,
+                &access_time,
+            ),
         ];
         Self {
             path,
