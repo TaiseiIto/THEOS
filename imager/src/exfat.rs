@@ -1,3 +1,5 @@
+extern crate regex;
+
 mod boot_checksum_sector;
 mod boot_sector;
 mod extended_boot_sector;

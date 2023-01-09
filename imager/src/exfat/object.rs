@@ -1,3 +1,5 @@
+extern crate regex;
+
 use std::{
     fmt,
     fs,
@@ -96,13 +98,15 @@ impl fmt::Display for FileOrDirectory {
         match self {
             FileOrDirectory::File {
                 bytes,
-            } => write!(f, "File {:x?}", bytes),
+            } => write!(f, "file contents = {:x?}", bytes),
             FileOrDirectory::Directory {
                 children,
             } => {
-                write!(f, "Directory\n")?;
-                for child in children {
-                    write!(f, "{}\n", child)?;
+                for (i, child) in children.iter().enumerate() {
+                    let child: String = format!("{}", child);
+                    let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
+                    let child: String = regex.replace_all(&child, &format!("$0child[{}].", i) as &str);
+                    write!(f, "{}", child)?;
                 }
                 write!(f, "")
             }
