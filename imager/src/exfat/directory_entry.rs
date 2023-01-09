@@ -86,14 +86,20 @@ enum DirectoryEntryEnum {
     AllocationBitmap,
     UpcaseTable,
     VolumeLabel,
-    FileDirectory,
+    FileDirectory {
+        secondary_count: u8,
+        set_checksum: u16,
+    },
     StreamExtension,
     FileName,
 }
 
 impl DirectoryEntryEnum {
     fn file_directory(_object: &object::Object) -> Self {
-        Self::FileDirectory
+        Self::FileDirectory {
+            secondary_count: 0,
+            set_checksum: 0,
+        }
     }
 }
 
@@ -103,7 +109,13 @@ impl fmt::Display for DirectoryEntryEnum {
             Self::AllocationBitmap => write!(f, "AllocationBitmap"),
             Self::UpcaseTable => write!(f, "UpcaseTable"),
             Self::VolumeLabel => write!(f, "VolumeLabel"),
-            Self::FileDirectory => write!(f, "FileDirectory"),
+            Self::FileDirectory {
+                secondary_count,
+                set_checksum,
+            } => {
+                write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
+                write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)
+            },
             Self::StreamExtension => write!(f, "StreamExtension"),
             Self::FileName => write!(f, "FileName"),
         }
