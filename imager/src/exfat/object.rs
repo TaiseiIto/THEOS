@@ -38,30 +38,7 @@ impl Object {
             access_time: time::Time::get_access_time(&path),
             change_time: time::Time::get_change_time(&path),
             modification_time: time::Time::get_modification_time(&path),
-            content: if path.is_file() {
-                let file = fs::File::open(&path).expect(&format!("\"{}\" is not found.", path.display()));
-                let mut file = BufReader::new(file);
-                let mut bytes = Vec::<u8>::new();
-                file.read_to_end(&mut bytes).expect(&format!("Can't read \"{}\".", path.display()));
-                FileOrDirectory::File {
-                    bytes,
-                }
-            } else if path.is_dir() {
-                FileOrDirectory::Directory {
-                    children: {
-                        match fs::read_dir(path) {
-                            Ok(dir) => dir
-                                .into_iter()
-                                .filter_map(|dir| dir.ok())
-                                .map(|dir| Self::new(dir.path()))
-                                .collect(),
-                            _ => vec![],
-                        }
-                    },
-                }
-            } else {
-                panic!("\"{}\" is not a file or directory.", path.display());
-            },
+            content: FileOrDirectory::new(path),
         }
     }
 }
@@ -94,6 +71,35 @@ pub enum FileOrDirectory {
     Directory {
         children: Vec<Object>,
     },
+}
+
+impl FileOrDirectory {
+    fn new(path: path::PathBuf) -> Self {
+        if path.is_file() {
+            let file = fs::File::open(&path).expect(&format!("\"{}\" is not found.", path.display()));
+            let mut file = BufReader::new(file);
+            let mut bytes = Vec::<u8>::new();
+            file.read_to_end(&mut bytes).expect(&format!("Can't read \"{}\".", path.display()));
+            Self::File {
+                bytes,
+            }
+        } else if path.is_dir() {
+            Self::Directory {
+                children: {
+                    match fs::read_dir(path) {
+                        Ok(dir) => dir
+                            .into_iter()
+                            .filter_map(|dir| dir.ok())
+                            .map(|dir| Object::new(dir.path()))
+                            .collect(),
+                        _ => vec![],
+                    }
+                },
+            }
+        } else {
+            panic!("\"{}\" is not a file or directory.", path.display());
+        }
+    }
 }
 
 impl fmt::Display for FileOrDirectory {
