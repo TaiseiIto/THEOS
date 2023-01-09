@@ -28,6 +28,10 @@ RUN mkdir /root/.crates.io
 # Install a terminal multiplexer.
 RUN apt install tmux -y
 
+# Set timezone to Japan.
+RUN apt install tzdata -y
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
 # Install an editor.
 RUN apt install vim -y
 
