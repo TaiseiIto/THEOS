@@ -2,7 +2,13 @@ use std::{
     fmt,
     mem,
 };
-use super::Sector;
+use super::{
+    boot_sector,
+    extended_boot_sector,
+    oem_parameter_sector,
+    reserved_sector,
+    Sector,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct BootChecksumSector {
@@ -10,14 +16,19 @@ pub struct BootChecksumSector {
 }
 
 impl BootChecksumSector {
-    pub fn new(exfat: &super::Exfat) -> Self {
+    pub fn new(
+        boot_sector: &boot_sector::BootSector,
+        extended_boot_sectors: &[extended_boot_sector::ExtendedBootSector; 0x8],
+        oem_parameter_sector: &oem_parameter_sector::OemParameterSector,
+        reserved_sector: &reserved_sector::ReservedSector,
+    ) -> Self {
         let mut sectors: Vec<Box<dyn Sector>> = vec![];
-        sectors.push(Box::new(exfat.boot_sector));
-        for extended_boot_sector in exfat.extended_boot_sectors {
-            sectors.push(Box::new(extended_boot_sector));
+        sectors.push(Box::new(*boot_sector));
+        for extended_boot_sector in extended_boot_sectors {
+            sectors.push(Box::new(*extended_boot_sector));
         }
-        sectors.push(Box::new(exfat.oem_parameter_sector));
-        sectors.push(Box::new(exfat.reserved_sector));
+        sectors.push(Box::new(*oem_parameter_sector));
+        sectors.push(Box::new(*reserved_sector));
         let checksum: u32 = sectors
             .into_iter()
             .map(|sector| sector.to_bytes().to_vec())

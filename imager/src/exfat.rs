@@ -21,35 +21,33 @@ pub struct Exfat {
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; 0x8],
     oem_parameter_sector: oem_parameter_sector::OemParameterSector,
     reserved_sector: reserved_sector::ReservedSector,
-    boot_checksum_sector: Option<boot_checksum_sector::BootChecksumSector>,
+    boot_checksum_sector: boot_checksum_sector::BootChecksumSector,
     upcase_table: upcase_table::UpcaseTable,
     object: object::Object,
 }
 
 impl Exfat {
     pub fn new(boot_sector: path::PathBuf, src: path::PathBuf) -> Self {
+        let upcase_table = upcase_table::UpcaseTable::new();
+        let object = object::Object::new(src);
         let boot_sector = boot_sector::BootSector::new(boot_sector);
+        let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(); 0x8];
+        let oem_parameter_sector = oem_parameter_sector::OemParameterSector::null_parameters();
+        let reserved_sector = reserved_sector::ReservedSector::new();
+        let boot_checksum_sector = boot_checksum_sector::BootChecksumSector::new(
+            &boot_sector,
+            &extended_boot_sectors,
+            &oem_parameter_sector,
+            &reserved_sector,
+        );
         Self {
             boot_sector,
-            extended_boot_sectors: [extended_boot_sector::ExtendedBootSector::new(); 0x8],
-            oem_parameter_sector: oem_parameter_sector::OemParameterSector::null_parameters(),
-            reserved_sector: reserved_sector::ReservedSector::new(),
-            boot_checksum_sector: None,
-            upcase_table: upcase_table::UpcaseTable::new(),
-            object: object::Object::new(src),
-        }.checksum()
-    }
-
-    fn checksum(self) -> Self {
-        let boot_checksum_sector = boot_checksum_sector::BootChecksumSector::new(&self);
-        Self {
-            boot_sector: self.boot_sector,
-            extended_boot_sectors: self.extended_boot_sectors,
-            oem_parameter_sector: self.oem_parameter_sector,
-            reserved_sector: self.reserved_sector,
-            boot_checksum_sector: Some(boot_checksum_sector),
-            upcase_table: self.upcase_table,
-            object: self.object,
+            extended_boot_sectors,
+            oem_parameter_sector,
+            reserved_sector,
+            boot_checksum_sector,
+            upcase_table,
+            object,
         }
     }
 
@@ -67,11 +65,7 @@ impl Exfat {
             }
             sectors.push(Box::new(self.oem_parameter_sector));
             sectors.push(Box::new(self.reserved_sector));
-            if let Some(boot_checksum_sector) = self.boot_checksum_sector {
-                sectors.push(Box::new(boot_checksum_sector));
-            } else {
-                panic!("Can't convert ExFAT into bytes.");
-            }
+            sectors.push(Box::new(self.boot_checksum_sector));
         }
         sectors.append(&mut self.upcase_table.to_sectors());
         sectors.into_iter().map(|sector| sector.to_bytes().to_vec()).flatten().collect()
@@ -91,10 +85,8 @@ impl fmt::Display for Exfat {
         string += &oem_parameter_sector;
         let reserved_sector: String = format!("{}\n", self.reserved_sector);
         string += &reserved_sector;
-        if let Some(ref boot_checksum_sector) = self.boot_checksum_sector {
-            let boot_checksum_sector: String = format!("{}\n", boot_checksum_sector);
-            string += &boot_checksum_sector;
-        }
+        let boot_checksum_sector: String = format!("{}\n", self.boot_checksum_sector);
+        string += &boot_checksum_sector;
         let upcase_table: String = format!("{}\n", self.upcase_table);
         string += &upcase_table;
         let object: String = format!("{}", self.object);
