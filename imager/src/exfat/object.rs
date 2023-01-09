@@ -64,6 +64,10 @@ impl Object {
             },
         }
     }
+
+    pub fn is_dir(&self) -> bool {
+        self.content.is_dir()
+    }
 }
 
 impl fmt::Display for Object {
@@ -94,6 +98,19 @@ enum FileOrDirectory {
     Directory {
         children: Vec<Object>,
     },
+}
+
+impl FileOrDirectory {
+    fn is_dir(&self) -> bool {
+        match self {
+            Self::File {
+                bytes,
+            } => false,
+            Self::Directory {
+                children,
+            } => true,
+        }
+    }
 }
 
 impl fmt::Display for FileOrDirectory {

@@ -89,16 +89,18 @@ enum DirectoryEntryEnum {
     FileDirectory {
         secondary_count: u8,
         set_checksum: u16,
+        file_attributes: FileAttributes,
     },
     StreamExtension,
     FileName,
 }
 
 impl DirectoryEntryEnum {
-    fn file_directory(_object: &object::Object) -> Self {
+    fn file_directory(object: &object::Object) -> Self {
         Self::FileDirectory {
             secondary_count: 0,
             set_checksum: 0,
+            file_attributes: FileAttributes::file_directory(object),
         }
     }
 }
@@ -112,13 +114,49 @@ impl fmt::Display for DirectoryEntryEnum {
             Self::FileDirectory {
                 secondary_count,
                 set_checksum,
+                file_attributes,
             } => {
+                let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
                 write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
-                write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)
+                write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)?;
+                let file_attributes: String = format!("{}", file_attributes);
+                let file_attributes: String = regex.replace_all(&file_attributes, "$0.FileDirectory.");
+                write!(f, "{}", file_attributes)
             },
             Self::StreamExtension => write!(f, "StreamExtension"),
             Self::FileName => write!(f, "FileName"),
         }
+    }
+}
+
+#[derive(Debug)]
+struct FileAttributes {
+    read_only: bool,
+    hidden: bool,
+    system: bool,
+    directory: bool,
+    archive: bool,
+}
+
+impl FileAttributes {
+    fn file_directory(object: &object::Object) -> Self {
+        Self {
+            read_only: true,
+            hidden: false,
+            system: true,
+            directory: object.is_dir(),
+            archive: false,
+        }
+    }
+}
+
+impl fmt::Display for FileAttributes {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "file_attributes.read_only = {}", self.read_only)?;
+        write!(f, "file_attributes.hidden = {}", self.hidden)?;
+        write!(f, "file_attributes.system = {}", self.system)?;
+        write!(f, "file_attributes.directory = {}", self.directory)?;
+        write!(f, "file_attributes.archive = {}", self.archive)
     }
 }
 
