@@ -2,6 +2,7 @@ extern crate regex;
 
 mod boot_checksum_sector;
 mod boot_sector;
+mod directory_entry;
 mod extended_boot_sector;
 mod object;
 mod oem_parameter_sector;
