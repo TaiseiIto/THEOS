@@ -22,23 +22,29 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(path: path::PathBuf) -> Self {
+    pub fn new(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
-        Self {
-            path: path.to_path_buf(),
-            name: match path.file_name() {
-                Some(name) => match name.to_os_string().into_string() {
-                    Ok(name) => name,
-                    _ => String::from(""),
-                },
-                None => String::from(""),
+        let path: path::PathBuf = path.to_path_buf();
+        let name: String = match path.file_name() {
+            Some(name) => match name.to_os_string().into_string() {
+                Ok(name) => name,
+                _ => String::from(""),
             },
-            access_time: time::Time::get_access_time(&path),
-            change_time: time::Time::get_change_time(&path),
-            modification_time: time::Time::get_modification_time(&path),
-            content: FileOrDirectory::new(path),
+            None => String::from(""),
+        };
+        let access_time = time::Time::get_access_time(&path);
+        let change_time = time::Time::get_change_time(&path);
+        let modification_time = time::Time::get_modification_time(&path);
+        let content = FileOrDirectory::new(&path);
+        Self {
+            path,
+            name,
+            access_time,
+            change_time,
+            modification_time,
+            content,
         }
     }
 }
@@ -74,7 +80,7 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    fn new(path: path::PathBuf) -> Self {
+    fn new(path: &path::PathBuf) -> Self {
         if path.is_file() {
             let file = fs::File::open(&path).expect(&format!("\"{}\" is not found.", path.display()));
             let mut file = BufReader::new(file);
@@ -90,7 +96,7 @@ impl FileOrDirectory {
                         Ok(dir) => dir
                             .into_iter()
                             .filter_map(|dir| dir.ok())
-                            .map(|dir| Object::new(dir.path()))
+                            .map(|dir| Object::new(&dir.path()))
                             .collect(),
                         _ => vec![],
                     }

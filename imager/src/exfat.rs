@@ -29,7 +29,7 @@ pub struct Exfat {
 impl Exfat {
     pub fn new(boot_sector: path::PathBuf, src: path::PathBuf) -> Self {
         let upcase_table = upcase_table::UpcaseTable::new();
-        let object = object::Object::new(src);
+        let object = object::Object::new(&src);
         let boot_sector = boot_sector::BootSector::new(boot_sector);
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(); 0x8];
         let oem_parameter_sector = oem_parameter_sector::OemParameterSector::null_parameters();
