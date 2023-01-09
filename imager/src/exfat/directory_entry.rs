@@ -120,7 +120,7 @@ impl fmt::Display for DirectoryEntryEnum {
                 write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
                 write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)?;
                 let file_attributes: String = format!("{}", file_attributes);
-                let file_attributes: String = regex.replace_all(&file_attributes, "$0.FileDirectory.");
+                let file_attributes: String = regex.replace_all(&file_attributes, "$0FileDirectory.");
                 write!(f, "{}", file_attributes)
             },
             Self::StreamExtension => write!(f, "StreamExtension"),
@@ -159,10 +159,10 @@ impl FileAttributes {
 
 impl fmt::Display for FileAttributes {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "file_attributes.read_only = {}", self.read_only)?;
-        write!(f, "file_attributes.hidden = {}", self.hidden)?;
-        write!(f, "file_attributes.system = {}", self.system)?;
-        write!(f, "file_attributes.directory = {}", self.directory)?;
+        write!(f, "file_attributes.read_only = {}\n", self.read_only)?;
+        write!(f, "file_attributes.hidden = {}\n", self.hidden)?;
+        write!(f, "file_attributes.system = {}\n", self.system)?;
+        write!(f, "file_attributes.directory = {}\n", self.directory)?;
         write!(f, "file_attributes.archive = {}", self.archive)
     }
 }

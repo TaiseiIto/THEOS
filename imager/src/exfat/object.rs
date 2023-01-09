@@ -9,7 +9,10 @@ use std::{
     },
     path,
 };
-use super::super::time;
+use super::{
+    directory_entry,
+    super::time,
+};
 
 #[derive(Debug)]
 pub struct Object {
@@ -19,6 +22,7 @@ pub struct Object {
     change_time: time::Time,
     modification_time: time::Time,
     content: FileOrDirectory,
+    directory_entries: Vec<directory_entry::DirectoryEntry>,
 }
 
 impl Object {
@@ -38,6 +42,9 @@ impl Object {
         let change_time = time::Time::get_change_time(&path);
         let modification_time = time::Time::get_modification_time(&path);
         let content = FileOrDirectory::new(&path);
+        let directory_entries = vec![
+            directory_entry::DirectoryEntry::file_directory(&content),
+        ];
         Self {
             path,
             name,
@@ -45,6 +52,7 @@ impl Object {
             change_time,
             modification_time,
             content,
+            directory_entries,
         }
     }
 }
@@ -65,7 +73,13 @@ impl fmt::Display for Object {
         write!(f, "{}\n", modification_time)?;
         let content: String = format!("{}", self.content);
         let content: String = regex.replace_all(&content, "$0object.content.");
-        write!(f, "{}", content)
+        write!(f, "{}\n", content)?;
+        for (i, directory_entry) in self.directory_entries.iter().enumerate() {
+            let directory_entry: String = format!("{}", directory_entry);
+            let directory_entry: String = regex.replace_all(&directory_entry, &format!("$0directory_entry[{}].", i) as &str);
+            write!(f, "{}", directory_entry)?;
+        }
+        write!(f, "")
     }
 }
 
