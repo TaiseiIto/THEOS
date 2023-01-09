@@ -1,11 +1,21 @@
 extern crate regex;
 
 use std::fmt;
+use super::object;
 
 #[derive(Debug)]
 pub struct DirectoryEntry {
     entry_type: EntryType,
     inner: DirectoryEntryEnum,
+}
+
+impl DirectoryEntry {
+    pub fn file_directory(object: &object::Object) -> Self {
+        Self {
+            entry_type: EntryType::file_directory(object),
+            inner: DirectoryEntryEnum::file_directory(object),
+        }
+    }
 }
 
 impl fmt::Display for DirectoryEntry {
@@ -21,11 +31,22 @@ impl fmt::Display for DirectoryEntry {
 }
 
 #[derive(Debug)]
-pub struct EntryType {
+struct EntryType {
     type_code: TypeCode,
     type_importance: bool,
     type_category: bool,
     in_use: bool,
+}
+
+impl EntryType {
+    fn file_directory(object: &object::Object) -> Self {
+        Self {
+            type_code: TypeCode::FileDirectory,
+            type_importance: false,
+            type_category: false,
+            in_use: true,
+        }
+    }
 }
 
 impl fmt::Display for EntryType {
@@ -38,7 +59,7 @@ impl fmt::Display for EntryType {
 }
 
 #[derive(Debug)]
-pub enum TypeCode {
+enum TypeCode {
     AllocationBitmap,
     UpcaseTable,
     VolumeLabel,
@@ -61,13 +82,19 @@ impl fmt::Display for TypeCode {
 }
 
 #[derive(Debug)]
-pub enum DirectoryEntryEnum {
+enum DirectoryEntryEnum {
     AllocationBitmap,
     UpcaseTable,
     VolumeLabel,
     FileDirectory,
     StreamExtension,
     FileName,
+}
+
+impl DirectoryEntryEnum {
+    fn file_directory(_object: &object::Object) -> Self {
+        Self::FileDirectory
+    }
 }
 
 impl fmt::Display for DirectoryEntryEnum {
