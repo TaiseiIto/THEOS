@@ -150,13 +150,13 @@ impl fmt::Display for DirectoryEntryEnum {
                 let file_attributes: String = regex.replace_all(&file_attributes, "$0FileDirectory.");
                 write!(f, "{}\n", file_attributes)?;
                 let create_time: String = format!("{}", create_time);
-                let create_time: String = regex.replace_all(&file_attributes, "$0create_time.");
+                let create_time: String = regex.replace_all(&create_time, "$0create_time.");
                 write!(f, "{}\n", create_time)?;
                 let modified_time: String = format!("{}", modified_time);
-                let modified_time: String = regex.replace_all(&file_attributes, "$0modified_time.");
+                let modified_time: String = regex.replace_all(&modified_time, "$0modified_time.");
                 write!(f, "{}\n", modified_time)?;
                 let accessed_time: String = format!("{}", accessed_time);
-                let accessed_time: String = regex.replace_all(&file_attributes, "$0accessed_time.");
+                let accessed_time: String = regex.replace_all(&accessed_time, "$0accessed_time.");
                 write!(f, "{}", accessed_time)
             },
             Self::StreamExtension => write!(f, "StreamExtension"),
