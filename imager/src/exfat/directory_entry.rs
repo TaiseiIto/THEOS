@@ -10,7 +10,7 @@ pub struct DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file_directory(object: &object::Object) -> Self {
+    pub fn file_directory(object: &object::FileOrDirectory) -> Self {
         Self {
             entry_type: EntryType::file_directory(object),
             inner: DirectoryEntryEnum::file_directory(object),
@@ -39,7 +39,7 @@ struct EntryType {
 }
 
 impl EntryType {
-    fn file_directory(object: &object::Object) -> Self {
+    fn file_directory(object: &object::FileOrDirectory) -> Self {
         Self {
             type_code: TypeCode::FileDirectory,
             type_importance: false,
@@ -96,7 +96,7 @@ enum DirectoryEntryEnum {
 }
 
 impl DirectoryEntryEnum {
-    fn file_directory(object: &object::Object) -> Self {
+    fn file_directory(object: &object::FileOrDirectory) -> Self {
         Self::FileDirectory {
             secondary_count: 0,
             set_checksum: 0,
@@ -139,12 +139,19 @@ struct FileAttributes {
 }
 
 impl FileAttributes {
-    fn file_directory(object: &object::Object) -> Self {
+    fn file_directory(object: &object::FileOrDirectory) -> Self {
         Self {
             read_only: true,
             hidden: false,
             system: true,
-            directory: object.is_dir(),
+            directory: match object {
+                object::FileOrDirectory::File {
+                    bytes,
+                } => false,
+                object::FileOrDirectory::Directory {
+                    children,
+                } => true,
+            },
             archive: false,
         }
     }
