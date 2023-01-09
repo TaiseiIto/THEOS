@@ -17,7 +17,6 @@ pub struct Object {
     change_time: time::Time,
     modification_time: time::Time,
     content: FileOrDirectory,
-    children: Vec<Object>,
 }
 
 impl Object {
@@ -46,19 +45,20 @@ impl Object {
                     bytes,
                 }
             } else if path.is_dir() {
-                FileOrDirectory::Directory
+                FileOrDirectory::Directory {
+                    children: {
+                        match fs::read_dir(path) {
+                            Ok(dir) => dir
+                                .into_iter()
+                                .filter_map(|dir| dir.ok())
+                                .map(|dir| Self::new(dir.path()))
+                                .collect(),
+                            _ => vec![],
+                        }
+                    },
+                }
             } else {
                 panic!("\"{}\" is not a file or directory.", path.display());
-            },
-            children: {
-                match fs::read_dir(path) {
-                    Ok(dir) => dir
-                        .into_iter()
-                        .filter_map(|dir| dir.ok())
-                        .map(|dir| Self::new(dir.path()))
-                        .collect(),
-                    _ => vec![],
-                }
             },
         }
     }
@@ -77,13 +77,7 @@ impl fmt::Display for Object {
         write!(f, "{}\n", access_time)?;
         write!(f, "{}\n", change_time)?;
         write!(f, "{}\n", modification_time)?;
-        write!(f, "object.content = {}\n", self.content)?;
-        for (i, child) in self.children.iter().enumerate() {
-            let child = format!("{}", child)
-                .replace("object", &format!("object.child[{}]", i));
-            write!(f, "{}\n", child)?;
-        }
-        write!(f, "")
+        write!(f, "object.content = {}", self.content)
     }
 }
 
@@ -92,7 +86,9 @@ enum FileOrDirectory {
     File {
         bytes: Vec<u8>,
     },
-    Directory,
+    Directory {
+        children: Vec<Object>,
+    },
 }
 
 impl fmt::Display for FileOrDirectory {
@@ -100,8 +96,16 @@ impl fmt::Display for FileOrDirectory {
         match self {
             FileOrDirectory::File {
                 bytes,
-            } => write!(f, "File\n{:x?}", bytes),
-            FileOrDirectory::Directory => write!(f, "Directory"),
+            } => write!(f, "File {:x?}", bytes),
+            FileOrDirectory::Directory {
+                children,
+            } => {
+                write!(f, "Directory\n")?;
+                for child in children {
+                    write!(f, "{}\n", child)?;
+                }
+                write!(f, "")
+            }
         }
     }
 }
