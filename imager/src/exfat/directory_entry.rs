@@ -107,7 +107,14 @@ enum DirectoryEntryEnum {
         modified_time: time::Time,
         accessed_time: time::Time,
     },
-    StreamExtension,
+    StreamExtension {
+		allocation_possible: bool,
+		no_fat_chain: bool,
+		name_length: u8,
+		name_hash: u16,
+		first_cluster: u32,
+		data_length: u64,
+	},
     FileName,
 }
 
@@ -131,6 +138,7 @@ impl DirectoryEntryEnum {
 
 impl fmt::Display for DirectoryEntryEnum {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
         match self {
             Self::AllocationBitmap => write!(f, "AllocationBitmap"),
             Self::UpcaseTable => write!(f, "UpcaseTable"),
@@ -143,7 +151,6 @@ impl fmt::Display for DirectoryEntryEnum {
                 modified_time,
                 accessed_time,
             } => {
-                let regex = regex::Regex::new("^|\n").expect("Can't create a Regex.");
                 write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
                 write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)?;
                 let file_attributes: String = format!("{}", file_attributes);
@@ -159,7 +166,21 @@ impl fmt::Display for DirectoryEntryEnum {
                 let accessed_time: String = regex.replace_all(&accessed_time, "$0accessed_time.");
                 write!(f, "{}", accessed_time)
             },
-            Self::StreamExtension => write!(f, "StreamExtension"),
+            Self::StreamExtension {
+				allocation_possible,
+				no_fat_chain,
+				name_length,
+				name_hash,
+				first_cluster,
+				data_length,
+			} => {
+				write!(f, "StreamExtension.allocation_possible = {}\n", allocation_possible)?;
+				write!(f, "StreamExtension.no_fat_chain = {}\n", no_fat_chain)?;
+				write!(f, "StreamExtension.name_length = {}\n", name_length)?;
+				write!(f, "StreamExtension.name_hash = {}\n", name_hash)?;
+				write!(f, "StreamExtension.first_cluster = {}\n", first_cluster)?;
+				write!(f, "StreamExtension.data_length = {}", data_length)
+			}
             Self::FileName => write!(f, "FileName"),
         }
     }
