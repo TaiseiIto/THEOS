@@ -14,6 +14,7 @@ pub struct DirectoryEntry {
 
 impl DirectoryEntry {
     pub fn file_directory(
+		name: &str,
         object: &object::FileOrDirectory,
         create_time: &time::Time,
         modified_time: &time::Time,
@@ -22,6 +23,7 @@ impl DirectoryEntry {
         Self {
             entry_type: EntryType::file_directory(object),
             inner: DirectoryEntryEnum::file_directory(
+				name,
                 object,
                 create_time,
                 modified_time,
@@ -29,6 +31,13 @@ impl DirectoryEntry {
             ),
         }
     }
+
+	pub fn stream_extension(name: &str, object: &object::FileOrDirectory) -> Self {
+		Self {
+			entry_type: EntryType::stream_extension(),
+			inner: DirectoryEntryEnum::stream_extension(name, object),
+		}
+	}
 }
 
 impl fmt::Display for DirectoryEntry {
@@ -60,6 +69,15 @@ impl EntryType {
             in_use: true,
         }
     }
+
+	fn stream_extension() -> Self {
+		Self {
+			type_code: TypeCode::StreamExtension,
+			type_importance: false,
+			type_category: true,
+			in_use: true,
+		}
+	}
 }
 
 impl fmt::Display for EntryType {
@@ -106,6 +124,7 @@ enum DirectoryEntryEnum {
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
+		stream_extension: Box<DirectoryEntry>,
     },
     StreamExtension {
 		allocation_possible: bool,
@@ -120,6 +139,7 @@ enum DirectoryEntryEnum {
 
 impl DirectoryEntryEnum {
     fn file_directory(
+		name: &str,
         object: &object::FileOrDirectory,
         create_time: &time::Time,
         modified_time: &time::Time,
@@ -132,8 +152,20 @@ impl DirectoryEntryEnum {
             create_time: *create_time,
             modified_time: *modified_time,
             accessed_time: *accessed_time,
+			stream_extension: Box::new(DirectoryEntry::stream_extension(name, object)),
         }
     }
+
+	fn stream_extension(name: &str, object: &object::FileOrDirectory) -> Self {
+		Self::StreamExtension {
+			allocation_possible: true,
+			no_fat_chain: true,
+			name_length: name.len() as u8,
+			name_hash: 0,
+			first_cluster: 0,
+			data_length: 0,
+		}
+	}
 }
 
 impl fmt::Display for DirectoryEntryEnum {
@@ -150,6 +182,7 @@ impl fmt::Display for DirectoryEntryEnum {
                 create_time,
                 modified_time,
                 accessed_time,
+				stream_extension,
             } => {
                 write!(f, "FileDirectory.secondary_count = {}\n", secondary_count)?;
                 write!(f, "FileDirectory.set_checksum = {}\n", set_checksum)?;
@@ -164,7 +197,10 @@ impl fmt::Display for DirectoryEntryEnum {
                 write!(f, "{}\n", modified_time)?;
                 let accessed_time: String = format!("{}", accessed_time);
                 let accessed_time: String = regex.replace_all(&accessed_time, "$0accessed_time.");
-                write!(f, "{}", accessed_time)
+                write!(f, "{}\n", accessed_time)?;
+				let stream_extension: String = format!("{}", stream_extension);
+                let stream_extension: String = regex.replace_all(&stream_extension, "$0stream_extension.");
+                write!(f, "{}", stream_extension)
             },
             Self::StreamExtension {
 				allocation_possible,

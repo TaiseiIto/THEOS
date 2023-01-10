@@ -44,6 +44,7 @@ impl Object {
         let content = FileOrDirectory::new(&path);
         let directory_entries = vec![
             directory_entry::DirectoryEntry::file_directory(
+				&name,
                 &content,
                 &change_time,
                 &modification_time,
