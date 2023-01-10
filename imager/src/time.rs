@@ -24,6 +24,7 @@ pub struct Time {
     min: u8,
     sec: u8,
     nsec: u32,
+	utc_offset_nsec: u64,
 }
 
 impl Time {
@@ -54,6 +55,7 @@ impl Time {
         let hour: u8 = hour as u8;
         let min: u8 = min as u8;
         let sec: u8 = sec as u8;
+		let utc_offset_nsec: u64 = 0;
         Self {
             year,
             month,
@@ -62,6 +64,7 @@ impl Time {
             min,
             sec,
             nsec,
+			utc_offset_nsec,
         }
     }
 
@@ -110,7 +113,8 @@ impl fmt::Display for Time {
         write!(f, "time.hour = {}\n", self.hour)?;
         write!(f, "time.min = {}\n", self.min)?;
         write!(f, "time.sec = {}\n", self.sec)?;
-        write!(f, "time.nsec = {}", self.nsec)
+        write!(f, "time.nsec = {}\n", self.nsec)?;
+        write!(f, "time.utc_offset_nsec = {}", self.utc_offset_nsec)
     }
 }
 
