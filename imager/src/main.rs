@@ -1,3 +1,5 @@
+mod exfat;
+
 use std::{
 	env,
 	fmt,
@@ -7,8 +9,11 @@ use std::{
 fn main() {
 	let args = Args::new(env::args());
 	eprintln!("{}", args);
+	let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory);
+	eprintln!("{}", exfat);
 }
 
+#[derive(Debug)]
 struct Args {
 	boot_sector: path::PathBuf,
 	source_directory: path::PathBuf,
