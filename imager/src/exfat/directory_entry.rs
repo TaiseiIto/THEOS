@@ -8,7 +8,7 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-	pub fn file(path: &path::Path) -> Self {
+	pub fn file(path: &path::PathBuf) -> Self {
 		let file_attributes = FileAttributes::new(path);
 		Self::File {
 			file_attributes,
@@ -64,7 +64,7 @@ struct FileAttributes {
 }
 
 impl FileAttributes {
-	fn new(path: &path::Path) -> Self {
+	fn new(path: &path::PathBuf) -> Self {
 		let read_only = true;
 		let hidden = false;
 		let system = true;
