@@ -8,9 +8,9 @@ use std::{
 
 fn main() {
 	let args = Args::new(env::args());
-	eprintln!("{}", args);
+	eprintln!("{:#?}", args);
 	let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory);
-	eprintln!("{}", exfat);
+	eprintln!("{:#x?}", exfat);
 }
 
 #[derive(Debug)]
