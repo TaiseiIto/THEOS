@@ -1,14 +1,22 @@
+use std::path;
+
 #[derive(Debug)]
-pub struct DirectoryEntry {
-	entry_type: EntryType,
+pub enum DirectoryEntry {
+	File {
+		file_attributes: FileAttributes,
+	},
 }
 
 impl DirectoryEntry {
-	pub fn file() -> Self {
-		let entry_type = EntryType::file();
-		Self {
-			entry_type,
+	pub fn file(path: &path::Path) -> Self {
+		let file_attributes = FileAttributes::new(path);
+		Self::File {
+			file_attributes,
 		}
+	}
+
+	fn entry_type(&self) -> EntryType {
+		EntryType::file()
 	}
 }
 
@@ -43,6 +51,32 @@ enum TypeCode {
 impl TypeCode {
 	pub fn file() -> Self {
 		Self::File
+	}
+}
+
+#[derive(Debug)]
+struct FileAttributes {
+	read_only: bool,
+	hidden: bool,
+	system: bool,
+	directory: bool,
+	archive: bool,
+}
+
+impl FileAttributes {
+	fn new(path: &path::Path) -> Self {
+		let read_only = true;
+		let hidden = false;
+		let system = true;
+		let directory = path.is_dir();
+		let archive = false;
+		Self {
+			read_only,
+			hidden,
+			system,
+			directory,
+			archive,
+		}
 	}
 }
 

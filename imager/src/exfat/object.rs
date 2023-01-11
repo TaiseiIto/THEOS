@@ -43,7 +43,7 @@ impl FileOrDirectory {
 			let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
 			let length = bytes.len();
 			let first_cluster: u32 = clusters.append(bytes);
-			let directory_entry = directory_entry::DirectoryEntry::file();
+			let directory_entry = directory_entry::DirectoryEntry::file(path);
 			Self::File {
 				first_cluster,
 				length,
