@@ -2,7 +2,6 @@ mod exfat;
 
 use std::{
 	env,
-	fmt,
 	path,
 };
 
@@ -31,13 +30,6 @@ impl Args {
 			boot_sector,
 			source_directory,
 		}
-	}
-}
-
-impl fmt::Display for Args {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "args.boot_sector = {}\n", self.boot_sector.display())?;
-		write!(f, "args.source_directory = {}", self.source_directory.display())
 	}
 }
 
