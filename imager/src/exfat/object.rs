@@ -3,7 +3,10 @@ use {
 		fs,
 		path,
 	},
-	super::cluster,
+	super::{
+		cluster,
+		directory_entry,
+	},
 };
 
 #[derive(Debug)]
@@ -27,6 +30,7 @@ enum FileOrDirectory {
 	File {
 		first_cluster: u32,
 		length: usize,
+		directory_entry: directory_entry::DirectoryEntry,
 	},
 	Directory {
 		children: Vec<Object>,
@@ -38,10 +42,12 @@ impl FileOrDirectory {
 		if path.is_file() {
 			let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
 			let length = bytes.len();
-			let first_cluster = clusters.append(bytes);
+			let first_cluster: u32 = clusters.append(bytes);
+			let directory_entry = directory_entry::DirectoryEntry::file();
 			Self::File {
 				first_cluster,
 				length,
+				directory_entry,
 			}
 		} else if path.is_dir() {
 			let children: Vec<Object> = match fs::read_dir(path) {

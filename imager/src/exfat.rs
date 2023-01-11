@@ -1,5 +1,6 @@
 mod boot_sector;
 mod cluster;
+mod directory_entry;
 mod object;
 
 use std::path;
