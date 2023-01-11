@@ -6,14 +6,15 @@ use std::{
 
 #[link(name="stat", kind="static")]
 extern "C" {
-    fn get_access_time_sec(path: *const raw::c_char) -> u32;
-    fn get_access_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_change_time_sec(path: *const raw::c_char) -> u32;
-    fn get_change_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_accessed_time_sec(path: *const raw::c_char) -> u32;
+    fn get_accessed_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_changed_time_sec(path: *const raw::c_char) -> u32;
+    fn get_changed_time_nsec(path: *const raw::c_char) -> u32;
     fn get_modified_time_sec(path: *const raw::c_char) -> u32;
     fn get_modified_time_nsec(path: *const raw::c_char) -> u32;
 }
 
+#[derive(Debug)]
 pub struct Time {
     year: u32,
     month: u8,
@@ -21,7 +22,7 @@ pub struct Time {
     hour: u8,
     min: u8,
     sec: u8,
-    nsec: u8,
+    nsec: u32,
 }
 
 impl Time {
@@ -63,7 +64,7 @@ impl Time {
         }
     }
 
-    pub fn get_access_time(path: &path::PathBuf) -> Self {
+    pub fn get_accessed_time(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -71,11 +72,11 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_access_time_sec(path), get_access_time_nsec(path))
+            Self::new(get_accessed_time_sec(path), get_accessed_time_nsec(path))
         }
     }
 
-    pub fn get_change_time(path: &path::PathBuf) -> Self {
+    pub fn get_changed_time(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -83,7 +84,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_change_time_sec(path), get_change_time_nsec(path))
+            Self::new(get_changed_time_sec(path), get_changed_time_nsec(path))
         }
     }
 

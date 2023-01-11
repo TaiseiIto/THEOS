@@ -1,4 +1,5 @@
 mod exfat;
+mod time;
 
 use std::{
     env,

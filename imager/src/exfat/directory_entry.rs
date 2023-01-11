@@ -1,17 +1,29 @@
-use std::path;
+use {
+    std::path,
+    super::super::time,
+};
 
 #[derive(Debug)]
 pub enum DirectoryEntry {
     File {
         file_attributes: FileAttributes,
+        create_time: time::Time,
+        modified_time: time::Time,
+        accessed_time: time::Time,
     },
 }
 
 impl DirectoryEntry {
     pub fn file(path: &path::PathBuf) -> Self {
         let file_attributes = FileAttributes::new(path);
+        let create_time: time::Time = time::Time::get_changed_time(path);
+        let modified_time: time::Time = time::Time::get_modified_time(path);
+        let accessed_time: time::Time = time::Time::get_accessed_time(path);
         Self::File {
             file_attributes,
+            create_time,
+            modified_time,
+            accessed_time,
         }
     }
 
