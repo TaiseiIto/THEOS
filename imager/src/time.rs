@@ -1,7 +1,7 @@
 use std::{
-	ffi,
-	os::raw,
-	path,
+    ffi,
+    os::raw,
+    path,
 };
 
 #[link(name="stat", kind="static")]
