@@ -34,8 +34,8 @@ impl BootSector {
 	pub fn new(boot_sector: path::PathBuf) -> Self {
 		const SIZE: usize = mem::size_of::<BootSector>();
 		type Bytes = [u8; SIZE];
-		let boot_sector: Vec<u8> = fs::read(&boot_sector).expect(&format!("Can't read {} !", boot_sector.display()));
-		let boot_sector: Bytes = boot_sector.try_into().expect(&format!("Can't convert boot sector from Vec<u8> to [u8; {}]", SIZE));
+		let boot_sector: Vec<u8> = fs::read(&boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
+		let boot_sector: Bytes = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to Bytes!");
 		unsafe {
 			mem::transmute::<Bytes, Self>(boot_sector)
 		}
