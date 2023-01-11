@@ -22,7 +22,7 @@ impl Object {
 #[derive(Debug)]
 enum FileOrDirectory {
 	File {
-		content: Vec<u8>,
+		bytes: Vec<u8>,
 	},
 	Directory {
 		children: Vec<Object>,
@@ -32,9 +32,9 @@ enum FileOrDirectory {
 impl FileOrDirectory {
 	fn new(path: &path::PathBuf) -> Self {
 		if path.is_file() {
-			let content: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+			let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
 			Self::File {
-				content,
+				bytes,
 			}
 		} else if path.is_dir() {
 			let children: Vec<Object> = match fs::read_dir(path) {

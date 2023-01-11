@@ -40,5 +40,11 @@ impl BootSector {
 			mem::transmute::<Bytes, Self>(boot_sector)
 		}
 	}
+
+    pub fn cluster_size(&self) -> usize {
+        let bytes_per_sector: usize = 1 << self.bytes_per_sector_shift;
+        let sectors_per_cluster: usize = 1 << self.sectors_per_cluster_shift;
+        bytes_per_sector * sectors_per_cluster
+    }
 }
 
