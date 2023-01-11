@@ -1,6 +1,9 @@
-use std::{
-	fs,
-	path,
+use {
+	std::{
+		fs,
+		path,
+	},
+	super::cluster,
 };
 
 #[derive(Debug)]
@@ -10,8 +13,8 @@ pub struct Object {
 }
 
 impl Object {
-	pub fn new(path: path::PathBuf) -> Self {
-		let content = FileOrDirectory::new(&path);
+	pub fn new(path: path::PathBuf, clusters: &mut cluster::Clusters) -> Self {
+		let content = FileOrDirectory::new(&path, clusters);
 		Self {
 			path,
 			content,
@@ -22,7 +25,8 @@ impl Object {
 #[derive(Debug)]
 enum FileOrDirectory {
 	File {
-		bytes: Vec<u8>,
+		first_cluster: u32,
+		length: usize,
 	},
 	Directory {
 		children: Vec<Object>,
@@ -30,18 +34,21 @@ enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-	fn new(path: &path::PathBuf) -> Self {
+	fn new(path: &path::PathBuf, clusters: &mut cluster::Clusters) -> Self {
 		if path.is_file() {
-			let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+			let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+			let length = bytes.len();
+			let first_cluster = clusters.append(bytes);
 			Self::File {
-				bytes,
+				first_cluster,
+				length,
 			}
 		} else if path.is_dir() {
 			let children: Vec<Object> = match fs::read_dir(path) {
 				Ok(directory) => directory
 					.into_iter()
 					.filter_map(|directory| directory.ok())
-					.map(|directory| Object::new(directory.path()))
+					.map(|directory| Object::new(directory.path(), clusters))
 					.collect(),
 				_ => vec![],
 			};
