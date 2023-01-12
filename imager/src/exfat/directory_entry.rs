@@ -18,6 +18,7 @@ pub enum DirectoryEntry {
     StreamExtension {
         allocation_possible: bool,
         no_fat_chain: bool,
+        file_name: Box<Self>,
     },
     FileName {
         allocation_possible: bool,
@@ -45,12 +46,14 @@ impl DirectoryEntry {
         }
     }
 
-    fn stream_extension(name: String) -> Self {
+    fn stream_extension(file_name: String) -> Self {
         let allocation_possible = true;
         let no_fat_chain = false;
+        let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             allocation_possible,
             no_fat_chain,
+            file_name,
         }
     }
 
@@ -80,6 +83,7 @@ impl DirectoryEntry {
             Self::StreamExtension {
                 allocation_possible,
                 no_fat_chain,
+                file_name,
             } => EntryType::stream_extension(),
             Self::FileName {
                 allocation_possible,
