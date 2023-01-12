@@ -10,9 +10,13 @@ pub enum DirectoryEntry {
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
-        stream_extension: Box<Self>,
+        stream_extension: Option<Box<Self>>,
     },
     StreamExtension {
+        allocation_possible: bool,
+        no_fat_chain: bool,
+    },
+    FileName {
         allocation_possible: bool,
         no_fat_chain: bool,
     },
@@ -24,7 +28,13 @@ impl DirectoryEntry {
         let create_time: time::Time = time::Time::get_changed_time(path);
         let modified_time: time::Time = time::Time::get_modified_time(path);
         let accessed_time: time::Time = time::Time::get_accessed_time(path);
-        let stream_extension: Box<Self> = Box::new(Self::stream_extension());
+        let stream_extension: Option<Box<Self>> = match path.file_name() {
+            Some(name) => match name.to_str() {
+                Some(name) => Some(Box::new(Self::stream_extension(name.to_string()))),
+                None => None,
+            },
+            None => None,
+        };
         Self::File {
             file_attributes,
             create_time,
@@ -34,10 +44,19 @@ impl DirectoryEntry {
         }
     }
 
-    fn stream_extension() -> Self {
+    fn stream_extension(name: String) -> Self {
         let allocation_possible = true;
         let no_fat_chain = false;
         Self::StreamExtension {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn file_name(name: String) -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = false;
+        Self::FileName {
             allocation_possible,
             no_fat_chain,
         }
