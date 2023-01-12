@@ -103,8 +103,19 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => {
+                let mut bytes: Vec<u8> = vec![];
                 let entry_type: u8 = self.entry_type().to_byte();
-                [0; DIRECTORY_ENTRY_SIZE]
+                let general_flags: u8 = general_flags.to_byte();
+                let mut file_name: Vec<u8> = file_name
+                    .to_vec()
+                    .iter()
+                    .map(|word| vec![*word as u8, (*word >> 8) as u8])
+                    .flatten()
+                    .collect();
+                bytes.push(entry_type);
+                bytes.push(general_flags);
+                bytes.append(&mut file_name);
+                bytes.try_into().expect("Can't convert Vec<u8> to [u8; DIRECTORY_ENTRY_SIZE]")
             },
         }
     }
@@ -266,6 +277,20 @@ impl GeneralFlags {
             allocation_possible,
             no_fat_chain,
         }
+    }
+
+    fn to_byte(&self) -> u8 {
+        let allocation_possible = if self.allocation_possible {
+            1
+        } else {
+            0
+        };
+        let no_fat_chain = if self.no_fat_chain {
+            2
+        } else {
+            0
+        };
+        allocation_possible + no_fat_chain
     }
 }
 
