@@ -63,7 +63,23 @@ impl DirectoryEntry {
     }
 
     fn entry_type(&self) -> EntryType {
-        EntryType::file()
+        match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => EntryType::file(),
+            Self::StreamExtension {
+                allocation_possible,
+                no_fat_chain,
+            } => EntryType::stream_extension(),
+            Self::FileName {
+                allocation_possible,
+                no_fat_chain,
+            } => EntryType::file_name(),
+        }
     }
 }
 
@@ -101,12 +117,26 @@ impl EntryType {
             in_use,
         }
     }
+
+    fn file_name() -> Self {
+        let type_code = TypeCode::FileName;
+        let type_importance = false;
+        let type_category = true;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
 }
 
 #[derive(Debug)]
 enum TypeCode {
     File,
     StreamExtension,
+    FileName,
 }
 
 impl TypeCode {
@@ -114,6 +144,7 @@ impl TypeCode {
         match self {
             Self::File => 0x05,
             Self::StreamExtension => 0x00,
+            Self::FileName => 0x01,
         }
     }
 }
