@@ -6,6 +6,8 @@ use {
     super::super::time,
 };
 
+const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
+
 #[derive(Debug)]
 pub enum DirectoryEntry {
     File {
@@ -23,7 +25,7 @@ pub enum DirectoryEntry {
     FileName {
         allocation_possible: bool,
         no_fat_chain: bool,
-        file_name: Vec<u16>,
+        file_name: [u16; FILE_NAME_BLOCK_LENGTH],
         next_file_name: Option<Box<Self>>,
     },
 }
@@ -63,15 +65,15 @@ impl DirectoryEntry {
     }
 
     fn file_name(mut file_name: Vec<u16>) -> Self {
-        const FILE_NAME_BLOCK_SIZE: usize = 0xf;
         let allocation_possible = false;
         let no_fat_chain = false;
-        let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_SIZE < file_name.len() {
-            Some(file_name.split_off(FILE_NAME_BLOCK_SIZE))
+        let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_LENGTH < file_name.len() {
+            Some(file_name.split_off(FILE_NAME_BLOCK_LENGTH))
         } else {
             None
         };
-        file_name.resize(FILE_NAME_BLOCK_SIZE, 0x00);
+        file_name.resize(FILE_NAME_BLOCK_LENGTH, 0x00);
+        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.try_into().expect("Can't convert Vec<u16> to [u16; FILE_NAME_BLOCK_LENGTH]");
         let next_file_name: Option<Box<Self>> = match remaining_file_name {
             Some(remaining_file_name) => Some(Box::new(Self::file_name(remaining_file_name))),
             None => None,
