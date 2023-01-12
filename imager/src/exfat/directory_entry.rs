@@ -19,13 +19,11 @@ pub enum DirectoryEntry {
         stream_extension: Box<Self>,
     },
     StreamExtension {
-        allocation_possible: bool,
-        no_fat_chain: bool,
+        general_flags: GeneralFlags,
         file_name: Box<Self>,
     },
     FileName {
-        allocation_possible: bool,
-        no_fat_chain: bool,
+        general_flags: GeneralFlags,
         file_name: [u16; FILE_NAME_BLOCK_LENGTH],
         next_file_name: Option<Box<Self>>,
     },
@@ -51,23 +49,20 @@ impl DirectoryEntry {
     }
 
     fn stream_extension(file_name: String) -> Self {
-        let allocation_possible = true;
-        let no_fat_chain = false;
+        let general_flags = GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
             .chars()
             .map(|c| c as u16)
             .collect();
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
-            allocation_possible,
-            no_fat_chain,
+            general_flags,
             file_name,
         }
     }
 
     fn file_name(mut file_name: Vec<u16>) -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = false;
+        let general_flags = GeneralFlags::file_name();
         let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_LENGTH < file_name.len() {
             Some(file_name.split_off(FILE_NAME_BLOCK_LENGTH))
         } else {
@@ -80,8 +75,7 @@ impl DirectoryEntry {
             None => None,
         };
         Self::FileName {
-            allocation_possible,
-            no_fat_chain,
+            general_flags,
             file_name,
             next_file_name,
         }
@@ -99,15 +93,13 @@ impl DirectoryEntry {
                 [0; DIRECTORY_ENTRY_SIZE]
             },
             Self::StreamExtension {
-                allocation_possible,
-                no_fat_chain,
+                general_flags,
                 file_name,
             } => {
                 [0; DIRECTORY_ENTRY_SIZE]
             },
             Self::FileName {
-                allocation_possible,
-                no_fat_chain,
+                general_flags,
                 file_name,
                 next_file_name,
             } => {
@@ -127,13 +119,11 @@ impl DirectoryEntry {
                 stream_extension,
             } => EntryType::file(),
             Self::StreamExtension {
-                allocation_possible,
-                no_fat_chain,
+                general_flags,
                 file_name,
             } => EntryType::stream_extension(),
             Self::FileName {
-                allocation_possible,
-                no_fat_chain,
+                general_flags,
                 file_name,
                 next_file_name,
             } => EntryType::file_name(),
@@ -249,6 +239,32 @@ impl FileAttributes {
             system,
             directory,
             archive,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct GeneralFlags {
+    allocation_possible: bool,
+    no_fat_chain: bool,
+}
+
+impl GeneralFlags {
+    fn stream_extension() -> Self {
+        let allocation_possible = true;
+        let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn file_name() -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
         }
     }
 }
