@@ -155,6 +155,26 @@ impl EntryType {
             in_use,
         }
     }
+
+    fn to_byte(&self) -> u8 {
+        let type_code: u8 = self.type_code.to_byte();
+        let type_importance: u8 = if self.type_importance {
+            1 << 5
+        } else {
+            0
+        };
+        let type_category: u8 = if self.type_category {
+            1 << 6
+        } else {
+            0
+        };
+        let in_use: u8 = if self.in_use {
+            1 << 7
+        } else {
+            0
+        };
+        type_code + type_importance + type_category + in_use
+    }
 }
 
 #[derive(Debug)]
