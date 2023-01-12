@@ -3,7 +3,10 @@ use {
         ffi,
         path,
     },
-    super::super::time,
+    super::{
+        super::time,
+        upcase_table,
+    },
 };
 
 const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
@@ -31,7 +34,7 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file(path: &path::PathBuf) -> Self {
+    pub fn file(path: &path::PathBuf, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
         let create_time: time::Time = time::Time::get_changed_time(path);
         let modified_time: time::Time = time::Time::get_modified_time(path);
@@ -39,7 +42,7 @@ impl DirectoryEntry {
         let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
-        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name));
+        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, upcase_table));
         Self::File {
             file_attributes,
             create_time,
@@ -49,7 +52,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn stream_extension(file_name: String) -> Self {
+    fn stream_extension(file_name: String, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let general_flags = GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
             .chars()

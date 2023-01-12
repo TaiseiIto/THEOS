@@ -6,6 +6,7 @@ use {
     super::{
         cluster,
         directory_entry,
+        upcase_table,
     },
 };
 
@@ -17,9 +18,9 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(path: path::PathBuf, clusters: &mut cluster::Clusters) -> Self {
-        let content = FileOrDirectory::new(&path, clusters);
-        let directory_entry = directory_entry::DirectoryEntry::file(&path);
+    pub fn new(path: path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
+        let content = FileOrDirectory::new(&path, clusters, upcase_table);
+        let directory_entry = directory_entry::DirectoryEntry::file(&path, upcase_table);
         Self {
             path,
             content,
@@ -40,7 +41,7 @@ enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    fn new(path: &path::PathBuf, clusters: &mut cluster::Clusters) -> Self {
+    fn new(path: &path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length = bytes.len();
@@ -54,7 +55,7 @@ impl FileOrDirectory {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
-                    .map(|directory| Object::new(directory.path(), clusters))
+                    .map(|directory| Object::new(directory.path(), clusters, upcase_table))
                     .collect(),
                 _ => vec![],
             };
