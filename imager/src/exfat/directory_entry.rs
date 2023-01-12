@@ -1,5 +1,8 @@
 use {
-    std::path,
+    std::{
+        ffi,
+        path,
+    },
     super::super::time,
 };
 
@@ -10,7 +13,7 @@ pub enum DirectoryEntry {
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
-        stream_extension: Option<Box<Self>>,
+        stream_extension: Box<Self>,
     },
     StreamExtension {
         allocation_possible: bool,
@@ -29,13 +32,10 @@ impl DirectoryEntry {
         let create_time: time::Time = time::Time::get_changed_time(path);
         let modified_time: time::Time = time::Time::get_modified_time(path);
         let accessed_time: time::Time = time::Time::get_accessed_time(path);
-        let stream_extension: Option<Box<Self>> = match path.file_name() {
-            Some(file_name) => match file_name.to_str() {
-                Some(file_name) => Some(Box::new(Self::stream_extension(file_name.to_string()))),
-                None => None,
-            },
-            None => None,
-        };
+        let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
+        let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
+        let file_name: String = file_name.to_string();
+        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name));
         Self::File {
             file_attributes,
             create_time,
