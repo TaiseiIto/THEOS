@@ -19,6 +19,7 @@ pub enum DirectoryEntry {
     FileName {
         allocation_possible: bool,
         no_fat_chain: bool,
+        file_name: Vec<u16>,
     },
 }
 
@@ -29,8 +30,8 @@ impl DirectoryEntry {
         let modified_time: time::Time = time::Time::get_modified_time(path);
         let accessed_time: time::Time = time::Time::get_accessed_time(path);
         let stream_extension: Option<Box<Self>> = match path.file_name() {
-            Some(name) => match name.to_str() {
-                Some(name) => Some(Box::new(Self::stream_extension(name.to_string()))),
+            Some(file_name) => match file_name.to_str() {
+                Some(file_name) => Some(Box::new(Self::stream_extension(file_name.to_string()))),
                 None => None,
             },
             None => None,
@@ -53,12 +54,17 @@ impl DirectoryEntry {
         }
     }
 
-    fn file_name(name: String) -> Self {
+    fn file_name(file_name: String) -> Self {
         let allocation_possible = false;
         let no_fat_chain = false;
+        let file_name: Vec<u16> = file_name
+            .chars()
+            .map(|c| c as u16)
+            .collect();
         Self::FileName {
             allocation_possible,
             no_fat_chain,
+            file_name,
         }
     }
 
@@ -78,6 +84,7 @@ impl DirectoryEntry {
             Self::FileName {
                 allocation_possible,
                 no_fat_chain,
+                file_name,
             } => EntryType::file_name(),
         }
     }
