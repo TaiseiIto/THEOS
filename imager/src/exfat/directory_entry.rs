@@ -24,6 +24,7 @@ pub enum DirectoryEntry {
     StreamExtension {
         general_flags: GeneralFlags,
         name_length: u8,
+        name_hash: u16,
         file_name: Box<Self>,
     },
     FileName {
@@ -59,10 +60,16 @@ impl DirectoryEntry {
             .map(|c| c as u16)
             .collect();
         let name_length: u8 = file_name.len() as u8;
+        let name_hash: u16 = file_name
+            .iter()
+            .map(|c| [*c as u8, (*c >> 8) as u8])
+            .flatten()
+            .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             general_flags,
             name_length,
+            name_hash,
             file_name,
         }
     }
@@ -101,6 +108,7 @@ impl DirectoryEntry {
             Self::StreamExtension {
                 general_flags,
                 name_length,
+                name_hash,
                 file_name,
             } => {
                 [0; DIRECTORY_ENTRY_SIZE]
@@ -139,6 +147,7 @@ impl DirectoryEntry {
             Self::StreamExtension {
                 general_flags,
                 name_length,
+                name_hash,
                 file_name,
             } => EntryType::stream_extension(),
             Self::FileName {
