@@ -24,6 +24,7 @@ pub enum DirectoryEntry {
         allocation_possible: bool,
         no_fat_chain: bool,
         file_name: Vec<u16>,
+        next_file_name: Option<Box<Self>>,
     },
 }
 
@@ -49,6 +50,10 @@ impl DirectoryEntry {
     fn stream_extension(file_name: String) -> Self {
         let allocation_possible = true;
         let no_fat_chain = false;
+        let file_name: Vec<u16> = file_name
+            .chars()
+            .map(|c| c as u16)
+            .collect();
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             allocation_possible,
@@ -57,17 +62,25 @@ impl DirectoryEntry {
         }
     }
 
-    fn file_name(file_name: String) -> Self {
+    fn file_name(mut file_name: Vec<u16>) -> Self {
+        const FILE_NAME_BLOCK_SIZE: usize = 0xf;
         let allocation_possible = false;
         let no_fat_chain = false;
-        let file_name: Vec<u16> = file_name
-            .chars()
-            .map(|c| c as u16)
-            .collect();
+        let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_SIZE < file_name.len() {
+            Some(file_name.split_off(FILE_NAME_BLOCK_SIZE))
+        } else {
+            None
+        };
+        file_name.resize(FILE_NAME_BLOCK_SIZE, 0x00);
+        let next_file_name: Option<Box<Self>> = match remaining_file_name {
+            Some(remaining_file_name) => Some(Box::new(Self::file_name(remaining_file_name))),
+            None => None,
+        };
         Self::FileName {
             allocation_possible,
             no_fat_chain,
             file_name,
+            next_file_name,
         }
     }
 
@@ -89,6 +102,7 @@ impl DirectoryEntry {
                 allocation_possible,
                 no_fat_chain,
                 file_name,
+                next_file_name,
             } => EntryType::file_name(),
         }
     }
