@@ -7,6 +7,7 @@ use {
 };
 
 const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
+const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 
 #[derive(Debug)]
 pub enum DirectoryEntry {
@@ -83,6 +84,36 @@ impl DirectoryEntry {
             no_fat_chain,
             file_name,
             next_file_name,
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => {
+                [0; DIRECTORY_ENTRY_SIZE]
+            },
+            Self::StreamExtension {
+                allocation_possible,
+                no_fat_chain,
+                file_name,
+            } => {
+                [0; DIRECTORY_ENTRY_SIZE]
+            },
+            Self::FileName {
+                allocation_possible,
+                no_fat_chain,
+                file_name,
+                next_file_name,
+            } => {
+                let entry_type: u8 = self.entry_type().to_byte();
+                [0; DIRECTORY_ENTRY_SIZE]
+            },
         }
     }
 
