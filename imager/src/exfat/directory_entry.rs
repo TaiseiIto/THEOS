@@ -26,6 +26,7 @@ pub enum DirectoryEntry {
         general_flags: GeneralFlags,
         name_length: u8,
         name_hash: u16,
+        first_cluster: u32,
         data_length: usize,
         file_name: Box<Self>,
     },
@@ -67,18 +68,19 @@ impl DirectoryEntry {
             .map(|c| [*c as u8, (*c >> 8) as u8])
             .flatten()
             .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
-        let data_length: usize = match content {
+        let (first_cluster, data_length): (u32, usize) = match content {
             object::FileOrDirectory::File {
                 first_cluster,
                 length,
-            } => *length,
-            _ => 0,
+            } => (*first_cluster, *length),
+            _ => (0, 0),
         };
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             general_flags,
             name_length,
             name_hash,
+            first_cluster,
             data_length,
             file_name,
         }
@@ -119,6 +121,7 @@ impl DirectoryEntry {
                 general_flags,
                 name_length,
                 name_hash,
+                first_cluster,
                 data_length,
                 file_name,
             } => {
@@ -159,6 +162,7 @@ impl DirectoryEntry {
                 general_flags,
                 name_length,
                 name_hash,
+                first_cluster,
                 data_length,
                 file_name,
             } => EntryType::stream_extension(),
