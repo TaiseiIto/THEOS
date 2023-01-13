@@ -4,6 +4,7 @@ use {
         path,
     },
     super::{
+        object,
         super::time,
         upcase_table,
     },
@@ -25,6 +26,7 @@ pub enum DirectoryEntry {
         general_flags: GeneralFlags,
         name_length: u8,
         name_hash: u16,
+        data_length: usize,
         file_name: Box<Self>,
     },
     FileName {
@@ -35,7 +37,7 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file(path: &path::PathBuf, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    pub fn file(path: &path::PathBuf, content: &object::FileOrDirectory, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
         let create_time: time::Time = time::Time::get_changed_time(path);
         let modified_time: time::Time = time::Time::get_modified_time(path);
@@ -43,7 +45,7 @@ impl DirectoryEntry {
         let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
-        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, upcase_table));
+        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, content, upcase_table));
         Self::File {
             file_attributes,
             create_time,
@@ -53,7 +55,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn stream_extension(file_name: String, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    fn stream_extension(file_name: String, content: &object::FileOrDirectory, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let general_flags = GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
             .chars()
@@ -65,11 +67,19 @@ impl DirectoryEntry {
             .map(|c| [*c as u8, (*c >> 8) as u8])
             .flatten()
             .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
+        let data_length: usize = match content {
+            object::FileOrDirectory::File {
+                first_cluster,
+                length,
+            } => *length,
+            _ => 0,
+        };
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             general_flags,
             name_length,
             name_hash,
+            data_length,
             file_name,
         }
     }
@@ -109,6 +119,7 @@ impl DirectoryEntry {
                 general_flags,
                 name_length,
                 name_hash,
+                data_length,
                 file_name,
             } => {
                 [0; DIRECTORY_ENTRY_SIZE]
@@ -148,6 +159,7 @@ impl DirectoryEntry {
                 general_flags,
                 name_length,
                 name_hash,
+                data_length,
                 file_name,
             } => EntryType::stream_extension(),
             Self::FileName {

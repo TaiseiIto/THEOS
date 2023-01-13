@@ -20,7 +20,7 @@ pub struct Object {
 impl Object {
     pub fn new(path: path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let content = FileOrDirectory::new(&path, clusters, upcase_table);
-        let directory_entry = directory_entry::DirectoryEntry::file(&path, upcase_table);
+        let directory_entry = directory_entry::DirectoryEntry::file(&path, &content, upcase_table);
         Self {
             path,
             content,
@@ -30,7 +30,7 @@ impl Object {
 }
 
 #[derive(Debug)]
-enum FileOrDirectory {
+pub enum FileOrDirectory {
     File {
         first_cluster: u32,
         length: usize,
