@@ -14,6 +14,9 @@ extern "C" {
     fn get_modified_time_nsec(path: *const raw::c_char) -> u32;
 }
 
+const UNIX_YEAR: u32 = 1970;
+const FAT_YEAR: u32 = 1980;
+
 #[derive(Debug)]
 pub struct Time {
     year: u32,
@@ -36,7 +39,7 @@ impl Time {
         let unix_epoch_hour = unix_epoch_min / min_per_hour;
         let hour = unix_epoch_hour % hour_per_day;
         let unix_epoch_day = unix_epoch_hour / hour_per_day;
-        let mut year = 1970;
+        let mut year = UNIX_YEAR;
         let mut month = 1;
         let mut day = unix_epoch_day;
         while (day_per_month(year, month) as u32) < day {
@@ -98,6 +101,26 @@ impl Time {
         unsafe {
             Self::new(get_modified_time_sec(path), get_modified_time_nsec(path))
         }
+    }
+
+    pub fn get_timestamp(&self) -> u32 {
+        let double_seconds: u32 = (self.sec as u32) / 2;
+        let minute: u32 = (self.min as u32) << 5;
+        let hour: u32 = (self.hour as u32) << 11;
+        let day: u32 = (self.day as u32) << 16;
+        let month: u32 = (self.month as u32) << 21;
+        let year: u32 = self.year - FAT_YEAR << 25;
+        year + month + day + hour + minute + double_seconds
+    }
+
+    pub fn get_10ms_increment(&self) -> u8 {
+        let sec: u8 = 100 * (self.sec % 2);
+        let msec: u8 = (self.nsec / 10000) as u8;
+        sec + msec
+    }
+
+    pub fn get_tz_offset(&self) -> u8 {
+        0
     }
 }
 
