@@ -18,7 +18,6 @@ const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 pub enum DirectoryEntry {
     File {
         file_attributes: FileAttributes,
-        secondary_count: usize,
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
@@ -49,10 +48,8 @@ impl DirectoryEntry {
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
         let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, content, upcase_table));
-        let secondary_count: usize = stream_extension.directory_entry_set_length();
         Self::File {
             file_attributes,
-            secondary_count,
             create_time,
             modified_time,
             accessed_time,
@@ -116,7 +113,6 @@ impl DirectoryEntry {
         match self {
             Self::File {
                 file_attributes,
-                secondary_count,
                 create_time,
                 modified_time,
                 accessed_time,
@@ -176,7 +172,6 @@ impl DirectoryEntry {
         match self {
             Self::File {
                 file_attributes,
-                secondary_count,
                 create_time,
                 modified_time,
                 accessed_time,
@@ -202,7 +197,6 @@ impl DirectoryEntry {
         match self {
             Self::File {
                 file_attributes,
-                secondary_count,
                 create_time,
                 modified_time,
                 accessed_time,
@@ -234,13 +228,24 @@ trait Raw {
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
-struct RawFileName {
+struct RawFile {
     entry_type: u8,
-    general_flags: u8,
-    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
+    secondary_count: u8,
+    set_checksum: u16,
+    file_attribute: u16,
+    reserved_1: u16,
+    create_timestamp: u32,
+    last_modified_timestamp: u32,
+    last_accessed_timestamp: u32,
+    create_10ms_increment: u8,
+    last_modified_10ms_increment: u8,
+    create_utc_offset: u8,
+    last_modified_utc_offset: u8,
+    last_accessed_utc_offset: u8,
+    reserved_2: [u8; 7],
 }
 
-impl Raw for RawFileName {
+impl Raw for RawFile {
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
@@ -271,6 +276,21 @@ impl Raw for RawStreamExtension {
     }
 }
 
+#[derive(Clone, Copy)]
+#[repr(packed)]
+struct RawFileName {
+    entry_type: u8,
+    general_flags: u8,
+    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
+}
+
+impl Raw for RawFileName {
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
 
 #[derive(Debug)]
 struct EntryType {
