@@ -1,6 +1,7 @@
 use {
     std::{
         ffi,
+        mem,
         path,
     },
     super::{
@@ -132,19 +133,15 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => {
-                let mut bytes: Vec<u8> = vec![];
                 let entry_type: u8 = self.entry_type().to_byte();
                 let general_flags: u8 = general_flags.to_byte();
-                let mut file_name: Vec<u8> = file_name
-                    .to_vec()
-                    .iter()
-                    .map(|word| vec![*word as u8, (*word >> 8) as u8])
-                    .flatten()
-                    .collect();
-                bytes.push(entry_type);
-                bytes.push(general_flags);
-                bytes.append(&mut file_name);
-                bytes.try_into().expect("Can't convert Vec<u8> to [u8; DIRECTORY_ENTRY_SIZE]")
+                let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
+                let raw = RawFileName {
+                    entry_type,
+                    general_flags,
+                    file_name,
+                };
+                raw.to_bytes()
             },
         }
     }
@@ -171,6 +168,26 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => EntryType::file_name(),
+        }
+    }
+}
+
+trait Raw {
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
+}
+
+#[derive(Clone, Copy)]
+#[repr(packed)]
+struct RawFileName {
+    entry_type: u8,
+    general_flags: u8,
+    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
+}
+
+impl Raw for RawFileName {
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
     }
 }
