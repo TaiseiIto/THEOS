@@ -18,6 +18,7 @@ const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 pub enum DirectoryEntry {
     File {
         file_attributes: FileAttributes,
+        secondary_count: usize,
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
@@ -48,8 +49,10 @@ impl DirectoryEntry {
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
         let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, content, upcase_table));
+        let secondary_count: usize = stream_extension.directory_entry_set_length();
         Self::File {
             file_attributes,
+            secondary_count,
             create_time,
             modified_time,
             accessed_time,
@@ -113,6 +116,7 @@ impl DirectoryEntry {
         match self {
             Self::File {
                 file_attributes,
+                secondary_count,
                 create_time,
                 modified_time,
                 accessed_time,
@@ -172,6 +176,7 @@ impl DirectoryEntry {
         match self {
             Self::File {
                 file_attributes,
+                secondary_count,
                 create_time,
                 modified_time,
                 accessed_time,
@@ -190,6 +195,35 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => EntryType::file_name(),
+        }
+    }
+
+    fn directory_entry_set_length(&self) -> usize {
+        match self {
+            Self::File {
+                file_attributes,
+                secondary_count,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => 1 + stream_extension.directory_entry_set_length(),
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => 1 + file_name.directory_entry_set_length(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => 1 + match next_file_name {
+                Some(next_file_name) => next_file_name.directory_entry_set_length(),
+                None => 0,
+            },
         }
     }
 }
