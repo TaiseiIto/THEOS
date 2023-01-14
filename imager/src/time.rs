@@ -119,7 +119,7 @@ impl Time {
         sec + msec
     }
 
-    pub fn get_tz_offset(&self) -> u8 {
+    pub fn get_utc_offset(&self) -> u8 {
         0
     }
 }

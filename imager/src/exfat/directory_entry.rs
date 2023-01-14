@@ -117,9 +117,7 @@ impl DirectoryEntry {
                 modified_time,
                 accessed_time,
                 stream_extension,
-            } => {
-                [0; DIRECTORY_ENTRY_SIZE]
-            },
+            } => RawFile::new(self).to_bytes(),
             Self::StreamExtension {
                 general_flags,
                 name_length,
@@ -201,7 +199,7 @@ struct RawFile {
     entry_type: u8,
     secondary_count: u8,
     set_checksum: u16,
-    file_attribute: u16,
+    file_attributes: u16,
     reserved_1: u16,
     create_timestamp: u32,
     last_modified_timestamp: u32,
@@ -214,13 +212,57 @@ struct RawFile {
     reserved_2: [u8; 7],
 }
 
-// impl Raw for RawFile {
-//     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-//         unsafe {
-//             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
-//         }
-//     }
-// }
+impl Raw for RawFile {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => {
+                let secondary_count: u8 = stream_extension.directory_entry_set_length() as u8;
+                let set_checksum: u16 = 0;
+                let file_attributes: u16 = file_attributes.to_word();
+                let reserved_1: u16 = 0;
+                let create_timestamp: u32 = create_time.get_timestamp();
+                let last_modified_timestamp: u32 = modified_time.get_timestamp();
+                let last_accessed_timestamp: u32 = accessed_time.get_timestamp();
+                let create_10ms_increment: u8 = create_time.get_10ms_increment();
+                let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
+                let create_utc_offset: u8 = create_time.get_utc_offset();
+                let last_modified_utc_offset: u8 = modified_time.get_utc_offset();
+                let last_accessed_utc_offset: u8 = accessed_time.get_utc_offset();
+                let reserved_2: [u8; 7] = [0; 7];
+                Self {
+                    entry_type,
+                    secondary_count,
+                    set_checksum,
+                    file_attributes,
+                    reserved_1,
+                    create_timestamp,
+                    last_modified_timestamp,
+                    last_accessed_timestamp,
+                    create_10ms_increment,
+                    last_modified_10ms_increment,
+                    create_utc_offset,
+                    last_modified_utc_offset,
+                    last_accessed_utc_offset,
+                    reserved_2,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawFile."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -239,7 +281,7 @@ struct RawStreamExtension {
 
 impl Raw for RawStreamExtension {
     fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type = directory_entry.entry_type().to_byte();
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
         match directory_entry {
             DirectoryEntry::StreamExtension {
                 general_flags,
@@ -292,7 +334,7 @@ struct RawFileName {
 
 impl Raw for RawFileName {
     fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type = directory_entry.entry_type().to_byte();
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
         match directory_entry {
             DirectoryEntry::FileName {
                 general_flags,
@@ -427,6 +469,30 @@ impl FileAttributes {
             directory,
             archive,
         }
+    }
+
+    fn to_word(&self) -> u16 {
+        let read_only: u16 = match self.read_only {
+            true => 1,
+            false => 0,
+        };
+        let hidden: u16 = match self.hidden {
+            true => 1 << 1,
+            false => 0,
+        };
+        let system: u16 = match self.system {
+            true => 1 << 2,
+            false => 0,
+        };
+        let directory: u16 = match self.system {
+            true => 1 << 4,
+            false => 0,
+        };
+        let archive: u16 = match self.archive {
+            true => 1 << 5,
+            false => 0,
+        };
+        read_only + hidden + system + directory + archive
     }
 }
 
