@@ -108,6 +108,7 @@ impl DirectoryEntry {
     }
 
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        let entry_type: u8 = self.entry_type().to_byte();
         match self {
             Self::File {
                 file_attributes,
@@ -126,14 +127,34 @@ impl DirectoryEntry {
                 data_length,
                 file_name,
             } => {
-                [0; DIRECTORY_ENTRY_SIZE]
+                let general_flags: u8 = general_flags.to_byte();
+                let reserved_1: u8 = 0;
+                let name_length: u8 = *name_length;
+                let name_hash: u16 = *name_hash;
+                let reserved_2: u16 = 0;
+                let reserved_3: u32 = 0;
+                let data_length: u64 = *data_length as u64;
+                let valid_data_length: u64 = data_length;
+                let first_cluster: u32 = *first_cluster;
+                let raw = RawStreamExtension {
+                    entry_type,
+                    general_flags,
+                    reserved_1,
+                    name_length,
+                    name_hash,
+                    reserved_2,
+                    valid_data_length,
+                    reserved_3,
+                    first_cluster,
+                    data_length,
+                };
+                raw.to_bytes()
             },
             Self::FileName {
                 general_flags,
                 file_name,
                 next_file_name,
             } => {
-                let entry_type: u8 = self.entry_type().to_byte();
                 let general_flags: u8 = general_flags.to_byte();
                 let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
                 let raw = RawFileName {
@@ -191,6 +212,30 @@ impl Raw for RawFileName {
         }
     }
 }
+
+#[derive(Clone, Copy)]
+#[repr(packed)]
+struct RawStreamExtension {
+    entry_type: u8,
+    general_flags: u8,
+    reserved_1: u8,
+    name_length: u8,
+    name_hash: u16,
+    reserved_2: u16,
+    valid_data_length: u64,
+    reserved_3: u32,
+    first_cluster: u32,
+    data_length: u64,
+}
+
+impl Raw for RawStreamExtension {
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
 
 #[derive(Debug)]
 struct EntryType {
