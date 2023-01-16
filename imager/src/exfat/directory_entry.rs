@@ -134,6 +134,37 @@ impl DirectoryEntry {
         }
     }
 
+    fn to_entry_set_bytes(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = self.to_bytes().to_vec();
+        let mut tail_bytes: Vec<u8> = match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => stream_extension.to_entry_set_bytes(),
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => file_name.to_entry_set_bytes(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => match next_file_name {
+                Some(next_file_name) => next_file_name.to_entry_set_bytes(),
+                None => vec![],
+            },
+        };
+        bytes.append(&mut tail_bytes);
+        bytes
+    }
+
     fn entry_type(&self) -> EntryType {
         match self {
             Self::File {
