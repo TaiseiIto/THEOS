@@ -18,8 +18,13 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(path: path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let content = FileOrDirectory::new(&path, clusters, upcase_table);
+    pub fn root(path: path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
+        let is_root = true;
+        Self::new(path, is_root, clusters, upcase_table)
+    }
+
+    fn new(path: path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
+        let content = FileOrDirectory::new(&path, is_root, clusters, upcase_table);
         let directory_entry = directory_entry::DirectoryEntry::file(&path, &content, upcase_table);
         Self {
             path,
@@ -43,7 +48,7 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    fn new(path: &path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    fn new(path: &path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length: usize = bytes.len();
@@ -57,7 +62,7 @@ impl FileOrDirectory {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
-                    .map(|directory| Object::new(directory.path(), clusters, upcase_table))
+                    .map(|directory| Object::new(directory.path(), false, clusters, upcase_table))
                     .collect(),
                 _ => vec![],
             };
