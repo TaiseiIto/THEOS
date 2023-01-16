@@ -5,6 +5,7 @@ use {
         path,
     },
     super::{
+        cluster,
         object,
         super::time,
         upcase_table,
@@ -35,6 +36,11 @@ pub enum DirectoryEntry {
         general_flags: GeneralFlags,
         file_name: [u16; FILE_NAME_BLOCK_LENGTH],
         next_file_name: Option<Box<Self>>,
+    },
+    UpcaseTable {
+        table_checksum: u32,
+        first_cluster: u32,
+        data_length: usize,
     },
 }
 
@@ -108,6 +114,18 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
+        let bytes: Vec<u8> = upcase_table.to_bytes();
+        let data_length: usize = bytes.len();
+        let first_cluster: u32 = clusters.append(bytes);
+        let table_checksum: u32 = upcase_table.table_checksum();
+        Self::UpcaseTable {
+            table_checksum,
+            first_cluster,
+            data_length,
+        }
+    }
+
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         let entry_type: u8 = self.entry_type().to_byte();
         match self {
@@ -131,6 +149,11 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => RawFileName::new(self).to_bytes(),
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => RawUpcaseTable::new(self).to_bytes(),
         }
     }
 
@@ -160,6 +183,11 @@ impl DirectoryEntry {
                 Some(next_file_name) => next_file_name.entry_set_to_bytes(),
                 None => vec![],
             },
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => vec![],
         };
         bytes.append(&mut tail_bytes);
         bytes
@@ -187,6 +215,11 @@ impl DirectoryEntry {
                 file_name,
                 next_file_name,
             } => EntryType::file_name(),
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => EntryType::upcase_table(),
         }
     }
 
@@ -215,6 +248,11 @@ impl DirectoryEntry {
                 Some(next_file_name) => next_file_name.directory_entry_set_length(),
                 None => 0,
             },
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => 1,
         }
     }
 }
@@ -416,6 +454,51 @@ impl Raw for RawFileName {
     }
 }
 
+#[derive(Clone, Copy)]
+#[repr(packed)]
+struct RawUpcaseTable {
+    entry_type: u8,
+    reserved_1: [u8; 0x3],
+    table_checksum: u32,
+    reserved_2: [u8; 0xc],
+    first_cluster: u32,
+    data_length: u64,
+}
+
+impl Raw for RawUpcaseTable {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => {
+                let reserved_1: [u8; 0x3] = [0x0; 0x3];
+                let table_checksum: u32 = *table_checksum;
+                let reserved_2: [u8; 0xc] = [0x0; 0xc];
+                let first_cluster: u32 = *first_cluster;
+                let data_length: u64 = *data_length as u64;
+                Self {
+                    entry_type,
+                    reserved_1,
+                    table_checksum,
+                    reserved_2,
+                    first_cluster,
+                    data_length,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawUpcaseTable."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
 #[derive(Debug)]
 struct EntryType {
     type_code: TypeCode,
@@ -464,6 +547,19 @@ impl EntryType {
         }
     }
 
+    fn upcase_table() -> Self {
+        let type_code = TypeCode::UpcaseTable;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
     fn to_byte(&self) -> u8 {
         let type_code: u8 = self.type_code.to_byte();
         let type_importance: u8 = if self.type_importance {
@@ -490,6 +586,7 @@ enum TypeCode {
     File,
     StreamExtension,
     FileName,
+    UpcaseTable,
 }
 
 impl TypeCode {
@@ -498,6 +595,7 @@ impl TypeCode {
             Self::File => 0x05,
             Self::StreamExtension => 0x00,
             Self::FileName => 0x01,
+            Self::UpcaseTable => 0x02,
         }
     }
 }

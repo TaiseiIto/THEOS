@@ -66,5 +66,12 @@ impl UpcaseTable {
             None => c,
         }
     }
+
+    pub fn table_checksum(&self) -> u32 {
+        self
+            .to_bytes()
+            .iter()
+            .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + *byte as u32)
+    }
 }
 
