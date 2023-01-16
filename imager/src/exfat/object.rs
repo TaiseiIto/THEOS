@@ -19,8 +19,7 @@ pub struct Object {
 
 impl Object {
     pub fn root(path: path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let is_root = true;
-        Self::new(path, is_root, clusters, upcase_table)
+        Self::new(path, true, clusters, upcase_table)
     }
 
     fn new(path: path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
