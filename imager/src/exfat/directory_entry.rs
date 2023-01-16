@@ -134,7 +134,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn to_entry_set_bytes(&self) -> Vec<u8> {
+    fn entry_set_to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.to_bytes().to_vec();
         let mut tail_bytes: Vec<u8> = match self {
             Self::File {
@@ -143,7 +143,7 @@ impl DirectoryEntry {
                 modified_time,
                 accessed_time,
                 stream_extension,
-            } => stream_extension.to_entry_set_bytes(),
+            } => stream_extension.entry_set_to_bytes(),
             Self::StreamExtension {
                 general_flags,
                 name_length,
@@ -151,13 +151,13 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
                 file_name,
-            } => file_name.to_entry_set_bytes(),
+            } => file_name.entry_set_to_bytes(),
             Self::FileName {
                 general_flags,
                 file_name,
                 next_file_name,
             } => match next_file_name {
-                Some(next_file_name) => next_file_name.to_entry_set_bytes(),
+                Some(next_file_name) => next_file_name.entry_set_to_bytes(),
                 None => vec![],
             },
         };
