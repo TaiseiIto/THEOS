@@ -37,6 +37,8 @@ pub enum FileOrDirectory {
     },
     Directory {
         children: Vec<Object>,
+        first_cluster: u32,
+        length: usize,
     },
 }
 
@@ -44,7 +46,7 @@ impl FileOrDirectory {
     fn new(path: &path::PathBuf, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
-            let length = bytes.len();
+            let length: usize = bytes.len();
             let first_cluster: u32 = clusters.append(bytes);
             Self::File {
                 first_cluster,
@@ -59,8 +61,17 @@ impl FileOrDirectory {
                     .collect(),
                 _ => vec![],
             };
+            let bytes: Vec<u8> = children
+                .iter()
+                .map(|object| object.directory_entry.entry_set_to_bytes())
+                .flatten()
+                .collect();
+            let length: usize = bytes.len();
+            let first_cluster: u32 = clusters.append(bytes);
             Self::Directory {
                 children,
+                first_cluster,
+                length,
             }
         } else {
             panic!("Can't find {}!", path.display());

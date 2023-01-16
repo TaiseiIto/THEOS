@@ -134,7 +134,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn entry_set_to_bytes(&self) -> Vec<u8> {
+    pub fn entry_set_to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.to_bytes().to_vec();
         let mut tail_bytes: Vec<u8> = match self {
             Self::File {
