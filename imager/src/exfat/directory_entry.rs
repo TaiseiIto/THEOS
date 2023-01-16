@@ -267,6 +267,31 @@ impl Raw for RawFile {
                 let last_modified_utc_offset: u8 = modified_time.get_utc_offset();
                 let last_accessed_utc_offset: u8 = accessed_time.get_utc_offset();
                 let reserved_2: [u8; 7] = [0; 7];
+                let raw_file = Self {
+                    entry_type,
+                    secondary_count,
+                    set_checksum,
+                    file_attributes,
+                    reserved_1,
+                    create_timestamp,
+                    last_modified_timestamp,
+                    last_accessed_timestamp,
+                    create_10ms_increment,
+                    last_modified_10ms_increment,
+                    create_utc_offset,
+                    last_modified_utc_offset,
+                    last_accessed_utc_offset,
+                    reserved_2,
+                };
+                let mut bytes: Vec<u8> = raw_file.to_bytes().to_vec();
+                let mut tail_bytes: Vec<u8> = stream_extension.entry_set_to_bytes();
+                bytes.append(&mut tail_bytes);
+                let set_checksum: u16 = bytes
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i != 2 && *i != 3)
+                    .map(|(_, byte)| byte)
+                    .fold(0 as u16, |checksum, byte| (checksum << 15) + (checksum >> 1) + *byte as u16);
                 Self {
                     entry_type,
                     secondary_count,
