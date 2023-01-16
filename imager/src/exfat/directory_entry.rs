@@ -45,7 +45,7 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file(path: &path::PathBuf, content: &object::FileOrDirectory, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
         let create_time: time::Time = time::Time::get_changed_time(path);
         let modified_time: time::Time = time::Time::get_modified_time(path);
@@ -53,7 +53,7 @@ impl DirectoryEntry {
         let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
-        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, content, upcase_table));
+        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, first_cluster, data_length, upcase_table));
         Self::File {
             file_attributes,
             create_time,
@@ -63,7 +63,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn stream_extension(file_name: String, content: &object::FileOrDirectory, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    fn stream_extension(file_name: String, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let general_flags = GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
             .chars()
@@ -76,13 +76,6 @@ impl DirectoryEntry {
             .map(|c| [c as u8, (c >> 8) as u8])
             .flatten()
             .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
-        let (first_cluster, data_length): (u32, usize) = match content {
-            object::FileOrDirectory::File {
-                first_cluster,
-                length,
-            } => (*first_cluster, *length),
-            _ => (0, 0),
-        };
         let file_name: Box<Self> = Box::new(Self::file_name(file_name));
         Self::StreamExtension {
             general_flags,

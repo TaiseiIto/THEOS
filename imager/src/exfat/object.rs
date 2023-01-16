@@ -14,6 +14,8 @@ use {
 pub struct Object {
     path: path::PathBuf,
     content: FileOrDirectory,
+    first_cluster: u32,
+    length: usize,
     directory_entry: directory_entry::DirectoryEntry,
 }
 
@@ -23,11 +25,13 @@ impl Object {
     }
 
     fn new(path: path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let content = FileOrDirectory::new(&path, is_root, clusters, upcase_table);
-        let directory_entry = directory_entry::DirectoryEntry::file(&path, &content, upcase_table);
+        let (content, first_cluster, length) = FileOrDirectory::new(&path, is_root, clusters, upcase_table);
+        let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
         Self {
             path,
             content,
+            first_cluster,
+            length,
             directory_entry,
         }
     }
@@ -35,27 +39,20 @@ impl Object {
 
 #[derive(Debug)]
 pub enum FileOrDirectory {
-    File {
-        first_cluster: u32,
-        length: usize,
-    },
+    File,
     Directory {
         children: Vec<Object>,
-        first_cluster: u32,
-        length: usize,
     },
 }
 
 impl FileOrDirectory {
-    fn new(path: &path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    fn new(path: &path::PathBuf, is_root: bool, clusters: &mut cluster::Clusters, upcase_table: &upcase_table::UpcaseTable) -> (Self, u32, usize) {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length: usize = bytes.len();
             let first_cluster: u32 = clusters.append(bytes);
-            Self::File {
-                first_cluster,
-                length,
-            }
+            let file = Self::File;
+            (file, first_cluster, length)
         } else if path.is_dir() {
             let children: Vec<Object> = match fs::read_dir(path) {
                 Ok(directory) => directory
@@ -72,11 +69,10 @@ impl FileOrDirectory {
                 .collect();
             let length: usize = bytes.len();
             let first_cluster: u32 = clusters.append(bytes);
-            Self::Directory {
+            let directory = Self::Directory {
                 children,
-                first_cluster,
-                length,
-            }
+            };
+            (directory, first_cluster, length)
         } else {
             panic!("Can't find {}!", path.display());
         }
