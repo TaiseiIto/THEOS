@@ -42,6 +42,9 @@ pub enum DirectoryEntry {
         first_cluster: u32,
         data_length: usize,
     },
+    VolumeLabel {
+        volume_label: String,
+    },
 }
 
 impl DirectoryEntry {
@@ -119,6 +122,13 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn volume_label(volume_label: &str) -> Self {
+        let volume_label: String = volume_label.to_string();
+        Self::VolumeLabel {
+            volume_label,
+        }
+    }
+
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         let entry_type: u8 = self.entry_type().to_byte();
         match self {
@@ -147,6 +157,9 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
             } => RawUpcaseTable::new(self).to_bytes(),
+            Self::VolumeLabel {
+                volume_label,
+            } => RawVolumeLabel::new(self).to_bytes(),
         }
     }
 
@@ -181,6 +194,9 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
             } => vec![],
+            Self::VolumeLabel {
+                volume_label,
+            } => vec![],
         };
         bytes.append(&mut tail_bytes);
         bytes
@@ -213,6 +229,9 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
             } => EntryType::upcase_table(),
+            Self::VolumeLabel {
+                volume_label,
+            } => EntryType::volume_label(),
         }
     }
 
@@ -245,6 +264,9 @@ impl DirectoryEntry {
                 table_checksum,
                 first_cluster,
                 data_length,
+            } => 1,
+            Self::VolumeLabel {
+                volume_label,
             } => 1,
         }
     }
@@ -492,6 +514,68 @@ impl Raw for RawUpcaseTable {
     }
 }
 
+const VOLUME_LABEL_MAX_LENGTH: usize = 11;
+
+#[repr(packed)]
+#[derive(Copy, Clone)]
+struct RawVolumeLabel {
+    entry_type: u8,
+    character_count: u8,
+    volume_label: [u16; VOLUME_LABEL_MAX_LENGTH],
+    reserved: u64,
+}
+
+impl Raw for RawVolumeLabel {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::VolumeLabel {
+                volume_label,
+            } => {
+                let mut volume_label: Vec<u16> = volume_label
+                    .chars()
+                    .map(|c| c.to_string().into_bytes())
+                    .filter(|c| c.len() <= 2)
+                    .map(|c| {
+                        let mut i = c.iter();
+                        match i.next() {
+                            Some(lower_byte) => match i.next() {
+                                Some(higher_byte) => ((*higher_byte as u16) << 8) + *lower_byte as u16,
+                                None => *lower_byte as u16,
+                            },
+                            None => 0x0000,
+                        }
+                    })
+                    .collect();
+                let character_count = volume_label.len() as u8;
+                while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
+                    volume_label.push(0x0000);
+                }
+                let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label
+                    .chunks(VOLUME_LABEL_MAX_LENGTH)
+                    .next()
+                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].")
+                    .try_into()
+                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].");
+                let reserved: u64 = 0;
+                Self {
+                    entry_type,
+                    character_count,
+                    volume_label,
+                    reserved,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawVolumeLabel."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
 #[derive(Debug)]
 struct EntryType {
     type_code: TypeCode,
@@ -553,6 +637,19 @@ impl EntryType {
         }
     }
 
+    fn volume_label() -> Self {
+        let type_code = TypeCode::VolumeLabel;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
     fn to_byte(&self) -> u8 {
         let type_code: u8 = self.type_code.to_byte();
         let type_importance: u8 = if self.type_importance {
@@ -580,6 +677,7 @@ enum TypeCode {
     StreamExtension,
     FileName,
     UpcaseTable,
+    VolumeLabel,
 }
 
 impl TypeCode {
@@ -589,6 +687,7 @@ impl TypeCode {
             Self::StreamExtension => 0x00,
             Self::FileName => 0x01,
             Self::UpcaseTable => 0x02,
+            Self::VolumeLabel => 0x03,
         }
     }
 }
