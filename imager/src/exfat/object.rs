@@ -74,6 +74,14 @@ impl FileOrDirectory {
                 Some(ref upcase_table) => directory_entries.push(upcase_table),
                 None => (),
             }
+            let volume_label: Option<directory_entry::DirectoryEntry> = match is_root {
+                true => Some(directory_entry::DirectoryEntry::volume_label("THEOS")),
+                false => None,
+            };
+            match volume_label {
+                Some(ref volume_label) => directory_entries.push(volume_label),
+                None => (),
+            }
             let bytes: Vec<u8> = directory_entries
                 .iter()
                 .map(|directory_entry| directory_entry.entry_set_to_bytes())
