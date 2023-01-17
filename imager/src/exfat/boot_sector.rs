@@ -46,5 +46,9 @@ impl BootSector {
         let sectors_per_cluster: usize = 1 << self.sectors_per_cluster_shift;
         bytes_per_sector * sectors_per_cluster
     }
+
+    pub fn num_of_fats(&self) -> usize {
+        self.num_of_fats as usize
+    }
 }
 

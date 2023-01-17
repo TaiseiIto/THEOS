@@ -130,7 +130,7 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn allocation_bitmap(clusters: &cluster::Clusters, root_directory_entries: &Vec<&DirectoryEntry>) {
+    pub fn allocation_bitmap(clusters: &cluster::Clusters, root_directory_entries: &Vec<&DirectoryEntry>, num_of_fats: usize) {
         let num_of_clusters: usize = clusters.len();
         let cluster_size: usize = clusters.cluster_size();
         let bits_per_cluster: usize = 8 * cluster_size;
@@ -139,7 +139,7 @@ impl DirectoryEntry {
         let size_of_root_directory_entries: usize = DIRECTORY_ENTRY_SIZE * num_of_root_directory_entries;
         let num_of_clusters_of_root_directory: usize = (size_of_root_directory_entries + cluster_size - 1) / cluster_size;
         let num_of_clusters: usize = num_of_clusters + num_of_clusters_of_root_directory;
-        let num_of_allocation_bitmap_clusters: usize = (num_of_clusters + bits_per_cluster - 2) / (bits_per_cluster - 1);
+        let num_of_allocation_bitmap_clusters: usize = (num_of_clusters + bits_per_cluster - num_of_fats - 1) / (bits_per_cluster - num_of_fats);
         let num_of_clusters: usize = num_of_clusters + num_of_allocation_bitmap_clusters;
         let allocation_bitmap = allocation_bitmap::AllocationBitmap::all_clusters_are_used(num_of_clusters);
         let allocation_bitmap = allocation_bitmap.to_bytes();
