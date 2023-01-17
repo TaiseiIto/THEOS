@@ -1,3 +1,4 @@
+mod allocation_bitmap;
 mod boot_sector;
 mod cluster;
 mod directory_entry;

@@ -5,6 +5,7 @@ use {
         path,
     },
     super::{
+        allocation_bitmap,
         cluster,
         object,
         super::time,
@@ -140,8 +141,10 @@ impl DirectoryEntry {
         let num_of_clusters: usize = num_of_clusters + num_of_clusters_of_root_directory;
         let num_of_allocation_bitmap_clusters: usize = (num_of_clusters + bits_per_cluster - 2) / (bits_per_cluster - 1);
         let num_of_clusters: usize = num_of_clusters + num_of_allocation_bitmap_clusters;
+        let allocation_bitmap = allocation_bitmap::AllocationBitmap::all_clusters_are_used(num_of_clusters);
+        let allocation_bitmap = allocation_bitmap.to_bytes();
         println!("num_of_clusters = {}", num_of_clusters);
-        println!("num_of_allocation_bitmap_clusters = {}", num_of_allocation_bitmap_clusters);
+        println!("allocation_bitmap = {:?}", allocation_bitmap);
     }
 
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {

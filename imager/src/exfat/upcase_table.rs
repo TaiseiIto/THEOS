@@ -7,7 +7,7 @@ pub struct UpcaseTable {
 
 impl UpcaseTable {
     pub fn new() -> Self {
-        let map: HashMap<u16, u16> = (0x0000..0xffff)
+        let map: HashMap<u16, u16> = (0x0000..=0xffff)
             .filter_map(|n| std::char::from_u32(n))
             .map(|c| (c as u16, c
                 .to_uppercase()

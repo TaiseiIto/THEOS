@@ -1,3 +1,5 @@
+pub const FIRST_CLUSTER_NUMBER: u32 = 2;
+
 #[derive(Debug)]
 pub struct Clusters {
     cluster_size: usize,
@@ -8,7 +10,7 @@ pub struct Clusters {
 impl Clusters {
     pub fn new(cluster_size: usize) -> Self {
         let clusters: Vec<Cluster> = vec![];
-        let next_cluster_number: u32 = 2;
+        let next_cluster_number: u32 = FIRST_CLUSTER_NUMBER;
         Self {
             cluster_size,
             clusters,
