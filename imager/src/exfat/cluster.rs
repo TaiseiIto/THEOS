@@ -26,6 +26,10 @@ impl Clusters {
         cluster_number
     }
 
+    pub fn cluster_size(&self) -> usize {
+        self.cluster_size
+    }
+
     pub fn len(&self) -> usize {
         self.clusters.len()
     }

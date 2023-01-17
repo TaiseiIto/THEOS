@@ -83,7 +83,7 @@ impl FileOrDirectory {
                 None => (),
             }
             match is_root {
-                true => directory_entry::DirectoryEntry::allocation_bitmap(clusters),
+                true => directory_entry::DirectoryEntry::allocation_bitmap(clusters, &directory_entries),
                 false => (),
             }
             let bytes: Vec<u8> = directory_entries

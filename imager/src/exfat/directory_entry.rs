@@ -129,9 +129,15 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn allocation_bitmap(clusters: &cluster::Clusters) {
-        let cluster_length = clusters.len();
+    pub fn allocation_bitmap(clusters: &cluster::Clusters, root_directory_entries: &Vec<&DirectoryEntry>) {
+        let cluster_length: usize = clusters.len();
+        let cluster_size: usize = clusters.cluster_size();
         println!("cluster_length = {}", cluster_length);
+        let allocation_bitmap_directory_entry: usize = 1;
+        let num_of_root_directory_entries: usize = root_directory_entries.len() + allocation_bitmap_directory_entry;
+        let size_of_root_directory_entries: usize = DIRECTORY_ENTRY_SIZE * num_of_root_directory_entries;
+        let num_of_clusters_of_root_directory: usize = (size_of_root_directory_entries + cluster_size - 1) / cluster_size;
+        println!("num_of_clusters_of_root_directory = {}", num_of_clusters_of_root_directory);
     }
 
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
