@@ -51,7 +51,7 @@ impl FileOrDirectory {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length: usize = bytes.len();
-            let first_cluster: u32 = clusters.append(bytes);
+            let first_cluster: u32 = clusters.append(bytes, 0);
             let file = Self::File;
             (file, first_cluster, length)
         } else if path.is_dir() {
@@ -93,7 +93,7 @@ impl FileOrDirectory {
                 .flatten()
                 .collect();
             let length: usize = bytes.len();
-            let first_cluster: u32 = clusters.append(bytes);
+            let first_cluster: u32 = clusters.append(bytes, 0);
             let directory = Self::Directory {
                 children,
             };
