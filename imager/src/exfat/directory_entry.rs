@@ -130,7 +130,7 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn allocation_bitmap(clusters: &cluster::Clusters, root_directory_entries: &Vec<&DirectoryEntry>, num_of_fats: usize) {
+    pub fn allocation_bitmap(clusters: &mut cluster::Clusters, root_directory_entries: &Vec<&DirectoryEntry>, num_of_fats: usize) {
         let num_of_clusters: usize = clusters.len();
         let cluster_size: usize = clusters.cluster_size();
         let bits_per_cluster: usize = 8 * cluster_size;
@@ -149,10 +149,19 @@ impl DirectoryEntry {
             num_of_allocation_bitmap_clusters += 1;
         }
         let num_of_clusters: usize = num_of_clusters + num_of_fats * num_of_allocation_bitmap_clusters;
-        let allocation_bitmap = allocation_bitmap::AllocationBitmap::all_clusters_are_used(num_of_clusters);
-        let allocation_bitmap = allocation_bitmap.to_bytes();
+        let allocation_bitmaps: Vec<allocation_bitmap::AllocationBitmap> = (0..num_of_fats)
+            .map(|_| allocation_bitmap::AllocationBitmap::all_clusters_are_used(num_of_clusters))
+            .collect();
+        let allocation_bitmaps: Vec<Vec<u8>> = allocation_bitmaps
+            .into_iter()
+            .map(|allocation_bitmap| allocation_bitmap.to_bytes())
+            .collect();
+        let allocation_bitmap_clusters: Vec<u32> = allocation_bitmaps
+            .into_iter()
+            .map(|allocation_bitmap| clusters.append(allocation_bitmap, 0xff))
+            .collect();
         println!("num_of_clusters = {}", num_of_clusters);
-        println!("allocation_bitmap = {:?}", allocation_bitmap);
+        println!("allocation_bitmap_clusters = {:?}", allocation_bitmap_clusters);
     }
 
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
