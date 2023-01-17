@@ -62,9 +62,21 @@ impl FileOrDirectory {
                     .collect(),
                 _ => vec![],
             };
-            let bytes: Vec<u8> = children
+            let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = children
                 .iter()
-                .map(|object| object.directory_entry.entry_set_to_bytes())
+                .map(|object| &object.directory_entry)
+                .collect();
+            let upcase_table: Option<directory_entry::DirectoryEntry> = match is_root {
+                true => Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters)),
+                false => None,
+            };
+            match upcase_table {
+                Some(ref upcase_table) => directory_entries.push(upcase_table),
+                None => (),
+            }
+            let bytes: Vec<u8> = directory_entries
+                .iter()
+                .map(|directory_entry| directory_entry.entry_set_to_bytes())
                 .flatten()
                 .collect();
             let length: usize = bytes.len();
