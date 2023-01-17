@@ -82,6 +82,10 @@ impl FileOrDirectory {
                 Some(ref volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
+            match is_root {
+                true => directory_entry::DirectoryEntry::allocation_bitmap(clusters),
+                false => (),
+            }
             let bytes: Vec<u8> = directory_entries
                 .iter()
                 .map(|directory_entry| directory_entry.entry_set_to_bytes())

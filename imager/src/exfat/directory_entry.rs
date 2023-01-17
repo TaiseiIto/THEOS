@@ -129,6 +129,11 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn allocation_bitmap(clusters: &cluster::Clusters) {
+        let cluster_length = clusters.len();
+        println!("cluster_length = {}", cluster_length);
+    }
+
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         let entry_type: u8 = self.entry_type().to_byte();
         match self {

@@ -25,6 +25,10 @@ impl Clusters {
         self.clusters.push(cluster);
         cluster_number
     }
+
+    pub fn len(&self) -> usize {
+        self.clusters.len()
+    }
 }
 
 #[derive(Debug)]
