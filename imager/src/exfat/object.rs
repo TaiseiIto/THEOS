@@ -84,6 +84,14 @@ impl FileOrDirectory {
                 Some(ref volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
+            let volume_guid: Option<directory_entry::DirectoryEntry> = match is_root {
+                true => Some(directory_entry::DirectoryEntry::volume_guid(0)),
+                false => None,
+            };
+            match volume_guid {
+                Some(ref volume_guid) => directory_entries.push(volume_guid),
+                None => (),
+            }
             let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = match is_root {
                 true => directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats()),
                 false => vec![],
