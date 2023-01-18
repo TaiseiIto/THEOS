@@ -12,11 +12,11 @@ struct TimeSpec {
 
 #[link(name="stat", kind="static")]
 extern "C" {
-    fn get_accessed_time_sec(path: *const raw::c_char) -> u32;
+    fn get_accessed_time_sec(path: *const raw::c_char) -> u64;
     fn get_accessed_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_changed_time_sec(path: *const raw::c_char) -> u32;
+    fn get_changed_time_sec(path: *const raw::c_char) -> u64;
     fn get_changed_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_modified_time_sec(path: *const raw::c_char) -> u32;
+    fn get_modified_time_sec(path: *const raw::c_char) -> u64;
     fn get_modified_time_nsec(path: *const raw::c_char) -> u32;
     fn get_current_time() -> TimeSpec;
 }
@@ -36,7 +36,7 @@ pub struct Time {
 }
 
 impl Time {
-    pub fn new(unix_epoch_sec: u32, nsec: u32) -> Self {
+    pub fn new(unix_epoch_sec: u64, nsec: u32) -> Self {
         let sec_per_min = 60;
         let min_per_hour = 60;
         let hour_per_day = 24;
@@ -49,8 +49,8 @@ impl Time {
         let mut year = UNIX_YEAR;
         let mut month = 1;
         let mut day = unix_epoch_day;
-        while (day_per_month(year, month) as u32) < day {
-            day -= day_per_month(year, month) as u32;
+        while (day_per_month(year, month) as u64) < day {
+            day -= day_per_month(year, month) as u64;
             if month < 12 {
                 month += 1;
             } else if month == 12 {
@@ -72,6 +72,13 @@ impl Time {
             sec,
             nsec,
         }
+    }
+
+    pub fn get_current_time() -> Self {
+        let current_time_spec: TimeSpec = unsafe {
+            get_current_time()
+        };
+        Self::new(current_time_spec.tv_sec, current_time_spec.tv_nsec)
     }
 
     pub fn get_accessed_time(path: &path::PathBuf) -> Self {
