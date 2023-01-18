@@ -1,4 +1,5 @@
 mod exfat;
+mod guid;
 mod time;
 
 use std::{
