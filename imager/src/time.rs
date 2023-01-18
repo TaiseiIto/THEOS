@@ -117,7 +117,7 @@ impl Time {
         }
     }
 
-    pub fn get_timestamp(&self) -> u32 {
+    pub fn get_file_timestamp(&self) -> u32 {
         let double_seconds: u32 = (self.sec as u32) / 2;
         let minute: u32 = (self.min as u32) << 5;
         let hour: u32 = (self.hour as u32) << 11;

@@ -420,9 +420,9 @@ impl Raw for RawFile {
                 let set_checksum: u16 = 0;
                 let file_attributes: u16 = file_attributes.to_word();
                 let reserved_1: u16 = 0;
-                let create_timestamp: u32 = create_time.get_timestamp();
-                let last_modified_timestamp: u32 = modified_time.get_timestamp();
-                let last_accessed_timestamp: u32 = accessed_time.get_timestamp();
+                let create_timestamp: u32 = create_time.get_file_timestamp();
+                let last_modified_timestamp: u32 = modified_time.get_file_timestamp();
+                let last_accessed_timestamp: u32 = accessed_time.get_file_timestamp();
                 let create_10ms_increment: u8 = create_time.get_10ms_increment();
                 let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
                 let create_utc_offset: u8 = create_time.get_utc_offset();
