@@ -48,7 +48,7 @@ impl Time {
         let unix_epoch_day = unix_epoch_hour / hour_per_day;
         let mut year = UNIX_YEAR;
         let mut month = 1;
-        let mut day = unix_epoch_day;
+        let mut day = unix_epoch_day + 1;
         while (day_per_month(year, month) as u64) < day {
             day -= day_per_month(year, month) as u64;
             if month < 12 {
