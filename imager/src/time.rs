@@ -4,6 +4,12 @@ use std::{
     path,
 };
 
+#[repr(packed)]
+struct TimeSpec {
+    tv_sec: u64,
+    tv_nsec: u32,
+}
+
 #[link(name="stat", kind="static")]
 extern "C" {
     fn get_accessed_time_sec(path: *const raw::c_char) -> u32;
@@ -12,6 +18,7 @@ extern "C" {
     fn get_changed_time_nsec(path: *const raw::c_char) -> u32;
     fn get_modified_time_sec(path: *const raw::c_char) -> u32;
     fn get_modified_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_current_time() -> TimeSpec;
 }
 
 const UNIX_YEAR: u32 = 1970;
