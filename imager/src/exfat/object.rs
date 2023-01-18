@@ -4,6 +4,7 @@ use {
         path,
     },
     super::{
+        allocation_bitmap,
         boot_sector,
         cluster,
         directory_entry,
@@ -84,7 +85,7 @@ impl FileOrDirectory {
                 None => (),
             }
             match is_root {
-                true => directory_entry::DirectoryEntry::allocation_bitmap(clusters, &directory_entries, boot_sector.num_of_fats()),
+                true => allocation_bitmap::AllocationBitmap::allocation_bitmap(clusters, &directory_entries, boot_sector.num_of_fats()),
                 false => (),
             }
             let bytes: Vec<u8> = directory_entries
