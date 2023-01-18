@@ -84,10 +84,14 @@ impl FileOrDirectory {
                 Some(ref volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
-            match is_root {
+            let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = match is_root {
                 true => directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats()),
-                false => (),
-            }
+                false => vec![],
+            };
+            let mut allocation_bitmaps: Vec<&directory_entry::DirectoryEntry> = allocation_bitmaps
+                .iter()
+                .collect();
+            directory_entries.append(&mut allocation_bitmaps);
             let bytes: Vec<u8> = directory_entries
                 .iter()
                 .map(|directory_entry| directory_entry.entry_set_to_bytes())
