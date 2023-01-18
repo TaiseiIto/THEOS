@@ -8,6 +8,7 @@ use {
         boot_sector,
         cluster,
         directory_entry,
+        super::guid,
         upcase_table,
     },
 };
@@ -85,7 +86,7 @@ impl FileOrDirectory {
                 None => (),
             }
             let volume_guid: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::volume_guid(0)),
+                true => Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new().to_u128())),
                 false => None,
             };
             match volume_guid {
