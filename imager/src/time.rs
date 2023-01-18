@@ -127,6 +127,28 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
+    pub fn get_guid_timestamp(&self) -> u64 {
+        const GREGORIAN_YEAR: u32 = 1582;
+        const GREGORIAN_MONTH: u8 = 10;
+        const GREGORIAN_DAY: u8 = 15;
+        let days: u64 =
+            (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
+            - (GREGORIAN_DAY as u64) + 1
+            + (GREGORIAN_YEAR + 1..self.year)
+                .map(|year| (1..=12).map(move |month| (year, month)))
+                .flatten()
+                .map(|(year, month)| day_per_month(year, month) as u64)
+                .sum::<u64>()
+            + (1..self.month)
+                .map(|month| day_per_month(self.year, month) as u64)
+                .sum::<u64>()
+            + (self.day as u64) - 1;
+        let hours: u64 = 24 * days + (self.hour as u64);
+        let minutes: u64 = 60 * hours + (self.min as u64);
+        let seconds: u64 = 60 * minutes + (self.sec as u64);
+        10000000 * seconds + (self.nsec as u64) / 100
+    }
+
     pub fn get_10ms_increment(&self) -> u8 {
         let sec: u8 = 100 * (self.sec % 2);
         let msec: u8 = (self.nsec / 10000) as u8;
