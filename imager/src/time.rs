@@ -134,6 +134,9 @@ impl Time {
         let days: u64 =
             (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
             - (GREGORIAN_DAY as u64) + 1
+            + (GREGORIAN_MONTH + 1..=12)
+                .map(|month| day_per_month(GREGORIAN_YEAR, month) as u64)
+                .sum::<u64>()
             + (GREGORIAN_YEAR + 1..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
                 .flatten()
