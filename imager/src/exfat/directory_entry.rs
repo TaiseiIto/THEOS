@@ -46,6 +46,10 @@ pub enum DirectoryEntry {
     VolumeLabel {
         volume_label: String,
     },
+    VolumeGuid {
+        general_flags: GeneralFlags,
+        volume_guid: u128,
+    },
     AllocationBitmap {
         bitmap_identifier: bool,
         first_cluster: u32,
@@ -135,6 +139,14 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn volume_guid(volume_guid: u128) -> Self {
+        let general_flags = GeneralFlags::volume_guid();
+        Self::VolumeGuid {
+            general_flags,
+            volume_guid,
+        }
+    }
+
     pub fn allocation_bitmap(bitmap_identifier: usize, first_cluster: u32, data_length: usize) -> Self {
         let bitmap_identifier: bool = match bitmap_identifier % 2 {
             0 => false,
@@ -221,6 +233,10 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => RawVolumeLabel::new(self).to_bytes(),
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => RawVolumeGuid::new(self).to_bytes(),
             Self::AllocationBitmap {
                 bitmap_identifier,
                 first_cluster,
@@ -263,6 +279,10 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => vec![],
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => vec![],
             Self::AllocationBitmap {
                 bitmap_identifier,
                 first_cluster,
@@ -303,6 +323,10 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => EntryType::volume_label(),
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => EntryType::volume_guid(),
             Self::AllocationBitmap {
                 bitmap_identifier,
                 first_cluster,
@@ -343,6 +367,10 @@ impl DirectoryEntry {
             } => 1,
             Self::VolumeLabel {
                 volume_label,
+            } => 1,
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
             } => 1,
             Self::AllocationBitmap {
                 bitmap_identifier,
@@ -421,11 +449,11 @@ impl Raw for RawFile {
                 let mut tail_bytes: Vec<u8> = stream_extension.entry_set_to_bytes();
                 bytes.append(&mut tail_bytes);
                 let set_checksum: u16 = bytes
-                    .iter()
+                    .into_iter()
                     .enumerate()
                     .filter(|(i, _)| *i != 2 && *i != 3)
                     .map(|(_, byte)| byte)
-                    .fold(0 as u16, |checksum, byte| (checksum << 15) + (checksum >> 1) + *byte as u16);
+                    .fold(0u16, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u16);
                 Self {
                     entry_type,
                     secondary_count,
@@ -659,6 +687,65 @@ impl Raw for RawVolumeLabel {
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
+struct RawVolumeGuid {
+    entry_type: u8,
+    secondary_count: u8,
+    set_checksum: u16,
+    general_flags: u16,
+    volume_guid: u128,
+    reserved: [u8; 0xa],
+}
+
+impl Raw for RawVolumeGuid {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => {
+                let secondary_count: u8 = 0;
+                let set_checksum: u16 = 0;
+                let general_flags: u16 = general_flags.to_byte() as u16;
+                let volume_guid: u128 = *volume_guid;
+                let reserved: [u8; 0xa] = [0; 0xa];
+                let raw_volume_guid = Self {
+                    entry_type,
+                    secondary_count,
+                    set_checksum,
+                    general_flags,
+                    volume_guid,
+                    reserved,
+                };
+                let mut bytes: Vec<u8> = raw_volume_guid.to_bytes().to_vec();
+                let set_checksum: u16 = bytes
+                    .into_iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i != 2 && *i != 3)
+                    .map(|(_, byte)| byte)
+                    .fold(0u16, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u16);
+                Self {
+                    entry_type,
+                    secondary_count,
+                    set_checksum,
+                    general_flags,
+                    volume_guid,
+                    reserved,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawVolumeGuid."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+#[repr(packed)]
 struct RawAllocationBitmap {
     entry_type: u8,
     bitmap_flags: u8,
@@ -776,6 +863,19 @@ impl EntryType {
         }
     }
 
+    fn volume_guid() -> Self {
+        let type_code = TypeCode::VolumeGuid;
+        let type_importance = true;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
     fn allocation_bitmap() -> Self {
         let type_code = TypeCode::AllocationBitmap;
         let type_importance = false;
@@ -817,6 +917,7 @@ enum TypeCode {
     FileName,
     UpcaseTable,
     VolumeLabel,
+    VolumeGuid,
     AllocationBitmap,
 }
 
@@ -828,6 +929,7 @@ impl TypeCode {
             Self::FileName => 0x01,
             Self::UpcaseTable => 0x02,
             Self::VolumeLabel => 0x03,
+            Self::VolumeGuid => 0x00,
             Self::AllocationBitmap => 0x01,
         }
     }
@@ -902,6 +1004,15 @@ impl GeneralFlags {
     fn file_name() -> Self {
         let allocation_possible = false;
         let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn volume_guid() -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = true;
         Self {
             allocation_possible,
             no_fat_chain,
