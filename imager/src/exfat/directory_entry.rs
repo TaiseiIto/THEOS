@@ -46,6 +46,11 @@ pub enum DirectoryEntry {
     VolumeLabel {
         volume_label: String,
     },
+    AllocationBitmap {
+        bitmap_identifier: bool,
+        first_cluster: u32,
+        data_length: usize,
+    },
 }
 
 impl DirectoryEntry {
@@ -195,6 +200,11 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => RawVolumeLabel::new(self).to_bytes(),
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => RawAllocationBitmap::new(self).to_bytes(),
         }
     }
 
@@ -232,6 +242,11 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => vec![],
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => vec![],
         };
         bytes.append(&mut tail_bytes);
         bytes
@@ -267,6 +282,11 @@ impl DirectoryEntry {
             Self::VolumeLabel {
                 volume_label,
             } => EntryType::volume_label(),
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => EntryType::allocation_bitmap(),
         }
     }
 
@@ -302,6 +322,11 @@ impl DirectoryEntry {
             } => 1,
             Self::VolumeLabel {
                 volume_label,
+            } => 1,
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
             } => 1,
         }
     }
@@ -611,6 +636,51 @@ impl Raw for RawVolumeLabel {
     }
 }
 
+#[derive(Clone, Copy)]
+#[repr(packed)]
+struct RawAllocationBitmap {
+    entry_type: u8,
+    bitmap_flags: u8,
+    reserved: [u8; 0x12],
+    first_cluster: u32,
+    data_length: u64,
+}
+
+impl Raw for RawAllocationBitmap {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => {
+                let bitmap_flags: u8 = match bitmap_identifier {
+                    true => 0x01,
+                    false => 0x00,
+                };
+                let reserved: [u8; 0x12] = [0; 0x12];
+                let first_cluster: u32 = *first_cluster;
+                let data_length: u64 = *data_length as u64;
+                Self {
+                    entry_type,
+                    bitmap_flags,
+                    reserved,
+                    first_cluster,
+                    data_length,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
 #[derive(Debug)]
 struct EntryType {
     type_code: TypeCode,
@@ -685,6 +755,19 @@ impl EntryType {
         }
     }
 
+    fn allocation_bitmap() -> Self {
+        let type_code = TypeCode::AllocationBitmap;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
     fn to_byte(&self) -> u8 {
         let type_code: u8 = self.type_code.to_byte();
         let type_importance: u8 = if self.type_importance {
@@ -713,6 +796,7 @@ enum TypeCode {
     FileName,
     UpcaseTable,
     VolumeLabel,
+    AllocationBitmap,
 }
 
 impl TypeCode {
@@ -723,6 +807,7 @@ impl TypeCode {
             Self::FileName => 0x01,
             Self::UpcaseTable => 0x02,
             Self::VolumeLabel => 0x03,
+            Self::AllocationBitmap => 0x01,
         }
     }
 }
