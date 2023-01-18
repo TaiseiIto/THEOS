@@ -1,4 +1,7 @@
-use super::time;
+use super::{
+    mac_address,
+    time,
+};
 
 #[derive(Debug)]
 pub struct Guid {
@@ -13,7 +16,7 @@ impl Guid {
         let time = time::Time::get_current_time();
         let version: u8 = 1;
         let clock_sequence: u16 = 0;
-        let mac_address: u64 = 0;
+        let mac_address: u64 = mac_address::get_mac_address();
         Self {
             time,
             version,

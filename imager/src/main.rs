@@ -1,5 +1,6 @@
 mod exfat;
 mod guid;
+mod mac_address;
 mod time;
 
 use std::{
