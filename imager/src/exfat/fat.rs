@@ -6,13 +6,15 @@ use {
 #[derive(Debug)]
 pub struct Fat {
     cluster_chain: HashMap<u32, Option<u32>>,
+    sector_size: usize,
 }
 
 impl Fat {
-    pub fn new(clusters: &cluster::Clusters) -> Self {
+    pub fn new(clusters: &cluster::Clusters, sector_size: usize) -> Self {
         let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
         Self {
             cluster_chain,
+            sector_size,
         }
     }
 
@@ -34,7 +36,7 @@ impl Fat {
                 },
             })
             .collect();
-        cluster_chain
+        let mut bytes: Vec<u8> = cluster_chain
             .into_iter()
             .map(|cluster_number| vec![
                 cluster_number as u8,
@@ -43,7 +45,9 @@ impl Fat {
                 (cluster_number >> 0x18) as u8,
             ])
             .flatten()
-            .collect()
+            .collect();
+        bytes.resize(self.sector_size, 0xff);
+        bytes
     }
 }
 
