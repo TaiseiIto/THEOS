@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub const FIRST_CLUSTER_NUMBER: u32 = 2;
 
 #[derive(Debug)]
@@ -66,6 +68,17 @@ impl Cluster {
             bytes,
             next_cluster,
         })
+    }
+
+    fn cluster_chain(&self) -> HashMap<u32, Option<u32>> {
+        match &self.next_cluster {
+            Some(next_cluster) => {
+                let mut cluster_chain: HashMap<u32, Option<u32>> = next_cluster.cluster_chain();
+                cluster_chain.insert(self.cluster_number, Some(next_cluster.cluster_number));
+                cluster_chain
+            },
+            None => HashMap::from([(self.cluster_number, None)]),
+        }
     }
 }
 
