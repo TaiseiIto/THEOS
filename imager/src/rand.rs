@@ -26,7 +26,7 @@ impl Generator {
         let b:   u32 = 0x9d2c5680;
         let c:   u32 = 0xefc60000;
         let l:   u32 = 0x7fffffff;
-        let m:   usize = 387;
+        let m:   usize = 397;
         let sr0: u32 = 11;
         let sl1: u32 = 7;
         let sl2: u32 = 15;
