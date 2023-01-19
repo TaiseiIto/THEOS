@@ -7,40 +7,31 @@ typedef struct _TimeSpec {
 	unsigned long int tv_nsec;
 } __attribute__((packed)) TimeSpec;
 
-time_t get_accessed_time_sec(char const *path) {
+TimeSpec get_accessed_time(char const *path) {
+	TimeSpec time_spec;
 	struct stat st;
 	stat(path, &st);
-	return st.st_atim.tv_sec;
+	time_spec.tv_sec = st.st_atim.tv_sec;
+	time_spec.tv_nsec = st.st_atim.tv_nsec;
+	return time_spec;
 }
 
-long get_accessed_time_nsec(char const *path) {
+TimeSpec get_changed_time(char const *path) {
+	TimeSpec time_spec;
 	struct stat st;
 	stat(path, &st);
-	return st.st_atim.tv_nsec;
+	time_spec.tv_sec = st.st_ctim.tv_sec;
+	time_spec.tv_nsec = st.st_ctim.tv_nsec;
+	return time_spec;
 }
 
-time_t get_changed_time_sec(char const *path) {
+TimeSpec get_modified_time(char const *path) {
+	TimeSpec time_spec;
 	struct stat st;
 	stat(path, &st);
-	return st.st_ctim.tv_sec;
-}
-
-long get_changed_time_nsec(char const *path) {
-	struct stat st;
-	stat(path, &st);
-	return st.st_ctim.tv_nsec;
-}
-
-time_t get_modified_time_sec(char const *path) {
-	struct stat st;
-	stat(path, &st);
-	return st.st_mtim.tv_sec;
-}
-
-long get_modified_time_nsec(char const *path) {
-	struct stat st;
-	stat(path, &st);
-	return st.st_mtim.tv_nsec;
+	time_spec.tv_sec = st.st_mtim.tv_sec;
+	time_spec.tv_nsec = st.st_mtim.tv_nsec;
+	return time_spec;
 }
 
 TimeSpec get_current_time() {

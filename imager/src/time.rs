@@ -12,12 +12,9 @@ struct TimeSpec {
 
 #[link(name="stat", kind="static")]
 extern "C" {
-    fn get_accessed_time_sec(path: *const raw::c_char) -> u64;
-    fn get_accessed_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_changed_time_sec(path: *const raw::c_char) -> u64;
-    fn get_changed_time_nsec(path: *const raw::c_char) -> u32;
-    fn get_modified_time_sec(path: *const raw::c_char) -> u64;
-    fn get_modified_time_nsec(path: *const raw::c_char) -> u32;
+    fn get_accessed_time(path: *const raw::c_char) -> TimeSpec;
+    fn get_changed_time(path: *const raw::c_char) -> TimeSpec;
+    fn get_modified_time(path: *const raw::c_char) -> TimeSpec;
     fn get_current_time() -> TimeSpec;
 }
 
@@ -36,7 +33,9 @@ pub struct Time {
 }
 
 impl Time {
-    pub fn new(unix_epoch_sec: u64, nsec: u32) -> Self {
+    fn new(time: TimeSpec) -> Self {
+        let unix_epoch_sec = time.tv_sec;
+        let nsec = time.tv_nsec;
         let sec_per_min = 60;
         let min_per_hour = 60;
         let hour_per_day = 24;
@@ -75,10 +74,9 @@ impl Time {
     }
 
     pub fn get_current_time() -> Self {
-        let current_time_spec: TimeSpec = unsafe {
+        Self::new(unsafe {
             get_current_time()
-        };
-        Self::new(current_time_spec.tv_sec, current_time_spec.tv_nsec)
+        })
     }
 
     pub fn get_accessed_time(path: &path::PathBuf) -> Self {
@@ -89,7 +87,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_accessed_time_sec(path), get_accessed_time_nsec(path))
+            Self::new(get_accessed_time(path))
         }
     }
 
@@ -101,7 +99,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_changed_time_sec(path), get_changed_time_nsec(path))
+            Self::new(get_changed_time(path))
         }
     }
 
@@ -113,7 +111,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_modified_time_sec(path), get_modified_time_nsec(path))
+            Self::new(get_modified_time(path))
         }
     }
 

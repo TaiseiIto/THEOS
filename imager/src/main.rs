@@ -1,6 +1,7 @@
 mod exfat;
 mod guid;
 mod mac_address;
+mod rand;
 mod time;
 
 use std::{
