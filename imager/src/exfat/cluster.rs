@@ -56,6 +56,13 @@ impl Clusters {
             .max()
             .expect("Can't get max cluster number.")
     }
+
+    fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
+        self.clusters
+            .iter()
+            .filter_map(|cluster| cluster.get_cluster(cluster_number))
+            .next()
+    }
 }
 
 #[derive(Debug)]
@@ -111,6 +118,17 @@ impl Cluster {
                 }
             },
             None => self.cluster_number,
+        }
+    }
+
+    fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
+        if cluster_number == self.cluster_number {
+            Some(self.bytes.clone())
+        } else {
+            match &self.next_cluster {
+                Some(next_cluster) => next_cluster.get_cluster(cluster_number),
+                None => None,
+            }
         }
     }
 }
