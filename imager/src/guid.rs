@@ -1,5 +1,6 @@
 use super::{
     mac_address,
+    rand,
     time,
 };
 
@@ -12,10 +13,10 @@ pub struct Guid {
 }
 
 impl Guid {
-    pub fn new() -> Self {
+    pub fn new(rand_generator: &mut rand::Generator) -> Self {
         let time = time::Time::get_current_time();
         let version: u8 = 1;
-        let clock_sequence: u16 = 0;
+        let clock_sequence: u16 = rand_generator.generate_u16();
         let mac_address: u64 = mac_address::get_mac_address();
         Self {
             time,

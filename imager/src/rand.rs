@@ -21,6 +21,10 @@ impl Generator {
         }
     }
 
+    pub fn generate_u16(&mut self) -> u16 {
+        self.generate_u32() as u16
+    }
+
     pub fn generate_u32(&mut self) -> u32 {
         let a:   u32 = 0x9908b0df;
         let b:   u32 = 0x9d2c5680;

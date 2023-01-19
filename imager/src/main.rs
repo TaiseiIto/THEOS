@@ -12,7 +12,8 @@ use std::{
 fn main() {
     let args = Args::new(env::args());
     eprintln!("{:#?}", args);
-    let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory);
+    let mut rand_generator = rand::Generator::new(time::Time::get_current_time().get_unix_time() as u32);
+    let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory, &mut rand_generator);
     eprintln!("{:#x?}", exfat);
 }
 
