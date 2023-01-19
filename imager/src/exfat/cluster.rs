@@ -37,6 +37,17 @@ impl Clusters {
     pub fn len(&self) -> usize {
         self.clusters.len()
     }
+
+    pub fn cluster_chain(&self) -> HashMap<u32, Option<u32>> {
+        self.clusters
+            .iter()
+            .map(|cluster| cluster.cluster_chain())
+            .fold(HashMap::<u32, Option<u32>>::new(), |cluster_chains, cluster_chain| {
+                let mut cluster_chains: HashMap<u32, Option<u32>> = cluster_chains;
+                cluster_chains.extend(cluster_chain.iter());
+                cluster_chains
+            })
+    }
 }
 
 #[derive(Debug)]
