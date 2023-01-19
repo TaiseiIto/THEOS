@@ -48,6 +48,14 @@ impl Clusters {
                 cluster_chains
             })
     }
+
+    fn max_cluster_number(&self) -> u32 {
+        self.clusters
+            .iter()
+            .map(|cluster| cluster.max_cluster_number())
+            .max()
+            .expect("Can't get max cluster number.")
+    }
 }
 
 #[derive(Debug)]
@@ -89,6 +97,20 @@ impl Cluster {
                 cluster_chain
             },
             None => HashMap::from([(self.cluster_number, None)]),
+        }
+    }
+
+    fn max_cluster_number(&self) -> u32 {
+        match &self.next_cluster {
+            Some(next_cluster) => {
+                let successor_max_cluster_number: u32 = next_cluster.max_cluster_number();
+                if successor_max_cluster_number < self.cluster_number {
+                    self.cluster_number
+                } else {
+                    successor_max_cluster_number
+                }
+            },
+            None => self.cluster_number,
         }
     }
 }
