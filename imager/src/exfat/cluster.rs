@@ -63,6 +63,18 @@ impl Clusters {
             .filter_map(|cluster| cluster.get_cluster(cluster_number))
             .next()
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
+            .map(|cluster_number| match self.get_cluster(cluster_number) {
+                Some(bytes) => bytes,
+                None => (0..self.cluster_size)
+                    .map(|_| 0u8)
+                    .collect::<Vec<u8>>(),
+            })
+            .flatten()
+            .collect()
+    }
 }
 
 #[derive(Debug)]
