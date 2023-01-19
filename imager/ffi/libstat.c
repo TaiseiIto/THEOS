@@ -5,7 +5,7 @@
 typedef struct _TimeSpec {
 	unsigned long long int tv_sec;
 	unsigned long int tv_nsec;
-} __attribute__((packed)) TimeSpec;
+} TimeSpec;
 
 TimeSpec get_accessed_time(char const *path) {
 	TimeSpec time_spec;

@@ -4,7 +4,7 @@ use std::{
     path,
 };
 
-#[repr(packed)]
+#[repr(C)]
 struct TimeSpec {
     tv_sec: u64,
     tv_nsec: u32,
@@ -34,20 +34,20 @@ pub struct Time {
 
 impl Time {
     fn new(time: TimeSpec) -> Self {
-        let unix_epoch_sec = time.tv_sec;
+        let unix_sec = time.tv_sec;
         let nsec = time.tv_nsec;
         let sec_per_min = 60;
         let min_per_hour = 60;
         let hour_per_day = 24;
-        let sec = unix_epoch_sec % sec_per_min;
-        let unix_epoch_min = unix_epoch_sec / sec_per_min;
-        let min = unix_epoch_min % min_per_hour;
-        let unix_epoch_hour = unix_epoch_min / min_per_hour;
-        let hour = unix_epoch_hour % hour_per_day;
-        let unix_epoch_day = unix_epoch_hour / hour_per_day;
+        let sec = unix_sec % sec_per_min;
+        let unix_min = unix_sec / sec_per_min;
+        let min = unix_min % min_per_hour;
+        let unix_hour = unix_min / min_per_hour;
+        let hour = unix_hour % hour_per_day;
+        let unix_day = unix_hour / hour_per_day;
         let mut year = UNIX_YEAR;
         let mut month = 1;
-        let mut day = unix_epoch_day + 1;
+        let mut day = unix_day + 1;
         while (day_per_month(year, month) as u64) < day {
             day -= day_per_month(year, month) as u64;
             if month < 12 {
@@ -123,6 +123,24 @@ impl Time {
         let month: u32 = (self.month as u32) << 21;
         let year: u32 = self.year - FAT_YEAR << 25;
         year + month + day + hour + minute + double_seconds
+    }
+
+    pub fn get_unix_time(&self) -> u64 {
+        const UNIX_YEAR: u32 = 1970;
+        let days: u64 =
+            (UNIX_YEAR..self.year)
+                .map(|year| (1..=12).map(move |month| (year, month)))
+                .flatten()
+                .map(|(year, month)| day_per_month(year, month) as u64)
+                .sum::<u64>()
+            + (1..self.month)
+                .map(|month| day_per_month(self.year, month) as u64)
+                .sum::<u64>()
+            + (self.day as u64) - 1;
+        let hours: u64 = 24 * days + (self.hour as u64);
+        let minutes: u64 = 60 * hours + (self.min as u64);
+        let seconds: u64 = 60 * minutes + (self.sec as u64);
+        seconds
     }
 
     pub fn get_guid_timestamp(&self) -> u64 {
