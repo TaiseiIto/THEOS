@@ -18,12 +18,15 @@ extern "C" {
     fn get_current_time() -> TimeSpec;
 }
 
-const UNIX_YEAR: u32 = 1970;
-const FAT_YEAR: u32 = 1980;
+const FAT_YEAR: u64 = 1980;
+const GREGORIAN_YEAR: u64 = 1582;
+const GREGORIAN_MONTH: u8 = 10;
+const GREGORIAN_DAY: u8 = 15;
+const UNIX_YEAR: u64 = 1970;
 
 #[derive(Debug)]
 pub struct Time {
-    year: u32,
+    year: u64,
     month: u8,
     day: u8,
     hour: u8,
@@ -121,12 +124,11 @@ impl Time {
         let hour: u32 = (self.hour as u32) << 11;
         let day: u32 = (self.day as u32) << 16;
         let month: u32 = (self.month as u32) << 21;
-        let year: u32 = self.year - FAT_YEAR << 25;
+        let year: u32 = (self.year - FAT_YEAR << 25) as u32;
         year + month + day + hour + minute + double_seconds
     }
 
     pub fn get_unix_time(&self) -> u64 {
-        const UNIX_YEAR: u32 = 1970;
         let days: u64 =
             (UNIX_YEAR..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
@@ -144,9 +146,6 @@ impl Time {
     }
 
     pub fn get_guid_timestamp(&self) -> u64 {
-        const GREGORIAN_YEAR: u32 = 1582;
-        const GREGORIAN_MONTH: u8 = 10;
-        const GREGORIAN_DAY: u8 = 15;
         let days: u64 =
             (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
             - (GREGORIAN_DAY as u64) + 1
@@ -179,7 +178,7 @@ impl Time {
     }
 }
 
-fn day_per_month(year: u32, month: u8) -> u8 {
+fn day_per_month(year: u64, month: u8) -> u8 {
     match month {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
@@ -192,7 +191,7 @@ fn day_per_month(year: u32, month: u8) -> u8 {
     }
 }
 
-fn is_leap_year(year: u32) -> bool {
+fn is_leap_year(year: u64) -> bool {
     if year % 4 == 0 {
         if year % 100 == 0 {
             if year % 400 == 0 {
