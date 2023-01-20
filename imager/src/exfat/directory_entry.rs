@@ -388,6 +388,51 @@ trait Raw {
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
+struct RawAllocationBitmap {
+    entry_type: u8,
+    bitmap_flags: u8,
+    reserved: [u8; 0x12],
+    first_cluster: u32,
+    data_length: u64,
+}
+
+impl Raw for RawAllocationBitmap {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => {
+                let bitmap_flags: u8 = match bitmap_identifier {
+                    true => 0x01,
+                    false => 0x00,
+                };
+                let reserved: [u8; 0x12] = [0; 0x12];
+                let first_cluster: u32 = *first_cluster;
+                let data_length: u64 = *data_length as u64;
+                Self {
+                    entry_type,
+                    bitmap_flags,
+                    reserved,
+                    first_cluster,
+                    data_length,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+#[repr(packed)]
 struct RawFile {
     entry_type: u8,
     secondary_count: u8,
@@ -484,6 +529,42 @@ impl Raw for RawFile {
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
+struct RawFileName {
+    entry_type: u8,
+    general_flags: u8,
+    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
+}
+
+impl Raw for RawFileName {
+    fn new(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => {
+                let general_flags: u8 = general_flags.to_byte();
+                let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
+                Self {
+                    entry_type,
+                    general_flags,
+                    file_name,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawFileName."),
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+#[repr(packed)]
 struct RawStreamExtension {
     entry_type: u8,
     general_flags: u8,
@@ -544,42 +625,6 @@ impl Raw for RawStreamExtension {
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
-struct RawFileName {
-    entry_type: u8,
-    general_flags: u8,
-    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
-}
-
-impl Raw for RawFileName {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => {
-                let general_flags: u8 = general_flags.to_byte();
-                let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
-                Self {
-                    entry_type,
-                    general_flags,
-                    file_name,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawFileName."),
-        }
-    }
-
-    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-#[repr(packed)]
 struct RawUpcaseTable {
     entry_type: u8,
     reserved_1: [u8; 0x3],
@@ -613,68 +658,6 @@ impl Raw for RawUpcaseTable {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawUpcaseTable."),
-        }
-    }
-
-    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
-        }
-    }
-}
-
-const VOLUME_LABEL_MAX_LENGTH: usize = 11;
-
-#[repr(packed)]
-#[derive(Copy, Clone)]
-struct RawVolumeLabel {
-    entry_type: u8,
-    character_count: u8,
-    volume_label: [u16; VOLUME_LABEL_MAX_LENGTH],
-    reserved: u64,
-}
-
-impl Raw for RawVolumeLabel {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::VolumeLabel {
-                volume_label,
-            } => {
-                let mut volume_label: Vec<u16> = volume_label
-                    .chars()
-                    .map(|c| c.to_string().into_bytes())
-                    .filter(|c| c.len() <= 2)
-                    .map(|c| {
-                        let mut i = c.iter();
-                        match i.next() {
-                            Some(lower_byte) => match i.next() {
-                                Some(higher_byte) => ((*higher_byte as u16) << 8) + *lower_byte as u16,
-                                None => *lower_byte as u16,
-                            },
-                            None => 0x0000,
-                        }
-                    })
-                    .collect();
-                let character_count = volume_label.len() as u8;
-                while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
-                    volume_label.push(0x0000);
-                }
-                let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label
-                    .chunks(VOLUME_LABEL_MAX_LENGTH)
-                    .next()
-                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].")
-                    .try_into()
-                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].");
-                let reserved: u64 = 0;
-                Self {
-                    entry_type,
-                    character_count,
-                    volume_label,
-                    reserved,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawVolumeLabel."),
         }
     }
 
@@ -744,41 +727,58 @@ impl Raw for RawVolumeGuid {
     }
 }
 
-#[derive(Clone, Copy)]
+const VOLUME_LABEL_MAX_LENGTH: usize = 11;
+
 #[repr(packed)]
-struct RawAllocationBitmap {
+#[derive(Copy, Clone)]
+struct RawVolumeLabel {
     entry_type: u8,
-    bitmap_flags: u8,
-    reserved: [u8; 0x12],
-    first_cluster: u32,
-    data_length: u64,
+    character_count: u8,
+    volume_label: [u16; VOLUME_LABEL_MAX_LENGTH],
+    reserved: u64,
 }
 
-impl Raw for RawAllocationBitmap {
+impl Raw for RawVolumeLabel {
     fn new(directory_entry: &DirectoryEntry) -> Self {
         let entry_type: u8 = directory_entry.entry_type().to_byte();
         match directory_entry {
-            DirectoryEntry::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
+            DirectoryEntry::VolumeLabel {
+                volume_label,
             } => {
-                let bitmap_flags: u8 = match bitmap_identifier {
-                    true => 0x01,
-                    false => 0x00,
-                };
-                let reserved: [u8; 0x12] = [0; 0x12];
-                let first_cluster: u32 = *first_cluster;
-                let data_length: u64 = *data_length as u64;
+                let mut volume_label: Vec<u16> = volume_label
+                    .chars()
+                    .map(|c| c.to_string().into_bytes())
+                    .filter(|c| c.len() <= 2)
+                    .map(|c| {
+                        let mut i = c.iter();
+                        match i.next() {
+                            Some(lower_byte) => match i.next() {
+                                Some(higher_byte) => ((*higher_byte as u16) << 8) + *lower_byte as u16,
+                                None => *lower_byte as u16,
+                            },
+                            None => 0x0000,
+                        }
+                    })
+                    .collect();
+                let character_count = volume_label.len() as u8;
+                while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
+                    volume_label.push(0x0000);
+                }
+                let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label
+                    .chunks(VOLUME_LABEL_MAX_LENGTH)
+                    .next()
+                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].")
+                    .try_into()
+                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].");
+                let reserved: u64 = 0;
                 Self {
                     entry_type,
-                    bitmap_flags,
+                    character_count,
+                    volume_label,
                     reserved,
-                    first_cluster,
-                    data_length,
                 }
             },
-            _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
+            _ => panic!("Can't convert a DirectoryEntry into a RawVolumeLabel."),
         }
     }
 
@@ -922,7 +922,7 @@ enum TypeCode {
 }
 
 impl TypeCode {
-    pub fn to_byte(&self) -> u8 {
+    fn to_byte(&self) -> u8 {
         match self {
             Self::File => 0x05,
             Self::StreamExtension => 0x00,
