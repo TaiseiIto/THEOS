@@ -8,6 +8,7 @@ use {
         cluster,
         fat,
         object,
+        super::time,
     },
 };
 
@@ -48,7 +49,7 @@ impl BootSector {
         }
     }
 
-    pub fn correct(self, fat: &fat::Fat, root_directory: &object::Object, clusters: &cluster::Clusters) {
+    pub fn correct(self, fat: &fat::Fat, root_directory: &object::Object, clusters: &cluster::Clusters) -> Self {
         let jump_boot: [u8; 0x3] = self.jump_boot;
         let file_system_name: [u8; 0x8] = self.file_system_name;
         let must_be_zero: [u8; 0x35] = self.must_be_zero;
@@ -59,7 +60,41 @@ impl BootSector {
         let num_of_fats: u8 = self.num_of_fats;
         let cluster_heap_offset: u32 = (((fat_offset as usize) + (fat_length as usize) * (num_of_fats as usize) + self.sectors_per_cluster() - 1) / self.sectors_per_cluster() * self.sectors_per_cluster()) as u32;
         let cluster_count: u32 = clusters.number_of_clusters() as u32;
+        let volume_length: u64 = ((cluster_heap_offset as usize) + (cluster_count as usize) * self.sectors_per_cluster()) as u64;
         let first_cluster_of_root_directory: u32 = root_directory.first_cluster();
+        let volume_serial_number: u32 = time::Time::get_current_time().get_unix_time() as u32;
+        let file_system_revision: u16 = self.file_system_revision;
+        let volume_flags: u16 = self.volume_flags;
+        let bytes_per_sector_shift: u8 = self.bytes_per_sector_shift;
+        let sectors_per_cluster_shift: u8 = self.sectors_per_cluster_shift;
+        let drive_select: u8 = self.drive_select;
+        let percent_in_use: u8 = self.percent_in_use;
+        let reserved: [u8; 0x7] = self.reserved;
+        let boot_code: [u8; 0x186] = self.boot_code;
+        let boot_signature: u16 = self.boot_signature;
+        Self {
+            jump_boot,
+            file_system_name,
+            must_be_zero,
+            partition_offset,
+            volume_length,
+            fat_offset,
+            fat_length,
+            cluster_heap_offset,
+            cluster_count,
+            first_cluster_of_root_directory,
+            volume_serial_number,
+            file_system_revision,
+            volume_flags,
+            bytes_per_sector_shift,
+            sectors_per_cluster_shift,
+            num_of_fats,
+            drive_select,
+            percent_in_use,
+            reserved,
+            boot_code,
+            boot_signature,
+        }
     }
 
     pub fn cluster_size(&self) -> usize {
