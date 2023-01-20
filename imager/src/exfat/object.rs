@@ -17,50 +17,6 @@ use {
 };
 
 #[derive(Debug)]
-pub struct Object {
-    path: path::PathBuf,
-    content: FileOrDirectory,
-    first_cluster: u32,
-    length: usize,
-    directory_entry: directory_entry::DirectoryEntry,
-}
-
-impl Object {
-    pub fn root(
-        path: path::PathBuf,
-        boot_sector: &boot_sector::BootSector,
-        clusters: &mut cluster::Clusters,
-        upcase_table: &upcase_table::UpcaseTable,
-        rand_generator: &mut rand::Generator,
-    ) -> Self {
-        Self::new(path, true, boot_sector, clusters, upcase_table, rand_generator)
-    }
-
-    pub fn first_cluster(&self) -> u32 {
-        self.first_cluster
-    }
-
-    fn new(
-        path: path::PathBuf,
-        is_root: bool,
-        boot_sector: &boot_sector::BootSector,
-        clusters: &mut cluster::Clusters,
-        upcase_table: &upcase_table::UpcaseTable,
-        rand_generator: &mut rand::Generator,
-    ) -> Self {
-        let (content, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
-        let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
-        Self {
-            path,
-            content,
-            first_cluster,
-            length,
-            directory_entry,
-        }
-    }
-}
-
-#[derive(Debug)]
 pub enum FileOrDirectory {
     File,
     Directory {
@@ -141,6 +97,50 @@ impl FileOrDirectory {
             (directory, first_cluster, length)
         } else {
             panic!("Can't find {}!", path.display());
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Object {
+    path: path::PathBuf,
+    content: FileOrDirectory,
+    first_cluster: u32,
+    length: usize,
+    directory_entry: directory_entry::DirectoryEntry,
+}
+
+impl Object {
+    pub fn first_cluster(&self) -> u32 {
+        self.first_cluster
+    }
+
+    pub fn root(
+        path: path::PathBuf,
+        boot_sector: &boot_sector::BootSector,
+        clusters: &mut cluster::Clusters,
+        upcase_table: &upcase_table::UpcaseTable,
+        rand_generator: &mut rand::Generator,
+    ) -> Self {
+        Self::new(path, true, boot_sector, clusters, upcase_table, rand_generator)
+    }
+
+    fn new(
+        path: path::PathBuf,
+        is_root: bool,
+        boot_sector: &boot_sector::BootSector,
+        clusters: &mut cluster::Clusters,
+        upcase_table: &upcase_table::UpcaseTable,
+        rand_generator: &mut rand::Generator,
+    ) -> Self {
+        let (content, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
+        Self {
+            path,
+            content,
+            first_cluster,
+            length,
+            directory_entry,
         }
     }
 }

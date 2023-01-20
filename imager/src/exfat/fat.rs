@@ -18,6 +18,10 @@ impl Fat {
         }
     }
 
+    pub fn sectors_per_fat(&self) -> usize {
+        self.to_bytes().len() / self.sector_size
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         let max_cluster_number: u32 = *self.cluster_chain
             .keys()
@@ -48,10 +52,6 @@ impl Fat {
             .collect();
         bytes.resize(self.sector_size, 0xff);
         bytes
-    }
-
-    pub fn sectors_per_fat(&self) -> usize {
-        self.to_bytes().len() / self.sector_size
     }
 }
 
