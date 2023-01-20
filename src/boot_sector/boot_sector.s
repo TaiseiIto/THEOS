@@ -53,7 +53,7 @@ drive_select:
 	.byte	0x80
 
 percent_in_use:
-	.byte	0xff
+	.byte	100
 
 reserved:
 	.fill	0x07,	0x1,	0x00

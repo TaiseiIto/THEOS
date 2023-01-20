@@ -65,8 +65,7 @@ impl Clusters {
         self.clusters
             .iter()
             .map(|cluster| cluster.number_of_clusters())
-            .max()
-            .expect("Can't get number of clusters.")
+            .sum()
     }
 
     fn max_cluster_number(&self) -> u32 {
