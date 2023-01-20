@@ -37,7 +37,7 @@ pub struct Time {
 
 impl Time {
     pub fn current_time() -> Self {
-        Self::new(unsafe {
+        Self::from_time_spec(unsafe {
             current_time()
         })
     }
@@ -50,7 +50,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(last_accessed_time(path))
+            Self::from_time_spec(last_accessed_time(path))
         }
     }
 
@@ -62,7 +62,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(last_changed_time(path))
+            Self::from_time_spec(last_changed_time(path))
         }
     }
 
@@ -74,7 +74,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(last_modified_time(path))
+            Self::from_time_spec(last_modified_time(path))
         }
     }
 
@@ -86,6 +86,12 @@ impl Time {
         let month: u32 = (self.month as u32) << 21;
         let year: u32 = (self.year - FAT_YEAR << 25) as u32;
         year + month + day + hour + minute + double_seconds
+    }
+
+    pub fn get_10ms_increment(&self) -> u8 {
+        let sec: u8 = 100 * (self.sec % 2);
+        let msec: u8 = (self.nsec / 10000) as u8;
+        sec + msec
     }
 
     pub fn guid_timestamp(&self) -> u64 {
@@ -110,6 +116,36 @@ impl Time {
         10000000 * seconds + (self.nsec as u64) / 100
     }
 
+    pub fn new(year: u64, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
+        if month < 1 || 12 < month {
+            panic!("month < 1 || 12 < month");
+        }
+        if day < 1 || day_per_month(year, month) < day {
+            panic!("day < 1 || day_per_month(year, month) < day");
+        }
+        if 24 <= hour {
+            panic!("24 <= hour");
+        }
+        if 60 <= min {
+            panic!("60 <= min");
+        }
+        if 60 <= sec {
+            panic!("60 <= sec");
+        }
+        if 1000000000 <= nsec {
+            panic!("1000000000 <= nsec");
+        }
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
+    }
+
     pub fn unix_timestamp(&self) -> u64 {
         let days: u64 =
             (UNIX_YEAR..self.year)
@@ -131,13 +167,7 @@ impl Time {
         0
     }
 
-    pub fn get_10ms_increment(&self) -> u8 {
-        let sec: u8 = 100 * (self.sec % 2);
-        let msec: u8 = (self.nsec / 10000) as u8;
-        sec + msec
-    }
-
-    fn new(time: TimeSpec) -> Self {
+    fn from_time_spec(time: TimeSpec) -> Self {
         let unix_sec = time.tv_sec;
         let nsec = time.tv_nsec;
         let sec_per_min = 60;

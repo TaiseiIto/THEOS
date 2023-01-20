@@ -26,6 +26,19 @@ impl Guid {
         }
     }
 
+    pub fn null() -> Self {
+        let clock_sequence: u16 = 0;
+        let mac_address: u64 = 0;
+        let time = time::Time::new(1970, 1, 1, 0, 0, 0, 0);
+        let version: u8 = 0;
+        Self {
+            clock_sequence,
+            mac_address,
+            time,
+            version,
+        }
+    }
+
     pub fn to_u128(self) -> u128 {
         let clock_sequence: u128 = (self.clock_sequence as u128) << 0x40;
         let mac_address: u128 = (self.mac_address as u128) << 0x50;
