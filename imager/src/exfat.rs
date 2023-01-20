@@ -6,6 +6,7 @@ mod extended_boot_sector;
 mod fat;
 mod object;
 mod oem_parameter;
+mod reserved_sector;
 mod upcase_table;
 
 use {

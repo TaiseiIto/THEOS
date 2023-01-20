@@ -6,23 +6,25 @@ use {
 #[derive(Clone, Copy, Debug)]
 pub struct OemParameters {
     parameters: [OemParameter; 0xa],
+    size: usize,
 }
 
 impl OemParameters {
-    pub fn null() -> Self {
+    pub fn null(size: usize) -> Self {
         let parameters = [OemParameter::null(); 0xa];
         Self {
             parameters,
+            size,
         }
     }
 
-    pub fn to_bytes(&self, sector_size: usize) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.parameters
             .iter()
             .map(|parameter| parameter.to_bytes().into_iter())
             .flatten()
             .collect();
-        bytes.resize(sector_size, 0x00);
+        bytes.resize(self.size, 0x00);
         bytes
     }
 }
