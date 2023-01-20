@@ -13,8 +13,8 @@ use {
     },
 };
 
-const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
 const DIRECTORY_ENTRY_SIZE: usize = 0x20;
+const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
 
 #[derive(Debug)]
 pub enum DirectoryEntry {
@@ -58,7 +58,6 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-
     pub fn allocation_bitmap(bitmap_identifier: usize, first_cluster: u32, data_length: usize) -> Self {
         let bitmap_identifier: bool = match bitmap_identifier % 2 {
             0 => false,
@@ -209,6 +208,11 @@ impl DirectoryEntry {
 
     fn directory_entry_set_length(&self) -> usize {
         match self {
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => 1,
             Self::File {
                 file_attributes,
                 create_time,
@@ -216,14 +220,6 @@ impl DirectoryEntry {
                 accessed_time,
                 stream_extension,
             } => 1 + stream_extension.directory_entry_set_length(),
-            Self::StreamExtension {
-                general_flags,
-                name_length,
-                name_hash,
-                first_cluster,
-                data_length,
-                file_name,
-            } => 1 + file_name.directory_entry_set_length(),
             Self::FileName {
                 general_flags,
                 file_name,
@@ -232,28 +228,36 @@ impl DirectoryEntry {
                 Some(next_file_name) => next_file_name.directory_entry_set_length(),
                 None => 0,
             },
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => 1 + file_name.directory_entry_set_length(),
             Self::UpcaseTable {
                 table_checksum,
                 first_cluster,
                 data_length,
             } => 1,
-            Self::VolumeLabel {
-                volume_label,
-            } => 1,
             Self::VolumeGuid {
                 general_flags,
                 volume_guid,
             } => 1,
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
+            Self::VolumeLabel {
+                volume_label,
             } => 1,
         }
     }
 
     fn entry_type(&self) -> EntryType {
         match self {
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => EntryType::allocation_bitmap(),
             Self::File {
                 file_attributes,
                 create_time,
@@ -261,6 +265,11 @@ impl DirectoryEntry {
                 accessed_time,
                 stream_extension,
             } => EntryType::file(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => EntryType::file_name(),
             Self::StreamExtension {
                 general_flags,
                 name_length,
@@ -269,28 +278,18 @@ impl DirectoryEntry {
                 data_length,
                 file_name,
             } => EntryType::stream_extension(),
-            Self::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => EntryType::file_name(),
             Self::UpcaseTable {
                 table_checksum,
                 first_cluster,
                 data_length,
             } => EntryType::upcase_table(),
-            Self::VolumeLabel {
-                volume_label,
-            } => EntryType::volume_label(),
             Self::VolumeGuid {
                 general_flags,
                 volume_guid,
             } => EntryType::volume_guid(),
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => EntryType::allocation_bitmap(),
+            Self::VolumeLabel {
+                volume_label,
+            } => EntryType::volume_label(),
         }
     }
 
@@ -341,6 +340,11 @@ impl DirectoryEntry {
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         let entry_type: u8 = self.entry_type().to_byte();
         match self {
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => RawAllocationBitmap::new(self).to_bytes(),
             Self::File {
                 file_attributes,
                 create_time,
@@ -348,6 +352,11 @@ impl DirectoryEntry {
                 accessed_time,
                 stream_extension,
             } => RawFile::new(self).to_bytes(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => RawFileName::new(self).to_bytes(),
             Self::StreamExtension {
                 general_flags,
                 name_length,
@@ -356,28 +365,18 @@ impl DirectoryEntry {
                 data_length,
                 file_name,
             } => RawStreamExtension::new(self).to_bytes(),
-            Self::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => RawFileName::new(self).to_bytes(),
             Self::UpcaseTable {
                 table_checksum,
                 first_cluster,
                 data_length,
             } => RawUpcaseTable::new(self).to_bytes(),
-            Self::VolumeLabel {
-                volume_label,
-            } => RawVolumeLabel::new(self).to_bytes(),
             Self::VolumeGuid {
                 general_flags,
                 volume_guid,
             } => RawVolumeGuid::new(self).to_bytes(),
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => RawAllocationBitmap::new(self).to_bytes(),
+            Self::VolumeLabel {
+                volume_label,
+            } => RawVolumeLabel::new(self).to_bytes(),
         }
     }
 }
