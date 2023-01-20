@@ -164,9 +164,9 @@ impl DirectoryEntry {
 
     pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
-        let create_time: time::Time = time::Time::get_changed_time(path);
-        let modified_time: time::Time = time::Time::get_modified_time(path);
-        let accessed_time: time::Time = time::Time::get_accessed_time(path);
+        let create_time: time::Time = time::Time::last_changed_time(path);
+        let modified_time: time::Time = time::Time::last_modified_time(path);
+        let accessed_time: time::Time = time::Time::last_accessed_time(path);
         let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
         let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
         let file_name: String = file_name.to_string();
@@ -421,9 +421,9 @@ impl Raw for RawFile {
                 let set_checksum: u16 = 0;
                 let file_attributes: u16 = file_attributes.to_word();
                 let reserved_1: u16 = 0;
-                let create_timestamp: u32 = create_time.get_file_timestamp();
-                let last_modified_timestamp: u32 = modified_time.get_file_timestamp();
-                let last_accessed_timestamp: u32 = accessed_time.get_file_timestamp();
+                let create_timestamp: u32 = create_time.fat_timestamp();
+                let last_modified_timestamp: u32 = modified_time.fat_timestamp();
+                let last_accessed_timestamp: u32 = accessed_time.fat_timestamp();
                 let create_10ms_increment: u8 = create_time.get_10ms_increment();
                 let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
                 let create_utc_offset: u8 = create_time.get_utc_offset();

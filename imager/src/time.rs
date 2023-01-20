@@ -36,13 +36,13 @@ pub struct Time {
 }
 
 impl Time {
-    pub fn get_current_time() -> Self {
+    pub fn current_time() -> Self {
         Self::new(unsafe {
             get_current_time()
         })
     }
 
-    pub fn get_accessed_time(path: &path::PathBuf) -> Self {
+    pub fn last_accessed_time(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -54,7 +54,7 @@ impl Time {
         }
     }
 
-    pub fn get_changed_time(path: &path::PathBuf) -> Self {
+    pub fn last_changed_time(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -66,7 +66,7 @@ impl Time {
         }
     }
 
-    pub fn get_modified_time(path: &path::PathBuf) -> Self {
+    pub fn last_modified_time(path: &path::PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -78,7 +78,7 @@ impl Time {
         }
     }
 
-    pub fn get_file_timestamp(&self) -> u32 {
+    pub fn fat_timestamp(&self) -> u32 {
         let double_seconds: u32 = (self.sec as u32) / 2;
         let minute: u32 = (self.min as u32) << 5;
         let hour: u32 = (self.hour as u32) << 11;

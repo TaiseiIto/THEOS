@@ -4,7 +4,7 @@ use std::{
     str,
 };
 
-pub fn get_mac_address() -> u64 {
+pub fn my_mac_address() -> u64 {
     let mac_address: &str = "/sys/class/net/eth0/address";
     let mac_address = path::PathBuf::from(mac_address);
     let mac_address: Vec<u8> = fs::read(mac_address).expect("Can't read MAC address.");
