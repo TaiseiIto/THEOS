@@ -2,6 +2,7 @@ mod allocation_bitmap;
 mod boot_sector;
 mod cluster;
 mod directory_entry;
+mod extended_boot_sector;
 mod fat;
 mod object;
 mod upcase_table;
