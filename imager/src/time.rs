@@ -10,7 +10,7 @@ struct TimeSpec {
     tv_nsec: u32,
 }
 
-#[link(name="stat", kind="static")]
+#[link(name="time", kind="static")]
 extern "C" {
     fn get_current_time() -> TimeSpec;
     fn get_accessed_time(path: *const raw::c_char) -> TimeSpec;
