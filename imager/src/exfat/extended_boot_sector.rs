@@ -1,5 +1,6 @@
 use std::mem;
 
+#[derive(Debug)]
 pub struct ExtendedBootSector {
     extended_boot_signature: u32,
     size: usize,
