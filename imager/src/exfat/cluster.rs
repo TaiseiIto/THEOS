@@ -49,6 +49,26 @@ impl Clusters {
             })
     }
 
+    pub fn to_bytes(&self) -> Vec<u8> {
+        (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
+            .map(|cluster_number| match self.get_cluster(cluster_number) {
+                Some(bytes) => bytes,
+                None => (0..self.cluster_size)
+                    .map(|_| 0u8)
+                    .collect::<Vec<u8>>(),
+            })
+            .flatten()
+            .collect()
+    }
+
+    pub fn number_of_clusters(&self) -> usize {
+        self.clusters
+            .iter()
+            .map(|cluster| cluster.number_of_clusters())
+            .max()
+            .expect("Can't get number of clusters.")
+    }
+
     fn max_cluster_number(&self) -> u32 {
         self.clusters
             .iter()
@@ -62,18 +82,6 @@ impl Clusters {
             .iter()
             .filter_map(|cluster| cluster.get_cluster(cluster_number))
             .next()
-    }
-
-    pub fn to_bytes(&self) -> Vec<u8> {
-        (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
-            .map(|cluster_number| match self.get_cluster(cluster_number) {
-                Some(bytes) => bytes,
-                None => (0..self.cluster_size)
-                    .map(|_| 0u8)
-                    .collect::<Vec<u8>>(),
-            })
-            .flatten()
-            .collect()
     }
 }
 
@@ -141,6 +149,13 @@ impl Cluster {
                 Some(next_cluster) => next_cluster.get_cluster(cluster_number),
                 None => None,
             }
+        }
+    }
+
+    fn number_of_clusters(&self) -> usize {
+        match &self.next_cluster {
+            Some(next_cluster) => 1 + next_cluster.number_of_clusters(),
+            None => 1,
         }
     }
 }

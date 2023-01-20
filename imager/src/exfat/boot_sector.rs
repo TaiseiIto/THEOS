@@ -57,6 +57,7 @@ impl BootSector {
         let fat_length: u32 = fat.sectors_per_fat() as u32;
         let num_of_fats: u8 = self.num_of_fats;
         let cluster_heap_offset: u32 = (((fat_offset as usize) + (fat_length as usize) * (num_of_fats as usize) + self.sectors_per_cluster() - 1) / self.sectors_per_cluster() * self.sectors_per_cluster()) as u32;
+        let cluster_count: u32 = clusters.number_of_clusters() as u32;
     }
 
     pub fn cluster_size(&self) -> usize {
