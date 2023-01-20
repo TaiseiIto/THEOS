@@ -36,6 +36,10 @@ impl Object {
         Self::new(path, true, boot_sector, clusters, upcase_table, rand_generator)
     }
 
+    pub fn first_cluster(&self) -> u32 {
+        self.first_cluster
+    }
+
     fn new(
         path: path::PathBuf,
         is_root: bool,

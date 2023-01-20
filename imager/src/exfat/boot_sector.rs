@@ -7,6 +7,7 @@ use {
     super::{
         cluster,
         fat,
+        object,
     },
 };
 
@@ -47,7 +48,7 @@ impl BootSector {
         }
     }
 
-    pub fn correct(self, fat: &fat::Fat, clusters: &cluster::Clusters) {
+    pub fn correct(self, fat: &fat::Fat, root_directory: &object::Object, clusters: &cluster::Clusters) {
         let jump_boot: [u8; 0x3] = self.jump_boot;
         let file_system_name: [u8; 0x8] = self.file_system_name;
         let must_be_zero: [u8; 0x35] = self.must_be_zero;
@@ -58,6 +59,7 @@ impl BootSector {
         let num_of_fats: u8 = self.num_of_fats;
         let cluster_heap_offset: u32 = (((fat_offset as usize) + (fat_length as usize) * (num_of_fats as usize) + self.sectors_per_cluster() - 1) / self.sectors_per_cluster() * self.sectors_per_cluster()) as u32;
         let cluster_count: u32 = clusters.number_of_clusters() as u32;
+        let first_cluster_of_root_directory: u32 = root_directory.first_cluster();
     }
 
     pub fn cluster_size(&self) -> usize {
