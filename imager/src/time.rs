@@ -12,10 +12,10 @@ struct TimeSpec {
 
 #[link(name="time", kind="static")]
 extern "C" {
-    fn get_current_time() -> TimeSpec;
-    fn get_accessed_time(path: *const raw::c_char) -> TimeSpec;
-    fn get_changed_time(path: *const raw::c_char) -> TimeSpec;
-    fn get_modified_time(path: *const raw::c_char) -> TimeSpec;
+    fn current_time() -> TimeSpec;
+    fn last_accessed_time(path: *const raw::c_char) -> TimeSpec;
+    fn last_changed_time(path: *const raw::c_char) -> TimeSpec;
+    fn last_modified_time(path: *const raw::c_char) -> TimeSpec;
 }
 
 const FAT_YEAR: u64 = 1980;
@@ -38,7 +38,7 @@ pub struct Time {
 impl Time {
     pub fn current_time() -> Self {
         Self::new(unsafe {
-            get_current_time()
+            current_time()
         })
     }
 
@@ -50,7 +50,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_accessed_time(path))
+            Self::new(last_accessed_time(path))
         }
     }
 
@@ -62,7 +62,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_changed_time(path))
+            Self::new(last_changed_time(path))
         }
     }
 
@@ -74,7 +74,7 @@ impl Time {
         let path = ffi::CString::new(path).expect("Can't create CString.");
         let path: *const raw::c_char = path.as_ptr();
         unsafe {
-            Self::new(get_modified_time(path))
+            Self::new(last_modified_time(path))
         }
     }
 
