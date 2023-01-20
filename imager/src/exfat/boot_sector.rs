@@ -112,5 +112,14 @@ impl BootSector {
     pub fn sectors_per_cluster(&self) -> usize {
         1 << self.sectors_per_cluster_shift
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let boot_sector: [u8; mem::size_of::<Self>()] = unsafe {
+            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+        };
+        let mut boot_sector: Vec<u8> = boot_sector.to_vec();
+        boot_sector.resize(self.bytes_per_sector(), 0x00);
+        boot_sector
+    }
 }
 
