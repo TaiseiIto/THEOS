@@ -58,94 +58,6 @@ pub enum DirectoryEntry {
 }
 
 impl DirectoryEntry {
-    pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let file_attributes = FileAttributes::new(path);
-        let create_time: time::Time = time::Time::get_changed_time(path);
-        let modified_time: time::Time = time::Time::get_modified_time(path);
-        let accessed_time: time::Time = time::Time::get_accessed_time(path);
-        let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
-        let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
-        let file_name: String = file_name.to_string();
-        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, first_cluster, data_length, upcase_table));
-        Self::File {
-            file_attributes,
-            create_time,
-            modified_time,
-            accessed_time,
-            stream_extension,
-        }
-    }
-
-    fn stream_extension(file_name: String, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let general_flags = GeneralFlags::stream_extension();
-        let file_name: Vec<u16> = file_name
-            .chars()
-            .map(|c| c as u16)
-            .collect();
-        let name_length: u8 = file_name.len() as u8;
-        let name_hash: u16 = file_name
-            .iter()
-            .map(|c| upcase_table.to_upcase(*c))
-            .map(|c| [c as u8, (c >> 8) as u8])
-            .flatten()
-            .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
-        let file_name: Box<Self> = Box::new(Self::file_name(file_name));
-        Self::StreamExtension {
-            general_flags,
-            name_length,
-            name_hash,
-            first_cluster,
-            data_length,
-            file_name,
-        }
-    }
-
-    fn file_name(mut file_name: Vec<u16>) -> Self {
-        let general_flags = GeneralFlags::file_name();
-        let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_LENGTH < file_name.len() {
-            Some(file_name.split_off(FILE_NAME_BLOCK_LENGTH))
-        } else {
-            None
-        };
-        file_name.resize(FILE_NAME_BLOCK_LENGTH, 0x00);
-        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.try_into().expect("Can't convert Vec<u16> to [u16; FILE_NAME_BLOCK_LENGTH]");
-        let next_file_name: Option<Box<Self>> = match remaining_file_name {
-            Some(remaining_file_name) => Some(Box::new(Self::file_name(remaining_file_name))),
-            None => None,
-        };
-        Self::FileName {
-            general_flags,
-            file_name,
-            next_file_name,
-        }
-    }
-
-    pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
-        let bytes: Vec<u8> = upcase_table.to_bytes();
-        let data_length: usize = bytes.len();
-        let first_cluster: u32 = clusters.append(bytes, 0);
-        let table_checksum: u32 = upcase_table.table_checksum();
-        Self::UpcaseTable {
-            table_checksum,
-            first_cluster,
-            data_length,
-        }
-    }
-
-    pub fn volume_label(volume_label: &str) -> Self {
-        let volume_label: String = volume_label.to_string();
-        Self::VolumeLabel {
-            volume_label,
-        }
-    }
-
-    pub fn volume_guid(volume_guid: u128) -> Self {
-        let general_flags = GeneralFlags::volume_guid();
-        Self::VolumeGuid {
-            general_flags,
-            volume_guid,
-        }
-    }
 
     pub fn allocation_bitmap(bitmap_identifier: usize, first_cluster: u32, data_length: usize) -> Self {
         let bitmap_identifier: bool = match bitmap_identifier % 2 {
@@ -202,49 +114,6 @@ impl DirectoryEntry {
             .collect()
     }
 
-    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        let entry_type: u8 = self.entry_type().to_byte();
-        match self {
-            Self::File {
-                file_attributes,
-                create_time,
-                modified_time,
-                accessed_time,
-                stream_extension,
-            } => RawFile::new(self).to_bytes(),
-            Self::StreamExtension {
-                general_flags,
-                name_length,
-                name_hash,
-                first_cluster,
-                data_length,
-                file_name,
-            } => RawStreamExtension::new(self).to_bytes(),
-            Self::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => RawFileName::new(self).to_bytes(),
-            Self::UpcaseTable {
-                table_checksum,
-                first_cluster,
-                data_length,
-            } => RawUpcaseTable::new(self).to_bytes(),
-            Self::VolumeLabel {
-                volume_label,
-            } => RawVolumeLabel::new(self).to_bytes(),
-            Self::VolumeGuid {
-                general_flags,
-                volume_guid,
-            } => RawVolumeGuid::new(self).to_bytes(),
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => RawAllocationBitmap::new(self).to_bytes(),
-        }
-    }
-
     pub fn entry_set_to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.to_bytes().to_vec();
         let mut tail_bytes: Vec<u8> = match self {
@@ -293,45 +162,48 @@ impl DirectoryEntry {
         bytes
     }
 
-    fn entry_type(&self) -> EntryType {
-        match self {
-            Self::File {
-                file_attributes,
-                create_time,
-                modified_time,
-                accessed_time,
-                stream_extension,
-            } => EntryType::file(),
-            Self::StreamExtension {
-                general_flags,
-                name_length,
-                name_hash,
-                first_cluster,
-                data_length,
-                file_name,
-            } => EntryType::stream_extension(),
-            Self::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => EntryType::file_name(),
-            Self::UpcaseTable {
-                table_checksum,
-                first_cluster,
-                data_length,
-            } => EntryType::upcase_table(),
-            Self::VolumeLabel {
-                volume_label,
-            } => EntryType::volume_label(),
-            Self::VolumeGuid {
-                general_flags,
-                volume_guid,
-            } => EntryType::volume_guid(),
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => EntryType::allocation_bitmap(),
+    pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
+        let file_attributes = FileAttributes::new(path);
+        let create_time: time::Time = time::Time::get_changed_time(path);
+        let modified_time: time::Time = time::Time::get_modified_time(path);
+        let accessed_time: time::Time = time::Time::get_accessed_time(path);
+        let file_name: &ffi::OsStr = path.file_name().expect(&format!("Can't extract base name from {}", path.display()));
+        let file_name: &str = file_name.to_str().expect("Can't convert OsStr to String.");
+        let file_name: String = file_name.to_string();
+        let stream_extension: Box<Self> = Box::new(Self::stream_extension(file_name, first_cluster, data_length, upcase_table));
+        Self::File {
+            file_attributes,
+            create_time,
+            modified_time,
+            accessed_time,
+            stream_extension,
+        }
+    }
+
+    pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
+        let bytes: Vec<u8> = upcase_table.to_bytes();
+        let data_length: usize = bytes.len();
+        let first_cluster: u32 = clusters.append(bytes, 0);
+        let table_checksum: u32 = upcase_table.table_checksum();
+        Self::UpcaseTable {
+            table_checksum,
+            first_cluster,
+            data_length,
+        }
+    }
+
+    pub fn volume_guid(volume_guid: u128) -> Self {
+        let general_flags = GeneralFlags::volume_guid();
+        Self::VolumeGuid {
+            general_flags,
+            volume_guid,
+        }
+    }
+
+    pub fn volume_label(volume_label: &str) -> Self {
+        let volume_label: String = volume_label.to_string();
+        Self::VolumeLabel {
+            volume_label,
         }
     }
 
@@ -377,6 +249,135 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
             } => 1,
+        }
+    }
+
+    fn entry_type(&self) -> EntryType {
+        match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => EntryType::file(),
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => EntryType::stream_extension(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => EntryType::file_name(),
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => EntryType::upcase_table(),
+            Self::VolumeLabel {
+                volume_label,
+            } => EntryType::volume_label(),
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => EntryType::volume_guid(),
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => EntryType::allocation_bitmap(),
+        }
+    }
+
+    fn file_name(mut file_name: Vec<u16>) -> Self {
+        let general_flags = GeneralFlags::file_name();
+        let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_LENGTH < file_name.len() {
+            Some(file_name.split_off(FILE_NAME_BLOCK_LENGTH))
+        } else {
+            None
+        };
+        file_name.resize(FILE_NAME_BLOCK_LENGTH, 0x00);
+        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.try_into().expect("Can't convert Vec<u16> to [u16; FILE_NAME_BLOCK_LENGTH]");
+        let next_file_name: Option<Box<Self>> = match remaining_file_name {
+            Some(remaining_file_name) => Some(Box::new(Self::file_name(remaining_file_name))),
+            None => None,
+        };
+        Self::FileName {
+            general_flags,
+            file_name,
+            next_file_name,
+        }
+    }
+
+    fn stream_extension(file_name: String, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
+        let general_flags = GeneralFlags::stream_extension();
+        let file_name: Vec<u16> = file_name
+            .chars()
+            .map(|c| c as u16)
+            .collect();
+        let name_length: u8 = file_name.len() as u8;
+        let name_hash: u16 = file_name
+            .iter()
+            .map(|c| upcase_table.to_upcase(*c))
+            .map(|c| [c as u8, (c >> 8) as u8])
+            .flatten()
+            .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));
+        let file_name: Box<Self> = Box::new(Self::file_name(file_name));
+        Self::StreamExtension {
+            general_flags,
+            name_length,
+            name_hash,
+            first_cluster,
+            data_length,
+            file_name,
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        let entry_type: u8 = self.entry_type().to_byte();
+        match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => RawFile::new(self).to_bytes(),
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => RawStreamExtension::new(self).to_bytes(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => RawFileName::new(self).to_bytes(),
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => RawUpcaseTable::new(self).to_bytes(),
+            Self::VolumeLabel {
+                volume_label,
+            } => RawVolumeLabel::new(self).to_bytes(),
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => RawVolumeGuid::new(self).to_bytes(),
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => RawAllocationBitmap::new(self).to_bytes(),
         }
     }
 }
@@ -798,8 +799,8 @@ struct EntryType {
 }
 
 impl EntryType {
-    fn file() -> Self {
-        let type_code = TypeCode::File;
+    fn allocation_bitmap() -> Self {
+        let type_code = TypeCode::AllocationBitmap;
         let type_importance = false;
         let type_category = false;
         let in_use = true;
@@ -811,10 +812,10 @@ impl EntryType {
         }
     }
 
-    fn stream_extension() -> Self {
-        let type_code = TypeCode::StreamExtension;
+    fn file() -> Self {
+        let type_code = TypeCode::File;
         let type_importance = false;
-        let type_category = true;
+        let type_category = false;
         let in_use = true;
         Self {
             type_code,
@@ -837,49 +838,10 @@ impl EntryType {
         }
     }
 
-    fn upcase_table() -> Self {
-        let type_code = TypeCode::UpcaseTable;
+    fn stream_extension() -> Self {
+        let type_code = TypeCode::StreamExtension;
         let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_label() -> Self {
-        let type_code = TypeCode::VolumeLabel;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_guid() -> Self {
-        let type_code = TypeCode::VolumeGuid;
-        let type_importance = true;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn allocation_bitmap() -> Self {
-        let type_code = TypeCode::AllocationBitmap;
-        let type_importance = false;
-        let type_category = false;
+        let type_category = true;
         let in_use = true;
         Self {
             type_code,
@@ -907,6 +869,45 @@ impl EntryType {
             0
         };
         type_code + type_importance + type_category + in_use
+    }
+
+    fn upcase_table() -> Self {
+        let type_code = TypeCode::UpcaseTable;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn volume_guid() -> Self {
+        let type_code = TypeCode::VolumeGuid;
+        let type_importance = true;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn volume_label() -> Self {
+        let type_code = TypeCode::VolumeLabel;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
     }
 }
 
@@ -992,15 +993,6 @@ struct GeneralFlags {
 }
 
 impl GeneralFlags {
-    fn stream_extension() -> Self {
-        let allocation_possible = true;
-        let no_fat_chain = false;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
     fn file_name() -> Self {
         let allocation_possible = false;
         let no_fat_chain = false;
@@ -1010,9 +1002,9 @@ impl GeneralFlags {
         }
     }
 
-    fn volume_guid() -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = true;
+    fn stream_extension() -> Self {
+        let allocation_possible = true;
+        let no_fat_chain = false;
         Self {
             allocation_possible,
             no_fat_chain,
@@ -1031,6 +1023,15 @@ impl GeneralFlags {
             0
         };
         allocation_possible + no_fat_chain
+    }
+
+    fn volume_guid() -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = true;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
     }
 }
 
