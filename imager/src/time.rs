@@ -24,7 +24,7 @@ const GREGORIAN_MONTH: u8 = 10;
 const GREGORIAN_DAY: u8 = 15;
 const UNIX_YEAR: u64 = 1970;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Time {
     year: u64,
     month: u8,

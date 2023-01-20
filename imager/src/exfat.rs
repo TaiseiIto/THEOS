@@ -5,6 +5,7 @@ mod directory_entry;
 mod extended_boot_sector;
 mod fat;
 mod object;
+mod oem_parameter;
 mod upcase_table;
 
 use {

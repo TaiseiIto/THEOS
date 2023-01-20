@@ -4,7 +4,7 @@ use super::{
     time,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Guid {
     clock_sequence: u16,
     mac_address: u64,
