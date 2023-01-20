@@ -1,4 +1,5 @@
 mod allocation_bitmap;
+mod boot_checksum;
 mod boot_sector;
 mod cluster;
 mod directory_entry;
@@ -16,6 +17,7 @@ use {
 
 #[derive(Debug)]
 pub struct Exfat {
+    boot_checksum: boot_checksum::BootChecksum,
     boot_sector: boot_sector::BootSector,
     clusters: cluster::Clusters,
     extended_boot_sector: [extended_boot_sector::ExtendedBootSector; 0x8],
@@ -37,7 +39,9 @@ impl Exfat {
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
         let boot_sector: boot_sector::BootSector = boot_sector.correct(&fat, &object, &clusters);
+        let boot_checksum = boot_checksum::BootChecksum::new(&boot_sector, &extended_boot_sector, &oem_parameters, &reserved_sector, boot_sector.bytes_per_sector());
         Self {
+            boot_checksum,
             boot_sector,
             clusters,
             extended_boot_sector,
