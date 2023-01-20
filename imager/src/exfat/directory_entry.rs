@@ -381,6 +381,251 @@ impl DirectoryEntry {
     }
 }
 
+#[derive(Debug)]
+struct EntryType {
+    type_code: TypeCode,
+    type_importance: bool,
+    type_category: bool,
+    in_use: bool,
+}
+
+impl EntryType {
+    fn allocation_bitmap() -> Self {
+        let type_code = TypeCode::AllocationBitmap;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn file() -> Self {
+        let type_code = TypeCode::File;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn file_name() -> Self {
+        let type_code = TypeCode::FileName;
+        let type_importance = false;
+        let type_category = true;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn stream_extension() -> Self {
+        let type_code = TypeCode::StreamExtension;
+        let type_importance = false;
+        let type_category = true;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn to_byte(&self) -> u8 {
+        let type_code: u8 = self.type_code.to_byte();
+        let type_importance: u8 = if self.type_importance {
+            1 << 5
+        } else {
+            0
+        };
+        let type_category: u8 = if self.type_category {
+            1 << 6
+        } else {
+            0
+        };
+        let in_use: u8 = if self.in_use {
+            1 << 7
+        } else {
+            0
+        };
+        type_code + type_importance + type_category + in_use
+    }
+
+    fn upcase_table() -> Self {
+        let type_code = TypeCode::UpcaseTable;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn volume_guid() -> Self {
+        let type_code = TypeCode::VolumeGuid;
+        let type_importance = true;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
+    fn volume_label() -> Self {
+        let type_code = TypeCode::VolumeLabel;
+        let type_importance = false;
+        let type_category = false;
+        let in_use = true;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct FileAttributes {
+    read_only: bool,
+    hidden: bool,
+    system: bool,
+    directory: bool,
+    archive: bool,
+}
+
+impl FileAttributes {
+    fn new(path: &path::PathBuf) -> Self {
+        let read_only = true;
+        let hidden = false;
+        let system = true;
+        let directory = path.is_dir();
+        let archive = false;
+        Self {
+            read_only,
+            hidden,
+            system,
+            directory,
+            archive,
+        }
+    }
+
+    fn to_word(&self) -> u16 {
+        let read_only: u16 = match self.read_only {
+            true => 1,
+            false => 0,
+        };
+        let hidden: u16 = match self.hidden {
+            true => 1 << 1,
+            false => 0,
+        };
+        let system: u16 = match self.system {
+            true => 1 << 2,
+            false => 0,
+        };
+        let directory: u16 = match self.system {
+            true => 1 << 4,
+            false => 0,
+        };
+        let archive: u16 = match self.archive {
+            true => 1 << 5,
+            false => 0,
+        };
+        read_only + hidden + system + directory + archive
+    }
+}
+
+#[derive(Debug)]
+struct GeneralFlags {
+    allocation_possible: bool,
+    no_fat_chain: bool,
+}
+
+impl GeneralFlags {
+    fn file_name() -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn stream_extension() -> Self {
+        let allocation_possible = true;
+        let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn to_byte(&self) -> u8 {
+        let allocation_possible = if self.allocation_possible {
+            1
+        } else {
+            0
+        };
+        let no_fat_chain = if self.no_fat_chain {
+            2
+        } else {
+            0
+        };
+        allocation_possible + no_fat_chain
+    }
+
+    fn volume_guid() -> Self {
+        let allocation_possible = false;
+        let no_fat_chain = true;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum TypeCode {
+    File,
+    StreamExtension,
+    FileName,
+    UpcaseTable,
+    VolumeLabel,
+    VolumeGuid,
+    AllocationBitmap,
+}
+
+impl TypeCode {
+    fn to_byte(&self) -> u8 {
+        match self {
+            Self::File => 0x05,
+            Self::StreamExtension => 0x00,
+            Self::FileName => 0x01,
+            Self::UpcaseTable => 0x02,
+            Self::VolumeLabel => 0x03,
+            Self::VolumeGuid => 0x00,
+            Self::AllocationBitmap => 0x01,
+        }
+    }
+}
+
 trait Raw {
     fn new(directory_entry: &DirectoryEntry) -> Self;
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
@@ -785,251 +1030,6 @@ impl Raw for RawVolumeLabel {
     fn to_bytes(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
-        }
-    }
-}
-
-#[derive(Debug)]
-struct EntryType {
-    type_code: TypeCode,
-    type_importance: bool,
-    type_category: bool,
-    in_use: bool,
-}
-
-impl EntryType {
-    fn allocation_bitmap() -> Self {
-        let type_code = TypeCode::AllocationBitmap;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn file() -> Self {
-        let type_code = TypeCode::File;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn file_name() -> Self {
-        let type_code = TypeCode::FileName;
-        let type_importance = false;
-        let type_category = true;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn stream_extension() -> Self {
-        let type_code = TypeCode::StreamExtension;
-        let type_importance = false;
-        let type_category = true;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn to_byte(&self) -> u8 {
-        let type_code: u8 = self.type_code.to_byte();
-        let type_importance: u8 = if self.type_importance {
-            1 << 5
-        } else {
-            0
-        };
-        let type_category: u8 = if self.type_category {
-            1 << 6
-        } else {
-            0
-        };
-        let in_use: u8 = if self.in_use {
-            1 << 7
-        } else {
-            0
-        };
-        type_code + type_importance + type_category + in_use
-    }
-
-    fn upcase_table() -> Self {
-        let type_code = TypeCode::UpcaseTable;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_guid() -> Self {
-        let type_code = TypeCode::VolumeGuid;
-        let type_importance = true;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_label() -> Self {
-        let type_code = TypeCode::VolumeLabel;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-}
-
-#[derive(Debug)]
-enum TypeCode {
-    File,
-    StreamExtension,
-    FileName,
-    UpcaseTable,
-    VolumeLabel,
-    VolumeGuid,
-    AllocationBitmap,
-}
-
-impl TypeCode {
-    fn to_byte(&self) -> u8 {
-        match self {
-            Self::File => 0x05,
-            Self::StreamExtension => 0x00,
-            Self::FileName => 0x01,
-            Self::UpcaseTable => 0x02,
-            Self::VolumeLabel => 0x03,
-            Self::VolumeGuid => 0x00,
-            Self::AllocationBitmap => 0x01,
-        }
-    }
-}
-
-#[derive(Debug)]
-struct FileAttributes {
-    read_only: bool,
-    hidden: bool,
-    system: bool,
-    directory: bool,
-    archive: bool,
-}
-
-impl FileAttributes {
-    fn new(path: &path::PathBuf) -> Self {
-        let read_only = true;
-        let hidden = false;
-        let system = true;
-        let directory = path.is_dir();
-        let archive = false;
-        Self {
-            read_only,
-            hidden,
-            system,
-            directory,
-            archive,
-        }
-    }
-
-    fn to_word(&self) -> u16 {
-        let read_only: u16 = match self.read_only {
-            true => 1,
-            false => 0,
-        };
-        let hidden: u16 = match self.hidden {
-            true => 1 << 1,
-            false => 0,
-        };
-        let system: u16 = match self.system {
-            true => 1 << 2,
-            false => 0,
-        };
-        let directory: u16 = match self.system {
-            true => 1 << 4,
-            false => 0,
-        };
-        let archive: u16 = match self.archive {
-            true => 1 << 5,
-            false => 0,
-        };
-        read_only + hidden + system + directory + archive
-    }
-}
-
-#[derive(Debug)]
-struct GeneralFlags {
-    allocation_possible: bool,
-    no_fat_chain: bool,
-}
-
-impl GeneralFlags {
-    fn file_name() -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = false;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
-    fn stream_extension() -> Self {
-        let allocation_possible = true;
-        let no_fat_chain = false;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
-    fn to_byte(&self) -> u8 {
-        let allocation_possible = if self.allocation_possible {
-            1
-        } else {
-            0
-        };
-        let no_fat_chain = if self.no_fat_chain {
-            2
-        } else {
-            0
-        };
-        allocation_possible + no_fat_chain
-    }
-
-    fn volume_guid() -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = true;
-        Self {
-            allocation_possible,
-            no_fat_chain,
         }
     }
 }
