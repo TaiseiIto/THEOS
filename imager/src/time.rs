@@ -88,7 +88,7 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
-    pub fn get_guid_timestamp(&self) -> u64 {
+    pub fn guid_timestamp(&self) -> u64 {
         let days: u64 =
             (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
             - (GREGORIAN_DAY as u64) + 1
@@ -110,7 +110,7 @@ impl Time {
         10000000 * seconds + (self.nsec as u64) / 100
     }
 
-    pub fn get_unix_time(&self) -> u64 {
+    pub fn unix_timestamp(&self) -> u64 {
         let days: u64 =
             (UNIX_YEAR..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
@@ -127,7 +127,7 @@ impl Time {
         seconds
     }
 
-    pub fn get_utc_offset(&self) -> u8 {
+    pub fn utc_offset(&self) -> u8 {
         0
     }
 

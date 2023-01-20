@@ -426,9 +426,9 @@ impl Raw for RawFile {
                 let last_accessed_timestamp: u32 = accessed_time.fat_timestamp();
                 let create_10ms_increment: u8 = create_time.get_10ms_increment();
                 let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
-                let create_utc_offset: u8 = create_time.get_utc_offset();
-                let last_modified_utc_offset: u8 = modified_time.get_utc_offset();
-                let last_accessed_utc_offset: u8 = accessed_time.get_utc_offset();
+                let create_utc_offset: u8 = create_time.utc_offset();
+                let last_modified_utc_offset: u8 = modified_time.utc_offset();
+                let last_accessed_utc_offset: u8 = accessed_time.utc_offset();
                 let reserved_2: [u8; 7] = [0; 7];
                 let raw_file = Self {
                     entry_type,

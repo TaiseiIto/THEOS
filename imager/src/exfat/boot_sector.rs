@@ -60,7 +60,7 @@ impl BootSector {
         let cluster_count: u32 = clusters.number_of_clusters() as u32;
         let volume_length: u64 = ((cluster_heap_offset as usize) + (cluster_count as usize) * self.sectors_per_cluster()) as u64;
         let first_cluster_of_root_directory: u32 = root_directory.first_cluster();
-        let volume_serial_number: u32 = time::Time::current_time().get_unix_time() as u32;
+        let volume_serial_number: u32 = time::Time::current_time().unix_timestamp() as u32;
         let file_system_revision: u16 = self.file_system_revision;
         let volume_flags: u16 = self.volume_flags;
         let bytes_per_sector_shift: u8 = self.bytes_per_sector_shift;
