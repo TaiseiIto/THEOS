@@ -49,5 +49,9 @@ impl Fat {
         bytes.resize(self.sector_size, 0xff);
         bytes
     }
+
+    pub fn sectors_per_fat(&self) -> usize {
+        self.to_bytes().len() / self.sector_size
+    }
 }
 

@@ -26,7 +26,7 @@ impl Exfat {
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let upcase_table = upcase_table::UpcaseTable::new();
         let object = object::Object::root(source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
-        let fat = fat::Fat::new(&clusters, boot_sector.sector_size());
+        let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
         Self {
             boot_sector,
             clusters,

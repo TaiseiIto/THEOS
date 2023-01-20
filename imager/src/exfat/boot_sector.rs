@@ -1,7 +1,13 @@
-use std::{
-    fs,
-    mem,
-    path,
+use {
+    std::{
+        fs,
+        mem,
+        path,
+    },
+    super::{
+        cluster,
+        fat,
+    },
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -41,14 +47,28 @@ impl BootSector {
         }
     }
 
-    pub fn cluster_size(&self) -> usize {
-        let bytes_per_sector: usize = 1 << self.bytes_per_sector_shift;
-        let sectors_per_cluster: usize = 1 << self.sectors_per_cluster_shift;
-        bytes_per_sector * sectors_per_cluster
+    pub fn correct(self, fat: &fat::Fat, clusters: &cluster::Clusters) {
+        let jump_boot: [u8; 0x3] = self.jump_boot;
+        let file_system_name: [u8; 0x8] = self.file_system_name;
+        let must_be_zero: [u8; 0x35] = self.must_be_zero;
+        let partition_offset: u64 = self.partition_offset;
+        // let volume_length = ;
+        let fat_offset: u32 = self.fat_offset;
+        let fat_length: u32 = fat.sectors_per_fat() as u32;
+        let num_of_fats: u8 = self.num_of_fats;
+        let cluster_heap_offset: u32 = (((fat_offset as usize) + (fat_length as usize) * (num_of_fats as usize) + self.sectors_per_cluster() - 1) / self.sectors_per_cluster() * self.sectors_per_cluster()) as u32;
     }
 
-    pub fn sector_size(&self) -> usize {
+    pub fn cluster_size(&self) -> usize {
+        self.bytes_per_sector() * self.sectors_per_cluster()
+    }
+
+    pub fn bytes_per_sector(&self) -> usize {
         1 << self.bytes_per_sector_shift
+    }
+
+    pub fn sectors_per_cluster(&self) -> usize {
+        1 << self.sectors_per_cluster_shift
     }
 
     pub fn num_of_fats(&self) -> usize {
