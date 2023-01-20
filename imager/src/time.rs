@@ -12,10 +12,10 @@ struct TimeSpec {
 
 #[link(name="stat", kind="static")]
 extern "C" {
+    fn get_current_time() -> TimeSpec;
     fn get_accessed_time(path: *const raw::c_char) -> TimeSpec;
     fn get_changed_time(path: *const raw::c_char) -> TimeSpec;
     fn get_modified_time(path: *const raw::c_char) -> TimeSpec;
-    fn get_current_time() -> TimeSpec;
 }
 
 const FAT_YEAR: u64 = 1980;
@@ -36,46 +36,6 @@ pub struct Time {
 }
 
 impl Time {
-    fn new(time: TimeSpec) -> Self {
-        let unix_sec = time.tv_sec;
-        let nsec = time.tv_nsec;
-        let sec_per_min = 60;
-        let min_per_hour = 60;
-        let hour_per_day = 24;
-        let sec = unix_sec % sec_per_min;
-        let unix_min = unix_sec / sec_per_min;
-        let min = unix_min % min_per_hour;
-        let unix_hour = unix_min / min_per_hour;
-        let hour = unix_hour % hour_per_day;
-        let unix_day = unix_hour / hour_per_day;
-        let mut year = UNIX_YEAR;
-        let mut month = 1;
-        let mut day = unix_day + 1;
-        while (day_per_month(year, month) as u64) < day {
-            day -= day_per_month(year, month) as u64;
-            if month < 12 {
-                month += 1;
-            } else if month == 12 {
-                year += 1;
-                month = 1;
-            }
-        }
-        let month: u8 = month as u8;
-        let day: u8 = day as u8;
-        let hour: u8 = hour as u8;
-        let min: u8 = min as u8;
-        let sec: u8 = sec as u8;
-        Self {
-            year,
-            month,
-            day,
-            hour,
-            min,
-            sec,
-            nsec,
-        }
-    }
-
     pub fn get_current_time() -> Self {
         Self::new(unsafe {
             get_current_time()
@@ -128,23 +88,6 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
-    pub fn get_unix_time(&self) -> u64 {
-        let days: u64 =
-            (UNIX_YEAR..self.year)
-                .map(|year| (1..=12).map(move |month| (year, month)))
-                .flatten()
-                .map(|(year, month)| day_per_month(year, month) as u64)
-                .sum::<u64>()
-            + (1..self.month)
-                .map(|month| day_per_month(self.year, month) as u64)
-                .sum::<u64>()
-            + (self.day as u64) - 1;
-        let hours: u64 = 24 * days + (self.hour as u64);
-        let minutes: u64 = 60 * hours + (self.min as u64);
-        let seconds: u64 = 60 * minutes + (self.sec as u64);
-        seconds
-    }
-
     pub fn get_guid_timestamp(&self) -> u64 {
         let days: u64 =
             (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
@@ -167,14 +110,71 @@ impl Time {
         10000000 * seconds + (self.nsec as u64) / 100
     }
 
+    pub fn get_unix_time(&self) -> u64 {
+        let days: u64 =
+            (UNIX_YEAR..self.year)
+                .map(|year| (1..=12).map(move |month| (year, month)))
+                .flatten()
+                .map(|(year, month)| day_per_month(year, month) as u64)
+                .sum::<u64>()
+            + (1..self.month)
+                .map(|month| day_per_month(self.year, month) as u64)
+                .sum::<u64>()
+            + (self.day as u64) - 1;
+        let hours: u64 = 24 * days + (self.hour as u64);
+        let minutes: u64 = 60 * hours + (self.min as u64);
+        let seconds: u64 = 60 * minutes + (self.sec as u64);
+        seconds
+    }
+
+    pub fn get_utc_offset(&self) -> u8 {
+        0
+    }
+
     pub fn get_10ms_increment(&self) -> u8 {
         let sec: u8 = 100 * (self.sec % 2);
         let msec: u8 = (self.nsec / 10000) as u8;
         sec + msec
     }
 
-    pub fn get_utc_offset(&self) -> u8 {
-        0
+    fn new(time: TimeSpec) -> Self {
+        let unix_sec = time.tv_sec;
+        let nsec = time.tv_nsec;
+        let sec_per_min = 60;
+        let min_per_hour = 60;
+        let hour_per_day = 24;
+        let sec = unix_sec % sec_per_min;
+        let unix_min = unix_sec / sec_per_min;
+        let min = unix_min % min_per_hour;
+        let unix_hour = unix_min / min_per_hour;
+        let hour = unix_hour % hour_per_day;
+        let unix_day = unix_hour / hour_per_day;
+        let mut year = UNIX_YEAR;
+        let mut month = 1;
+        let mut day = unix_day + 1;
+        while (day_per_month(year, month) as u64) < day {
+            day -= day_per_month(year, month) as u64;
+            if month < 12 {
+                month += 1;
+            } else if month == 12 {
+                year += 1;
+                month = 1;
+            }
+        }
+        let month: u8 = month as u8;
+        let day: u8 = day as u8;
+        let hour: u8 = hour as u8;
+        let min: u8 = min as u8;
+        let sec: u8 = sec as u8;
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
     }
 }
 

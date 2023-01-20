@@ -18,12 +18,22 @@ const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 
 #[derive(Debug)]
 pub enum DirectoryEntry {
+    AllocationBitmap {
+        bitmap_identifier: bool,
+        first_cluster: u32,
+        data_length: usize,
+    },
     File {
         file_attributes: FileAttributes,
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
         stream_extension: Box<Self>,
+    },
+    FileName {
+        general_flags: GeneralFlags,
+        file_name: [u16; FILE_NAME_BLOCK_LENGTH],
+        next_file_name: Option<Box<Self>>,
     },
     StreamExtension {
         general_flags: GeneralFlags,
@@ -33,27 +43,17 @@ pub enum DirectoryEntry {
         data_length: usize,
         file_name: Box<Self>,
     },
-    FileName {
-        general_flags: GeneralFlags,
-        file_name: [u16; FILE_NAME_BLOCK_LENGTH],
-        next_file_name: Option<Box<Self>>,
-    },
     UpcaseTable {
         table_checksum: u32,
         first_cluster: u32,
         data_length: usize,
     },
-    VolumeLabel {
-        volume_label: String,
-    },
     VolumeGuid {
         general_flags: GeneralFlags,
         volume_guid: u128,
     },
-    AllocationBitmap {
-        bitmap_identifier: bool,
-        first_cluster: u32,
-        data_length: usize,
+    VolumeLabel {
+        volume_label: String,
     },
 }
 

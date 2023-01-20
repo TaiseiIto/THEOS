@@ -7,6 +7,15 @@ typedef struct _TimeSpec {
 	unsigned long int tv_nsec;
 } TimeSpec;
 
+TimeSpec get_current_time() {
+	struct timespec time_spec_src;
+	TimeSpec time_spec_dst;
+	clock_gettime(CLOCK_REALTIME, &time_spec_src);
+	time_spec_dst.tv_sec = time_spec_src.tv_sec;
+	time_spec_dst.tv_nsec = time_spec_src.tv_nsec;
+	return time_spec_dst;
+}
+
 TimeSpec get_accessed_time(char const *path) {
 	TimeSpec time_spec;
 	struct stat st;
@@ -32,14 +41,5 @@ TimeSpec get_modified_time(char const *path) {
 	time_spec.tv_sec = st.st_mtim.tv_sec;
 	time_spec.tv_nsec = st.st_mtim.tv_nsec;
 	return time_spec;
-}
-
-TimeSpec get_current_time() {
-	struct timespec time_spec_src;
-	TimeSpec time_spec_dst;
-	clock_gettime(CLOCK_REALTIME, &time_spec_src);
-	time_spec_dst.tv_sec = time_spec_src.tv_sec;
-	time_spec_dst.tv_nsec = time_spec_src.tv_nsec;
-	return time_spec_dst;
 }
 

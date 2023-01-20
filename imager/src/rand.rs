@@ -8,19 +8,6 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn new(seed: u32) -> Self {
-        let (queue, _): (VecDeque<u32>, u32) = (1..=QUEUE_SIZE)
-            .fold((VecDeque::<u32>::new(), seed), |(queue, next), i| {
-                let mut queue: VecDeque<u32> = queue;
-                queue.push_back(next);
-                let next: u32 = 1812433253 * (next ^ (next >> 30)) + i;
-                (queue, next)
-            });
-        Self {
-            queue,
-        }
-    }
-
     pub fn generate_u16(&mut self) -> u16 {
         self.generate_u32() as u16
     }
@@ -45,6 +32,19 @@ impl Generator {
         let y: u32 = y ^ y << sl2 & c;
         let y: u32 = y ^ y >> sr3;
         y
+    }
+
+    pub fn new(seed: u32) -> Self {
+        let (queue, _): (VecDeque<u32>, u32) = (1..=QUEUE_SIZE)
+            .fold((VecDeque::<u32>::new(), seed), |(queue, next), i| {
+                let mut queue: VecDeque<u32> = queue;
+                queue.push_back(next);
+                let next: u32 = 1812433253 * (next ^ (next >> 30)) + i;
+                (queue, next)
+            });
+        Self {
+            queue,
+        }
     }
 }
 
