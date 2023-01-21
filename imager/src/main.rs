@@ -1,14 +1,18 @@
+mod binary;
 mod exfat;
 mod guid;
 mod mac_address;
 mod rand;
 mod time;
 
-use std::{
-    env,
-    io,
-    io::Write,
-    path,
+use {
+    binary::Binary,
+    std::{
+        env,
+        io,
+        io::Write,
+        path,
+    },
 };
 
 fn main() {

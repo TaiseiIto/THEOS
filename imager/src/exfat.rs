@@ -12,7 +12,10 @@ mod upcase_table;
 
 use {
     std::path,
-    super::rand,
+    super::{
+        binary,
+        rand,
+    },
 };
 
 #[derive(Debug)]
@@ -52,8 +55,10 @@ impl Exfat {
             upcase_table,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl binary::Binary for Exfat {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = vec![];
         let mut boot_sector: Vec<u8> = self.boot_sector.to_bytes();
         let mut extended_boot_sectors: Vec<u8> = self.extended_boot_sectors
