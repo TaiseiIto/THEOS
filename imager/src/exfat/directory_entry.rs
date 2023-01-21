@@ -636,6 +636,7 @@ trait Raw {
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawAllocationBitmap {
@@ -681,6 +682,7 @@ impl Raw for RawAllocationBitmap {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawFile {
@@ -777,6 +779,7 @@ impl Raw for RawFile {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawFileName {
@@ -813,6 +816,7 @@ impl Raw for RawFileName {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawStreamExtension {
@@ -873,6 +877,7 @@ impl Raw for RawStreamExtension {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawUpcaseTable {
@@ -918,6 +923,7 @@ impl Raw for RawUpcaseTable {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct RawVolumeGuid {
@@ -979,6 +985,7 @@ impl Raw for RawVolumeGuid {
 
 const VOLUME_LABEL_MAX_LENGTH: usize = 11;
 
+#[allow(dead_code)]
 #[repr(packed)]
 #[derive(Copy, Clone)]
 struct RawVolumeLabel {

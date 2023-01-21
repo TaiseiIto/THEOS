@@ -15,6 +15,7 @@ use {
     },
 };
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct BootSector {
