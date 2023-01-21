@@ -1,0 +1,5 @@
+BOOT_SECTOR_DIRECTORY = boot_sector
+
+all:
+	make -C $(BOOT_SECTOR_DIRECTORY)
+

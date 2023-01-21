@@ -1,0 +1,7 @@
+*.a
+*.bin
+*.img
+*.map
+*.o
+imager_output.txt
+

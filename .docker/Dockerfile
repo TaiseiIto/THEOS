@@ -21,6 +21,9 @@ RUN git config --global pull.rebase false
 RUN mkdir /root/.ssh
 RUN mkdir /root/.github
 
+# Install sponge
+RUN apt install moreutils -y
+
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 RUN mkdir /root/.crates.io

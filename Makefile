@@ -1,3 +1,9 @@
+# Build THEOS
+all:
+	make -C src
+	make -C imager
+	imager/target/release/imager src/boot_sector/boot_sector.bin disk > theos.img 2> imager_output.txt
+
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
 docker:
@@ -19,9 +25,17 @@ rebuild_docker:
 permission:
 	make permission -C .docker GITHUB=$(realpath $(GITHUB)) GITGPG=$(realpath $(GITGPG)) CRATESIO=$(realpath $(CRATESIO))
 
+# Developers have to execute this before commitment to adjust source files in the repository.
+# Usage: $ make adjust
+adjust: delete_crlf tab_2_spaces
+
+# This is called from target adjust.
 # Convert CRLF to LF in sources in this repository.
-# Developers have to execute it before commitment to prevent that CRLFs mix into source files in this repository.
-# Usage: $ make delete_crlf
 delete_crlf:
 	for i in $$(git grep -lr $$'\r'); do dos2unix $$i; done
+
+# This is called from target adjust.
+# Convert tabs to 2 spaces in all rust source files.
+tab_2_spaces:
+	for i in $$(find . -name "*.rs"); do expand -i -t 4 $$i | sponge $$i; done
 
