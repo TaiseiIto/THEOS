@@ -116,54 +116,6 @@ impl DirectoryEntry {
             .collect()
     }
 
-    pub fn entry_set_to_bytes(&self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = self.raw().to_vec();
-        let mut tail_bytes: Vec<u8> = match self {
-            Self::File {
-                file_attributes,
-                create_time,
-                modified_time,
-                accessed_time,
-                stream_extension,
-            } => stream_extension.entry_set_to_bytes(),
-            Self::StreamExtension {
-                general_flags,
-                name_length,
-                name_hash,
-                first_cluster,
-                data_length,
-                file_name,
-            } => file_name.entry_set_to_bytes(),
-            Self::FileName {
-                general_flags,
-                file_name,
-                next_file_name,
-            } => match next_file_name {
-                Some(next_file_name) => next_file_name.entry_set_to_bytes(),
-                None => vec![],
-            },
-            Self::UpcaseTable {
-                table_checksum,
-                first_cluster,
-                data_length,
-            } => vec![],
-            Self::VolumeLabel {
-                volume_label,
-            } => vec![],
-            Self::VolumeGuid {
-                general_flags,
-                volume_guid,
-            } => vec![],
-            Self::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => vec![],
-        };
-        bytes.append(&mut tail_bytes);
-        bytes
-    }
-
     pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
         let create_time: time::Time = time::Time::last_changed_time(path);
@@ -381,6 +333,56 @@ impl DirectoryEntry {
                 volume_label,
             } => RawVolumeLabel::new(self).raw(),
         }
+    }
+}
+
+impl Binary for DirectoryEntry {
+    fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = self.raw().to_vec();
+        let mut tail_bytes: Vec<u8> = match self {
+            Self::File {
+                file_attributes,
+                create_time,
+                modified_time,
+                accessed_time,
+                stream_extension,
+            } => stream_extension.to_bytes(),
+            Self::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name,
+            } => file_name.to_bytes(),
+            Self::FileName {
+                general_flags,
+                file_name,
+                next_file_name,
+            } => match next_file_name {
+                Some(next_file_name) => next_file_name.to_bytes(),
+                None => vec![],
+            },
+            Self::UpcaseTable {
+                table_checksum,
+                first_cluster,
+                data_length,
+            } => vec![],
+            Self::VolumeLabel {
+                volume_label,
+            } => vec![],
+            Self::VolumeGuid {
+                general_flags,
+                volume_guid,
+            } => vec![],
+            Self::AllocationBitmap {
+                bitmap_identifier,
+                first_cluster,
+                data_length,
+            } => vec![],
+        };
+        bytes.append(&mut tail_bytes);
+        bytes
     }
 }
 
@@ -739,7 +741,7 @@ impl Raw for RawFile {
                     reserved_2,
                 };
                 let mut bytes: Vec<u8> = raw_file.raw().to_vec();
-                let mut tail_bytes: Vec<u8> = stream_extension.entry_set_to_bytes();
+                let mut tail_bytes: Vec<u8> = stream_extension.to_bytes();
                 bytes.append(&mut tail_bytes);
                 let set_checksum: u16 = bytes
                     .into_iter()

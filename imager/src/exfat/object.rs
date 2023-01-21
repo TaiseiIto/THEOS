@@ -9,6 +9,7 @@ use {
         cluster,
         directory_entry,
         super::{
+            binary::Binary,
             guid,
             rand,
         },
@@ -86,7 +87,7 @@ impl FileOrDirectory {
             directory_entries.append(&mut allocation_bitmaps);
             let bytes: Vec<u8> = directory_entries
                 .iter()
-                .map(|directory_entry| directory_entry.entry_set_to_bytes())
+                .map(|directory_entry| directory_entry.to_bytes())
                 .flatten()
                 .collect();
             let length: usize = bytes.len();
