@@ -1,6 +1,9 @@
 use {
     std::collections::HashMap,
-    super::cluster,
+    super::{
+        cluster,
+        super::binary::Binary,
+    },
 };
 
 #[derive(Debug)]
@@ -21,8 +24,10 @@ impl Fat {
     pub fn sectors_per_fat(&self) -> usize {
         self.to_bytes().len() / self.sector_size
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for Fat {
+    fn to_bytes(&self) -> Vec<u8> {
         let max_cluster_number: u32 = *self.cluster_chain
             .keys()
             .max()

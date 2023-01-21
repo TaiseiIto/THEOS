@@ -1,6 +1,9 @@
 use {
     std::mem,
-    super::super::guid,
+    super::super::{
+        binary::Binary,
+        guid,
+    },
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -17,8 +20,10 @@ impl OemParameters {
             size,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for OemParameters {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.parameters
             .iter()
             .map(|parameter| parameter.to_bytes().into_iter())
@@ -44,8 +49,10 @@ impl OemParameter {
             custom_defined,
         }
     }
+}
 
-    fn to_bytes(&self) -> [u8; 0x30] {
+impl Binary for OemParameter {
+    fn to_bytes(&self) -> Vec<u8> {
         let parameter_guid: u128 = self.parameter_guid.to_u128();
         let parameter_guid: [u8; 0x10] = unsafe {
             mem::transmute::<u128, [u8; 0x10]>(parameter_guid)
@@ -55,8 +62,6 @@ impl OemParameter {
         let mut bytes: Vec<u8> = parameter_guid;
         bytes.append(&mut custom_defined);
         bytes
-            .try_into()
-            .expect("Can't convert OemParameter to bytes.")
     }
 }
 

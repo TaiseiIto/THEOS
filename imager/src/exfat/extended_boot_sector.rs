@@ -1,4 +1,7 @@
-use std::mem;
+use {
+    std::mem,
+    super::super::binary::Binary,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct ExtendedBootSector {
@@ -14,8 +17,10 @@ impl ExtendedBootSector {
             size,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for ExtendedBootSector {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut extended_boot_signature: Vec<u8> = unsafe {
             mem::transmute::<u32, [u8; 4]>(self.extended_boot_signature)
         }.to_vec();

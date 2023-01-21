@@ -1,3 +1,5 @@
+use super::super::binary::Binary;
+
 #[derive(Debug)]
 pub struct ReservedSector {
     size: usize,
@@ -9,8 +11,10 @@ impl ReservedSector {
             size,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for ReservedSector {
+    fn to_bytes(&self) -> Vec<u8> {
         (0..self.size)
             .map(|_| 0)
             .collect()

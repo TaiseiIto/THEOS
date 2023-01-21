@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use {
+    std::collections::HashMap,
+    super::super::binary::Binary,
+};
 
 #[derive(Debug)]
 pub struct UpcaseTable {
@@ -38,7 +41,16 @@ impl UpcaseTable {
             .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + *byte as u32)
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_upcase(&self, c: u16) -> u16 {
+        match self.map.get(&c) {
+            Some(upcase) => *upcase,
+            None => c,
+        }
+    }
+}
+
+impl Binary for UpcaseTable {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut map: Vec<(u16, u16)> = self.map
             .iter()
             .filter(|(c, u)| c != u)
@@ -65,13 +77,6 @@ impl UpcaseTable {
             .map(|w| vec![*w as u8, (*w >> 8) as u8])
             .flatten()
             .collect()
-    }
-
-    pub fn to_upcase(&self, c: u16) -> u16 {
-        match self.map.get(&c) {
-            Some(upcase) => *upcase,
-            None => c,
-        }
     }
 }
 
