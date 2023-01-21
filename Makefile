@@ -2,7 +2,7 @@
 all:
 	make -C src
 	make -C imager
-	imager/target/release/imager src/boot_sector/boot_sector.bin disk > theos.img 2> imager_output.txt
+	imager/target/release/imager -b src/boot_sector/boot_sector.bin -s disk > theos.img 2> imager_output.txt
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
