@@ -1,11 +1,7 @@
-use {
-    std::mem,
-    super::{
-        binary,
-        mac_address,
-        rand,
-        time,
-    },
+use super::{
+    mac_address,
+    rand,
+    time,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -49,19 +45,6 @@ impl Guid {
         let time: u128 = self.time.guid_timestamp() as u128;
         let version: u128 = (self.version as u128) << 0x3c;
         clock_sequence + mac_address + time + version
-    }
-}
-
-impl binary::Binary for Guid {
-    fn to_bytes(&self) -> Vec<u8> {
-        let bytes: u128 = self.to_u128();
-        let bytes: [u8; 0x10] = unsafe {
-            mem::transmute::<u128, [u8; 0x10]>(bytes)
-        };
-        let bytes: Vec<u8> = bytes
-            .into_iter()
-            .collect();
-        bytes
     }
 }
 

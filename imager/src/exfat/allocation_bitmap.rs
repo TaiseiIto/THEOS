@@ -1,6 +1,9 @@
 use {
     std::collections::HashMap,
-    super::cluster,
+    super::{
+        cluster,
+        super::binary::Binary,
+    },
 };
 
 #[derive(Debug)]
@@ -18,8 +21,10 @@ impl AllocationBitmap {
             bitmap,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for AllocationBitmap {
+    fn to_bytes(&self) -> Vec<u8> {
         let max_cluster_number: u32 = self.bitmap
             .iter()
             .map(|(cluster_number, _)| *cluster_number)

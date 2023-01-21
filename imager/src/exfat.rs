@@ -11,6 +11,7 @@ mod reserved_sector;
 mod upcase_table;
 
 use {
+    binary::Binary,
     std::path,
     super::{
         binary,
@@ -57,7 +58,7 @@ impl Exfat {
     }
 }
 
-impl binary::Binary for Exfat {
+impl Binary for Exfat {
     fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = vec![];
         let mut boot_sector: Vec<u8> = self.boot_sector.to_bytes();

@@ -8,7 +8,10 @@ use {
         allocation_bitmap,
         cluster,
         object,
-        super::time,
+        super::{
+            binary::Binary,
+            time,
+        },
         upcase_table,
     },
 };
