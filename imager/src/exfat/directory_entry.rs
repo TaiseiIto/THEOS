@@ -1000,11 +1000,11 @@ impl Raw for RawVolumeLabel {
                     .map(|c| c.to_string().into_bytes())
                     .filter(|c| c.len() <= 2)
                     .map(|c| {
-                        let mut i = c.iter();
+                        let mut i = c.into_iter();
                         match i.next() {
                             Some(lower_byte) => match i.next() {
-                                Some(higher_byte) => ((*higher_byte as u16) << 8) + *lower_byte as u16,
-                                None => *lower_byte as u16,
+                                Some(higher_byte) => ((higher_byte as u16) << 8) + lower_byte as u16,
+                                None => lower_byte as u16,
                             },
                             None => 0x0000,
                         }

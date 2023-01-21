@@ -19,11 +19,11 @@ impl UpcaseTable {
                 .to_vec()))
             .filter(|(_, u)| u.len() <= 2)
             .filter_map(|(c, u)| {
-                let mut i = u.iter();
+                let mut i = u.into_iter();
                 match i.next() {
                     Some(lower_byte) => match i.next() {
-                        Some(higher_byte) => Some((c, ((*higher_byte as u16) << 8) + *lower_byte as u16)),
-                        None => Some((c, *lower_byte as u16)),
+                        Some(higher_byte) => Some((c, ((higher_byte as u16) << 8) + lower_byte as u16)),
+                        None => Some((c, lower_byte as u16)),
                     },
                     None => None,
                 }
@@ -37,8 +37,8 @@ impl UpcaseTable {
     pub fn table_checksum(&self) -> u32 {
         self
             .to_bytes()
-            .iter()
-            .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + *byte as u32)
+            .into_iter()
+            .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u32)
     }
 
     pub fn to_upcase(&self, c: u16) -> u16 {
@@ -58,23 +58,23 @@ impl Binary for UpcaseTable {
             .collect();
         map.sort_by(|(left, _), (right, _)| left.partial_cmp(&right).expect("Can't convert upcase table into bytes!"));
         let (mut words, last_c): (Vec<u16>, u16) = map
-            .iter()
+            .into_iter()
             .fold((vec![], 0), |(words, last_c), (c, u)| {
                 let mut words: Vec<u16> = words;
-                if last_c + 1 < *c {
+                if last_c + 1 < c {
                     words.push(0xffff);
                     words.push(c - last_c);
                 }
-                words.push(*u);
-                (words, *c)
+                words.push(u);
+                (words, c)
             });
         if last_c != 0xffff {
             words.push(0xffff);
             words.push(0 - last_c);
         }
         words
-            .iter()
-            .map(|w| vec![*w as u8, (*w >> 8) as u8])
+            .into_iter()
+            .map(|w| vec![w as u8, (w >> 8) as u8])
             .flatten()
             .collect()
     }
