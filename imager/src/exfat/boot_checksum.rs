@@ -5,6 +5,7 @@ use {
         extended_boot_sector,
         oem_parameter,
         reserved_sector,
+        super::binary::Binary,
     },
 };
 
@@ -49,8 +50,10 @@ impl BootChecksum {
             checksum,
         }
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for BootChecksum {
+    fn to_bytes(&self) -> Vec<u8> {
         let checksum: [u8; 4] = unsafe {
             mem::transmute::<u32, [u8; 4]>(self.checksum)
         };

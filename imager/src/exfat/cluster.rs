@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use {
+    std::collections::HashMap,
+    super::super::binary::Binary,
+};
 
 pub const FIRST_CLUSTER_NUMBER: u32 = 2;
 
@@ -56,18 +59,6 @@ impl Clusters {
             .sum()
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
-        (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
-            .map(|cluster_number| match self.get_cluster(cluster_number) {
-                Some(bytes) => bytes,
-                None => (0..self.cluster_size)
-                    .map(|_| 0u8)
-                    .collect::<Vec<u8>>(),
-            })
-            .flatten()
-            .collect()
-    }
-
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
         self.clusters
             .iter()
@@ -81,6 +72,20 @@ impl Clusters {
             .map(|cluster| cluster.max_cluster_number())
             .max()
             .expect("Can't get max cluster number.")
+    }
+}
+
+impl Binary for Clusters {
+    fn to_bytes(&self) -> Vec<u8> {
+        (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
+            .map(|cluster_number| match self.get_cluster(cluster_number) {
+                Some(bytes) => bytes,
+                None => (0..self.cluster_size)
+                    .map(|_| 0u8)
+                    .collect::<Vec<u8>>(),
+            })
+            .flatten()
+            .collect()
     }
 }
 

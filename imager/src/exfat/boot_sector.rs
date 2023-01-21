@@ -8,7 +8,10 @@ use {
         cluster,
         fat,
         object,
-        super::time,
+        super::{
+            binary::Binary,
+            time,
+        },
     },
 };
 
@@ -112,8 +115,10 @@ impl BootSector {
     pub fn sectors_per_cluster(&self) -> usize {
         1 << self.sectors_per_cluster_shift
     }
+}
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+impl Binary for BootSector {
+    fn to_bytes(&self) -> Vec<u8> {
         let boot_sector: [u8; mem::size_of::<Self>()] = unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         };
