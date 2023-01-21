@@ -117,7 +117,7 @@ impl DirectoryEntry {
     }
 
     pub fn entry_set_to_bytes(&self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = self.raw_directory_entry().to_vec();
+        let mut bytes: Vec<u8> = self.raw().to_vec();
         let mut tail_bytes: Vec<u8> = match self {
             Self::File {
                 file_attributes,
@@ -340,26 +340,26 @@ impl DirectoryEntry {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         let entry_type: u8 = self.entry_type().to_byte();
         match self {
             Self::AllocationBitmap {
                 bitmap_identifier,
                 first_cluster,
                 data_length,
-            } => RawAllocationBitmap::new(self).raw_directory_entry(),
+            } => RawAllocationBitmap::new(self).raw(),
             Self::File {
                 file_attributes,
                 create_time,
                 modified_time,
                 accessed_time,
                 stream_extension,
-            } => RawFile::new(self).raw_directory_entry(),
+            } => RawFile::new(self).raw(),
             Self::FileName {
                 general_flags,
                 file_name,
                 next_file_name,
-            } => RawFileName::new(self).raw_directory_entry(),
+            } => RawFileName::new(self).raw(),
             Self::StreamExtension {
                 general_flags,
                 name_length,
@@ -367,19 +367,19 @@ impl DirectoryEntry {
                 first_cluster,
                 data_length,
                 file_name,
-            } => RawStreamExtension::new(self).raw_directory_entry(),
+            } => RawStreamExtension::new(self).raw(),
             Self::UpcaseTable {
                 table_checksum,
                 first_cluster,
                 data_length,
-            } => RawUpcaseTable::new(self).raw_directory_entry(),
+            } => RawUpcaseTable::new(self).raw(),
             Self::VolumeGuid {
                 general_flags,
                 volume_guid,
-            } => RawVolumeGuid::new(self).raw_directory_entry(),
+            } => RawVolumeGuid::new(self).raw(),
             Self::VolumeLabel {
                 volume_label,
-            } => RawVolumeLabel::new(self).raw_directory_entry(),
+            } => RawVolumeLabel::new(self).raw(),
         }
     }
 }
@@ -631,7 +631,7 @@ impl TypeCode {
 
 trait Raw {
     fn new(directory_entry: &DirectoryEntry) -> Self;
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
 }
 
 #[derive(Clone, Copy)]
@@ -672,7 +672,7 @@ impl Raw for RawAllocationBitmap {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -738,7 +738,7 @@ impl Raw for RawFile {
                     last_accessed_utc_offset,
                     reserved_2,
                 };
-                let mut bytes: Vec<u8> = raw_file.raw_directory_entry().to_vec();
+                let mut bytes: Vec<u8> = raw_file.raw().to_vec();
                 let mut tail_bytes: Vec<u8> = stream_extension.entry_set_to_bytes();
                 bytes.append(&mut tail_bytes);
                 let set_checksum: u16 = bytes
@@ -768,7 +768,7 @@ impl Raw for RawFile {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -804,7 +804,7 @@ impl Raw for RawFileName {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -864,7 +864,7 @@ impl Raw for RawStreamExtension {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -909,7 +909,7 @@ impl Raw for RawUpcaseTable {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -948,7 +948,7 @@ impl Raw for RawVolumeGuid {
                     volume_guid,
                     reserved,
                 };
-                let mut bytes: Vec<u8> = raw_volume_guid.raw_directory_entry().to_vec();
+                let mut bytes: Vec<u8> = raw_volume_guid.raw().to_vec();
                 let set_checksum: u16 = bytes
                     .into_iter()
                     .enumerate()
@@ -968,7 +968,7 @@ impl Raw for RawVolumeGuid {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
@@ -1030,7 +1030,7 @@ impl Raw for RawVolumeLabel {
         }
     }
 
-    fn raw_directory_entry(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
         }
