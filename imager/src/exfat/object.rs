@@ -104,10 +104,7 @@ impl FileOrDirectory {
 
 #[derive(Debug)]
 pub struct Object {
-    path: path::PathBuf,
-    content: FileOrDirectory,
     first_cluster: u32,
-    length: usize,
     directory_entry: directory_entry::DirectoryEntry,
 }
 
@@ -134,13 +131,10 @@ impl Object {
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        let (content, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let (_, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
         Self {
-            path,
-            content,
             first_cluster,
-            length,
             directory_entry,
         }
     }
