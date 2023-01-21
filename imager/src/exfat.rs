@@ -61,8 +61,14 @@ impl Exfat {
             .map(|extended_boot_sector| extended_boot_sector.to_bytes().into_iter())
             .flatten()
             .collect();
+        let mut oem_parameters: Vec<u8> = self.oem_parameters.to_bytes();
+        let mut reserved_sector: Vec<u8> = self.reserved_sector.to_bytes();
+        let mut boot_checksum: Vec<u8> = self.boot_checksum.to_bytes();
         bytes.append(&mut boot_sector);
         bytes.append(&mut extended_boot_sectors);
+        bytes.append(&mut oem_parameters);
+        bytes.append(&mut reserved_sector);
+        bytes.append(&mut boot_checksum);
         bytes
     }
 }
