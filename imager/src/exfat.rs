@@ -75,6 +75,19 @@ impl Binary for Exfat {
         bytes.append(&mut oem_parameters);
         bytes.append(&mut reserved_sector);
         bytes.append(&mut boot_checksum);
+        bytes.append(&mut bytes.clone());
+        let fat: Vec<u8> = self.fat.to_bytes();
+        let num_of_fats: usize = self.boot_sector.num_of_fats();
+        let mut fat: Vec<u8> = (0..num_of_fats)
+            .map(|_| fat.clone().into_iter())
+            .flatten()
+            .collect();
+        bytes.append(&mut fat);
+        let cluster_heap_offset: usize = self.boot_sector.cluster_heap_offset() as usize;
+        let cluster_heap_offset: usize = cluster_heap_offset * self.boot_sector.bytes_per_sector();
+        bytes.resize(cluster_heap_offset, 0x00);
+        let mut clusters: Vec<u8> = self.clusters.to_bytes();
+        bytes.append(&mut clusters);
         bytes
     }
 }

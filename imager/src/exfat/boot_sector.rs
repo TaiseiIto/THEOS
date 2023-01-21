@@ -46,6 +46,10 @@ impl BootSector {
         1 << self.bytes_per_sector_shift
     }
 
+    pub fn cluster_heap_offset(&self) -> u32 {
+        self.cluster_heap_offset
+    }
+
     pub fn cluster_size(&self) -> usize {
         self.bytes_per_sector() * self.sectors_per_cluster()
     }
