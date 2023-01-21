@@ -545,7 +545,7 @@ impl FileAttributes {
             true => 1 << 2,
             false => 0,
         };
-        let directory: u16 = match self.system {
+        let directory: u16 = match self.directory {
             true => 1 << 4,
             false => 0,
         };
