@@ -13,7 +13,7 @@ pub struct Clusters {
 }
 
 impl Clusters {
-    pub fn append(&mut self, mut bytes: Vec<u8>, blank: u8) -> u32 {
+    pub fn append(&mut self, bytes: Vec<u8>, blank: u8) -> u32 {
         let cluster = match Cluster::new(self, bytes, blank) {
             Some(cluster) => cluster,
             None => return 0,

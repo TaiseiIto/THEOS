@@ -26,10 +26,8 @@ pub struct Exfat {
     clusters: cluster::Clusters,
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; 0x8],
     fat: fat::Fat,
-    object: object::Object,
     oem_parameters: oem_parameter::OemParameters,
     reserved_sector: reserved_sector::ReservedSector,
-    upcase_table: upcase_table::UpcaseTable,
 }
 
 impl Exfat {
@@ -50,10 +48,8 @@ impl Exfat {
             clusters,
             extended_boot_sectors,
             fat,
-            object,
             oem_parameters,
             reserved_sector,
-            upcase_table,
         }
     }
 }

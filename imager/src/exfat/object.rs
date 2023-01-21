@@ -35,7 +35,7 @@ impl FileOrDirectory {
         rand_generator: &mut rand::Generator,
     ) -> (Self, u32, usize) {
         if path.is_file() {
-            let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+            let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length: usize = bytes.len();
             let first_cluster: u32 = clusters.append(bytes, 0);
             let file = Self::File;
