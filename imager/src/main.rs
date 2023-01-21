@@ -17,11 +17,9 @@ use {
 
 fn main() {
     let args = Args::new(env::args());
-    eprintln!("{:#?}", args);
     let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
     let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory, &mut rand_generator);
     let exfat: Vec<u8> = exfat.to_bytes();
-    eprintln!("exfat = {:?}", exfat);
     io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
 }
 
