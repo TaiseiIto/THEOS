@@ -4,7 +4,6 @@ use {
         path,
     },
     super::{
-        allocation_bitmap,
         boot_sector,
         cluster,
         directory_entry,

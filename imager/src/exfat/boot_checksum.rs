@@ -43,7 +43,7 @@ impl BootChecksum {
                 106 | 107 | 112 => false,
                 _ => true,
             })
-            .map(|(i, byte)| byte)
+            .map(|(_, byte)| byte)
             .fold(0u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + (byte as u32));
         Self {
             size,

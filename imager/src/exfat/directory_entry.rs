@@ -7,7 +7,6 @@ use {
     super::{
         allocation_bitmap,
         cluster,
-        object,
         super::{
             binary::Binary,
             time,
