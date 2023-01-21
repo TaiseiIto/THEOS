@@ -6,6 +6,8 @@ mod time;
 
 use std::{
     env,
+    io,
+    io::Write,
     path,
 };
 
@@ -14,7 +16,7 @@ fn main() {
     eprintln!("{:#?}", args);
     let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
     let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory, &mut rand_generator);
-    eprintln!("{:#x?}", exfat);
+    io::stdout().write(&exfat.to_bytes()).expect("Can't write image to stdout.");
 }
 
 #[derive(Debug)]

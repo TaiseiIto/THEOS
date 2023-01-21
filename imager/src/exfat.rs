@@ -52,5 +52,12 @@ impl Exfat {
             upcase_table,
         }
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = vec![];
+        let mut boot_sector: Vec<u8> = self.boot_sector.to_bytes();
+        bytes.append(&mut boot_sector);
+        bytes
+    }
 }
 
