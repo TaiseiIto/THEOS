@@ -11,6 +11,13 @@ impl ReservedSector {
             size,
         }
     }
+
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let size: usize = bytes.len();
+        Self {
+            size,
+        }
+    }
 }
 
 impl Binary for ReservedSector {
