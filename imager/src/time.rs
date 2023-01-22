@@ -88,6 +88,30 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
+    pub fn from_guid_timestamp(timestamp: u64) -> Self {
+        let (nsec, sec): (u32, u64) = ((timestamp % 10000000 * 100) as u32, timestamp / 10000000);
+        let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
+        let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
+        let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
+        let mut day: u64 = day + (GREGORIAN_DAY as u64) - 1;
+        let mut year: u64 = GREGORIAN_YEAR;
+        let mut month: u8 = GREGORIAN_MONTH;
+        while (day_per_month(year, month) as u64) < day {
+            day -= day_per_month(year, month) as u64;
+            (year, month) = next_month(year, month);
+        }
+        let day: u8 = day as u8;
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
+    }
+
     pub fn get_10ms_increment(&self) -> u8 {
         let sec: u8 = 100 * (self.sec % 2);
         let msec: u8 = (self.nsec / 10000) as u8;
@@ -184,12 +208,7 @@ impl Time {
         let mut day = unix_day + 1;
         while (day_per_month(year, month) as u64) < day {
             day -= day_per_month(year, month) as u64;
-            if month < 12 {
-                month += 1;
-            } else if month == 12 {
-                year += 1;
-                month = 1;
-            }
+            (year, month) = next_month(year, month);
         }
         let month: u8 = month as u8;
         let day: u8 = day as u8;
@@ -234,6 +253,24 @@ fn is_leap_year(year: u64) -> bool {
         }
     } else {
         false
+    }
+}
+
+fn next_month(year: u64, month: u8) -> (u64, u8) {
+    match month {
+        1 => (year, 2),
+        2 => (year, 3),
+        3 => (year, 4),
+        4 => (year, 5),
+        5 => (year, 6),
+        6 => (year, 7),
+        7 => (year, 8),
+        8 => (year, 9),
+        9 => (year, 10),
+        10 => (year, 11),
+        11 => (year, 12),
+        12 => (year + 1, 1),
+        _ => panic!("Month is out of range."),
     }
 }
 

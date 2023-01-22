@@ -1,7 +1,10 @@
-use super::{
-    mac_address,
-    rand,
-    time,
+use {
+    std::mem,
+    super::{
+        mac_address,
+        rand,
+        time,
+    }
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -37,6 +40,34 @@ impl Guid {
             time,
             version,
         }
+    }
+
+    pub fn read(bytes: &Vec<u8>) -> (Self, usize) {
+        let guid: Vec<Vec<u8>> = bytes
+            .chunks(mem::size_of::<u128>())
+            .map(|chunk| chunk.to_vec())
+            .collect();
+        let guid: [u8; mem::size_of::<u128>()] = guid[0]
+            .clone()
+            .try_into()
+            .expect("Can't read GUID.");
+        let guid: u128 = unsafe {
+            mem::transmute::<[u8; mem::size_of::<u128>()], u128>(guid)
+        };
+        let time_and_version: u64 = guid as u64;
+        let time: u64 = time_and_version & 0x0fffffffffffffff;
+        let time = time::Time::from_guid_timestamp(time);
+        let version: u8 = (time_and_version << 60) as u8;
+        let clock_sequence: u16 = (time_and_version << 64) as u16;
+        let mac_address: u64 = (time_and_version << 80) as u64;
+        let guid = Self {
+            clock_sequence,
+            mac_address,
+            time,
+            version,
+        };
+        let size: usize = mem::size_of::<u128>();
+        (guid, size)
     }
 
     pub fn to_u128(&self) -> u128 {

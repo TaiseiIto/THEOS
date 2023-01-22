@@ -67,6 +67,7 @@ impl Exfat {
             .iter()
             .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector).0)
             .collect();
+        let sectors: Vec<Vec<u8>> = sectors[NUM_OF_EXTENDED_BOOT_SECTORS..].to_vec();
     }
 }
 
