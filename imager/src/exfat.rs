@@ -74,6 +74,20 @@ impl Exfat {
         let reserved_sector = reserved_sector::ReservedSector::read(&sectors[0]);
         let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
         let boot_checksum = boot_checksum::BootChecksum::read(&sectors[0]);
+        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        let boot_sector = boot_sector::BootSector::read(&sectors[0]);
+        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[..NUM_OF_EXTENDED_BOOT_SECTORS]
+            .iter()
+            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
+            .collect();
+        let sectors: Vec<Vec<u8>> = sectors[NUM_OF_EXTENDED_BOOT_SECTORS..].to_vec();
+        let oem_parameters = oem_parameter::OemParameters::read(&sectors[0]);
+        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        let reserved_sector = reserved_sector::ReservedSector::read(&sectors[0]);
+        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[0]);
+        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
     }
 }
 
