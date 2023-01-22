@@ -52,6 +52,11 @@ impl Exfat {
             reserved_sector,
         }
     }
+
+    pub fn read(exfat: &Vec<u8>) {
+        let boot_sector = boot_sector::BootSector::read(exfat);
+        println!("boot_sector = {:#x?}", boot_sector);
+    }
 }
 
 impl Binary for Exfat {

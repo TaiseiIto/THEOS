@@ -104,17 +104,21 @@ impl BootSector {
     }
 
     pub fn new(boot_sector: path::PathBuf) -> Self {
-        const SIZE: usize = mem::size_of::<BootSector>();
-        type Bytes = [u8; SIZE];
         let boot_sector: Vec<u8> = fs::read(&boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
-        let boot_sector: Bytes = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to Bytes!");
-        unsafe {
-            mem::transmute::<Bytes, Self>(boot_sector)
-        }
+        Self::read(&boot_sector)
     }
 
     pub fn num_of_fats(&self) -> usize {
         self.num_of_fats as usize
+    }
+
+    pub fn read(boot_sector: &Vec<u8>) -> Self {
+        const SIZE: usize = mem::size_of::<BootSector>();
+        let boot_sector = &boot_sector[0..SIZE];
+        let boot_sector: [u8; SIZE] = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to [u8; SIZE]!");
+        unsafe {
+            mem::transmute::<[u8; SIZE], Self>(boot_sector)
+        }
     }
 
     pub fn sectors_per_cluster(&self) -> usize {
