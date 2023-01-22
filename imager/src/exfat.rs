@@ -73,6 +73,7 @@ impl Exfat {
         let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
         let reserved_sector = reserved_sector::ReservedSector::read(&sectors[0]);
         let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[0]);
     }
 }
 

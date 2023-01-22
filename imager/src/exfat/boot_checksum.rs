@@ -50,6 +50,20 @@ impl BootChecksum {
             checksum,
         }
     }
+
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let size: usize = bytes.len();
+        let checksum: [u8; mem::size_of::<u32>()] = bytes[0..4]
+            .try_into()
+            .expect("Can't read boot checksum.");
+        let checksum: u32 = unsafe {
+            mem::transmute::<[u8; mem::size_of::<u32>()], u32>(checksum)
+        };
+        Self {
+            size,
+            checksum,
+        }
+    }
 }
 
 impl Binary for BootChecksum {
