@@ -19,12 +19,14 @@ use {
     },
 };
 
+const NUM_OF_EXTENDED_BOOT_SECTORS: usize = 0x8;
+
 #[derive(Debug)]
 pub struct Exfat {
     boot_checksum: boot_checksum::BootChecksum,
     boot_sector: boot_sector::BootSector,
     clusters: cluster::Clusters,
-    extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; 0x8],
+    extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; NUM_OF_EXTENDED_BOOT_SECTORS],
     fat: fat::Fat,
     oem_parameters: oem_parameter::OemParameters,
     reserved_sector: reserved_sector::ReservedSector,
@@ -34,7 +36,7 @@ impl Exfat {
     pub fn new(boot_sector: path::PathBuf, source_directory: path::PathBuf, rand_generator: &mut rand::Generator) -> Self {
         let boot_sector = boot_sector::BootSector::new(boot_sector);
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
-        let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); 0x8];
+        let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
         let object = object::Object::root(source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
@@ -56,6 +58,15 @@ impl Exfat {
     pub fn read(exfat: &Vec<u8>) {
         let boot_sector = boot_sector::BootSector::read(exfat);
         println!("boot_sector = {:#x?}", boot_sector);
+        let sectors: Vec<Vec<u8>> = exfat
+            .chunks(boot_sector.bytes_per_sector())
+            .map(|sector| sector.to_vec())
+            .collect();
+        let mut sector_offset: usize = 1;
+        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
+            .iter()
+            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
+            .collect();
     }
 }
 
