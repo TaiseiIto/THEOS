@@ -114,7 +114,7 @@ impl Object {
     }
 
     pub fn read(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) {
-        let cluster: Vec<Vec<u8>> = bytes
+        let clusters: Vec<Vec<u8>> = bytes
             .chunks(cluster_size)
             .map(|cluster| cluster.to_vec())
             .collect();
@@ -124,6 +124,11 @@ impl Object {
             cluster_chain.push(last_cluster_number);
             cluster_number = fat.next_cluster_number(last_cluster_number);
         }
+        let object: Vec<u8> = cluster_chain
+            .into_iter()
+            .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
+            .flatten()
+            .collect();
     }
 
     pub fn root(
