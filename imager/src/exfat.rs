@@ -64,30 +64,20 @@ impl Exfat {
             .chunks(sector_size)
             .map(|sector| sector.to_vec())
             .collect();
-        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[..NUM_OF_EXTENDED_BOOT_SECTORS]
+        let mut sector_offset: usize = 1;
+        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
             .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
             .collect();
-        let sectors: Vec<Vec<u8>> = sectors[NUM_OF_EXTENDED_BOOT_SECTORS..].to_vec();
-        let oem_parameters = oem_parameter::OemParameters::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let reserved_sector = reserved_sector::ReservedSector::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let boot_sector = boot_sector::BootSector::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[..NUM_OF_EXTENDED_BOOT_SECTORS]
-            .iter()
-            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
-            .collect();
-        let sectors: Vec<Vec<u8>> = sectors[NUM_OF_EXTENDED_BOOT_SECTORS..].to_vec();
-        let oem_parameters = oem_parameter::OemParameters::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let reserved_sector = reserved_sector::ReservedSector::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
-        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[0]);
-        let sectors: Vec<Vec<u8>> = sectors[1..].to_vec();
+        sector_offset += NUM_OF_EXTENDED_BOOT_SECTORS;
+        let oem_parameters = oem_parameter::OemParameters::read(&sectors[sector_offset]);
+        sector_offset += 1;
+        let reserved_sector = reserved_sector::ReservedSector::read(&sectors[sector_offset]);
+        sector_offset += 1;
+        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[sector_offset]);
+        let fat_offset: usize = boot_sector.fat_offset() as usize;
+        let fat_length: usize = boot_sector.fat_length() as usize;
+        let fat: Vec<Vec<u8>> = sectors[fat_offset..fat_offset + fat_length].to_vec();
     }
 }
 

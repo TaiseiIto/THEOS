@@ -103,6 +103,14 @@ impl BootSector {
         }
     }
 
+    pub fn fat_length(&self) -> u32 {
+        self.fat_length
+    }
+
+    pub fn fat_offset(&self) -> u32 {
+        self.fat_offset
+    }
+
     pub fn new(boot_sector: path::PathBuf) -> Self {
         let boot_sector: Vec<u8> = fs::read(&boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
         Self::read(&boot_sector)
