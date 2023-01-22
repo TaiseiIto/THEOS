@@ -112,6 +112,13 @@ impl Object {
         self.first_cluster
     }
 
+    pub fn read(bytes: &Vec<u8>, cluster_size: usize) {
+        let cluster: Vec<Vec<u8>> = bytes
+            .chunks(cluster_size)
+            .map(|cluster| cluster.to_vec())
+            .collect();
+    }
+
     pub fn root(
         path: path::PathBuf,
         boot_sector: &boot_sector::BootSector,

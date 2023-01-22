@@ -89,6 +89,8 @@ impl Exfat {
             .into_iter()
             .flatten()
             .collect();
+        let cluster_size: usize = boot_sector.cluster_size();
+        object::Object::read(&clusters, cluster_size);
     }
 }
 
