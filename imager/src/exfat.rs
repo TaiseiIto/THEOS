@@ -56,16 +56,17 @@ impl Exfat {
     }
 
     pub fn read(bytes: &Vec<u8>) {
-        let (boot_sector, boot_sector_size): (boot_sector::BootSector, usize) = boot_sector::BootSector::read(bytes);
+        let boot_sector = boot_sector::BootSector::read(bytes);
         println!("boot_sector = {:#x?}", boot_sector);
-        let bytes: Vec<u8> = bytes[boot_sector_size..].to_vec();
+        let sector_size: usize = boot_sector.bytes_per_sector();
+        let bytes: Vec<u8> = bytes[sector_size..].to_vec();
         let sectors: Vec<Vec<u8>> = bytes
-            .chunks(boot_sector.bytes_per_sector())
+            .chunks(sector_size)
             .map(|sector| sector.to_vec())
             .collect();
         let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[..NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
-            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector).0)
+            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
             .collect();
         let sectors: Vec<Vec<u8>> = sectors[NUM_OF_EXTENDED_BOOT_SECTORS..].to_vec();
     }
