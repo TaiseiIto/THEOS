@@ -78,6 +78,10 @@ impl Exfat {
         let fat_offset: usize = boot_sector.fat_offset() as usize;
         let fat_length: usize = boot_sector.fat_length() as usize;
         let fat: Vec<Vec<u8>> = sectors[fat_offset..fat_offset + fat_length].to_vec();
+        let fat: Vec<u8> = fat
+            .into_iter()
+            .flatten()
+            .collect();
     }
 }
 

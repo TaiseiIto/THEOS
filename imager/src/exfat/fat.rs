@@ -1,5 +1,8 @@
 use {
-    std::collections::HashMap,
+    std::{
+        collections::HashMap,
+        mem,
+    },
     super::{
         cluster,
         super::binary::Binary,
@@ -15,6 +18,37 @@ pub struct Fat {
 impl Fat {
     pub fn new(clusters: &cluster::Clusters, sector_size: usize) -> Self {
         let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
+        Self {
+            cluster_chain,
+            sector_size,
+        }
+    }
+
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let cluster_chain: Vec<u32> = bytes
+            .chunks(mem::size_of::<u32>())
+            .map(|cluster| {
+                let cluster: [u8; mem::size_of::<u32>()] = cluster
+                    .try_into()
+                    .expect("Can't read FAT.");
+                unsafe {
+                    mem::transmute::<[u8; mem::size_of::<u32>()], u32>(cluster)
+                }
+            })
+            .collect();
+        let cluster_chain: HashMap<u32, Option<u32>> = (0..cluster_chain.len())
+            .map(|cluster_number| {
+                let next_cluster_number: u32 = cluster_chain[cluster_number];
+                let next_cluster_number: Option<u32> = if 2 <= next_cluster_number && next_cluster_number < 0xfffffff8 {
+                    Some(next_cluster_number)
+                } else {
+                    None
+                };
+                let cluster_number: u32 = cluster_number as u32;
+                (cluster_number, next_cluster_number)
+            })
+            .collect();
+        let sector_size: usize = 0;
         Self {
             cluster_chain,
             sector_size,
@@ -55,7 +89,8 @@ impl Binary for Fat {
             ])
             .flatten()
             .collect();
-        bytes.resize(self.sector_size, 0xff);
+        let size: usize = (bytes.len() + self.sector_size - 1) / self.sector_size * self.sector_size;
+        bytes.resize(size, 0xff);
         bytes
     }
 }
