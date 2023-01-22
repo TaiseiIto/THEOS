@@ -82,6 +82,7 @@ impl Exfat {
             .into_iter()
             .flatten()
             .collect();
+        let fat = fat::Fat::read(&fat);
     }
 }
 
