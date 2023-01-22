@@ -18,9 +18,9 @@ impl ExtendedBootSector {
         }
     }
 
-    pub fn read(extended_boot_sector: &Vec<u8>) -> Self {
-        let size: usize = extended_boot_sector.len();
-        let extended_boot_signature: Vec<u8> = extended_boot_sector[size - mem::size_of::<u32>()..].to_vec();
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let size: usize = bytes.len();
+        let extended_boot_signature: Vec<u8> = bytes[size - mem::size_of::<u32>()..].to_vec();
         let extended_boot_signature: [u8; mem::size_of::<u32>()] = extended_boot_signature.try_into().expect("Can't read extended boot signature.");
         let extended_boot_signature: u32 = unsafe {
             mem::transmute::<[u8; mem::size_of::<u32>()], u32>(extended_boot_signature)

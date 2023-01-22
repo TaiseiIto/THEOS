@@ -112,9 +112,9 @@ impl BootSector {
         self.num_of_fats as usize
     }
 
-    pub fn read(boot_sector: &Vec<u8>) -> Self {
+    pub fn read(bytes: &Vec<u8>) -> Self {
         const SIZE: usize = mem::size_of::<BootSector>();
-        let boot_sector = &boot_sector[0..SIZE];
+        let boot_sector = &bytes[0..SIZE];
         let boot_sector: [u8; SIZE] = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to [u8; SIZE]!");
         unsafe {
             mem::transmute::<[u8; SIZE], Self>(boot_sector)

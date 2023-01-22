@@ -55,10 +55,10 @@ impl Exfat {
         }
     }
 
-    pub fn read(exfat: &Vec<u8>) {
-        let boot_sector = boot_sector::BootSector::read(exfat);
+    pub fn read(bytes: &Vec<u8>) {
+        let boot_sector = boot_sector::BootSector::read(bytes);
         println!("boot_sector = {:#x?}", boot_sector);
-        let sectors: Vec<Vec<u8>> = exfat
+        let sectors: Vec<Vec<u8>> = bytes
             .chunks(boot_sector.bytes_per_sector())
             .map(|sector| sector.to_vec())
             .collect();
