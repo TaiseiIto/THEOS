@@ -6,15 +6,37 @@ use {
     },
 };
 
+const NUM_OF_OEM_PARAMETERS: usize = 0xa;
+
 #[derive(Clone, Copy, Debug)]
 pub struct OemParameters {
-    parameters: [OemParameter; 0xa],
+    parameters: [OemParameter; NUM_OF_OEM_PARAMETERS],
     size: usize,
 }
 
 impl OemParameters {
     pub fn null(size: usize) -> Self {
-        let parameters = [OemParameter::null(); 0xa];
+        let parameters = [OemParameter::null(); NUM_OF_OEM_PARAMETERS];
+        Self {
+            parameters,
+            size,
+        }
+    }
+
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let size: usize = bytes.len();
+        let oem_parameter_size: usize = guid::GUID_SIZE + CUSTOM_DEFINED_SIZE;
+        let parameters: Vec<Vec<u8>> = bytes
+            .chunks(oem_parameter_size)
+            .map(|parameter| parameter.to_vec())
+            .collect();
+        let parameters: Vec<OemParameter> = parameters[..NUM_OF_OEM_PARAMETERS]
+            .into_iter()
+            .map(|parameter| OemParameter::read(parameter))
+            .collect();
+        let parameters: [OemParameter; NUM_OF_OEM_PARAMETERS] = parameters
+            .try_into()
+            .expect("Can't read OEM parameters.");
         Self {
             parameters,
             size,
