@@ -7,6 +7,7 @@ use {
         boot_sector,
         cluster,
         directory_entry,
+        fat,
         super::{
             binary::Binary,
             guid,
@@ -112,7 +113,7 @@ impl Object {
         self.first_cluster
     }
 
-    pub fn read(bytes: &Vec<u8>, cluster_size: usize) {
+    pub fn read(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) {
         let cluster: Vec<Vec<u8>> = bytes
             .chunks(cluster_size)
             .map(|cluster| cluster.to_vec())
