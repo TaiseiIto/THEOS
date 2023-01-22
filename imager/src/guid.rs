@@ -7,6 +7,8 @@ use {
     }
 };
 
+pub const GUID_SIZE: usize = mem::size_of::<u128>();
+
 #[derive(Clone, Copy, Debug)]
 pub struct Guid {
     clock_sequence: u16,
@@ -42,17 +44,17 @@ impl Guid {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) -> (Self, usize) {
-        let guid: Vec<Vec<u8>> = bytes
-            .chunks(mem::size_of::<u128>())
-            .map(|chunk| chunk.to_vec())
-            .collect();
-        let guid: [u8; mem::size_of::<u128>()] = guid[0]
-            .clone()
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let guid: Vec<u8> = bytes
+            .chunks(GUID_SIZE)
+            .next()
+            .expect("Can't read GUID.")
+            .to_vec();
+        let guid: [u8; GUID_SIZE] = guid
             .try_into()
             .expect("Can't read GUID.");
         let guid: u128 = unsafe {
-            mem::transmute::<[u8; mem::size_of::<u128>()], u128>(guid)
+            mem::transmute::<[u8; GUID_SIZE], u128>(guid)
         };
         let time_and_version: u64 = guid as u64;
         let time: u64 = time_and_version & 0x0fffffffffffffff;
@@ -60,14 +62,12 @@ impl Guid {
         let version: u8 = (time_and_version << 60) as u8;
         let clock_sequence: u16 = (time_and_version << 64) as u16;
         let mac_address: u64 = (time_and_version << 80) as u64;
-        let guid = Self {
+        Self {
             clock_sequence,
             mac_address,
             time,
             version,
-        };
-        let size: usize = mem::size_of::<u128>();
-        (guid, size)
+        }
     }
 
     pub fn to_u128(&self) -> u128 {

@@ -34,16 +34,37 @@ impl Binary for OemParameters {
     }
 }
 
+const CUSTOM_DEFINED_SIZE: usize = 0x20;
+
 #[derive(Clone, Copy, Debug)]
 struct OemParameter {
     parameter_guid: guid::Guid,
-    custom_defined: [u8; 0x20],
+    custom_defined: [u8; CUSTOM_DEFINED_SIZE],
 }
 
 impl OemParameter {
     fn null() -> Self {
         let parameter_guid = guid::Guid::null();
-        let custom_defined = [0u8; 0x20];
+        let custom_defined = [0u8; CUSTOM_DEFINED_SIZE];
+        Self {
+            parameter_guid,
+            custom_defined,
+        }
+    }
+
+    fn read(bytes: &Vec<u8>) -> Self {
+        let parameter_guid: Vec<u8> = bytes
+            .chunks(guid::GUID_SIZE)
+            .next()
+            .expect("Can't read OEM parameter.")
+            .to_vec();
+        let parameter_guid = guid::Guid::read(&parameter_guid);
+        let custom_defined: [u8; CUSTOM_DEFINED_SIZE] = bytes[guid::GUID_SIZE..]
+            .chunks(CUSTOM_DEFINED_SIZE)
+            .next()
+            .expect("Can't read OEM parameter.")
+            .try_into()
+            .expect("Can't read OEM parameter.");
         Self {
             parameter_guid,
             custom_defined,
