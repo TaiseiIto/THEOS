@@ -100,20 +100,8 @@ impl FileOrDirectory {
             panic!("Can't find {}!", path.display());
         }
     }
-}
 
-#[derive(Debug)]
-pub struct Object {
-    first_cluster: u32,
-    directory_entry: directory_entry::DirectoryEntry,
-}
-
-impl Object {
-    pub fn first_cluster(&self) -> u32 {
-        self.first_cluster
-    }
-
-    pub fn read(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) {
+    pub fn read_directory(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) {
         let clusters: Vec<Vec<u8>> = bytes
             .chunks(cluster_size)
             .map(|cluster| cluster.to_vec())
@@ -129,6 +117,18 @@ impl Object {
             .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
             .flatten()
             .collect();
+    }
+}
+
+#[derive(Debug)]
+pub struct Object {
+    first_cluster: u32,
+    directory_entry: directory_entry::DirectoryEntry,
+}
+
+impl Object {
+    pub fn first_cluster(&self) -> u32 {
+        self.first_cluster
     }
 
     pub fn root(
