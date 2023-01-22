@@ -118,6 +118,12 @@ impl Object {
             .chunks(cluster_size)
             .map(|cluster| cluster.to_vec())
             .collect();
+        let mut cluster_number: Option<u32> = Some(cluster_number);
+        let mut cluster_chain: Vec<u32> = vec![];
+        while let Some(last_cluster_number) = cluster_number {
+            cluster_chain.push(last_cluster_number);
+            cluster_number = fat.next_cluster_number(last_cluster_number);
+        }
     }
 
     pub fn root(

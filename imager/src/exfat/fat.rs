@@ -24,6 +24,13 @@ impl Fat {
         }
     }
 
+    pub fn next_cluster_number(&self, cluster_number: u32) -> Option<u32> {
+        match self.cluster_chain.get(&cluster_number) {
+            Some(next_cluster) => *next_cluster,
+            None => None,
+        }
+    }
+
     pub fn read(bytes: &Vec<u8>, sector_size: usize) -> Self {
         let cluster_chain: Vec<u32> = bytes
             .chunks(mem::size_of::<u32>())
