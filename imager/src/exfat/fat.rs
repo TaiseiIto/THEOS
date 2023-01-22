@@ -24,7 +24,7 @@ impl Fat {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+    pub fn read(bytes: &Vec<u8>, sector_size: usize) -> Self {
         let cluster_chain: Vec<u32> = bytes
             .chunks(mem::size_of::<u32>())
             .map(|cluster| {
@@ -48,7 +48,6 @@ impl Fat {
                 (cluster_number, next_cluster_number)
             })
             .collect();
-        let sector_size: usize = 0;
         Self {
             cluster_chain,
             sector_size,
