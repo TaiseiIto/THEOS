@@ -83,6 +83,12 @@ impl Exfat {
             .flatten()
             .collect();
         let fat = fat::Fat::read(&fat, sector_size);
+        let cluster_heap_offset: usize = boot_sector.cluster_heap_offset() as usize;
+        let clusters: Vec<Vec<u8>> = sectors[cluster_heap_offset..].to_vec();
+        let clusters: Vec<u8> = clusters
+            .into_iter()
+            .flatten()
+            .collect();
     }
 }
 
