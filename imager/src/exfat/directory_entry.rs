@@ -133,6 +133,9 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn read(bytes: &Vec<u8>) {
+    }
+
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
         let bytes: Vec<u8> = upcase_table.to_bytes();
         let data_length: usize = bytes.len();

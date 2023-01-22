@@ -112,11 +112,12 @@ impl FileOrDirectory {
             cluster_chain.push(last_cluster_number);
             cluster_number = fat.next_cluster_number(last_cluster_number);
         }
-        let object: Vec<u8> = cluster_chain
+        let directory_entries: Vec<u8> = cluster_chain
             .into_iter()
             .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
             .flatten()
             .collect();
+        directory_entry::DirectoryEntry::read(&directory_entries);
     }
 }
 
