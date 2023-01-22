@@ -29,20 +29,24 @@ impl Args {
         let boot_sector: Option<&String> = args.get("-b");
         let source_directory: Option<&String> = args.get("-s");
         let image: Option<&String> = args.get("-i");
-        if let Some(image) = image {
-            let image = path::PathBuf::from(image);
-            Self::Read {
-                image,
+        match (boot_sector, source_directory, image) {
+            (Some(boot_sector), Some(source_directory), _) => {
+                let boot_sector = path::PathBuf::from(boot_sector);
+                let source_directory = path::PathBuf::from(source_directory);
+                Self::Write {
+                    boot_sector,
+                    source_directory,
+                }
+            },
+            (_, _, Some(image)) => {
+                let image = path::PathBuf::from(image);
+                Self::Read {
+                    image,
+                }
+            },
+            _ => {
+                panic!("Can't interpret args.");
             }
-        } else if let (Some(boot_sector), Some(source_directory)) = (boot_sector, source_directory) {
-            let boot_sector = path::PathBuf::from(boot_sector);
-            let source_directory = path::PathBuf::from(source_directory);
-            Self::Write {
-                boot_sector,
-                source_directory,
-            }
-        } else {
-            panic!("Can't interpret args.");
         }
     }
 }

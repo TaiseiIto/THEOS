@@ -12,7 +12,6 @@ use {
         env,
         io,
         io::Write,
-        path,
     },
 };
 
