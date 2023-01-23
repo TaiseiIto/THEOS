@@ -156,6 +156,13 @@ impl DirectoryEntry {
                 match type_code {
                     File => {
                         let file = RawFile::read(directory_entry);
+                        let file_attributes: [u8; 2] = directory_entry[4..6]
+                            .try_into()
+                            .expect("Can't read a file directory entry.");
+                        let file_attributes: u16 = unsafe {
+                            mem::transmute::<[u8; 2], u16>(file_attributes)
+                        };
+                        let file_attributes = FileAttributes::read(file_attributes);
                         vec![]
                     },
                     StreamExtension => {
@@ -614,6 +621,21 @@ impl FileAttributes {
             false => 0,
         };
         read_only + hidden + system + directory + archive
+    }
+
+    fn read(word: u16) -> Self {
+        let read_only: bool = word & 0x0001 != 0;
+        let hidden: bool = word & 0x0002 != 0;
+        let system: bool = word & 0x0004 != 0;
+        let directory: bool = word & 0x0010 != 0;
+        let archive: bool = word & 0x0020 != 0;
+        Self {
+            read_only,
+            hidden,
+            system,
+            directory,
+            archive,
+        }
     }
 }
 
