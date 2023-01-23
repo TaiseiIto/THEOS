@@ -78,7 +78,7 @@ impl Time {
         let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
         let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
         let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
-        let mut day: u64 = day + (GREGORIAN_DAY as u64) - 1;
+        let mut day: u64 = day + (GREGORIAN_DAY as u64);
         let mut year: i128 = GREGORIAN_YEAR;
         let mut month: u8 = GREGORIAN_MONTH;
         while (day_per_month(year, month) as u64) < day {
@@ -213,20 +213,14 @@ impl Time {
     }
 
     fn from_time_spec(time: TimeSpec) -> Self {
-        let unix_sec = time.tv_sec;
+        let sec = time.tv_sec;
         let nsec = time.tv_nsec;
-        let sec_per_min = 60;
-        let min_per_hour = 60;
-        let hour_per_day = 24;
-        let sec = unix_sec % sec_per_min;
-        let unix_min = unix_sec / sec_per_min;
-        let min = unix_min % min_per_hour;
-        let unix_hour = unix_min / min_per_hour;
-        let hour = unix_hour % hour_per_day;
-        let unix_day = unix_hour / hour_per_day;
+        let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
+        let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
+        let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
         let mut year = UNIX_YEAR;
         let mut month = 1;
-        let mut day = unix_day + 1;
+        let mut day = day + 1;
         while (day_per_month(year, month) as u64) < day {
             day -= day_per_month(year, month) as u64;
             (year, month) = next_month(year, month);
