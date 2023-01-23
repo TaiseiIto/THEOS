@@ -19,9 +19,12 @@ extern "C" {
 }
 
 const FAT_YEAR: i128 = 1980;
-const GREGORIAN_YEAR: i128 = 1582;
-const GREGORIAN_MONTH: u8 = 10;
 const GREGORIAN_DAY: u8 = 15;
+const GREGORIAN_MONTH: u8 = 10;
+const GREGORIAN_YEAR: i128 = 1582;
+const HOURS_PER_DAY: u8 = 24;
+const MINUTES_PER_HOUR: u8 = 60;
+const SECONDS_PER_MINUTE: u8 = 60;
 const UNIX_YEAR: i128 = 1970;
 
 #[derive(Clone, Copy, Debug)]
@@ -75,14 +78,14 @@ impl Time {
 
     pub fn from_guid_timestamp(timestamp: u64) -> Self {
         let (nsec, sec): (u32, u64) = ((timestamp % 10000000 * 100) as u32, timestamp / 10000000);
-        let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
-        let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
-        let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
+        let (sec, min): (u8, u64) = ((sec % (SECONDS_PER_MINUTE as u64)) as u8, sec / (SECONDS_PER_MINUTE as u64));
+        let (min, hour): (u8, u64) = ((min % (MINUTES_PER_HOUR as u64)) as u8, min / (MINUTES_PER_HOUR as u64));
+        let (hour, day): (u8, u64) = ((hour % (HOURS_PER_DAY as u64)) as u8, hour / (HOURS_PER_DAY as u64));
         let mut day: u64 = day + (GREGORIAN_DAY as u64);
         let mut year: i128 = GREGORIAN_YEAR;
         let mut month: u8 = GREGORIAN_MONTH;
-        while (day_per_month(year, month) as u64) < day {
-            day -= day_per_month(year, month) as u64;
+        while (month_length(year, month) as u64) < day {
+            day -= month_length(year, month) as u64;
             (year, month) = next_month(year, month);
         }
         let day: u8 = day as u8;
@@ -105,23 +108,23 @@ impl Time {
 
     pub fn guid_timestamp(&self) -> u64 {
         let days: u64 =
-            (day_per_month(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
+            (month_length(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
             - (GREGORIAN_DAY as u64) + 1
             + (GREGORIAN_MONTH + 1..=12)
-                .map(|month| day_per_month(GREGORIAN_YEAR, month) as u64)
+                .map(|month| month_length(GREGORIAN_YEAR, month) as u64)
                 .sum::<u64>()
             + (GREGORIAN_YEAR + 1..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
                 .flatten()
-                .map(|(year, month)| day_per_month(year, month) as u64)
+                .map(|(year, month)| month_length(year, month) as u64)
                 .sum::<u64>()
             + (1..self.month)
-                .map(|month| day_per_month(self.year, month) as u64)
+                .map(|month| month_length(self.year, month) as u64)
                 .sum::<u64>()
             + (self.day as u64) - 1;
-        let hours: u64 = 24 * days + (self.hour as u64);
-        let minutes: u64 = 60 * hours + (self.min as u64);
-        let seconds: u64 = 60 * minutes + (self.sec as u64);
+        let hours: u64 = (HOURS_PER_DAY as u64) * days + (self.hour as u64);
+        let minutes: u64 = (MINUTES_PER_HOUR as u64) * hours + (self.min as u64);
+        let seconds: u64 = (SECONDS_PER_MINUTE as u64) * minutes + (self.sec as u64);
         10000000 * seconds + (self.nsec as u64) / 100
     }
 
@@ -165,17 +168,17 @@ impl Time {
         if month < 1 || 12 < month {
             panic!("month < 1 || 12 < month");
         }
-        if day < 1 || day_per_month(year, month) < day {
-            panic!("day < 1 || day_per_month(year, month) < day");
+        if day < 1 || month_length(year, month) < day {
+            panic!("day < 1 || month_length(year, month) < day");
         }
-        if 24 <= hour {
-            panic!("24 <= hour");
+        if HOURS_PER_DAY <= hour {
+            panic!("HOURS_PER_DAY <= hour");
         }
-        if 60 <= min {
-            panic!("60 <= min");
+        if MINUTES_PER_HOUR <= min {
+            panic!("MINUTES_PER_HOUR <= min");
         }
-        if 60 <= sec {
-            panic!("60 <= sec");
+        if SECONDS_PER_MINUTE <= sec {
+            panic!("SECONDS_PER_MINUTE <= sec");
         }
         if 1000000000 <= nsec {
             panic!("1000000000 <= nsec");
@@ -196,15 +199,15 @@ impl Time {
             (UNIX_YEAR..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
                 .flatten()
-                .map(|(year, month)| day_per_month(year, month) as u64)
+                .map(|(year, month)| month_length(year, month) as u64)
                 .sum::<u64>()
             + (1..self.month)
-                .map(|month| day_per_month(self.year, month) as u64)
+                .map(|month| month_length(self.year, month) as u64)
                 .sum::<u64>()
             + (self.day as u64) - 1;
-        let hours: u64 = 24 * days + (self.hour as u64);
-        let minutes: u64 = 60 * hours + (self.min as u64);
-        let seconds: u64 = 60 * minutes + (self.sec as u64);
+        let hours: u64 = (HOURS_PER_DAY as u64) * days + (self.hour as u64);
+        let minutes: u64 = (MINUTES_PER_HOUR as u64) * hours + (self.min as u64);
+        let seconds: u64 = (SECONDS_PER_MINUTE as u64) * minutes + (self.sec as u64);
         seconds
     }
 
@@ -215,14 +218,14 @@ impl Time {
     fn from_time_spec(time: TimeSpec) -> Self {
         let sec = time.tv_sec;
         let nsec = time.tv_nsec;
-        let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
-        let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
-        let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
+        let (sec, min): (u8, u64) = ((sec % (SECONDS_PER_MINUTE as u64)) as u8, sec / (SECONDS_PER_MINUTE as u64));
+        let (min, hour): (u8, u64) = ((min % (MINUTES_PER_HOUR as u64)) as u8, min / (MINUTES_PER_HOUR as u64));
+        let (hour, day): (u8, u64) = ((hour % (HOURS_PER_DAY as u64)) as u8, hour / (HOURS_PER_DAY as u64));
         let mut year = UNIX_YEAR;
         let mut month = 1;
         let mut day = day + 1;
-        while (day_per_month(year, month) as u64) < day {
-            day -= day_per_month(year, month) as u64;
+        while (month_length(year, month) as u64) < day {
+            day -= month_length(year, month) as u64;
             (year, month) = next_month(year, month);
         }
         let month: u8 = month as u8;
@@ -242,19 +245,6 @@ impl Time {
     }
 }
 
-fn day_per_month(year: i128, month: u8) -> u8 {
-    match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 => if is_leap_year(year) {
-            29
-        } else {
-            28
-        },
-        _ => panic!("month exceeds 12!"),
-    }
-}
-
 fn is_leap_year(year: i128) -> bool {
     if year % 4 == 0 {
         if year % 100 == 0 {
@@ -268,6 +258,19 @@ fn is_leap_year(year: i128) -> bool {
         }
     } else {
         false
+    }
+}
+
+fn month_length(year: i128, month: u8) -> u8 {
+    match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 => if is_leap_year(year) {
+            29
+        } else {
+            28
+        },
+        _ => panic!("month exceeds 12!"),
     }
 }
 
