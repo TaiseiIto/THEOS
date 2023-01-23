@@ -52,7 +52,7 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
-    pub fn from_fat_timestamp(timestamp: u32, t_10ms_increment: u8) -> Self {
+    pub fn from_fat_timestamp(timestamp: u32, t_10ms_increment: u8, utc_offset: i8) -> Self {
         let nsec: u32 = ((t_10ms_increment as u32) % 100) * 10000000;
         let sec: u8 = ((timestamp as u8) & 0x1f) * 2 + t_10ms_increment / 100;
         let min: u8 = ((timestamp >> 5) as u8) & 0x3f;
@@ -206,7 +206,7 @@ impl Time {
         seconds
     }
 
-    pub fn utc_offset(&self) -> u8 {
+    pub fn utc_offset(&self) -> i8 {
         0
     }
 

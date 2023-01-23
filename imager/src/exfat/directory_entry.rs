@@ -163,9 +163,9 @@ impl DirectoryEntry {
                             mem::transmute::<[u8; 2], u16>(file_attributes)
                         };
                         let file_attributes = FileAttributes::read(file_attributes);
-                        let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment);
-                        let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment);
-                        let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0);
+                        let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment, file.create_utc_offset);
+                        let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment, file.last_modified_utc_offset);
+                        let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0, file.last_accessed_utc_offset);
                         vec![]
                     },
                     StreamExtension => {
@@ -811,9 +811,9 @@ struct RawFile {
     last_accessed_timestamp: u32,
     create_10ms_increment: u8,
     last_modified_10ms_increment: u8,
-    create_utc_offset: u8,
-    last_modified_utc_offset: u8,
-    last_accessed_utc_offset: u8,
+    create_utc_offset: i8,
+    last_modified_utc_offset: i8,
+    last_accessed_utc_offset: i8,
     reserved_2: [u8; 7],
 }
 
@@ -837,9 +837,9 @@ impl Raw for RawFile {
                 let last_accessed_timestamp: u32 = accessed_time.fat_timestamp();
                 let create_10ms_increment: u8 = create_time.get_10ms_increment();
                 let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
-                let create_utc_offset: u8 = create_time.utc_offset();
-                let last_modified_utc_offset: u8 = modified_time.utc_offset();
-                let last_accessed_utc_offset: u8 = accessed_time.utc_offset();
+                let create_utc_offset: i8 = create_time.utc_offset();
+                let last_modified_utc_offset: i8 = modified_time.utc_offset();
+                let last_accessed_utc_offset: i8 = accessed_time.utc_offset();
                 let reserved_2: [u8; 7] = [0; 7];
                 let raw_file = Self {
                     entry_type,
