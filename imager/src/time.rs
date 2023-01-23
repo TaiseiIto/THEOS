@@ -18,15 +18,15 @@ extern "C" {
     fn last_modified_time(path: *const raw::c_char) -> TimeSpec;
 }
 
-const FAT_YEAR: u64 = 1980;
-const GREGORIAN_YEAR: u64 = 1582;
+const FAT_YEAR: i128 = 1980;
+const GREGORIAN_YEAR: i128 = 1582;
 const GREGORIAN_MONTH: u8 = 10;
 const GREGORIAN_DAY: u8 = 15;
-const UNIX_YEAR: u64 = 1970;
+const UNIX_YEAR: i128 = 1970;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Time {
-    year: u64,
+    year: i128,
     month: u8,
     day: u8,
     hour: u8,
@@ -59,7 +59,7 @@ impl Time {
         let hour: u8 = ((timestamp >> 11) as u8) & 0x1f;
         let day: u8 = ((timestamp >> 16) as u8) & 0x1f;
         let month: u8 = ((timestamp >> 21) as u8) & 0x0f;
-        let year: u64 = ((timestamp >> 25) as u64) + FAT_YEAR;
+        let year: i128 = ((timestamp >> 25) as i128) + FAT_YEAR;
         let utc_offset_min: i128 = 15 * (utc_offset as i128);
         let utc_offset_sec: i128 = 60 * utc_offset_min;
         Self {
@@ -79,7 +79,7 @@ impl Time {
         let (min, hour): (u8, u64) = ((min % 60) as u8, min / 60);
         let (hour, day): (u8, u64) = ((hour % 24) as u8, hour / 24);
         let mut day: u64 = day + (GREGORIAN_DAY as u64) - 1;
-        let mut year: u64 = GREGORIAN_YEAR;
+        let mut year: i128 = GREGORIAN_YEAR;
         let mut month: u8 = GREGORIAN_MONTH;
         while (day_per_month(year, month) as u64) < day {
             day -= day_per_month(year, month) as u64;
@@ -161,7 +161,7 @@ impl Time {
         }
     }
 
-    pub fn new(year: u64, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
+    pub fn new(year: i128, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
         if month < 1 || 12 < month {
             panic!("month < 1 || 12 < month");
         }
@@ -248,7 +248,7 @@ impl Time {
     }
 }
 
-fn day_per_month(year: u64, month: u8) -> u8 {
+fn day_per_month(year: i128, month: u8) -> u8 {
     match month {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
@@ -261,7 +261,7 @@ fn day_per_month(year: u64, month: u8) -> u8 {
     }
 }
 
-fn is_leap_year(year: u64) -> bool {
+fn is_leap_year(year: i128) -> bool {
     if year % 4 == 0 {
         if year % 100 == 0 {
             if year % 400 == 0 {
@@ -277,7 +277,7 @@ fn is_leap_year(year: u64) -> bool {
     }
 }
 
-fn next_month(year: u64, month: u8) -> (u64, u8) {
+fn next_month(year: i128, month: u8) -> (i128, u8) {
     match month {
         1 => (year, 2),
         2 => (year, 3),
