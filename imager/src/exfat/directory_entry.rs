@@ -134,7 +134,37 @@ impl DirectoryEntry {
     }
 
     pub fn read(bytes: &Vec<u8>) {
-        let type_code: TypeCode = TypeCode::read(bytes[0]);
+        let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
+            .chunks(DIRECTORY_ENTRY_SIZE)
+            .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
+            .collect();
+        let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries
+            .into_iter()
+            .filter_map(|directory_entry| {
+                let type_code: u8 = directory_entry[0];
+                let in_use: bool = type_code & 0x80 != 0;
+                match in_use {
+                    true => Some(directory_entry),
+                    false => None,
+                }
+            })
+            .collect();
+        let directory_entries: Vec<()> = directory_entries
+            .into_iter()
+            .map(|directory_entry| {
+                let type_code: u8 = directory_entry[0];
+                let type_code = TypeCode::read(type_code);
+                match type_code {
+                    File => {},
+                    StreamExtension => {},
+                    FileName => {},
+                    UpcaseTable => {},
+                    VolumeLabel => {},
+                    VolumeGuid => {},
+                    AllocationBitmap => {},
+                };
+            })
+            .collect();
     }
 
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
