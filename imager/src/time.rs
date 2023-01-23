@@ -60,6 +60,8 @@ impl Time {
         let day: u8 = ((timestamp >> 16) as u8) & 0x1f;
         let month: u8 = ((timestamp >> 21) as u8) & 0x0f;
         let year: u64 = ((timestamp >> 25) as u64) + FAT_YEAR;
+        let utc_offset_min: i128 = 15 * (utc_offset as i128);
+        let utc_offset_sec: i128 = 60 * utc_offset_min;
         Self {
             year,
             month,
