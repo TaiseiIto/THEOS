@@ -154,15 +154,29 @@ impl DirectoryEntry {
                 let type_code: u8 = directory_entry[0];
                 let type_code = TypeCode::read(type_code);
                 match type_code {
-                    File => {},
-                    StreamExtension => {},
-                    FileName => {},
-                    UpcaseTable => {},
-                    VolumeLabel => {},
-                    VolumeGuid => {},
-                    AllocationBitmap => {},
-                };
-                vec![]
+                    File => {
+                        let file = RawFile::read(directory_entry);
+                        vec![]
+                    },
+                    StreamExtension => {
+                        vec![]
+                    },
+                    FileName => {
+                        vec![]
+                    },
+                    UpcaseTable => {
+                        vec![]
+                    },
+                    VolumeLabel => {
+                        vec![]
+                    },
+                    VolumeGuid => {
+                        vec![]
+                    },
+                    AllocationBitmap => {
+                        vec![]
+                    },
+                }
             },
             None => vec![],
         }
@@ -703,6 +717,7 @@ impl TypeCode {
 trait Raw {
     fn new(directory_entry: &DirectoryEntry) -> Self;
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
 }
 
 #[allow(dead_code)]
@@ -746,7 +761,13 @@ impl Raw for RawAllocationBitmap {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -843,7 +864,13 @@ impl Raw for RawFile {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -880,7 +907,13 @@ impl Raw for RawFileName {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -941,7 +974,13 @@ impl Raw for RawStreamExtension {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -987,7 +1026,13 @@ impl Raw for RawUpcaseTable {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -1047,7 +1092,13 @@ impl Raw for RawVolumeGuid {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
@@ -1110,7 +1161,13 @@ impl Raw for RawVolumeLabel {
 
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
         unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
         }
     }
 }
