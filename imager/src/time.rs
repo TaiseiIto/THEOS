@@ -42,42 +42,6 @@ impl Time {
         })
     }
 
-    pub fn last_accessed_time(path: &path::PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_accessed_time(path))
-        }
-    }
-
-    pub fn last_changed_time(path: &path::PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_changed_time(path))
-        }
-    }
-
-    pub fn last_modified_time(path: &path::PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_modified_time(path))
-        }
-    }
-
     pub fn fat_timestamp(&self) -> u32 {
         let double_seconds: u32 = (self.sec as u32) / 2;
         let minute: u32 = (self.min as u32) << 5;
@@ -138,6 +102,42 @@ impl Time {
         let minutes: u64 = 60 * hours + (self.min as u64);
         let seconds: u64 = 60 * minutes + (self.sec as u64);
         10000000 * seconds + (self.nsec as u64) / 100
+    }
+
+    pub fn last_accessed_time(path: &path::PathBuf) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::from_time_spec(last_accessed_time(path))
+        }
+    }
+
+    pub fn last_changed_time(path: &path::PathBuf) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::from_time_spec(last_changed_time(path))
+        }
+    }
+
+    pub fn last_modified_time(path: &path::PathBuf) -> Self {
+        if !path.exists() {
+            panic!("\"{}\" is not found.", path.display());
+        }
+        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
+        let path = ffi::CString::new(path).expect("Can't create CString.");
+        let path: *const raw::c_char = path.as_ptr();
+        unsafe {
+            Self::from_time_spec(last_modified_time(path))
+        }
     }
 
     pub fn new(year: u64, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
