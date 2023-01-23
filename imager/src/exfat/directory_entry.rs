@@ -163,6 +163,9 @@ impl DirectoryEntry {
                             mem::transmute::<[u8; 2], u16>(file_attributes)
                         };
                         let file_attributes = FileAttributes::read(file_attributes);
+                        let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment);
+                        let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment);
+                        let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0);
                         vec![]
                     },
                     StreamExtension => {

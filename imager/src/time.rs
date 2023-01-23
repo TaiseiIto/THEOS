@@ -52,6 +52,25 @@ impl Time {
         year + month + day + hour + minute + double_seconds
     }
 
+    pub fn from_fat_timestamp(timestamp: u32, t_10ms_increment: u8) -> Self {
+        let nsec: u32 = ((t_10ms_increment as u32) % 100) * 10000000;
+        let sec: u8 = ((timestamp as u8) & 0x1f) * 2 + t_10ms_increment / 100;
+        let min: u8 = ((timestamp >> 5) as u8) & 0x3f;
+        let hour: u8 = ((timestamp >> 11) as u8) & 0x1f;
+        let day: u8 = ((timestamp >> 16) as u8) & 0x1f;
+        let month: u8 = ((timestamp >> 21) as u8) & 0x0f;
+        let year: u64 = ((timestamp >> 25) as u64) + FAT_YEAR;
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
+    }
+
     pub fn from_guid_timestamp(timestamp: u64) -> Self {
         let (nsec, sec): (u32, u64) = ((timestamp % 10000000 * 100) as u32, timestamp / 10000000);
         let (sec, min): (u8, u64) = ((sec % 60) as u8, sec / 60);
