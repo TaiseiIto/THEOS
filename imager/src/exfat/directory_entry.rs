@@ -133,7 +133,7 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) {
+    pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
             .chunks(DIRECTORY_ENTRY_SIZE)
             .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
@@ -149,9 +149,8 @@ impl DirectoryEntry {
                 }
             })
             .collect();
-        let directory_entries: Vec<()> = directory_entries
-            .into_iter()
-            .map(|directory_entry| {
+        match directory_entries.get(0) {
+            Some(directory_entry) => {
                 let type_code: u8 = directory_entry[0];
                 let type_code = TypeCode::read(type_code);
                 match type_code {
@@ -163,8 +162,10 @@ impl DirectoryEntry {
                     VolumeGuid => {},
                     AllocationBitmap => {},
                 };
-            })
-            .collect();
+                vec![]
+            },
+            None => vec![],
+        }
     }
 
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
