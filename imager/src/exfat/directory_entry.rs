@@ -134,6 +134,7 @@ impl DirectoryEntry {
     }
 
     pub fn read(bytes: &Vec<u8>) {
+        let type_code: TypeCode = TypeCode::read(bytes[0]);
     }
 
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
@@ -435,6 +436,19 @@ impl EntryType {
         }
     }
 
+    fn read(byte: u8) -> Self {
+        let type_code = TypeCode::read(byte);
+        let type_importance: bool = byte & 0x20 != 0;
+        let type_category: bool = byte & 0x40 != 0;
+        let in_use: bool = byte & 0x80 != 0;
+        Self {
+            type_code,
+            type_importance,
+            type_category,
+            in_use,
+        }
+    }
+
     fn stream_extension() -> Self {
         let type_code = TypeCode::StreamExtension;
         let type_importance = false;
@@ -619,6 +633,29 @@ enum TypeCode {
 }
 
 impl TypeCode {
+    fn read(byte: u8) -> Self {
+        let type_code: u8 = byte & 0x1f;
+        let type_importance: bool = byte & 0x20 != 0;
+        let type_category: bool = byte & 0x40 != 0;
+        let in_use: bool = byte & 0x80 != 0;
+        match type_code {
+            0x00 => if type_category {
+                Self::StreamExtension
+            } else {
+                Self::VolumeGuid
+            },
+            0x01 => if type_category {
+                Self::FileName
+            } else {
+                Self::AllocationBitmap
+            },
+            0x02 => Self::UpcaseTable,
+            0x03 => Self::VolumeLabel,
+            0x05 => Self::File,
+            _ => panic!("Can't read type code."),
+        }
+    }
+
     fn to_byte(&self) -> u8 {
         match self {
             Self::File => 0x05,
