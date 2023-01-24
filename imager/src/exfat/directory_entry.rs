@@ -169,6 +169,8 @@ impl DirectoryEntry {
                         vec![]
                     },
                     StreamExtension => {
+                        let stream_extension = RawStreamExtension::read(directory_entry);
+                        let general_flags = GeneralFlags::read(stream_extension.general_flags);
                         vec![]
                     },
                     FileName => {
@@ -652,6 +654,15 @@ impl GeneralFlags {
     fn file_name() -> Self {
         let allocation_possible = false;
         let no_fat_chain = false;
+        Self {
+            allocation_possible,
+            no_fat_chain,
+        }
+    }
+
+    fn read(byte: u8) -> Self {
+        let allocation_possible: bool = byte & 0x01 != 0;
+        let no_fat_chain: bool = byte & 0x02 != 0;
         Self {
             allocation_possible,
             no_fat_chain,
