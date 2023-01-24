@@ -278,6 +278,34 @@ impl Time {
             nsec,
         }
     }
+
+    fn to_sec(&self) -> i128 {
+        let day: i128 = if 0 < self.year {
+            (1..self.year)
+                .map(|year| (1..=12).map(move |month| (year, month)))
+                .flatten()
+                .map(|(year, month)| month_length(year, month) as i128)
+                .sum::<i128>()
+            + (1..self.month)
+                .map(|month| month_length(self.year, month) as i128)
+                .sum::<i128>()
+            + (self.day as i128) - 1
+        } else {
+            - (self.year + 1..1)
+                .map(|year| (1..=12).map(move |month| (year, month)))
+                .flatten()
+                .map(|(year, month)| month_length(year, month) as i128)
+                .sum::<i128>()
+            - (self.month..=12)
+                .map(|month| month_length(self.year, month) as i128)
+                .sum::<i128>()
+            + (self.day as i128) - 1
+        };
+        let hour: i128 = (HOURS_PER_DAY as i128) * day + (self.hour as i128);
+        let min: i128 = (MINUTES_PER_HOUR as i128) * hour + (self.min as i128);
+        let sec: i128 = (SECONDS_PER_MINUTE as i128) * min + (self.sec as i128);
+        sec
+    }
 }
 
 fn is_leap_year(year: i128) -> bool {
