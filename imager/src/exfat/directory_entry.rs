@@ -211,10 +211,24 @@ impl DirectoryEntry {
                     },
                     VolumeGuid => {
                         let volume_guid = RawVolumeGuid::read(directory_entry);
+                        let general_flags = GeneralFlags::read(volume_guid.general_flags as u8);
+                        let volume_guid: u128 = volume_guid.volume_guid;
+                        let volume_guid = Self::VolumeGuid {
+                            general_flags,
+                            volume_guid,
+                        };
                         vec![]
                     },
                     AllocationBitmap => {
                         let allocation_bitmap = RawAllocationBitmap::read(directory_entry);
+                        let bitmap_identifier: bool = allocation_bitmap.bitmap_flags & 0x01 != 0;
+                        let first_cluster: u32 = allocation_bitmap.first_cluster;
+                        let data_length: usize = allocation_bitmap.data_length as usize;
+                        let allocation_bitmap = Self::AllocationBitmap {
+                            bitmap_identifier,
+                            first_cluster,
+                            data_length,
+                        };
                         vec![]
                     },
                 }
