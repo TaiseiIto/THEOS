@@ -171,6 +171,10 @@ impl DirectoryEntry {
                     StreamExtension => {
                         let stream_extension = RawStreamExtension::read(directory_entry);
                         let general_flags = GeneralFlags::read(stream_extension.general_flags);
+                        let name_length: u8 = stream_extension.name_length;
+                        let name_hash: u16 = stream_extension.name_hash;
+                        let first_cluster: u32 = stream_extension.first_cluster;
+                        let data_length: usize = stream_extension.data_length as usize;
                         vec![]
                     },
                     FileName => {
