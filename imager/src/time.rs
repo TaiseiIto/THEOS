@@ -243,6 +243,41 @@ impl Time {
             nsec,
         }
     }
+
+    fn from_sec(sec: i128) -> Self {
+        let nsec: u32 = 0;
+        let (sec, min): (u8, i128) = (sec.rem_euclid(SECONDS_PER_MINUTE as i128) as u8, sec.div_euclid(SECONDS_PER_MINUTE as i128));
+        let (min, hour): (u8, i128) = (min.rem_euclid(MINUTES_PER_HOUR as i128) as u8, min.div_euclid(MINUTES_PER_HOUR as i128));
+        let (hour, day): (u8, i128) = (hour.rem_euclid(HOURS_PER_DAY as i128) as u8, hour.div_euclid(HOURS_PER_DAY as i128));
+        let mut year: i128 = 0;
+        let mut month: u8 = 0;
+        let mut day: i128 = day + 1;
+        if 0 < day {
+            year = 1;
+            month = 1;
+            while month_length(year, month) as i128 <= day {
+                day -= month_length(year, month) as i128;
+                (year, month) = next_month(year, month);
+            }
+        } else {
+            year = 0;
+            month = 12;
+            while day <= -(month_length(year, month) as i128) {
+                day += month_length(year, month) as i128;
+                (year, month) = previous_month(year, month);
+            }
+        }
+        let day: u8 = day as u8;
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
+    }
 }
 
 fn is_leap_year(year: i128) -> bool {
@@ -288,6 +323,24 @@ fn next_month(year: i128, month: u8) -> (i128, u8) {
         10 => (year, 11),
         11 => (year, 12),
         12 => (year + 1, 1),
+        _ => panic!("Month is out of range."),
+    }
+}
+
+fn previous_month(year: i128, month: u8) -> (i128, u8) {
+    match month {
+        1 => (year - 1, 12),
+        2 => (year, 1),
+        3 => (year, 2),
+        4 => (year, 3),
+        5 => (year, 4),
+        6 => (year, 5),
+        7 => (year, 6),
+        8 => (year, 7),
+        9 => (year, 8),
+        10 => (year, 9),
+        11 => (year, 10),
+        12 => (year, 11),
         _ => panic!("Month is out of range."),
     }
 }
