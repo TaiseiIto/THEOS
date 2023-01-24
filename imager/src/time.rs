@@ -73,7 +73,7 @@ impl Time {
             min,
             sec,
             nsec,
-        }
+        }.add_sec(utc_offset_sec)
     }
 
     pub fn from_guid_timestamp(timestamp: u64) -> Self {
@@ -213,6 +213,10 @@ impl Time {
 
     pub fn utc_offset(&self) -> i8 {
         0
+    }
+
+    fn add_sec(self, sec: i128) -> Self {
+        Self::from_sec(self.to_sec() + sec)
     }
 
     fn from_time_spec(time: TimeSpec) -> Self {
