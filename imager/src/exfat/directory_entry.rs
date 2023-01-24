@@ -1,5 +1,6 @@
 use {
     std::{
+        char,
         ffi,
         mem,
         path,
@@ -197,6 +198,15 @@ impl DirectoryEntry {
                     },
                     VolumeLabel => {
                         let volume_label = RawVolumeLabel::read(directory_entry);
+                        let character_count: usize = volume_label.character_count as usize;
+                        let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label;
+                        let volume_label: String = volume_label[0..character_count]
+                            .into_iter()
+                            .filter_map(|character| char::from_u32(*character as u32))
+                            .collect();
+                        let volume_label = Self::VolumeLabel {
+                            volume_label,
+                        };
                         vec![]
                     },
                     VolumeGuid => {
