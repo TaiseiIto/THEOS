@@ -178,18 +178,33 @@ impl DirectoryEntry {
                         vec![]
                     },
                     FileName => {
+                        let file_name = RawFileName::read(directory_entry);
+                        let general_flags = GeneralFlags::read(file_name.general_flags);
+                        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name;
                         vec![]
                     },
                     UpcaseTable => {
+                        let upcase_table = RawUpcaseTable::read(directory_entry);
+                        let table_checksum: u32 = upcase_table.table_checksum;
+                        let first_cluster: u32 = upcase_table.first_cluster;
+                        let data_length: usize = upcase_table.data_length as usize;
+                        let upcase_Table = Self::UpcaseTable {
+                            table_checksum,
+                            first_cluster,
+                            data_length,
+                        };
                         vec![]
                     },
                     VolumeLabel => {
+                        let volume_label = RawVolumeLabel::read(directory_entry);
                         vec![]
                     },
                     VolumeGuid => {
+                        let volume_guid = RawVolumeGuid::read(directory_entry);
                         vec![]
                     },
                     AllocationBitmap => {
+                        let allocation_bitmap = RawAllocationBitmap::read(directory_entry);
                         vec![]
                     },
                 }
