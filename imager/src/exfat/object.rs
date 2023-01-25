@@ -131,7 +131,11 @@ impl FileOrDirectory {
                 _ => false,
             })
             .collect();
-        println!("{:#?}", file_directory_entries);
+        let objects: Vec<Object> = file_directory_entries
+            .into_iter()
+            .map(|file_directory_entry| Object::read(file_directory_entry))
+            .collect();
+        println!("{:#?}", objects);
     }
 }
 
@@ -169,6 +173,35 @@ impl Object {
         Self {
             first_cluster,
             directory_entry,
+        }
+    }
+
+    fn read(directory_entry: directory_entry::DirectoryEntry) -> Self {
+        if let directory_entry::DirectoryEntry::File {
+            file_attributes: _,
+            create_time: _,
+            modified_time: _,
+            accessed_time: _,
+            ref stream_extension,
+        } = directory_entry {
+            if let directory_entry::DirectoryEntry::StreamExtension {
+                general_flags: GeneralFlags,
+                name_length: _,
+                name_hash: _,
+                first_cluster,
+                data_length: _,
+                file_name: _,
+            } = &**stream_extension {
+                let first_cluster: u32 = *first_cluster;
+                Self {
+                    first_cluster,
+                    directory_entry,
+                }
+            } else {
+                panic!("Can't read an object.");
+            }
+        } else {
+            panic!("Can't read an object.");
         }
     }
 }
