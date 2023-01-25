@@ -140,13 +140,6 @@ impl DirectoryEntry {
             .chunks(DIRECTORY_ENTRY_SIZE)
             .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
             .collect();
-        println!("Directory entries 0");
-        for directory_entry in directory_entries.iter() {
-            for byte in directory_entry.iter() {
-                print!(" {:x?}", byte);
-            }
-            println!("");
-        }
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries
             .into_iter()
             .filter_map(|directory_entry| {
@@ -158,13 +151,6 @@ impl DirectoryEntry {
                 }
             })
             .collect();
-        println!("Directory entries 0");
-        for directory_entry in directory_entries.iter() {
-            for byte in directory_entry.iter() {
-                print!(" {:x?}", byte);
-            }
-            println!("");
-        }
         let mut directory_entries: VecDeque<[u8; DIRECTORY_ENTRY_SIZE]> = VecDeque::from(directory_entries);
         let directory_entry: Option<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries.remove(0);
         let directory_entries: Vec<u8> = directory_entries
@@ -180,12 +166,9 @@ impl DirectoryEntry {
         let directory_entry: Option<Self> = match directory_entry {
             Some(directory_entry) => {
                 let type_code: u8 = directory_entry[0];
-                println!("type_code = {:x?}", type_code);
                 let type_code = TypeCode::read(type_code);
-                println!("type_code = {:?}", type_code);
                 match type_code {
                     TypeCode::File => {
-                        println!("Read DirectoryEntry::File");
                         let file = RawFile::read(&directory_entry);
                         let file_attributes: [u8; 2] = directory_entry[4..6]
                             .try_into()
@@ -208,7 +191,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::StreamExtension => {
-                        println!("Read DirectoryEntry::StreamExtension");
                         let stream_extension = RawStreamExtension::read(&directory_entry);
                         let general_flags = GeneralFlags::read(stream_extension.general_flags);
                         let name_length: u8 = stream_extension.name_length;
@@ -227,7 +209,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::FileName => {
-                        println!("Read DirectoryEntry::FileName");
                         let file_name = RawFileName::read(&directory_entry);
                         let general_flags = GeneralFlags::read(file_name.general_flags);
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name;
@@ -253,7 +234,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::UpcaseTable => {
-                        println!("Read DirectoryEntry::UpcaseTable");
                         let upcase_table = RawUpcaseTable::read(&directory_entry);
                         let table_checksum: u32 = upcase_table.table_checksum;
                         let first_cluster: u32 = upcase_table.first_cluster;
@@ -265,7 +245,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::VolumeLabel => {
-                        println!("Read DirectoryEntry::VolumeLabel");
                         let volume_label = RawVolumeLabel::read(&directory_entry);
                         let character_count: usize = volume_label.character_count as usize;
                         let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label;
@@ -278,7 +257,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::VolumeGuid => {
-                        println!("Read DirectoryEntry::VolumeGuid");
                         let volume_guid = RawVolumeGuid::read(&directory_entry);
                         let general_flags = GeneralFlags::read(volume_guid.general_flags as u8);
                         let volume_guid: u128 = volume_guid.volume_guid;
@@ -288,7 +266,6 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::AllocationBitmap => {
-                        println!("Read DirectoryEntry::AllocationBitmap");
                         let allocation_bitmap = RawAllocationBitmap::read(&directory_entry);
                         let bitmap_identifier: bool = allocation_bitmap.bitmap_flags & 0x01 != 0;
                         let first_cluster: u32 = allocation_bitmap.first_cluster;
