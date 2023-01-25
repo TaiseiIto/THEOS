@@ -118,7 +118,20 @@ impl FileOrDirectory {
             .flatten()
             .collect();
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries);
-        println!("{:#?}", directory_entries);
+        let file_directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entries
+            .into_iter()
+            .filter(|directory_entry| match directory_entry {
+                directory_entry::DirectoryEntry::File {
+                    file_attributes: _,
+                    create_time: _,
+                    modified_time: _,
+                    accessed_time: _,
+                    stream_extension: _,
+                } => true,
+                _ => false,
+            })
+            .collect();
+        println!("{:#?}", file_directory_entries);
     }
 }
 
