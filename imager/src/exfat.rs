@@ -59,7 +59,6 @@ impl Exfat {
         let boot_sector = boot_sector::BootSector::read(bytes);
         println!("boot_sector = {:#x?}", boot_sector);
         let sector_size: usize = boot_sector.bytes_per_sector();
-        let bytes: Vec<u8> = bytes[sector_size..].to_vec();
         let sectors: Vec<Vec<u8>> = bytes
             .chunks(sector_size)
             .map(|sector| sector.to_vec())
