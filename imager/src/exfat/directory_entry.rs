@@ -152,7 +152,7 @@ impl DirectoryEntry {
             })
             .collect();
         let mut directory_entries: VecDeque<[u8; DIRECTORY_ENTRY_SIZE]> = VecDeque::from(directory_entries);
-        let directory_entry: Option<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries.pop_front();
+        let directory_entry: Option<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries.remove(0);
         let directory_entries: Vec<u8> = directory_entries
             .into_iter()
             .map(|directory_entry| directory_entry.into_iter())
@@ -177,7 +177,7 @@ impl DirectoryEntry {
                         let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment, file.create_utc_offset);
                         let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment, file.last_modified_utc_offset);
                         let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0, file.last_accessed_utc_offset);
-                        let stream_extension: Self = directory_entries.pop_front().expect("Can't read a file directory entry.");
+                        let stream_extension: Self = directory_entries.remove(0).expect("Can't read a file directory entry.");
                         let stream_extension: Box<Self> = Box::new(stream_extension);
                         Some(Self::File {
                             file_attributes,
@@ -194,7 +194,7 @@ impl DirectoryEntry {
                         let name_hash: u16 = stream_extension.name_hash;
                         let first_cluster: u32 = stream_extension.first_cluster;
                         let data_length: usize = stream_extension.data_length as usize;
-                        let file_name: Self = directory_entries.pop_front().expect("Can't read stream extension directory entry.");
+                        let file_name: Self = directory_entries.remove(0).expect("Can't read stream extension directory entry.");
                         let file_name: Box<Self> = Box::new(file_name);
                         Some(Self::StreamExtension {
                             general_flags,
@@ -209,7 +209,7 @@ impl DirectoryEntry {
                         let file_name = RawFileName::read(&directory_entry);
                         let general_flags = GeneralFlags::read(file_name.general_flags);
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name;
-                        let next_file_name: Option<Box<Self>> = match directory_entries.pop_front() {
+                        let next_file_name: Option<Box<Self>> = match directory_entries.remove(0) {
                             Some(directory_entry) => match directory_entry {
                                 Self::FileName {
                                     general_flags,
