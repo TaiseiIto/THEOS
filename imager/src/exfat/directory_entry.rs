@@ -152,11 +152,18 @@ impl DirectoryEntry {
             })
             .collect();
         let mut directory_entries: VecDeque<[u8; DIRECTORY_ENTRY_SIZE]> = VecDeque::from(directory_entries);
-        match directory_entries.pop_front() {
+        let directory_entries: VecDeque<Self> = match directory_entries.pop_front() {
             Some(directory_entry) => {
                 let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = directory_entries
                     .into_iter()
                     .collect();
+                let directory_entries: Vec<u8> = directory_entries
+                    .into_iter()
+                    .map(|directory_entry| directory_entry.into_iter())
+                    .flatten()
+                    .collect();
+                let directory_entries: Vec<Self> = Self::read(&directory_entries);
+                let mut directory_entries: VecDeque<Self> = VecDeque::from(directory_entries);
                 let type_code: u8 = directory_entry[0];
                 let type_code = TypeCode::read(type_code);
                 match type_code {
@@ -172,7 +179,17 @@ impl DirectoryEntry {
                         let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment, file.create_utc_offset);
                         let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment, file.last_modified_utc_offset);
                         let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0, file.last_accessed_utc_offset);
-                        vec![]
+                        let stream_extension: Self = directory_entries.pop_front().expect("Can't read a file directory entry.");
+                        let stream_extension: Box<Self> = Box::new(stream_extension);
+                        let file = Self::File {
+                            file_attributes,
+                            create_time,
+                            modified_time,
+                            accessed_time,
+                            stream_extension,
+                        };
+                        directory_entries.push_front(file);
+                        directory_entries
                     },
                     StreamExtension => {
                         let stream_extension = RawStreamExtension::read(&directory_entry);
@@ -181,25 +198,58 @@ impl DirectoryEntry {
                         let name_hash: u16 = stream_extension.name_hash;
                         let first_cluster: u32 = stream_extension.first_cluster;
                         let data_length: usize = stream_extension.data_length as usize;
-                        vec![]
+                        let file_name: Self = directory_entries.pop_front().expect("Can't read stream extension directory entry.");
+                        let file_name: Box<Self> = Box::new(file_name);
+                        let stream_extension = Self::StreamExtension {
+                            general_flags,
+                            name_length,
+                            name_hash,
+                            first_cluster,
+                            data_length,
+                            file_name,
+                        };
+                        directory_entries.push_front(stream_extension);
+                        directory_entries
                     },
                     FileName => {
                         let file_name = RawFileName::read(&directory_entry);
                         let general_flags = GeneralFlags::read(file_name.general_flags);
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name;
-                        vec![]
+                        let next_file_name: Option<Box<Self>> = match directory_entries.pop_front() {
+                            Some(directory_entry) => match directory_entry {
+                                Self::FileName {
+                                    general_flags,
+                                    file_name,
+                                    next_file_name,
+                                } => Some(Box::new(Self::FileName {
+                                    general_flags,
+                                    file_name,
+                                    next_file_name,
+                                })),
+                                _ => None,
+                            },
+                            None => None,
+                        };
+                        let file_name = Self::FileName {
+                            general_flags,
+                            file_name,
+                            next_file_name,
+                        };
+                        directory_entries.push_front(file_name);
+                        directory_entries
                     },
                     UpcaseTable => {
                         let upcase_table = RawUpcaseTable::read(&directory_entry);
                         let table_checksum: u32 = upcase_table.table_checksum;
                         let first_cluster: u32 = upcase_table.first_cluster;
                         let data_length: usize = upcase_table.data_length as usize;
-                        let upcase_Table = Self::UpcaseTable {
+                        let upcase_table = Self::UpcaseTable {
                             table_checksum,
                             first_cluster,
                             data_length,
                         };
-                        vec![]
+                        directory_entries.push_front(upcase_table);
+                        directory_entries
                     },
                     VolumeLabel => {
                         let volume_label = RawVolumeLabel::read(&directory_entry);
@@ -212,7 +262,8 @@ impl DirectoryEntry {
                         let volume_label = Self::VolumeLabel {
                             volume_label,
                         };
-                        vec![]
+                        directory_entries.push_front(volume_label);
+                        directory_entries
                     },
                     VolumeGuid => {
                         let volume_guid = RawVolumeGuid::read(&directory_entry);
@@ -222,7 +273,8 @@ impl DirectoryEntry {
                             general_flags,
                             volume_guid,
                         };
-                        vec![]
+                        directory_entries.push_front(volume_guid);
+                        directory_entries
                     },
                     AllocationBitmap => {
                         let allocation_bitmap = RawAllocationBitmap::read(&directory_entry);
@@ -234,12 +286,17 @@ impl DirectoryEntry {
                             first_cluster,
                             data_length,
                         };
-                        vec![]
+                        directory_entries.push_front(allocation_bitmap);
+                        directory_entries
                     },
                 }
             },
-            None => vec![],
-        }
+            None => VecDeque::new(),
+        };
+        let directory_entries: Vec<Self> = directory_entries
+            .into_iter()
+            .collect();
+        directory_entries
     }
 
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
