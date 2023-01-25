@@ -136,9 +136,6 @@ impl DirectoryEntry {
     }
 
     pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
-        if bytes.len() == 0 {
-            return vec![]
-        }
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
             .chunks(DIRECTORY_ENTRY_SIZE)
             .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
@@ -161,7 +158,10 @@ impl DirectoryEntry {
             .map(|directory_entry| directory_entry.into_iter())
             .flatten()
             .collect();
-        let directory_entries: Vec<Self> = Self::read(&directory_entries);
+        let directory_entries: Vec<Self> = match directory_entries.len() {
+            0 => vec![],
+            _ => Self::read(&directory_entries),
+        };
         let mut directory_entries: VecDeque<Self> = VecDeque::from(directory_entries);
         let directory_entry: Option<Self> = match directory_entry {
             Some(directory_entry) => {
