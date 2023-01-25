@@ -136,6 +136,9 @@ impl DirectoryEntry {
     }
 
     pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
+        if bytes.len() == 0 {
+            return vec![]
+        }
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
             .chunks(DIRECTORY_ENTRY_SIZE)
             .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
