@@ -117,7 +117,8 @@ impl FileOrDirectory {
             .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
             .flatten()
             .collect();
-        directory_entry::DirectoryEntry::read(&directory_entries);
+        let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries);
+        println!("{:#?}", directory_entries);
     }
 }
 
