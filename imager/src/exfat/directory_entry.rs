@@ -223,7 +223,10 @@ impl DirectoryEntry {
                                     file_name,
                                     next_file_name,
                                 })),
-                                _ => None,
+                                _ => {
+                                    directory_entries.push_front(directory_entry);
+                                    None
+                                },
                             },
                             None => None,
                         };
