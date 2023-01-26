@@ -85,13 +85,13 @@ impl Clusters {
         let clusters: Vec<Vec<(u32, Vec<u8>)>> = fat
             .into_iter()
             .map(|(_, cluster_number_chain)| cluster_number_chain
-                    .into_iter()
-                    .map(|cluster_number| (cluster_number, clusters
-                        .get(&cluster_number)
-                        .expect("Can't read clusters.")
-                        .clone()
-                    ))
-                    .collect()
+                .into_iter()
+                .map(|cluster_number| (cluster_number, clusters
+                    .get(&cluster_number)
+                    .expect("Can't read clusters.")
+                    .clone()
+                ))
+                .collect()
             )
             .collect();
         let clusters: Vec<Cluster> = clusters

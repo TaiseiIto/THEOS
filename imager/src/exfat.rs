@@ -84,9 +84,10 @@ impl Exfat {
             .into_iter()
             .flatten()
             .collect();
-        let fat = fat::Fat::read(&fat, sector_size);
         let cluster_size: usize = boot_sector.cluster_size();
         let cluster_heap_offset: usize = boot_sector.cluster_heap_offset() as usize;
+        let cluster_count: u32 = boot_sector.cluster_count();
+        let fat = fat::Fat::read(&fat, sector_size, cluster_count);
         let clusters: Vec<Vec<u8>> = sectors[cluster_heap_offset..].to_vec();
         let clusters: Vec<u8> = clusters
             .into_iter()
@@ -95,6 +96,7 @@ impl Exfat {
         let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
         let root_directory = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        println!("root_directory = {:#x?}", root_directory);
     }
 }
 

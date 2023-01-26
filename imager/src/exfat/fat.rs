@@ -31,7 +31,7 @@ impl Fat {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>, sector_size: usize) -> Self {
+    pub fn read(bytes: &Vec<u8>, sector_size: usize, cluster_count: u32) -> Self {
         let cluster_chain: Vec<u32> = bytes
             .chunks(mem::size_of::<u32>())
             .map(|cluster| {
@@ -54,6 +54,7 @@ impl Fat {
                 let cluster_number: u32 = cluster_number as u32;
                 (cluster_number, next_cluster_number)
             })
+            .filter(|(cluster_number, next_cluster_number)| cluster::FIRST_CLUSTER_NUMBER <= *cluster_number && *cluster_number < cluster_count + cluster::FIRST_CLUSTER_NUMBER)
             .collect();
         Self {
             cluster_chain,
