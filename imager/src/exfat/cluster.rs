@@ -65,7 +65,7 @@ impl Clusters {
             .sum()
     }
 
-    pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) {
+    pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) -> Self {
         let clusters: HashMap<u32, Vec<u8>> = bytes
             .chunks(cluster_size)
             .enumerate()
@@ -88,6 +88,16 @@ impl Clusters {
             .into_iter()
             .map(|clusters| Cluster::read(VecDeque::from(clusters)))
             .collect();
+        let next_cluster_number: u32 = clusters
+            .iter()
+            .map(|cluster| cluster.cluster_number)
+            .max()
+            .expect("Can't read clusters.") + 1;
+        Self {
+            cluster_size,
+            clusters,
+            next_cluster_number,
+        }
     }
 
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
