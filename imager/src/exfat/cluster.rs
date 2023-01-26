@@ -1,5 +1,8 @@
 use {
-    std::collections::HashMap,
+    std::collections::{
+        HashMap,
+        HashSet,
+    },
     super::{
         fat,
         super::binary::Binary,
@@ -63,9 +66,23 @@ impl Clusters {
     }
 
     pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) {
-        let clusters: Vec<Vec<u8>> = bytes
+        let clusters: HashMap<u32, Vec<u8>> = bytes
             .chunks(cluster_size)
-            .map(|cluster| cluster.to_vec())
+            .enumerate()
+            .map(|(cluster, bytes)| ((cluster as u32) + FIRST_CLUSTER_NUMBER, bytes.to_vec()))
+            .collect();
+        let fat: HashMap<u32, Vec<u32>> = fat.to_chains();
+        let clusters: HashSet<Vec<(u32, Vec<u8>)>> = fat
+            .into_iter()
+            .map(|(_, cluster_number_chain)| cluster_number_chain
+                    .into_iter()
+                    .map(|cluster_number| (cluster_number, clusters
+                        .get(&cluster_number)
+                        .expect("Can't read clusters.")
+                        .clone()
+                    ))
+                    .collect()
+            )
             .collect();
     }
 
