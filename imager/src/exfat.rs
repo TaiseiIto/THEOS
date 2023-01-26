@@ -90,7 +90,8 @@ impl Exfat {
             .collect();
         let cluster_size: usize = boot_sector.cluster_size();
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
-        object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        let root_directory = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        println!("{:#?}", root_directory);
     }
 }
 
