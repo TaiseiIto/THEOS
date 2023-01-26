@@ -44,6 +44,16 @@ impl Clusters {
         self.cluster_size
     }
 
+    pub fn get_clusters(&self, first_cluster_number: u32) -> Vec<u8> {
+        match self.clusters
+            .iter()
+            .filter(|cluster| cluster.cluster_number == first_cluster_number)
+            .next() {
+            Some(first_cluster) => first_cluster.get_bytes(),
+            None => vec![],
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.clusters.len()
     }
@@ -134,7 +144,7 @@ impl Binary for Clusters {
 struct Cluster {
     cluster_number: u32,
     bytes: Vec<u8>,
-    next_cluster: Option<Box<Cluster>>,
+    next_cluster: Option<Box<Self>>,
 }
 
 impl Cluster {
@@ -147,6 +157,16 @@ impl Cluster {
             },
             None => HashMap::from([(self.cluster_number, None)]),
         }
+    }
+
+    fn get_bytes(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = self.bytes.clone();
+        let mut tail: Vec<u8> = match self.next_cluster {
+            Some(ref next_cluster) => next_cluster.get_bytes(),
+            None => vec![],
+        };
+        bytes.append(&mut tail);
+        bytes
     }
 
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
