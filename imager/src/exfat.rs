@@ -64,10 +64,13 @@ impl Exfat {
             .map(|sector| sector.to_vec())
             .collect();
         let mut sector_offset: usize = 1;
-        let extended_boot_sector: Vec<extended_boot_sector::ExtendedBootSector> = sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
+        let extended_boot_sectors: Vec<extended_boot_sector::ExtendedBootSector> = sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
             .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
             .collect();
+        let extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; NUM_OF_EXTENDED_BOOT_SECTORS] = extended_boot_sectors
+            .try_into()
+            .expect("Can't read extended boot sectors.");
         sector_offset += NUM_OF_EXTENDED_BOOT_SECTORS;
         let oem_parameters = oem_parameter::OemParameters::read(&sectors[sector_offset]);
         sector_offset += 1;
@@ -91,7 +94,6 @@ impl Exfat {
         let cluster_size: usize = boot_sector.cluster_size();
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
         let root_directory = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
-        println!("{:#?}", root_directory);
     }
 }
 
