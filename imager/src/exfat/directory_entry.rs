@@ -687,6 +687,10 @@ pub struct FileAttributes {
 }
 
 impl FileAttributes {
+    pub fn is_dir(&self) -> bool {
+        self.directory
+    }
+
     fn new(path: &path::PathBuf) -> Self {
         let read_only = true;
         let hidden = false;

@@ -101,7 +101,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_directory(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) {
+    pub fn read_directory(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
         let clusters: Vec<Vec<u8>> = bytes
             .chunks(cluster_size)
             .map(|cluster| cluster.to_vec())
@@ -131,16 +131,24 @@ impl FileOrDirectory {
                 _ => false,
             })
             .collect();
-        let objects: Vec<Object> = file_directory_entries
+        let children: Vec<Object> = file_directory_entries
             .into_iter()
-            .map(|file_directory_entry| Object::read(file_directory_entry))
+            .map(|file_directory_entry| Object::read(file_directory_entry, bytes, fat, cluster_size))
             .collect();
-        println!("{:#?}", objects);
+        Self::Directory {
+            children,
+        }
+    }
+
+    pub fn read_file() -> Self {
+        Self::File {
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct Object {
+    content: FileOrDirectory,
     first_cluster: u32,
     directory_entry: directory_entry::DirectoryEntry,
 }
@@ -168,17 +176,18 @@ impl Object {
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        let (_, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let (content, first_cluster, length) = FileOrDirectory::new(&path, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
         Self {
+            content,
             first_cluster,
             directory_entry,
         }
     }
 
-    fn read(directory_entry: directory_entry::DirectoryEntry) -> Self {
+    fn read(directory_entry: directory_entry::DirectoryEntry, bytes: &Vec<u8>, fat: &fat::Fat, cluster_size: usize) -> Self {
         if let directory_entry::DirectoryEntry::File {
-            file_attributes: _,
+            ref file_attributes,
             create_time: _,
             modified_time: _,
             accessed_time: _,
@@ -193,7 +202,13 @@ impl Object {
                 file_name: _,
             } = &**stream_extension {
                 let first_cluster: u32 = *first_cluster;
+                let content = if file_attributes.is_dir() {
+                    FileOrDirectory::read_directory(bytes, fat, first_cluster, cluster_size)
+                } else {
+                    FileOrDirectory::read_file()
+                };
                 Self {
+                    content,
                     first_cluster,
                     directory_entry,
                 }
