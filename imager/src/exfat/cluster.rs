@@ -44,7 +44,7 @@ impl Clusters {
         self.cluster_size
     }
 
-    pub fn get_clusters(&self, first_cluster_number: u32) -> Vec<u8> {
+    pub fn get_bytes(&self, first_cluster_number: u32) -> Vec<u8> {
         match self.clusters
             .iter()
             .filter(|cluster| cluster.cluster_number == first_cluster_number)

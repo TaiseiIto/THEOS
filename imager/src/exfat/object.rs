@@ -105,22 +105,8 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_directory(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
-        let clusters: Vec<Vec<u8>> = bytes
-            .chunks(cluster_size)
-            .map(|cluster| cluster.to_vec())
-            .collect();
-        let mut cluster_number: Option<u32> = Some(cluster_number);
-        let mut cluster_chain: Vec<u32> = vec![];
-        while let Some(last_cluster_number) = cluster_number {
-            cluster_chain.push(last_cluster_number);
-            cluster_number = fat.next_cluster_number(last_cluster_number);
-        }
-        let directory_entries: Vec<u8> = cluster_chain
-            .into_iter()
-            .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
-            .flatten()
-            .collect();
+    pub fn read_directory(clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
+        let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries);
         let file_directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entries
             .into_iter()
@@ -137,30 +123,15 @@ impl FileOrDirectory {
             .collect();
         let children: Vec<Object> = file_directory_entries
             .into_iter()
-            .map(|file_directory_entry| Object::read(file_directory_entry, bytes, fat, cluster_size))
+            .map(|file_directory_entry| Object::read(file_directory_entry, clusters, fat, cluster_size))
             .collect();
         Self::Directory {
             children,
         }
     }
 
-    pub fn read_file(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize, length: usize) -> Self {
-        let clusters: Vec<Vec<u8>> = bytes
-            .chunks(cluster_size)
-            .map(|cluster| cluster.to_vec())
-            .collect();
-        let mut cluster_number: Option<u32> = Some(cluster_number);
-        let mut cluster_chain: Vec<u32> = vec![];
-        while let Some(last_cluster_number) = cluster_number {
-            cluster_chain.push(last_cluster_number);
-            cluster_number = fat.next_cluster_number(last_cluster_number);
-        }
-        let mut bytes: Vec<u8> = cluster_chain
-            .into_iter()
-            .filter(|cluster_number| 0 < *cluster_number)
-            .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
-            .flatten()
-            .collect();
+    pub fn read_file(clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize, length: usize) -> Self {
+        let mut bytes: Vec<u8> = clusters.get_bytes(cluster_number);
         bytes.resize(length, 0x00);
         Self::File {
             bytes,
@@ -207,7 +178,7 @@ impl Object {
         }
     }
 
-    fn read(directory_entry: directory_entry::DirectoryEntry, bytes: &Vec<u8>, fat: &fat::Fat, cluster_size: usize) -> Self {
+    fn read(directory_entry: directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Self {
         if let directory_entry::DirectoryEntry::File {
             ref file_attributes,
             create_time: _,
@@ -225,9 +196,9 @@ impl Object {
             } = &**stream_extension {
                 let first_cluster: u32 = *first_cluster;
                 let content = if file_attributes.is_dir() {
-                    FileOrDirectory::read_directory(bytes, fat, first_cluster, cluster_size)
+                    FileOrDirectory::read_directory(clusters, fat, first_cluster, cluster_size)
                 } else {
-                    FileOrDirectory::read_file(bytes, fat, first_cluster, cluster_size, *data_length)
+                    FileOrDirectory::read_file(clusters, fat, first_cluster, cluster_size, *data_length)
                 };
                 Self {
                     content,
