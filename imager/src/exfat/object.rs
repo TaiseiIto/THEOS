@@ -157,6 +157,7 @@ impl FileOrDirectory {
         }
         let mut bytes: Vec<u8> = cluster_chain
             .into_iter()
+            .filter(|cluster_number| 0 < *cluster_number)
             .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
             .flatten()
             .collect();
