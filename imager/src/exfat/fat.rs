@@ -64,6 +64,29 @@ impl Fat {
     pub fn sectors_per_fat(&self) -> usize {
         self.to_bytes().len() / self.sector_size
     }
+
+    pub fn to_chains(&self) -> HashMap<u32, Vec<u32>> {
+        self.cluster_chain
+            .iter()
+            .fold(HashMap::<u32, Vec<u32>>::new(), |mut chains, (cluster, next)| {
+                let last_to_first: HashMap<u32, u32> = chains
+                    .iter()
+                    .map(|(first, chain)| (chain[chain.len() - 1], *first))
+                    .collect();
+                match last_to_first.get(cluster) {
+                    Some(first) => if let Some(next) = next {
+                        chains
+                            .get_mut(first)
+                            .expect("Can't convert a FAT into cluster number chains.")
+                            .push(*next);
+                    },
+                    None => {
+                        chains.insert(*cluster, vec![*cluster]);
+                    },
+                }
+                chains
+            })
+    }
 }
 
 impl Binary for Fat {

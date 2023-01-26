@@ -1,6 +1,9 @@
 use {
     std::collections::HashMap,
-    super::super::binary::Binary,
+    super::{
+        fat,
+        super::binary::Binary,
+    },
 };
 
 pub const FIRST_CLUSTER_NUMBER: u32 = 2;
@@ -57,6 +60,13 @@ impl Clusters {
             .iter()
             .map(|cluster| cluster.number_of_clusters())
             .sum()
+    }
+
+    pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) {
+        let clusters: Vec<Vec<u8>> = bytes
+            .chunks(cluster_size)
+            .map(|cluster| cluster.to_vec())
+            .collect();
     }
 
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
