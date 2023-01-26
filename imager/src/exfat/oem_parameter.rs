@@ -75,16 +75,14 @@ impl OemParameter {
     }
 
     fn read(bytes: &Vec<u8>) -> Self {
-        let parameter_guid: Vec<u8> = bytes
-            .chunks(guid::GUID_SIZE)
-            .next()
-            .expect("Can't read OEM parameter.")
-            .to_vec();
+        let mut bytes: Vec<u8> = bytes.clone();
+        let (parameter_guid, bytes): (&[u8], &[u8]) = bytes
+            .split_at(guid::GUID_SIZE);
+        let parameter_guid: Vec<u8> = parameter_guid.to_vec();
         let parameter_guid = guid::Guid::read(&parameter_guid);
-        let custom_defined: [u8; CUSTOM_DEFINED_SIZE] = bytes[guid::GUID_SIZE..]
-            .chunks(CUSTOM_DEFINED_SIZE)
-            .next()
-            .expect("Can't read OEM parameter.")
+        let bytes: Vec<u8> = bytes.to_vec();
+        let (custom_defined, _): (&[u8], &[u8]) = bytes.split_at(CUSTOM_DEFINED_SIZE);
+        let custom_defined: [u8; CUSTOM_DEFINED_SIZE] = custom_defined
             .try_into()
             .expect("Can't read OEM parameter.");
         Self {

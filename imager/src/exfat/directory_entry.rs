@@ -1279,10 +1279,8 @@ impl Raw for RawVolumeLabel {
                 while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
                     volume_label.push(0x0000);
                 }
+                let (volume_label, _): (&[u16], &[u16]) = volume_label.split_at(VOLUME_LABEL_MAX_LENGTH);
                 let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label
-                    .chunks(VOLUME_LABEL_MAX_LENGTH)
-                    .next()
-                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].")
                     .try_into()
                     .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].");
                 let reserved: u64 = 0;
