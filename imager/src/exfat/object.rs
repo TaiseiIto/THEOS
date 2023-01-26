@@ -19,7 +19,9 @@ use {
 
 #[derive(Debug)]
 pub enum FileOrDirectory {
-    File,
+    File {
+        bytes: Vec<u8>,
+    },
     Directory {
         children: Vec<Object>,
     },
@@ -37,8 +39,10 @@ impl FileOrDirectory {
         if path.is_file() {
             let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             let length: usize = bytes.len();
-            let first_cluster: u32 = clusters.append(bytes, 0);
-            let file = Self::File;
+            let first_cluster: u32 = clusters.append(&bytes, 0);
+            let file = Self::File {
+                bytes,
+            };
             (file, first_cluster, length)
         } else if path.is_dir() {
             let children: Vec<Object> = match fs::read_dir(path) {
@@ -91,7 +95,7 @@ impl FileOrDirectory {
                 .flatten()
                 .collect();
             let length: usize = bytes.len();
-            let first_cluster: u32 = clusters.append(bytes, 0);
+            let first_cluster: u32 = clusters.append(&bytes, 0);
             let directory = Self::Directory {
                 children,
             };
@@ -140,8 +144,25 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_file() -> Self {
+    pub fn read_file(bytes: &Vec<u8>, fat: &fat::Fat, cluster_number: u32, cluster_size: usize, length: usize) -> Self {
+        let clusters: Vec<Vec<u8>> = bytes
+            .chunks(cluster_size)
+            .map(|cluster| cluster.to_vec())
+            .collect();
+        let mut cluster_number: Option<u32> = Some(cluster_number);
+        let mut cluster_chain: Vec<u32> = vec![];
+        while let Some(last_cluster_number) = cluster_number {
+            cluster_chain.push(last_cluster_number);
+            cluster_number = fat.next_cluster_number(last_cluster_number);
+        }
+        let mut bytes: Vec<u8> = cluster_chain
+            .into_iter()
+            .map(|cluster_number| clusters[(cluster_number - 2) as usize].clone())
+            .flatten()
+            .collect();
+        bytes.resize(length, 0x00);
         Self::File {
+            bytes,
         }
     }
 }
@@ -198,14 +219,14 @@ impl Object {
                 name_length: _,
                 name_hash: _,
                 first_cluster,
-                data_length: _,
+                data_length,
                 file_name: _,
             } = &**stream_extension {
                 let first_cluster: u32 = *first_cluster;
                 let content = if file_attributes.is_dir() {
                     FileOrDirectory::read_directory(bytes, fat, first_cluster, cluster_size)
                 } else {
-                    FileOrDirectory::read_file()
+                    FileOrDirectory::read_file(bytes, fat, first_cluster, cluster_size, *data_length)
                 };
                 Self {
                     content,

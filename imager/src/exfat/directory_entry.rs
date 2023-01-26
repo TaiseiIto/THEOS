@@ -108,7 +108,7 @@ impl DirectoryEntry {
             .expect("Can't get allocation_bitmap_length.");
         let allocation_bitmaps: Vec<u32> = allocation_bitmaps
             .into_iter()
-            .map(|allocation_bitmap| clusters.append(allocation_bitmap, 0xff))
+            .map(|allocation_bitmap| clusters.append(&allocation_bitmap, 0xff))
             .collect();
         allocation_bitmaps
             .into_iter()
@@ -295,7 +295,7 @@ impl DirectoryEntry {
     pub fn upcase_table(upcase_table: &upcase_table::UpcaseTable, clusters: &mut cluster::Clusters) -> Self {
         let bytes: Vec<u8> = upcase_table.to_bytes();
         let data_length: usize = bytes.len();
-        let first_cluster: u32 = clusters.append(bytes, 0);
+        let first_cluster: u32 = clusters.append(&bytes, 0);
         let table_checksum: u32 = upcase_table.table_checksum();
         Self::UpcaseTable {
             table_checksum,

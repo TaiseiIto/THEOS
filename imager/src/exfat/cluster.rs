@@ -13,7 +13,7 @@ pub struct Clusters {
 }
 
 impl Clusters {
-    pub fn append(&mut self, bytes: Vec<u8>, blank: u8) -> u32 {
+    pub fn append(&mut self, bytes: &Vec<u8>, blank: u8) -> u32 {
         let cluster = match Cluster::new(self, bytes, blank) {
             Some(cluster) => cluster,
             None => return 0,
@@ -133,7 +133,8 @@ impl Cluster {
         }
     }
 
-    fn new(clusters: &mut Clusters, mut bytes: Vec<u8>, blank: u8) -> Option<Self> {
+    fn new(clusters: &mut Clusters, bytes: &Vec<u8>, blank: u8) -> Option<Self> {
+        let mut bytes: Vec<u8> = bytes.clone();
         if bytes.len() == 0 {
             return None;
         }
@@ -145,7 +146,7 @@ impl Cluster {
             vec![]
         };
         bytes.resize(clusters.cluster_size, blank);
-        let next_cluster: Option<Box<Cluster>> = match Self::new(clusters, remaining_bytes, blank) {
+        let next_cluster: Option<Box<Cluster>> = match Self::new(clusters, &remaining_bytes, blank) {
             Some(next_cluster) => Some(Box::new(next_cluster)),
             None => None,
         };
