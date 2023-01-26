@@ -1,7 +1,7 @@
 use {
     std::collections::{
         HashMap,
-        HashSet,
+        VecDeque,
     },
     super::{
         fat,
@@ -72,7 +72,7 @@ impl Clusters {
             .map(|(cluster, bytes)| ((cluster as u32) + FIRST_CLUSTER_NUMBER, bytes.to_vec()))
             .collect();
         let fat: HashMap<u32, Vec<u32>> = fat.to_chains();
-        let clusters: HashSet<Vec<(u32, Vec<u8>)>> = fat
+        let clusters: Vec<Vec<(u32, Vec<u8>)>> = fat
             .into_iter()
             .map(|(_, cluster_number_chain)| cluster_number_chain
                     .into_iter()
@@ -83,6 +83,10 @@ impl Clusters {
                     ))
                     .collect()
             )
+            .collect();
+        let clusters: Vec<Cluster> = clusters
+            .into_iter()
+            .map(|clusters| Cluster::read(VecDeque::from(clusters)))
             .collect();
     }
 
@@ -188,6 +192,19 @@ impl Cluster {
         match &self.next_cluster {
             Some(next_cluster) => 1 + next_cluster.number_of_clusters(),
             None => 1,
+        }
+    }
+
+    fn read(mut clusters: VecDeque<(u32, Vec<u8>)>) -> Self {
+        let (cluster_number, bytes): (u32, Vec<u8>) = clusters.remove(0).expect("Can't read a cluster.");
+        let next_cluster: Option<Box<Self>> = match clusters.len() {
+            0 => None,
+            _ => Some(Box::new(Self::read(clusters))),
+        };
+        Self {
+            cluster_number,
+            bytes,
+            next_cluster,
         }
     }
 }
