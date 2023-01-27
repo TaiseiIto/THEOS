@@ -55,7 +55,7 @@ impl Exfat {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) {
+    pub fn read(bytes: &Vec<u8>) -> Self {
         let boot_sector = boot_sector::BootSector::read(bytes);
         println!("boot_sector = {:#x?}", boot_sector);
         let sector_size: usize = boot_sector.bytes_per_sector();
@@ -97,6 +97,15 @@ impl Exfat {
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
         let root_directory = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
         println!("root_directory = {:#x?}", root_directory);
+        Self {
+            boot_checksum,
+            boot_sector,
+            clusters,
+            extended_boot_sectors,
+            fat,
+            oem_parameters,
+            reserved_sector,
+        }
     }
 }
 

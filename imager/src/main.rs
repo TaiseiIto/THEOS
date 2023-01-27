@@ -22,7 +22,7 @@ fn main() {
             image,
         } => {
             let image: Vec<u8> = fs::read(&image).expect(&format!("Can't read {}!", image.display()));
-            exfat::Exfat::read(&image);
+            let exfat = exfat::Exfat::read(&image);
         },
         args::Args::Write {
             boot_sector,
