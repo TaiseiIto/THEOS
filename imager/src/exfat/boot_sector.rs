@@ -159,20 +159,41 @@ impl fmt::Display for BootSector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let jump_boot: String = "JumpBoot:".to_string() + &self.jump_boot
             .iter()
-            .map(|byte| format!(" {:02x?}", byte))
+            .map(|byte| format!(" {:02x}", byte))
             .fold(String::new(), |jump_boot, byte| jump_boot + &byte);
         let file_system_name: String = format!("FileSystemName: \"{}\"", str::from_utf8(&self.file_system_name).expect("Can't print a boot sector."));
         let must_be_zero: String = "MustBeZero:".to_string() + &self.must_be_zero
             .iter()
-            .map(|byte| format!(" {:02x?}", byte))
+            .map(|byte| format!(" {:02x}", byte))
             .fold(String::new(), |must_be_zero, byte| must_be_zero + &byte);
         let partition_offset: u64 = self.partition_offset;
-        let partition_offset: String = format!("PartitionOffset: {:08x?}", partition_offset);
-        let boot_sector: String = format!("{}\n{}\n{}\n{}",
+        let partition_offset: String = format!("PartitionOffset: {:016x}", partition_offset);
+        let volume_length: u64 = self.volume_length;
+        let volume_length: String = format!("VolumeLength: {:016x}", volume_length);
+        let fat_offset: u32 = self.fat_offset;
+        let fat_offset: String = format!("FatOffset: {:08x}", fat_offset);
+        let fat_length: u32 = self.fat_length;
+        let fat_length: String = format!("FatLength: {:08x}", fat_length);
+        let cluster_heap_offset: u32 = self.cluster_heap_offset;
+        let cluster_heap_offset: String = format!("ClusterHeapOffset: {:08x}", cluster_heap_offset);
+        let cluster_count: u32 = self.cluster_count;
+        let cluster_count: String = format!("ClusterCount: {:08x}", cluster_count);
+        let first_cluster_of_root_directory: u32 = self.first_cluster_of_root_directory;
+        let first_cluster_of_root_directory: String = format!("FirstClusterOfRootDirectory: {:08x}", first_cluster_of_root_directory);
+        let volume_serial_number: u32 = self.volume_serial_number;
+        let volume_serial_number: String = format!("VolumeSerialNumber: {:08x}", volume_serial_number);
+        let boot_sector: String = format!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             jump_boot,
             file_system_name,
             must_be_zero,
             partition_offset,
+            volume_length,
+            fat_offset,
+            fat_length,
+            cluster_heap_offset,
+            cluster_count,
+            first_cluster_of_root_directory,
+            volume_serial_number,
         );
         write!(f, "{}", boot_sector)
     }
