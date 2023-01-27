@@ -182,7 +182,7 @@ impl fmt::Display for BootSector {
         let first_cluster_of_root_directory: String = format!("FirstClusterOfRootDirectory: {:08x}", first_cluster_of_root_directory);
         let volume_serial_number: u32 = self.volume_serial_number;
         let volume_serial_number: String = format!("VolumeSerialNumber: {:08x}", volume_serial_number);
-        let boot_sector: String = format!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+        let boot_sector: Vec<String> = vec![
             jump_boot,
             file_system_name,
             must_be_zero,
@@ -194,7 +194,11 @@ impl fmt::Display for BootSector {
             cluster_count,
             first_cluster_of_root_directory,
             volume_serial_number,
-        );
+        ];
+        let boot_sector: String = boot_sector
+            .into_iter()
+            .fold(String::new(), |boot_sector, element| boot_sector + "\n" + &element);
+        let boot_sector: String = boot_sector[1..].to_string();
         write!(f, "{}", boot_sector)
     }
 }
