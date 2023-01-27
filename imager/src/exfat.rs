@@ -12,7 +12,10 @@ mod upcase_table;
 
 use {
     binary::Binary,
-    std::path,
+    std::{
+        fmt,
+        path,
+    },
     super::{
         binary,
         rand,
@@ -60,7 +63,6 @@ impl Exfat {
 
     pub fn read(bytes: &Vec<u8>) -> Self {
         let boot_sector = boot_sector::BootSector::read(bytes);
-        println!("boot_sector = {:#x?}", boot_sector);
         let sector_size: usize = boot_sector.bytes_per_sector();
         let sectors: Vec<Vec<u8>> = bytes
             .chunks(sector_size)
@@ -143,6 +145,12 @@ impl Binary for Exfat {
         let mut clusters: Vec<u8> = self.clusters.to_bytes();
         bytes.append(&mut clusters);
         bytes
+    }
+}
+
+impl fmt::Display for Exfat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "exFAT")
     }
 }
 
