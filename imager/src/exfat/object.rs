@@ -17,7 +17,7 @@ use {
     },
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum FileOrDirectory {
     File {
         bytes: Vec<u8>,
@@ -139,7 +139,7 @@ impl FileOrDirectory {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Object {
     content: FileOrDirectory,
     first_cluster: u32,
@@ -147,6 +147,10 @@ pub struct Object {
 }
 
 impl Object {
+    pub fn content(&self) -> FileOrDirectory {
+        self.content.clone()
+    }
+
     pub fn first_cluster(&self) -> u32 {
         self.first_cluster
     }

@@ -26,6 +26,7 @@ pub struct Exfat {
     boot_checksum: boot_checksum::BootChecksum,
     boot_sector: boot_sector::BootSector,
     clusters: cluster::Clusters,
+    directory_tree: object::FileOrDirectory,
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; NUM_OF_EXTENDED_BOOT_SECTORS],
     fat: fat::Fat,
     oem_parameters: oem_parameter::OemParameters,
@@ -39,6 +40,7 @@ impl Exfat {
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
         let object = object::Object::root(source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
+        let directory_tree: object::FileOrDirectory = object.content();
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
@@ -48,6 +50,7 @@ impl Exfat {
             boot_checksum,
             boot_sector,
             clusters,
+            directory_tree,
             extended_boot_sectors,
             fat,
             oem_parameters,
@@ -95,12 +98,12 @@ impl Exfat {
             .collect();
         let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
-        let root_directory = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
-        println!("root_directory = {:#x?}", root_directory);
+        let directory_tree = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
         Self {
             boot_checksum,
             boot_sector,
             clusters,
+            directory_tree,
             extended_boot_sectors,
             fat,
             oem_parameters,

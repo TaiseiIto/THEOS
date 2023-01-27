@@ -20,7 +20,7 @@ use {
 const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 const FILE_NAME_BLOCK_LENGTH: usize = 0xf;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum DirectoryEntry {
     AllocationBitmap {
         bitmap_identifier: bool,
@@ -677,7 +677,7 @@ impl EntryType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FileAttributes {
     read_only: bool,
     hidden: bool,
@@ -746,7 +746,7 @@ impl FileAttributes {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct GeneralFlags {
     allocation_possible: bool,
     no_fat_chain: bool,
