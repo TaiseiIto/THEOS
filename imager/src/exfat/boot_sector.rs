@@ -166,10 +166,13 @@ impl fmt::Display for BootSector {
             .iter()
             .map(|byte| format!(" {:02x?}", byte))
             .fold(String::new(), |must_be_zero, byte| must_be_zero + &byte);
-        let boot_sector: String = format!("{}\n{}\n{}",
+        let partition_offset: u64 = self.partition_offset;
+        let partition_offset: String = format!("PartitionOffset: {:08x?}", partition_offset);
+        let boot_sector: String = format!("{}\n{}\n{}\n{}",
             jump_boot,
             file_system_name,
             must_be_zero,
+            partition_offset,
         );
         write!(f, "{}", boot_sector)
     }
