@@ -196,6 +196,16 @@ impl fmt::Display for BootSector {
         let drive_select: String = format!("drive_select: {:08x}", drive_select);
         let percent_in_use: u8 = self.percent_in_use;
         let percent_in_use: String = format!("percent_in_use: {:08x}", percent_in_use);
+        let reserved: String = "reserved:".to_string() + &self.reserved
+            .iter()
+            .map(|byte| format!(" {:02x}", byte))
+            .fold(String::new(), |reserved, byte| reserved + &byte);
+        let boot_code: String = "boot_code:".to_string() + &self.boot_code
+            .iter()
+            .map(|byte| format!(" {:02x}", byte))
+            .fold(String::new(), |boot_code, byte| boot_code + &byte);
+        let boot_signature: u16 = self.boot_signature;
+        let boot_signature: String = format!("boot_signature: {:04x}", boot_signature);
         let boot_sector: Vec<String> = vec![
             jump_boot,
             file_system_name,
@@ -215,6 +225,9 @@ impl fmt::Display for BootSector {
             num_of_fats,
             drive_select,
             percent_in_use,
+            reserved,
+            boot_code,
+            boot_signature,
         ];
         let boot_sector: String = boot_sector
             .into_iter()
