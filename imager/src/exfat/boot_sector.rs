@@ -1,5 +1,6 @@
 use {
     std::{
+        fmt,
         fs,
         mem,
         path,
@@ -150,6 +151,16 @@ impl Binary for BootSector {
         let mut boot_sector: Vec<u8> = boot_sector.to_vec();
         boot_sector.resize(self.bytes_per_sector(), 0x00);
         boot_sector
+    }
+}
+
+impl fmt::Display for BootSector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let jump_boot: String = "JumpBoot:".to_string() + &self.jump_boot
+            .iter()
+            .map(|byte| format!(" {:x?}", byte))
+            .fold(String::new(), |jump_boot, byte| jump_boot + &byte);
+        write!(f, "{}", jump_boot)
     }
 }
 

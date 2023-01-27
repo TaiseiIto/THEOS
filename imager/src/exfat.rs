@@ -150,7 +150,8 @@ impl Binary for Exfat {
 
 impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "exFAT")
+        let boot_sector = format!("{}", self.boot_sector);
+        write!(f, "{}", boot_sector)
     }
 }
 
