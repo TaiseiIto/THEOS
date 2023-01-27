@@ -159,12 +159,17 @@ impl fmt::Display for BootSector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let jump_boot: String = "JumpBoot:".to_string() + &self.jump_boot
             .iter()
-            .map(|byte| format!(" {:x?}", byte))
+            .map(|byte| format!(" {:02x?}", byte))
             .fold(String::new(), |jump_boot, byte| jump_boot + &byte);
         let file_system_name: String = format!("FileSystemName: \"{}\"", str::from_utf8(&self.file_system_name).expect("Can't print a boot sector."));
-        let boot_sector: String = format!("{}\n{}",
+        let must_be_zero: String = "MustBeZero:".to_string() + &self.must_be_zero
+            .iter()
+            .map(|byte| format!(" {:02x?}", byte))
+            .fold(String::new(), |must_be_zero, byte| must_be_zero + &byte);
+        let boot_sector: String = format!("{}\n{}\n{}",
             jump_boot,
             file_system_name,
+            must_be_zero,
         );
         write!(f, "{}", boot_sector)
     }
