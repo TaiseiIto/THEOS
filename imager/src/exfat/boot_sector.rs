@@ -4,6 +4,7 @@ use {
         fs,
         mem,
         path,
+        str,
     },
     super::{
         cluster,
@@ -160,7 +161,12 @@ impl fmt::Display for BootSector {
             .iter()
             .map(|byte| format!(" {:x?}", byte))
             .fold(String::new(), |jump_boot, byte| jump_boot + &byte);
-        write!(f, "{}", jump_boot)
+        let file_system_name: String = format!("FileSystemName: \"{}\"", str::from_utf8(&self.file_system_name).expect("Can't print a boot sector."));
+        let boot_sector: String = format!("{}\n{}",
+            jump_boot,
+            file_system_name,
+        );
+        write!(f, "{}", boot_sector)
     }
 }
 
