@@ -23,6 +23,8 @@ const FAT_YEAR: i128 = 1980;
 const GREGORIAN_DAY: u8 = 15;
 const GREGORIAN_MONTH: u8 = 10;
 const GREGORIAN_YEAR: i128 = 1582;
+const FIRST_MONTH: u8 = 1;
+const LAST_MONTH: u8 = 12;
 const HOURS_PER_DAY: u8 = 24;
 const MINUTES_PER_HOUR: u8 = 60;
 const SECONDS_PER_MINUTE: u8 = 60;
@@ -103,7 +105,7 @@ impl Time {
 
     pub fn from_unix_timestamp(timestamp: i128) -> Self {
         let unix_epoch_offset: i128 = (0..UNIX_YEAR)
-            .map(|year| (1..=12).map(move |month| (year, month)))
+            .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
             .flatten()
             .map(|(year, month)| month_length(year, month) as i128)
             .sum::<i128>()
@@ -124,11 +126,11 @@ impl Time {
         let days: u64 =
             (month_length(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
             - (GREGORIAN_DAY as u64) + 1
-            + (GREGORIAN_MONTH + 1..=12)
+            + (GREGORIAN_MONTH + FIRST_MONTH..=LAST_MONTH)
                 .map(|month| month_length(GREGORIAN_YEAR, month) as u64)
                 .sum::<u64>()
             + (GREGORIAN_YEAR + 1..self.year)
-                .map(|year| (1..=12).map(move |month| (year, month)))
+                .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
                 .flatten()
                 .map(|(year, month)| month_length(year, month) as u64)
                 .sum::<u64>()
@@ -179,8 +181,8 @@ impl Time {
     }
 
     pub fn new(year: i128, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
-        if month < 1 || 12 < month {
-            panic!("month < 1 || 12 < month");
+        if month < FIRST_MONTH || LAST_MONTH < month {
+            panic!("month < FIRST_MONTH || LAST_MONTH < month");
         }
         if day < 1 || month_length(year, month) < day {
             panic!("day < 1 || month_length(year, month) < day");
@@ -211,7 +213,7 @@ impl Time {
     pub fn unix_timestamp(&self) -> u64 {
         let days: u64 =
             (UNIX_YEAR..self.year)
-                .map(|year| (1..=12).map(move |month| (year, month)))
+                .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
                 .flatten()
                 .map(|(year, month)| month_length(year, month) as u64)
                 .sum::<u64>()
@@ -272,14 +274,14 @@ impl Time {
         let mut day: i128 = day + 1;
         if 0 < day {
             year = 0;
-            month = 1;
+            month = FIRST_MONTH;
             while month_length(year, month) as i128 <= day {
                 day -= month_length(year, month) as i128;
                 (year, month) = next_month(year, month);
             }
         } else {
             year = -1;
-            month = 12;
+            month = LAST_MONTH;
             while day <= -(month_length(year, month) as i128) {
                 day += month_length(year, month) as i128;
                 (year, month) = previous_month(year, month);
@@ -300,7 +302,7 @@ impl Time {
     fn to_sec(&self) -> i128 {
         let day: i128 = if 0 < self.year {
             (0..self.year)
-                .map(|year| (1..=12).map(move |month| (year, month)))
+                .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
                 .flatten()
                 .map(|(year, month)| month_length(year, month) as i128)
                 .sum::<i128>()
@@ -310,11 +312,11 @@ impl Time {
             + (self.day as i128) - 1
         } else {
             - (self.year + 1..1)
-                .map(|year| (1..=12).map(move |month| (year, month)))
+                .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
                 .flatten()
                 .map(|(year, month)| month_length(year, month) as i128)
                 .sum::<i128>()
-            - (self.month..=12)
+            - (self.month..=LAST_MONTH)
                 .map(|month| month_length(self.year, month) as i128)
                 .sum::<i128>()
             + (self.day as i128) - 1
@@ -365,7 +367,7 @@ fn month_length(year: i128, month: u8) -> u8 {
         } else {
             28
         },
-        _ => panic!("month exceeds 12!"),
+        month => panic!("month == {}!", month),
     }
 }
 
@@ -383,7 +385,7 @@ fn next_month(year: i128, month: u8) -> (i128, u8) {
         10 => (year, 11),
         11 => (year, 12),
         12 => (year + 1, 1),
-        _ => panic!("Month is out of range."),
+        month => panic!("month == {}!", month),
     }
 }
 
@@ -401,7 +403,7 @@ fn previous_month(year: i128, month: u8) -> (i128, u8) {
         10 => (year, 9),
         11 => (year, 10),
         12 => (year, 11),
-        _ => panic!("Month is out of range."),
+        month => panic!("month == {}!", month),
     }
 }
 
