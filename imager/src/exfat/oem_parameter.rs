@@ -63,7 +63,11 @@ impl fmt::Display for OemParameters {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let parameters: String = self.parameters
             .iter()
-            .map(|parameter| format!("{}\n", parameter))
+            .enumerate()
+            .map(|(i, parameter)| format!("{}\n", parameter)
+                .lines()
+                .map(|line| format!("parameters[{}].{}\n", i, line))
+                .fold(String::new(), |parameter, line| parameter + &line))
             .fold(String::new(), |parameters, parameter| parameters + &parameter);
         let size: String = format!("size: {:#x}", self.size);
         let oem_parameters: String = format!("{}{}", parameters, size);
@@ -123,14 +127,17 @@ impl Binary for OemParameter {
 
 impl fmt::Display for OemParameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let parameter_guid: String = format!("parameter_guid: {}", self.parameter_guid);
+        let parameter_guid: String = format!("{}", self.parameter_guid)
+            .lines()
+            .map(|line| format!("parameter_guid.{}\n", line))
+            .fold(String::new(), |parameter_guid, line| parameter_guid + &line);
         let custom_defined: String = self.custom_defined
             .iter()
             .map(|byte| format!("{:02x} ", byte))
             .fold(String::new(), |custom_defined, byte| custom_defined + &byte);
         let custom_defined: String = custom_defined[0..custom_defined.len() - 1].to_string();
         let custom_defined: String = format!("custom_defined: {}", custom_defined);
-        let oem_parameter: String = format!("{}\n{}", parameter_guid, custom_defined);
+        let oem_parameter: String = format!("{}{}", parameter_guid, custom_defined);
         write!(f, "{}", oem_parameter)
     }
 }
