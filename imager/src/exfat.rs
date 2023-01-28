@@ -156,7 +156,11 @@ impl fmt::Display for Exfat {
             .fold(String::new(), |boot_sector, line| boot_sector + &line);
         let extended_boot_sectors: String = self.extended_boot_sectors
             .iter()
-            .map(|extended_boot_sector| format!("{}\n", extended_boot_sector))
+            .enumerate()
+            .map(|(i, extended_boot_sector)| format!("{}", extended_boot_sector)
+                .lines()
+                .map(|line| format!("extended_boot_sector[{}].{}\n", i, line))
+                .fold(String::new(), |extended_boot_sector, line| extended_boot_sector + &line))
             .fold(String::new(), |extended_boot_sectors, extended_boot_sector| extended_boot_sectors + &extended_boot_sector);
         let oem_parameters: String = format!("{}\n", self.oem_parameters);
         let exfat: Vec<String> = vec![

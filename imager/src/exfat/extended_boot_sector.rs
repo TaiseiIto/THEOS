@@ -52,8 +52,8 @@ impl Binary for ExtendedBootSector {
 
 impl fmt::Display for ExtendedBootSector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let extended_boot_signature: String = format!("extended_boot_signature: {:08x}", self.extended_boot_signature);
-        let extended_boot_sector_size: String = format!("extended_boot_sector_size: {:x}", self.size);
+        let extended_boot_signature: String = format!("boot_signature: {:#08x}", self.extended_boot_signature);
+        let extended_boot_sector_size: String = format!("sector_size: {:#x}", self.size);
         let extended_boot_sector: String = format!("{}\n{}", extended_boot_signature, extended_boot_sector_size);
         write!(f, "{}", extended_boot_sector)
     }
