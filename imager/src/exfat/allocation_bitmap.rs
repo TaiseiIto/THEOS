@@ -35,7 +35,7 @@ impl AllocationBitmap {
         let bitmap: HashMap<u32, bool> = bitmap
             .into_iter()
             .enumerate()
-            .map(|(i, bit)| (i as u32, bit))
+            .map(|(i, bit)| (i as u32 + cluster::FIRST_CLUSTER_NUMBER, bit))
             .collect();
         Self {
             bitmap,
@@ -70,9 +70,14 @@ impl Binary for AllocationBitmap {
 
 impl fmt::Display for AllocationBitmap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let bitmap: String = self.bitmap
+        let mut bitmap: Vec<(u32, bool)> = self.bitmap
             .iter()
-            .map(|(cluster, used)| format!("cluster[{:#08x}]: {}\n", cluster, if *used {
+            .map(|(cluster, used)| (*cluster, *used))
+            .collect();
+        bitmap.sort_by(|(left_cluster, _), (right_cluster, _)| left_cluster.partial_cmp(right_cluster).unwrap());
+        let bitmap: String = bitmap
+            .into_iter()
+            .map(|(cluster, used)| format!("cluster[{:#08x}]: {}\n", cluster, if used {
                 "used"
             } else {
                 "available"
