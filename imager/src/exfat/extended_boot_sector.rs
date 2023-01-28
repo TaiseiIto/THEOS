@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        fmt,
+        mem,
+    },
     super::super::binary::Binary,
 };
 
@@ -44,6 +47,15 @@ impl Binary for ExtendedBootSector {
         let mut extended_boot_sector: Vec<u8> = extended_boot_code;
         extended_boot_sector.append(&mut extended_boot_signature);
         extended_boot_sector
+    }
+}
+
+impl fmt::Display for ExtendedBootSector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let extended_boot_signature: String = format!("extended_boot_signature: {:08x}", self.extended_boot_signature);
+        let extended_boot_sector_size: String = format!("extended_boot_sector_size: {:x}", self.size);
+        let extended_boot_sector: String = format!("{}\n{}", extended_boot_signature, extended_boot_sector_size);
+        write!(f, "{}", extended_boot_sector)
     }
 }
 

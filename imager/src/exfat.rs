@@ -150,8 +150,19 @@ impl Binary for Exfat {
 
 impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let boot_sector = format!("{}", self.boot_sector);
-        write!(f, "{}", boot_sector)
+        let boot_sector: String = format!("{}\n", self.boot_sector);
+        let extended_boot_sectors: String = self.extended_boot_sectors
+            .iter()
+            .map(|extended_boot_sector| format!("{}\n", extended_boot_sector))
+            .fold(String::new(), |extended_boot_sectors, extended_boot_sector| extended_boot_sectors + &extended_boot_sector);
+        let exfat: Vec<String> = vec![
+            boot_sector,
+            extended_boot_sectors,
+        ];
+        let exfat: String = exfat
+            .into_iter()
+            .fold(String::new(), |exfat, string| exfat + &string);
+        write!(f, "{}", exfat)
     }
 }
 
