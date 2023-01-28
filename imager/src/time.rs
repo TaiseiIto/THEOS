@@ -271,14 +271,14 @@ impl Time {
         let mut month: u8 = 0;
         let mut day: i128 = day + 1;
         if 0 < day {
-            year = 1;
+            year = 0;
             month = 1;
             while month_length(year, month) as i128 <= day {
                 day -= month_length(year, month) as i128;
                 (year, month) = next_month(year, month);
             }
         } else {
-            year = 0;
+            year = -1;
             month = 12;
             while day <= -(month_length(year, month) as i128) {
                 day += month_length(year, month) as i128;
@@ -299,7 +299,7 @@ impl Time {
 
     fn to_sec(&self) -> i128 {
         let day: i128 = if 0 < self.year {
-            (1..self.year)
+            (0..self.year)
                 .map(|year| (1..=12).map(move |month| (year, month)))
                 .flatten()
                 .map(|(year, month)| month_length(year, month) as i128)
