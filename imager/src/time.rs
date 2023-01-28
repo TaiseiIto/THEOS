@@ -123,21 +123,41 @@ impl Time {
     }
 
     pub fn guid_timestamp(&self) -> u64 {
-        let days: u64 =
-            (month_length(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
-            - (GREGORIAN_DAY as u64) + 1
-            + (GREGORIAN_MONTH + FIRST_MONTH..=LAST_MONTH)
-                .map(|month| month_length(GREGORIAN_YEAR, month) as u64)
-                .sum::<u64>()
-            + (GREGORIAN_YEAR + 1..self.year)
-                .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
-                .flatten()
-                .map(|(year, month)| month_length(year, month) as u64)
-                .sum::<u64>()
-            + (1..self.month)
-                .map(|month| month_length(self.year, month) as u64)
-                .sum::<u64>()
-            + (self.day as u64) - 1;
+        let days: u64 = if GREGORIAN_YEAR < self.year {
+                (month_length(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
+                - (GREGORIAN_DAY as u64) + 1
+                + (GREGORIAN_MONTH + 1..=LAST_MONTH)
+                    .map(|month| month_length(GREGORIAN_YEAR, month) as u64)
+                    .sum::<u64>()
+                + (GREGORIAN_YEAR + 1..self.year)
+                    .map(|year| (FIRST_MONTH..=LAST_MONTH).map(move |month| (year, month)))
+                    .flatten()
+                    .map(|(year, month)| month_length(year, month) as u64)
+                    .sum::<u64>()
+                + (1..self.month)
+                    .map(|month| month_length(self.year, month) as u64)
+                    .sum::<u64>()
+                + (self.day as u64) - 1
+            } else if self.year == GREGORIAN_YEAR {
+                if GREGORIAN_MONTH < self.month {
+                    (month_length(GREGORIAN_YEAR, GREGORIAN_MONTH) as u64)
+                    - (GREGORIAN_DAY as u64) + 1
+                    + (GREGORIAN_MONTH + 1..=self.month)
+                        .map(|month| month_length(GREGORIAN_YEAR, month) as u64)
+                        .sum::<u64>()
+                    + (self.day as u64) - 1
+                } else if self.month == GREGORIAN_MONTH {
+                    if GREGORIAN_DAY <= self.day {
+                        (self.day - GREGORIAN_DAY) as u64
+                    } else {
+                        panic!("Can't generate GUID timestamp.")
+                    }
+                } else {
+                    panic!("Can't generate GUID timestamp.")
+                }
+            } else {
+                panic!("Can't generate GUID timestamp.")
+            };
         let hours: u64 = (HOURS_PER_DAY as u64) * days + (self.hour as u64);
         let minutes: u64 = (MINUTES_PER_HOUR as u64) * hours + (self.min as u64);
         let seconds: u64 = (SECONDS_PER_MINUTE as u64) * minutes + (self.sec as u64);

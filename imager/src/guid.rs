@@ -37,7 +37,7 @@ impl Guid {
     pub fn null() -> Self {
         let clock_sequence: u16 = 0;
         let mac_address = mac_address::MacAddress::null();
-        let time = time::Time::new(1970, 1, 1, 0, 0, 0, 0);
+        let time = time::Time::new(1582, 10, 15, 0, 0, 0, 0);
         let version: u8 = 0;
         Self {
             clock_sequence,
