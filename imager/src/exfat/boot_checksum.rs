@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        fmt,
+        mem,
+    },
     super::{
         boot_sector,
         extended_boot_sector,
@@ -79,6 +82,14 @@ impl Binary for BootChecksum {
             .flatten()
             .collect();
         checksum
+    }
+}
+
+impl fmt::Display for BootChecksum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let checksum = format!("checksum: {:#08x}", self.checksum);
+        let size = format!("size: {:#x}", self.size);
+        write!(f, "{}\n{}", checksum, size)
     }
 }
 
