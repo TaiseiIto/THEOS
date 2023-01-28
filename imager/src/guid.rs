@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        fmt,
+        mem,
+    },
     super::{
         mac_address,
         rand,
@@ -77,6 +80,16 @@ impl Guid {
         let time: u128 = self.time.guid_timestamp() as u128;
         let version: u128 = (self.version as u128) << 0x3c;
         clock_sequence + mac_address + time + version
+    }
+}
+
+impl fmt::Display for Guid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let clock_sequence: String = format!("{:04x}", self.clock_sequence);
+        let mac_address: String = format!("{}", self.mac_address);
+        let time: String = format!("{}", self.time);
+        let version: String = format!("{:02x}", self.version);
+        write!(f, "version {}, address {}, time {}, sequence {}", version, mac_address, time, clock_sequence)
     }
 }
 
