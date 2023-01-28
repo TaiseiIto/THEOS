@@ -1,5 +1,8 @@
 use {
-    std::collections::HashMap,
+    std::{
+        collections::HashMap,
+        fmt,
+    },
     super::{
         cluster,
         super::binary::Binary,
@@ -62,6 +65,20 @@ impl Binary for AllocationBitmap {
             bytes[byte_offset] &= (u8::from(unavailability) << bit_offset) | !(1 << bit_offset);
         }
         bytes
+    }
+}
+
+impl fmt::Display for AllocationBitmap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let bitmap: String = self.bitmap
+            .iter()
+            .map(|(cluster, used)| format!("cluster[{:#08x}]: {}\n", cluster, if *used {
+                "used"
+            } else {
+                "available"
+            }))
+            .fold(String::new(), |bitmap, line| bitmap + &line);
+        write!(f, "{}", bitmap)
     }
 }
 
