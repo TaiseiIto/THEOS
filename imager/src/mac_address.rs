@@ -1,5 +1,7 @@
 use std::{
+    fmt,
     fs,
+    mem,
     path,
     str,
 };
@@ -100,3 +102,18 @@ impl MacAddress {
         }
     }
 }
+
+impl fmt::Display for MacAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let address: [u8; 0x8] = unsafe {
+            mem::transmute::<u64, [u8; 0x8]>(self.address)
+        };
+        let address: String = address
+            .into_iter()
+            .map(|byte| format!("{:02x}:", byte))
+            .fold(String::new(), |address, byte| address + &byte);
+        let address: String = address[0..address.len() - 1].to_string();
+        write!(f, "{}", address)
+    }
+}
+
