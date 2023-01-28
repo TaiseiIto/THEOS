@@ -1,5 +1,6 @@
 use std::{
     ffi,
+    fmt,
     os::raw,
     path,
 };
@@ -98,6 +99,19 @@ impl Time {
             sec,
             nsec,
         }
+    }
+
+    pub fn from_unix_timestamp(timestamp: i128) -> Self {
+        let unix_epoch_offset: i128 = (0..UNIX_YEAR)
+            .map(|year| (1..=12).map(move |month| (year, month)))
+            .flatten()
+            .map(|(year, month)| month_length(year, month) as i128)
+            .sum::<i128>()
+            * HOURS_PER_DAY as i128
+            * MINUTES_PER_HOUR as i128
+            * SECONDS_PER_MINUTE as i128;
+        let timestamp: i128 = unix_epoch_offset + timestamp;
+        Self::from_sec(timestamp)
     }
 
     pub fn get_10ms_increment(&self) -> u8 {
@@ -309,6 +323,20 @@ impl Time {
         let min: i128 = (MINUTES_PER_HOUR as i128) * hour + (self.min as i128);
         let sec: i128 = (SECONDS_PER_MINUTE as i128) * min + (self.sec as i128);
         sec
+    }
+}
+
+impl fmt::Display for Time {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}/{}/{} {}:{}:{}.{:09}",
+            self.year,
+            self.month,
+            self.day,
+            self.hour,
+            self.min,
+            self.sec,
+            self.nsec,
+        )
     }
 }
 

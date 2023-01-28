@@ -181,7 +181,8 @@ impl fmt::Display for BootSector {
         let first_cluster_of_root_directory: u32 = self.first_cluster_of_root_directory;
         let first_cluster_of_root_directory: String = format!("first_cluster_of_root_directory: {:08x}", first_cluster_of_root_directory);
         let volume_serial_number: u32 = self.volume_serial_number;
-        let volume_serial_number: String = format!("volume_serial_number: {:08x}", volume_serial_number);
+        let volume_serial_number = time::Time::from_unix_timestamp(volume_serial_number as i128);
+        let volume_serial_number: String = format!("volume_serial_number: {}", volume_serial_number);
         let file_system_revision: u16 = self.file_system_revision;
         let file_system_revision: String = format!("file_system_revision: {:04x}", file_system_revision);
         let volume_flags: u16 = self.volume_flags;
