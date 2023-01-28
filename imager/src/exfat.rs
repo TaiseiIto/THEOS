@@ -38,7 +38,7 @@ pub struct Exfat {
 
 impl Exfat {
     pub fn allocation_bitmap(&self) {
-        self.directory_tree.allocation_bitmap()
+        self.directory_tree.allocation_bitmap(&self.clusters)
     }
 
     pub fn new(boot_sector: path::PathBuf, source_directory: path::PathBuf, rand_generator: &mut rand::Generator) -> Self {

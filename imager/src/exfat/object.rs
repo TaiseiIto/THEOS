@@ -29,7 +29,26 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    pub fn allocation_bitmap(&self) {
+    pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) {
+        if let Self::Directory {
+            children: _,
+            directory_entries,
+        } = self {
+            directory_entries
+                .iter()
+                .find_map(|directory_entry| if let directory_entry::DirectoryEntry::AllocationBitmap {
+                    bitmap_identifier: _,
+                    first_cluster,
+                    data_length,
+                } = directory_entry {
+                    Some(clusters.allocation_bitmap(*first_cluster, *data_length))
+                } else {
+                    None
+                })
+                .expect("Can't get an allocation bitmap.");
+        } else {
+            panic!("Can't get an allocation bitmap.");
+        }
     }
 
     fn new(
