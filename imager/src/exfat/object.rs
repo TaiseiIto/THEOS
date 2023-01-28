@@ -4,6 +4,7 @@ use {
         path,
     },
     super::{
+        allocation_bitmap,
         boot_sector,
         cluster,
         directory_entry,
@@ -29,7 +30,7 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) {
+    pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) -> allocation_bitmap::AllocationBitmap {
         if let Self::Directory {
             children: _,
             directory_entries,
@@ -39,15 +40,15 @@ impl FileOrDirectory {
                 .find_map(|directory_entry| if let directory_entry::DirectoryEntry::AllocationBitmap {
                     bitmap_identifier: _,
                     first_cluster,
-                    data_length,
+                    data_length: _,
                 } = directory_entry {
-                    Some(clusters.allocation_bitmap(*first_cluster, *data_length))
+                    Some(clusters.allocation_bitmap(*first_cluster))
                 } else {
                     None
                 })
-                .expect("Can't get an allocation bitmap.");
+                .expect("Can't get an allocation bitmap.")
         } else {
-            panic!("Can't get an allocation bitmap.");
+            panic!("Can't get an allocation bitmap.")
         }
     }
 

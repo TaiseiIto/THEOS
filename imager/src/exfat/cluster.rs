@@ -4,6 +4,7 @@ use {
         VecDeque,
     },
     super::{
+        allocation_bitmap,
         fat,
         super::binary::Binary,
     },
@@ -19,7 +20,10 @@ pub struct Clusters {
 }
 
 impl Clusters {
-    pub fn allocation_bitmap(&self, first_cluster: u32, data_length: usize) {
+    pub fn allocation_bitmap(&self, first_cluster: u32) -> allocation_bitmap::AllocationBitmap {
+        let allocation_bitmap: Vec<u8> = self.get_bytes(first_cluster);
+        let num_of_clusters: usize = self.clusters.len();
+        allocation_bitmap::AllocationBitmap::read(allocation_bitmap, num_of_clusters)
     }
 
     pub fn append(&mut self, bytes: &Vec<u8>, blank: u8) -> u32 {

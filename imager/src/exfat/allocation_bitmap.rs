@@ -21,6 +21,23 @@ impl AllocationBitmap {
             bitmap,
         }
     }
+
+    pub fn read(bytes: Vec<u8>, num_of_clusters: usize) -> Self {
+        let bitmap: Vec<bool> = bytes
+            .into_iter()
+            .map(|byte| (0..8).map(move |bit_offset| byte & (1 << bit_offset) != 0))
+            .flatten()
+            .collect();
+        let bitmap: Vec<bool> = bitmap[0..num_of_clusters].to_vec();
+        let bitmap: HashMap<u32, bool> = bitmap
+            .into_iter()
+            .enumerate()
+            .map(|(i, bit)| (i as u32, bit))
+            .collect();
+        Self {
+            bitmap,
+        }
+    }
 }
 
 impl Binary for AllocationBitmap {
