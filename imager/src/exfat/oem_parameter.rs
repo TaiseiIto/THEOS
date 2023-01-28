@@ -94,7 +94,7 @@ impl OemParameter {
     }
 
     fn read(bytes: &Vec<u8>) -> Self {
-        let mut bytes: Vec<u8> = bytes.clone();
+        let bytes: Vec<u8> = bytes.clone();
         let (parameter_guid, bytes): (&[u8], &[u8]) = bytes
             .split_at(guid::GUID_SIZE);
         let parameter_guid: Vec<u8> = parameter_guid.to_vec();

@@ -75,7 +75,7 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn allocation_bitmaps(clusters: &mut cluster::Clusters, root_directory_entries: &Vec<&Self>, num_of_fats: usize) -> Vec<Self> {
+    pub fn allocation_bitmaps(clusters: &mut cluster::Clusters, root_directory_entries: &Vec<Self>, num_of_fats: usize) -> Vec<Self> {
         let num_of_clusters: usize = clusters.len();
         let cluster_size: usize = clusters.cluster_size();
         let bits_per_cluster: usize = 8 * cluster_size;
