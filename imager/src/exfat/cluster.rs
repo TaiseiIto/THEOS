@@ -50,8 +50,7 @@ impl Clusters {
     pub fn get_bytes(&self, first_cluster_number: u32) -> Vec<u8> {
         match self.clusters
             .iter()
-            .filter(|cluster| cluster.cluster_number == first_cluster_number)
-            .next() {
+            .find(|cluster| cluster.cluster_number == first_cluster_number) {
             Some(first_cluster) => first_cluster.get_bytes(),
             None => vec![],
         }
@@ -116,8 +115,7 @@ impl Clusters {
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
         self.clusters
             .iter()
-            .filter_map(|cluster| cluster.get_cluster(cluster_number))
-            .next()
+            .find_map(|cluster| cluster.get_cluster(cluster_number))
     }
 
     fn max_cluster_number(&self) -> u32 {
