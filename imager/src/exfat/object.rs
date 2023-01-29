@@ -1,6 +1,7 @@
 use {
     std::{
         fs,
+        mem,
         path,
     },
     super::{
@@ -184,6 +185,31 @@ impl FileOrDirectory {
                 .expect("Can't get an upcase table.")
         } else {
             panic!("Can't get an upcase table.")
+        }
+    }
+
+    pub fn volume_guid(&self) -> guid::Guid {
+        if let Self::Directory {
+            children: _,
+            directory_entries,
+        } = self {
+            directory_entries
+                .iter()
+                .find_map(|directory_entry| if let directory_entry::DirectoryEntry::VolumeGuid {
+                    general_flags: _,
+                    volume_guid,
+                } = directory_entry {
+                    let volume_guid: [u8; 0x10] = unsafe {
+                        mem::transmute::<u128, [u8; 0x10]>(*volume_guid)
+                    };
+                    let volume_guid: Vec<u8> = volume_guid.to_vec();
+                    Some(guid::Guid::read(&volume_guid))
+                } else {
+                    None
+                })
+                .expect("Can't get a volume GUID.")
+        } else {
+            panic!("Can't get a volume GUID.")
         }
     }
 }

@@ -18,6 +18,7 @@ use {
     },
     super::{
         binary,
+        guid,
         rand,
     },
 };
@@ -119,6 +120,10 @@ impl Exfat {
 
     pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
         self.directory_tree.upcase_table(&self.clusters)
+    }
+
+    pub fn volume_guid(&self) -> guid::Guid {
+        self.directory_tree.volume_guid()
     }
 }
 
