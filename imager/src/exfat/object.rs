@@ -208,6 +208,26 @@ impl FileOrDirectory {
             panic!("Can't get a volume GUID.")
         }
     }
+
+    pub fn volume_label(&self) -> String {
+        if let Self::Directory {
+            children: _,
+            directory_entries,
+        } = self {
+            directory_entries
+                .iter()
+                .find_map(|directory_entry| if let directory_entry::DirectoryEntry::VolumeLabel {
+                    volume_label,
+                } = directory_entry {
+                    Some(volume_label.clone())
+                } else {
+                    None
+                })
+                .expect("Can't get a volume label.")
+        } else {
+            panic!("Can't get a volume label.")
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

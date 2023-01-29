@@ -125,6 +125,10 @@ impl Exfat {
     pub fn volume_guid(&self) -> guid::Guid {
         self.directory_tree.volume_guid()
     }
+
+    pub fn volume_label(&self) -> String {
+        self.directory_tree.volume_label()
+    }
 }
 
 impl Binary for Exfat {
@@ -196,6 +200,7 @@ impl fmt::Display for Exfat {
             .lines()
             .map(|line| format!("volume_guid.{}\n", line))
             .fold(String::new(), |volume_guid, line| volume_guid + &line);
+        let volume_label: String = format!("volume_label: \"{}\"\n", self.volume_label());
         let exfat: Vec<String> = vec![
             boot_sector,
             extended_boot_sectors,
@@ -205,6 +210,7 @@ impl fmt::Display for Exfat {
             allocation_bitmap,
             upcase_table,
             volume_guid,
+            volume_label,
         ];
         let exfat: String = exfat
             .into_iter()
