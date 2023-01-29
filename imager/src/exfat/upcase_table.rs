@@ -125,7 +125,12 @@ impl Binary for UpcaseTable {
 
 impl fmt::Display for UpcaseTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let map: String = self.map
+        let mut map: Vec<(u16, u16)> = self.map
+            .iter()
+            .map(|(lower, upper)| (*lower, *upper))
+            .collect();
+        map.sort_by(|(left, _), (right, _)| left.partial_cmp(right).expect("Can't print an upcase table."));
+        let map: String = map
             .iter()
             .filter_map(|(lower, upper)| {
                 let lower: [u8; 2] = unsafe {
