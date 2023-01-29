@@ -17,21 +17,20 @@ pub struct UpcaseTable {
 impl UpcaseTable {
     pub fn new() -> Self {
         let map: HashMap<u16, u16> = (0x0000..=0xffff)
-            .filter_map(|n| char::from_u32(n))
-            .map(|c| (c as u16, c
-                .to_uppercase()
-                .to_string()
-                .as_bytes()
-                .to_vec()))
-            .filter(|(_, u)| u.len() <= 2)
-            .filter_map(|(c, u)| {
-                let mut i = u.into_iter();
-                match i.next() {
-                    Some(lower_byte) => match i.next() {
-                        Some(higher_byte) => Some((c, ((higher_byte as u16) << 8) + lower_byte as u16)),
-                        None => Some((c, lower_byte as u16)),
-                    },
-                    None => None,
+            .filter_map(|lower| {
+                let upper: [u16; 1] = [lower];
+                let upper: String = char::decode_utf16(upper.iter().cloned())
+                    .filter_map(|upper| upper.ok())
+                    .collect();
+                let upper: String = upper.to_uppercase();
+                let upper: Vec<u16> = upper.encode_utf16().collect();
+                if upper.len() == 1 {
+                    match upper.get(0) {
+                        Some(upper) => Some((lower, *upper)),
+                        None => None,
+                    }
+                } else {
+                    None
                 }
             })
             .collect();
