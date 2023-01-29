@@ -87,7 +87,7 @@ impl Binary for BootChecksum {
 
 impl fmt::Display for BootChecksum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let checksum = format!("checksum: {:#08x}", self.checksum);
+        let checksum = format!("checksum: {:#010x}", self.checksum);
         let size = format!("size: {:#x}", self.size);
         write!(f, "{}\n{}", checksum, size)
     }

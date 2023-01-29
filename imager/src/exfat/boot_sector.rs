@@ -167,36 +167,36 @@ impl fmt::Display for BootSector {
             .map(|byte| format!(" {:02x}", byte))
             .fold(String::new(), |must_be_zero, byte| must_be_zero + &byte);
         let partition_offset: u64 = self.partition_offset;
-        let partition_offset: String = format!("partition_offset: {:#016x}", partition_offset);
+        let partition_offset: String = format!("partition_offset: {:#018x}", partition_offset);
         let volume_length: u64 = self.volume_length;
-        let volume_length: String = format!("volume_length: {:#016x}", volume_length);
+        let volume_length: String = format!("volume_length: {:#018x}", volume_length);
         let fat_offset: u32 = self.fat_offset;
-        let fat_offset: String = format!("fat_offset: {:#08x}", fat_offset);
+        let fat_offset: String = format!("fat_offset: {:#010x}", fat_offset);
         let fat_length: u32 = self.fat_length;
-        let fat_length: String = format!("fat_length: {:#08x}", fat_length);
+        let fat_length: String = format!("fat_length: {:#010x}", fat_length);
         let cluster_heap_offset: u32 = self.cluster_heap_offset;
-        let cluster_heap_offset: String = format!("cluster_heap_offset: {:#08x}", cluster_heap_offset);
+        let cluster_heap_offset: String = format!("cluster_heap_offset: {:#010x}", cluster_heap_offset);
         let cluster_count: u32 = self.cluster_count;
-        let cluster_count: String = format!("cluster_count: {:#08x}", cluster_count);
+        let cluster_count: String = format!("cluster_count: {:#010x}", cluster_count);
         let first_cluster_of_root_directory: u32 = self.first_cluster_of_root_directory;
-        let first_cluster_of_root_directory: String = format!("first_cluster_of_root_directory: {:#08x}", first_cluster_of_root_directory);
+        let first_cluster_of_root_directory: String = format!("first_cluster_of_root_directory: {:#010x}", first_cluster_of_root_directory);
         let volume_serial_number: u32 = self.volume_serial_number;
         let volume_serial_number = time::Time::from_unix_timestamp(volume_serial_number as i128);
         let volume_serial_number: String = format!("volume_serial_number: {}", volume_serial_number);
         let file_system_revision: u16 = self.file_system_revision;
-        let file_system_revision: String = format!("file_system_revision: {:#04x}", file_system_revision);
+        let file_system_revision: String = format!("file_system_revision: {:#06x}", file_system_revision);
         let volume_flags: u16 = self.volume_flags;
-        let volume_flags: String = format!("volume_flags: {:#04x}", volume_flags);
+        let volume_flags: String = format!("volume_flags: {:#06x}", volume_flags);
         let bytes_per_sector_shift: u8 = self.bytes_per_sector_shift;
-        let bytes_per_sector_shift: String = format!("bytes_per_sector_shift: {:#08x}", bytes_per_sector_shift);
+        let bytes_per_sector_shift: String = format!("bytes_per_sector_shift: {:#010x}", bytes_per_sector_shift);
         let sectors_per_cluster_shift: u8 = self.sectors_per_cluster_shift;
-        let sectors_per_cluster_shift: String = format!("sectors_per_cluster_shift: {:#08x}", sectors_per_cluster_shift);
+        let sectors_per_cluster_shift: String = format!("sectors_per_cluster_shift: {:#010x}", sectors_per_cluster_shift);
         let num_of_fats: u8 = self.num_of_fats;
-        let num_of_fats: String = format!("num_of_fats: {:#08x}", num_of_fats);
+        let num_of_fats: String = format!("num_of_fats: {:#010x}", num_of_fats);
         let drive_select: u8 = self.drive_select;
-        let drive_select: String = format!("drive_select: {:#08x}", drive_select);
+        let drive_select: String = format!("drive_select: {:#010x}", drive_select);
         let percent_in_use: u8 = self.percent_in_use;
-        let percent_in_use: String = format!("percent_in_use: {:#08x}", percent_in_use);
+        let percent_in_use: String = format!("percent_in_use: {:#010x}", percent_in_use);
         let reserved: String = "reserved:".to_string() + &self.reserved
             .iter()
             .map(|byte| format!(" {:02x}", byte))
@@ -206,7 +206,7 @@ impl fmt::Display for BootSector {
             .map(|byte| format!(" {:02x}", byte))
             .fold(String::new(), |boot_code, byte| boot_code + &byte);
         let boot_signature: u16 = self.boot_signature;
-        let boot_signature: String = format!("boot_signature: {:#04x}", boot_signature);
+        let boot_signature: String = format!("boot_signature: {:#06x}", boot_signature);
         let boot_sector: Vec<String> = vec![
             jump_boot,
             file_system_name,

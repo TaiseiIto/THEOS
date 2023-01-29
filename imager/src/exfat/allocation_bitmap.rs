@@ -77,7 +77,7 @@ impl fmt::Display for AllocationBitmap {
         bitmap.sort_by(|(left_cluster, _), (right_cluster, _)| left_cluster.partial_cmp(right_cluster).unwrap());
         let bitmap: String = bitmap
             .into_iter()
-            .map(|(cluster, used)| format!("cluster[{:#08x}]: {}\n", cluster, if used {
+            .map(|(cluster, used)| format!("cluster[{:#010x}]: {}\n", cluster, if used {
                 "used"
             } else {
                 "available"
