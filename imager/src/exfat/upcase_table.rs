@@ -1,5 +1,10 @@
 use {
-    std::collections::HashMap,
+    std::{
+        collections::HashMap,
+        fmt,
+        mem,
+        str,
+    },
     super::super::binary::Binary,
 };
 
@@ -114,6 +119,26 @@ impl Binary for UpcaseTable {
             .map(|w| vec![w as u8, (w >> 8) as u8])
             .flatten()
             .collect()
+    }
+}
+
+impl fmt::Display for UpcaseTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let map: String = self.map
+            .iter()
+            .map(|(lower, upper)| {
+                let lower: [u8; 2] = unsafe {
+                    mem::transmute::<u16, [u8; 2]>(*lower)
+                };
+                let lower: &str = str::from_utf8(&lower).expect("Can't print an upcase table.");
+                let upper: [u8; 2] = unsafe {
+                    mem::transmute::<u16, [u8; 2]>(*upper)
+                };
+                let upper: &str = str::from_utf8(&upper).expect("Can't print an upcase table.");
+                format!("map[\"{}\"]=\"{}\"\n", lower, upper)
+            })
+            .fold(String::new(), |map, line| map + &line);
+        write!(f, "{}", map)
     }
 }
 
