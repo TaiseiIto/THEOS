@@ -5,6 +5,7 @@ use {
         ffi,
         mem,
         path,
+        str,
     },
     super::{
         allocation_bitmap,
@@ -429,8 +430,7 @@ impl DirectoryEntry {
     fn stream_extension(file_name: String, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let general_flags = GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
-            .chars()
-            .map(|c| c as u16)
+            .encode_utf16()
             .collect();
         let name_length: u8 = file_name.len() as u8;
         let name_hash: u16 = file_name
