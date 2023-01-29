@@ -47,18 +47,7 @@ impl Guid {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
-        let guid: Vec<u8> = bytes
-            .chunks(GUID_SIZE)
-            .next()
-            .expect("Can't read GUID.")
-            .to_vec();
-        let guid: [u8; GUID_SIZE] = guid
-            .try_into()
-            .expect("Can't read GUID.");
-        let guid: u128 = unsafe {
-            mem::transmute::<[u8; GUID_SIZE], u128>(guid)
-        };
+    pub fn read(guid: u128) -> Self {
         let time_and_version: u64 = guid as u64;
         let time: u64 = time_and_version & 0x0fffffffffffffff;
         let time = time::Time::from_guid_timestamp(time);

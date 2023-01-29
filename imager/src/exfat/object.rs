@@ -199,11 +199,7 @@ impl FileOrDirectory {
                     general_flags: _,
                     volume_guid,
                 } = directory_entry {
-                    let volume_guid: [u8; 0x10] = unsafe {
-                        mem::transmute::<u128, [u8; 0x10]>(*volume_guid)
-                    };
-                    let volume_guid: Vec<u8> = volume_guid.to_vec();
-                    Some(guid::Guid::read(&volume_guid))
+                    Some(guid::Guid::read(*volume_guid))
                 } else {
                     None
                 })

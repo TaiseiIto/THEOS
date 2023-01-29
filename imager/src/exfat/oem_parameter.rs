@@ -97,13 +97,18 @@ impl OemParameter {
         let bytes: Vec<u8> = bytes.clone();
         let (parameter_guid, bytes): (&[u8], &[u8]) = bytes
             .split_at(guid::GUID_SIZE);
-        let parameter_guid: Vec<u8> = parameter_guid.to_vec();
-        let parameter_guid = guid::Guid::read(&parameter_guid);
+        let parameter_guid: [u8; guid::GUID_SIZE] = parameter_guid
+            .try_into()
+            .expect("Can't read an OEM parameter.");
+        let parameter_guid: u128 = unsafe {
+            mem::transmute::<[u8; guid::GUID_SIZE], u128>(parameter_guid)
+        };
+        let parameter_guid = guid::Guid::read(parameter_guid);
         let bytes: Vec<u8> = bytes.to_vec();
         let (custom_defined, _): (&[u8], &[u8]) = bytes.split_at(CUSTOM_DEFINED_SIZE);
         let custom_defined: [u8; CUSTOM_DEFINED_SIZE] = custom_defined
             .try_into()
-            .expect("Can't read OEM parameter.");
+            .expect("Can't read an OEM parameter.");
         Self {
             parameter_guid,
             custom_defined,
