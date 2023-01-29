@@ -92,6 +92,8 @@ impl Fat {
                         chains.remove(next);
                     }
                     chains.insert(cluster, chain);
+                } else {
+                    chains.insert(*cluster, vec![*cluster]);
                 }
                 chains
             })
