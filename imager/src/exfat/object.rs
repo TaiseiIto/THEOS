@@ -233,8 +233,8 @@ impl FileOrDirectory {
 #[derive(Clone, Debug)]
 pub struct Object {
     content: FileOrDirectory,
-    first_cluster: u32,
     directory_entry: directory_entry::DirectoryEntry,
+    first_cluster: u32,
 }
 
 impl Object {
@@ -268,8 +268,8 @@ impl Object {
         let directory_entry = directory_entry::DirectoryEntry::file(&path, first_cluster, length, upcase_table);
         Self {
             content,
-            first_cluster,
             directory_entry,
+            first_cluster,
         }
     }
 
@@ -298,8 +298,8 @@ impl Object {
                 };
                 Self {
                     content,
-                    first_cluster,
                     directory_entry,
+                    first_cluster,
                 }
             } else {
                 panic!("Can't read an object.");
