@@ -133,25 +133,18 @@ impl fmt::Display for UpcaseTable {
         let map: String = map
             .iter()
             .filter_map(|(lower, upper)| {
-                let lower: [u8; 2] = unsafe {
-                    mem::transmute::<u16, [u8; 2]>(*lower)
-                };
-                let lower: &[u8] = match lower[1] {
-                    0x00 => &lower[..1],
-                    _ => &lower[..],
-                };
-                let lower: Result<&str, str::Utf8Error> = str::from_utf8(lower);
-                let upper: [u8; 2] = unsafe {
-                    mem::transmute::<u16, [u8; 2]>(*upper)
-                };
-                let upper: &[u8] = match upper[1] {
-                    0x00 => &upper[..1],
-                    _ => &upper[..],
-                };
-                let upper: Result<&str, str::Utf8Error> = str::from_utf8(upper);
-                match (lower, upper) {
-                    (Ok(lower), Ok(upper)) => Some(format!("map[\"{}\"]=\"{}\"\n", lower, upper)),
-                    _ => None,
+                let lower: &[u16] = &[*lower];
+                let lower: String = char::decode_utf16(lower.iter().cloned())
+                    .filter_map(|lower| lower.ok())
+                    .collect();
+                let upper: &[u16] = &[*upper];
+                let upper: String = char::decode_utf16(upper.iter().cloned())
+                    .filter_map(|upper| upper.ok())
+                    .collect();
+                if 0 < lower.len() && 0 < upper.len() {
+                    Some(format!("map[\"{}\"]=\"{}\"\n", lower, upper))
+                } else {
+                    None
                 }
             })
             .fold(String::new(), |map, line| map + &line);
