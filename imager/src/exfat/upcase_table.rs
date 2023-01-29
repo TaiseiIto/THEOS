@@ -34,6 +34,43 @@ impl UpcaseTable {
         }
     }
 
+    pub fn read(map: Vec<u8>) -> Self {
+        let map: HashMap<u16, u16> = map
+            .chunks(2)
+            .map(|pair| match pair {
+                [lower_byte, upper_byte] => ((*upper_byte as u16) << 8) + (*lower_byte as u16),
+                _ => panic!("Can't read an upcase table."),
+            })
+            .fold((vec![], 0u16, false), |(mut map, next_c, compressed), next_word| if compressed {
+                let mut uncompressed: Vec<(u16, u16)> = (next_c..next_c + next_word)
+                    .map(|c| (c, c))
+                    .collect();
+                map.append(&mut uncompressed);
+                let next_c: u16 = next_c + next_word;
+                let compressed: bool = false;
+                (map, next_c, compressed)
+            } else {
+                match next_word {
+                    0xffff => {
+                        let compressed = true;
+                        (map, next_c, compressed)
+                    },
+                    next_word => {
+                        map.push((next_c, next_word));
+                        let next_c: u16 = next_c + 1;
+                        let compressed = false;
+                        (map, next_c, compressed)
+                    },
+                }
+            })
+            .0
+            .into_iter()
+            .collect();
+        Self {
+            map
+        }
+    }
+
     pub fn table_checksum(&self) -> u32 {
         self
             .to_bytes()

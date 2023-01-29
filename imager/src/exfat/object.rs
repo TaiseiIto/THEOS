@@ -164,6 +164,28 @@ impl FileOrDirectory {
             bytes,
         }
     }
+
+    pub fn upcase_table(&self, clusters: &cluster::Clusters) -> upcase_table::UpcaseTable {
+        if let Self::Directory {
+            children: _,
+            directory_entries,
+        } = self {
+            directory_entries
+                .iter()
+                .find_map(|directory_entry| if let directory_entry::DirectoryEntry::UpcaseTable {
+                    table_checksum: _,
+                    first_cluster,
+                    data_length,
+                } = directory_entry {
+                    Some(clusters.upcase_table(*first_cluster, *data_length))
+                } else {
+                    None
+                })
+                .expect("Can't get an upcase table.")
+        } else {
+            panic!("Can't get an upcase table.")
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

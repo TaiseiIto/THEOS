@@ -7,6 +7,7 @@ use {
         allocation_bitmap,
         fat,
         super::binary::Binary,
+        upcase_table,
     },
 };
 
@@ -114,6 +115,11 @@ impl Clusters {
             clusters,
             next_cluster_number,
         }
+    }
+
+    pub fn upcase_table(&self, first_cluster: u32, data_length: usize) -> upcase_table::UpcaseTable {
+        let upcase_table: Vec<u8> = self.get_bytes(first_cluster)[0..data_length].to_vec();
+        upcase_table::UpcaseTable::read(upcase_table)
     }
 
     fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {

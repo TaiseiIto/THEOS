@@ -116,6 +116,10 @@ impl Exfat {
             reserved_sector,
         }
     }
+
+    pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
+        self.directory_tree.upcase_table(&self.clusters)
+    }
 }
 
 impl Binary for Exfat {
