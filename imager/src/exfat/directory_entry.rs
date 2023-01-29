@@ -136,6 +136,37 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn get_file_name(&self) -> Option<String> {
+        match self {
+            Self::File {
+                file_attributes: _,
+                create_time: _,
+                modified_time: _,
+                accessed_time: _,
+                stream_extension,
+            } => stream_extension.get_file_name(),
+            Self::StreamExtension {
+                general_flags: _,
+                name_length,
+                name_hash: _,
+                first_cluster: _,
+                data_length: _,
+                file_name,
+            } => {
+                let file_name: Vec<u16> = file_name.get_file_name_words();
+                let file_name: String = char::decode_utf16(file_name.iter().cloned())
+                    .filter_map(|c| c.ok())
+                    .collect();
+                let file_name: String = file_name
+                    .chars()
+                    .take(*name_length as usize)
+                    .collect();
+                Some(file_name)
+            },
+            _ => None,
+        }
+    }
+
     pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
             .chunks(DIRECTORY_ENTRY_SIZE)
@@ -424,6 +455,32 @@ impl DirectoryEntry {
             general_flags,
             file_name,
             next_file_name,
+        }
+    }
+
+    fn get_file_name_words(&self) -> Vec<u16> {
+        match self {
+            Self::FileName {
+                general_flags: _,
+                file_name,
+                next_file_name,
+            } => {
+                let mut file_name: Vec<u16> = file_name.to_vec();
+                if let Some(next_file_name) = next_file_name {
+                    let mut next_file_name: Vec<u16> = next_file_name.get_file_name_words();
+                    file_name.append(&mut next_file_name);
+                }
+                file_name
+            },
+            Self::StreamExtension {
+                general_flags: _,
+                name_length: _,
+                name_hash: _,
+                first_cluster: _,
+                data_length: _,
+                file_name,
+            } => file_name.get_file_name_words(),
+            _ => panic!("Can't get file name words"),
         }
     }
 
