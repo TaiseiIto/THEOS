@@ -51,9 +51,9 @@ impl Guid {
         let time_and_version: u64 = guid as u64;
         let time: u64 = time_and_version & 0x0fffffffffffffff;
         let time = time::Time::from_guid_timestamp(time);
-        let version: u8 = (time_and_version << 60) as u8;
-        let clock_sequence: u16 = (guid << 64) as u16;
-        let mac_address: u64 = (guid << 80) as u64;
+        let version: u8 = (time_and_version >> 60) as u8;
+        let clock_sequence: u16 = (guid >> 64) as u16;
+        let mac_address: u64 = (guid >> 80) as u64;
         let mac_address = mac_address::MacAddress::new(mac_address);
         Self {
             clock_sequence,
