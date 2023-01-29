@@ -1,5 +1,6 @@
 use {
     std::{
+        char,
         collections::HashMap,
         fmt,
         mem,
@@ -16,7 +17,7 @@ pub struct UpcaseTable {
 impl UpcaseTable {
     pub fn new() -> Self {
         let map: HashMap<u16, u16> = (0x0000..=0xffff)
-            .filter_map(|n| std::char::from_u32(n))
+            .filter_map(|n| char::from_u32(n))
             .map(|c| (c as u16, c
                 .to_uppercase()
                 .to_string()
@@ -126,16 +127,27 @@ impl fmt::Display for UpcaseTable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let map: String = self.map
             .iter()
-            .map(|(lower, upper)| {
+            .filter_map(|(lower, upper)| {
                 let lower: [u8; 2] = unsafe {
                     mem::transmute::<u16, [u8; 2]>(*lower)
                 };
-                let lower: &str = str::from_utf8(&lower).expect("Can't print an upcase table.");
+                let lower: &[u8] = match lower[1] {
+                    0x00 => &lower[..1],
+                    _ => &lower[..],
+                };
+                let lower: Result<&str, str::Utf8Error> = str::from_utf8(lower);
                 let upper: [u8; 2] = unsafe {
                     mem::transmute::<u16, [u8; 2]>(*upper)
                 };
-                let upper: &str = str::from_utf8(&upper).expect("Can't print an upcase table.");
-                format!("map[\"{}\"]=\"{}\"\n", lower, upper)
+                let upper: &[u8] = match upper[1] {
+                    0x00 => &upper[..1],
+                    _ => &upper[..],
+                };
+                let upper: Result<&str, str::Utf8Error> = str::from_utf8(upper);
+                match (lower, upper) {
+                    (Ok(lower), Ok(upper)) => Some(format!("map[\"{}\"]=\"{}\"\n", lower, upper)),
+                    _ => None,
+                }
             })
             .fold(String::new(), |map, line| map + &line);
         write!(f, "{}", map)
