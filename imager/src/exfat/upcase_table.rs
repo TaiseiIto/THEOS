@@ -133,11 +133,11 @@ impl fmt::Display for UpcaseTable {
         let map: String = map
             .iter()
             .filter_map(|(lower, upper)| {
-                let lower: &[u16] = &[*lower];
+                let lower: [u16; 1] = [*lower];
                 let lower: String = char::decode_utf16(lower.iter().cloned())
                     .filter_map(|lower| lower.ok())
                     .collect();
-                let upper: &[u16] = &[*upper];
+                let upper: [u16; 1] = [*upper];
                 let upper: String = char::decode_utf16(upper.iter().cloned())
                     .filter_map(|upper| upper.ok())
                     .collect();
