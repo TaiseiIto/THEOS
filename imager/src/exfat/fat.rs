@@ -70,20 +70,28 @@ impl Fat {
         self.cluster_chain
             .iter()
             .fold(HashMap::<u32, Vec<u32>>::new(), |mut chains, (cluster, next)| {
-                let last_to_first: HashMap<u32, u32> = chains
-                    .iter()
-                    .map(|(first, chain)| (chain[chain.len() - 1], *first))
-                    .collect();
-                match last_to_first.get(cluster) {
-                    Some(first) => if let Some(next) = next {
-                        chains
-                            .get_mut(first)
-                            .expect("Can't convert a FAT into cluster number chains.")
-                            .push(*next);
-                    },
-                    None => {
-                        chains.insert(*cluster, vec![*cluster]);
-                    },
+                if let Some(next) = next {
+                    let mut cluster: u32 = *cluster;
+                    let mut chain: Vec<u32> = vec![cluster, *next];
+                    let last_to_first: HashMap<u32, u32> = chains
+                        .iter()
+                        .filter_map(|(first, clusters)| {
+                            match clusters.last() {
+                                Some(last) => Some((*last, *first)),
+                                None => None,
+                            }
+                        })
+                        .collect();
+                    if let Some(first) = last_to_first.get(&cluster) {
+                        cluster = *first;
+                        chain = chains.get(&cluster).expect("Can't get cluster chains.").clone();
+                        chain.push(*next);
+                    }
+                    if let Some(continuation) = chains.get(next) {
+                        chain.append(&mut continuation[1..].to_vec());
+                        chains.remove(next);
+                    }
+                    chains.insert(cluster, chain);
                 }
                 chains
             })
