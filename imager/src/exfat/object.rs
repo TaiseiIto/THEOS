@@ -76,8 +76,8 @@ impl FileOrDirectory {
                     .into_iter()
                     .filter_map(|directory| directory.ok())
                     .map(|directory| {
-                        let source: path::PathBuf = directory.path();
-                        let mut destination: path::PathBuf = destination.to_path_buf();
+                        let source: &path::PathBuf = &directory.path();
+                        let destination: &mut path::PathBuf = &mut destination.to_path_buf();
                         destination.push(source.file_name().expect("Can't create a file or directory."));
                         Object::new(source, destination, false, boot_sector, clusters, upcase_table, rand_generator)
                     })
@@ -254,20 +254,20 @@ impl Object {
     }
 
     pub fn root(
-        source: path::PathBuf,
+        source: &path::PathBuf,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        let destination = path::PathBuf::from("/");
+        let destination = &path::PathBuf::from("/");
         let is_root = true;
         Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, rand_generator)
     }
 
     fn new(
-        source: path::PathBuf,
-        destination: path::PathBuf,
+        source: &path::PathBuf,
+        destination: &path::PathBuf,
         is_root: bool,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
@@ -275,6 +275,7 @@ impl Object {
         rand_generator: &mut rand::Generator,
     ) -> Self {
         let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let destination: path::PathBuf = destination.to_path_buf();
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
         Self {
             content,

@@ -47,7 +47,7 @@ impl Exfat {
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
-        let object = object::Object::root(source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
+        let object = object::Object::root(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
         let directory_tree: object::FileOrDirectory = object.content();
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
