@@ -55,6 +55,7 @@ impl FileOrDirectory {
 
     fn new(
         source: &path::PathBuf,
+        destination: &path::PathBuf,
         is_root: bool,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
@@ -74,7 +75,12 @@ impl FileOrDirectory {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
-                    .map(|directory| Object::new(directory.path(), false, boot_sector, clusters, upcase_table, rand_generator))
+                    .map(|directory| {
+                        let source: path::PathBuf = directory.path();
+                        let mut destination: path::PathBuf = destination.to_path_buf();
+                        destination.push(source.file_name().expect("Can't create a file or directory."));
+                        Object::new(source, destination, false, boot_sector, clusters, upcase_table, rand_generator)
+                    })
                     .collect(),
                 _ => vec![],
             };
@@ -131,7 +137,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_directory(clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
+    pub fn read_directory(destination: &path::PathBuf, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
         let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries);
         let file_directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entries
@@ -150,7 +156,7 @@ impl FileOrDirectory {
             .collect();
         let children: Vec<Object> = file_directory_entries
             .iter()
-            .map(|file_directory_entry| Object::read(file_directory_entry, clusters, fat, cluster_size))
+            .map(|file_directory_entry| Object::read(destination, file_directory_entry, clusters, fat, cluster_size))
             .collect();
         Self::Directory {
             children,
@@ -233,6 +239,7 @@ impl FileOrDirectory {
 #[derive(Clone, Debug)]
 pub struct Object {
     content: FileOrDirectory,
+    destination: path::PathBuf,
     directory_entry: directory_entry::DirectoryEntry,
     first_cluster: u32,
 }
@@ -253,27 +260,31 @@ impl Object {
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        Self::new(source, true, boot_sector, clusters, upcase_table, rand_generator)
+        let destination = path::PathBuf::from("/");
+        let is_root = true;
+        Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, rand_generator)
     }
 
     fn new(
         source: path::PathBuf,
+        destination: path::PathBuf,
         is_root: bool,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        let (content, first_cluster, length) = FileOrDirectory::new(&source, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
         Self {
             content,
+            destination,
             directory_entry,
             first_cluster,
         }
     }
 
-    fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Self {
+    fn read(parent: &path::PathBuf, directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Self {
         let directory_entry: directory_entry::DirectoryEntry = directory_entry.clone();
         if let directory_entry::DirectoryEntry::File {
             ref file_attributes,
@@ -290,14 +301,20 @@ impl Object {
                 data_length,
                 file_name: _,
             } = &**stream_extension {
+                let file_name: String = directory_entry
+                    .get_file_name()
+                    .expect("Can't read an object.");
+                let mut destination: path::PathBuf = parent.to_path_buf();
+                destination.push(file_name);
                 let first_cluster: u32 = *first_cluster;
                 let content = if file_attributes.is_dir() {
-                    FileOrDirectory::read_directory(clusters, fat, first_cluster, cluster_size)
+                    FileOrDirectory::read_directory(&destination, clusters, fat, first_cluster, cluster_size)
                 } else {
                     FileOrDirectory::read_file(clusters, fat, first_cluster, cluster_size, *data_length)
                 };
                 Self {
                     content,
+                    destination,
                     directory_entry,
                     first_cluster,
                 }

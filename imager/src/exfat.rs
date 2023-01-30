@@ -105,7 +105,8 @@ impl Exfat {
             .collect();
         let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
-        let directory_tree = object::FileOrDirectory::read_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        let root_directory = path::PathBuf::from("/");
+        let directory_tree = object::FileOrDirectory::read_directory(&root_directory, &clusters, &fat, first_cluster_of_root_directory, cluster_size);
         Self {
             boot_checksum,
             boot_sector,
