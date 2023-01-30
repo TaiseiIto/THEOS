@@ -647,19 +647,6 @@ impl EntryType {
         }
     }
 
-    fn read(byte: u8) -> Self {
-        let type_code = TypeCode::read(byte);
-        let type_importance: bool = byte & 0x20 != 0;
-        let type_category: bool = byte & 0x40 != 0;
-        let in_use: bool = byte & 0x80 != 0;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
     fn stream_extension() -> Self {
         let type_code = TypeCode::StreamExtension;
         let type_importance = false;
@@ -874,9 +861,7 @@ enum TypeCode {
 impl TypeCode {
     fn read(byte: u8) -> Self {
         let type_code: u8 = byte & 0x1f;
-        let type_importance: bool = byte & 0x20 != 0;
         let type_category: bool = byte & 0x40 != 0;
-        let in_use: bool = byte & 0x80 != 0;
         match type_code {
             0x00 => if type_category {
                 Self::StreamExtension

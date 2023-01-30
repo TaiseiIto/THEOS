@@ -289,8 +289,8 @@ impl Time {
         let (sec, min): (u8, i128) = (sec.rem_euclid(SECONDS_PER_MINUTE as i128) as u8, sec.div_euclid(SECONDS_PER_MINUTE as i128));
         let (min, hour): (u8, i128) = (min.rem_euclid(MINUTES_PER_HOUR as i128) as u8, min.div_euclid(MINUTES_PER_HOUR as i128));
         let (hour, day): (u8, i128) = (hour.rem_euclid(HOURS_PER_DAY as i128) as u8, hour.div_euclid(HOURS_PER_DAY as i128));
-        let mut year: i128 = 0;
-        let mut month: u8 = 0;
+        let mut year: i128;
+        let mut month: u8;
         let mut day: i128 = day + 1;
         if 0 < day {
             year = 0;

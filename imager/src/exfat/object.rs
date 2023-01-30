@@ -3,7 +3,6 @@ use {
         char,
         fmt,
         fs,
-        mem,
         path,
     },
     super::{
@@ -166,7 +165,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_file(clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize, length: usize) -> Self {
+    pub fn read_file(clusters: &cluster::Clusters, cluster_number: u32, length: usize) -> Self {
         let mut bytes: Vec<u8> = clusters.get_bytes(cluster_number);
         bytes.resize(length, 0x00);
         Self::File {
@@ -339,7 +338,7 @@ impl Object {
             ref stream_extension,
         } = directory_entry {
             if let directory_entry::DirectoryEntry::StreamExtension {
-                general_flags: GeneralFlags,
+                general_flags: _,
                 name_length: _,
                 name_hash: _,
                 first_cluster,
@@ -355,7 +354,7 @@ impl Object {
                 let content = if file_attributes.is_dir() {
                     FileOrDirectory::read_directory(&destination, clusters, fat, first_cluster, cluster_size)
                 } else {
-                    FileOrDirectory::read_file(clusters, fat, first_cluster, cluster_size, *data_length)
+                    FileOrDirectory::read_file(clusters, first_cluster, *data_length)
                 };
                 Self {
                     content,

@@ -3,8 +3,6 @@ use {
         char,
         collections::HashMap,
         fmt,
-        mem,
-        str,
     },
     super::super::binary::Binary,
 };
