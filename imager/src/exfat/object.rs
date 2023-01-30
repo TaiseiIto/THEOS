@@ -248,6 +248,15 @@ impl fmt::Display for FileOrDirectory {
                 .map(|bytes| bytes
                     .into_iter()
                     .map(|byte| (format!("{:02x} ", byte), char::from_u32(*byte as u32).unwrap_or(char::REPLACEMENT_CHARACTER)))
+                    .map(|(hex, c)| {
+                        let c: char = match c {
+                            '\n' |
+                            '\t' |
+                            '\r' => ' ',
+                            c => c,
+                        };
+                        (hex, c)
+                    })
                     .fold((String::new(), String::new()), |(hex_line, mut c_line), (hex, c)| {
                         c_line.push(c);
                         (hex_line + &hex, c_line)
@@ -264,7 +273,7 @@ impl fmt::Display for FileOrDirectory {
                 directory_entries: _,
             } => children
                 .iter()
-                .map(|child| format!("{}\n", child))
+                .map(|child| format!("{}", child))
                 .fold(String::new(), |string, child| string + &child),
         };
         write!(f, "{}", string)
