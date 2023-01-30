@@ -360,7 +360,9 @@ impl Object {
 
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.destination.display())
+        let path: String = format!("{}", self.destination.display());
+        let content: String = format!("{}", self.content);
+        write!(f, "{}\n{}", path, content)
     }
 }
 
