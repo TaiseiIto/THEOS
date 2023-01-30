@@ -202,6 +202,7 @@ impl fmt::Display for Exfat {
             .map(|line| format!("volume_guid.{}\n", line))
             .fold(String::new(), |volume_guid, line| volume_guid + &line);
         let volume_label: String = format!("volume_label: \"{}\"\n", self.volume_label());
+        let directory_tree: String = format!("{}", self.directory_tree);
         let exfat: Vec<String> = vec![
             boot_sector,
             extended_boot_sectors,
@@ -212,6 +213,7 @@ impl fmt::Display for Exfat {
             upcase_table,
             volume_guid,
             volume_label,
+            directory_tree,
         ];
         let exfat: String = exfat
             .into_iter()

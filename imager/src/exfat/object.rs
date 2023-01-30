@@ -1,5 +1,7 @@
 use {
     std::{
+        char,
+        fmt,
         fs,
         mem,
         path,
@@ -236,6 +238,34 @@ impl FileOrDirectory {
     }
 }
 
+impl fmt::Display for FileOrDirectory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = match self {
+            Self::File {
+                bytes,
+            } => bytes
+                .chunks(0x10)
+                .map(|bytes| bytes
+                    .into_iter()
+                    .map(|byte| (format!("{:02x} ", byte), char::from_u32(*byte as u32).unwrap_or(char::REPLACEMENT_CHARACTER)))
+                    .fold((String::new(), String::new()), |(hex_line, mut c_line), (hex, c)| {
+                        c_line.push(c);
+                        (hex_line + &hex, c_line)
+                    }))
+                .map(|(hex_line, c_line)| hex_line + &c_line + "\n")
+                .fold(String::new(), |string, line| string + &line),
+            Self::Directory {
+                children,
+                directory_entries: _,
+            } => children
+                .iter()
+                .map(|child| format!("{}\n", child))
+                .fold(String::new(), |string, child| string + &child),
+        };
+        write!(f, "{}", string)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Object {
     content: FileOrDirectory,
@@ -325,6 +355,12 @@ impl Object {
         } else {
             panic!("Can't read an object.");
         }
+    }
+}
+
+impl fmt::Display for Object {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.destination.display())
     }
 }
 
