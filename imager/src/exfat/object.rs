@@ -252,7 +252,12 @@ impl fmt::Display for FileOrDirectory {
                         c_line.push(c);
                         (hex_line + &hex, c_line)
                     }))
-                .map(|(hex_line, c_line)| hex_line + &c_line + "\n")
+                .map(|(mut hex_line, c_line)| {
+                    while hex_line.len() < 0x30 {
+                        hex_line.push(' ');
+                    }
+                    hex_line + &c_line + "\n"
+                })
                 .fold(String::new(), |string, line| string + &line),
             Self::Directory {
                 children,
