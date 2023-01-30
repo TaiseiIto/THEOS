@@ -283,9 +283,8 @@ impl DirectoryEntry {
                         let volume_label = RawVolumeLabel::read(&directory_entry);
                         let character_count: usize = volume_label.character_count as usize;
                         let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label;
-                        let volume_label: String = volume_label[0..character_count]
-                            .into_iter()
-                            .filter_map(|character| char::from_u32(*character as u32))
+                        let volume_label: String = char::decode_utf16(volume_label[0..character_count].iter().cloned())
+                            .filter_map(|c| c.ok())
                             .collect();
                         Some(Self::VolumeLabel {
                             volume_label,
@@ -1318,19 +1317,7 @@ impl Raw for RawVolumeLabel {
                 volume_label,
             } => {
                 let mut volume_label: Vec<u16> = volume_label
-                    .chars()
-                    .map(|c| c.to_string().into_bytes())
-                    .filter(|c| c.len() <= 2)
-                    .map(|c| {
-                        let mut i = c.into_iter();
-                        match i.next() {
-                            Some(lower_byte) => match i.next() {
-                                Some(higher_byte) => ((higher_byte as u16) << 8) + lower_byte as u16,
-                                None => lower_byte as u16,
-                            },
-                            None => 0x0000,
-                        }
-                    })
+                    .encode_utf16()
                     .collect();
                 let character_count = volume_label.len() as u8;
                 while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
