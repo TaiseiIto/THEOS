@@ -380,13 +380,23 @@ impl Object {
                     FileOrDirectory::read_file(clusters, first_cluster, *data_length)
                 };
                 let parent = RefCell::new(Weak::new());
-                Rc::new(Self {
+                let object = Rc::new(Self {
                     content,
                     destination,
                     directory_entry,
                     first_cluster,
                     parent,
-                })
+                });
+                if let FileOrDirectory::Directory{
+                    children,
+                    directory_entries: _,
+                } = &object.content {
+                    children
+                        .borrow_mut()
+                        .iter_mut()
+                        .map(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
+                }
+                object
             } else {
                 panic!("Can't read an object.");
             }
