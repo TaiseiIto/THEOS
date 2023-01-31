@@ -498,7 +498,7 @@ impl DirectoryEntry {
         let name_length: u8 = file_name.len() as u8;
         let name_hash: u16 = file_name
             .iter()
-            .map(|c| upcase_table.to_upcase(*c))
+            .map(|c| upcase_table.capitalize_char(*c))
             .map(|c| [c as u8, (c >> 8) as u8])
             .flatten()
             .fold(0, |name_hash, c| (name_hash << 15) + (name_hash >> 1) + (c as u16));

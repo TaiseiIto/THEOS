@@ -81,11 +81,21 @@ impl UpcaseTable {
             .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u32)
     }
 
-    pub fn to_upcase(&self, c: u16) -> u16 {
+    pub fn capitalize_char(&self, c: u16) -> u16 {
         match self.map.get(&c) {
             Some(upcase) => *upcase,
             None => c,
         }
+    }
+
+    pub fn capitalize_str(&self, string: &str) -> String {
+        let string: Vec<u16> = string
+            .encode_utf16()
+            .map(|c| self.capitalize_char(c))
+            .collect();
+        char::decode_utf16(string)
+            .filter_map(|c| c.ok())
+            .collect()
     }
 }
 
