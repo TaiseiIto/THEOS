@@ -7,7 +7,7 @@ use {
     super::super::binary::Binary,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct UpcaseTable {
     map: HashMap<u16, u16>,
 }

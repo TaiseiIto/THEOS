@@ -52,6 +52,7 @@ pub enum DirectoryEntry {
         table_checksum: u32,
         first_cluster: u32,
         data_length: usize,
+        upcase_table: upcase_table::UpcaseTable,
     },
     VolumeGuid {
         general_flags: GeneralFlags,
@@ -167,7 +168,7 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
+    pub fn read(bytes: &Vec<u8>, clusters: &cluster::Clusters) -> Vec<Self> {
         let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
             .chunks(DIRECTORY_ENTRY_SIZE)
             .map(|directory_entry| directory_entry.try_into().expect("Can't read directory entry."))
@@ -192,7 +193,7 @@ impl DirectoryEntry {
             .collect();
         let directory_entries: Vec<Self> = match directory_entries.len() {
             0 => vec![],
-            _ => Self::read(&directory_entries),
+            _ => Self::read(&directory_entries, clusters),
         };
         let mut directory_entries: VecDeque<Self> = VecDeque::from(directory_entries);
         let directory_entry: Option<Self> = match directory_entry {
@@ -273,10 +274,12 @@ impl DirectoryEntry {
                         let table_checksum: u32 = upcase_table.table_checksum;
                         let first_cluster: u32 = upcase_table.first_cluster;
                         let data_length: usize = upcase_table.data_length as usize;
+                        let upcase_table: upcase_table::UpcaseTable = clusters.upcase_table(first_cluster, data_length);
                         Some(Self::UpcaseTable {
                             table_checksum,
                             first_cluster,
                             data_length,
+                            upcase_table,
                         })
                     },
                     TypeCode::VolumeLabel => {
@@ -328,10 +331,12 @@ impl DirectoryEntry {
         let data_length: usize = bytes.len();
         let first_cluster: u32 = clusters.append(&bytes, 0);
         let table_checksum: u32 = upcase_table.table_checksum();
+        let upcase_table: upcase_table::UpcaseTable = upcase_table.clone();
         Self::UpcaseTable {
             table_checksum,
             first_cluster,
             data_length,
+            upcase_table,
         }
     }
 
@@ -384,6 +389,7 @@ impl DirectoryEntry {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
+                upcase_table: _,
             } => 1,
             Self::VolumeGuid {
                 general_flags: _,
@@ -426,6 +432,7 @@ impl DirectoryEntry {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
+                upcase_table: _,
             } => EntryType::upcase_table(),
             Self::VolumeGuid {
                 general_flags: _,
@@ -537,6 +544,7 @@ impl DirectoryEntry {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
+                upcase_table: _,
             } => RawUpcaseTable::new(self).raw(),
             Self::VolumeGuid {
                 general_flags: _,
@@ -580,6 +588,7 @@ impl Binary for DirectoryEntry {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
+                upcase_table: _,
             } => vec![],
             Self::VolumeLabel {
                 volume_label: _,
@@ -1184,6 +1193,7 @@ impl Raw for RawUpcaseTable {
                 table_checksum,
                 first_cluster,
                 data_length,
+                upcase_table: _,
             } => {
                 let reserved_1: [u8; 0x3] = [0x0; 0x3];
                 let table_checksum: u32 = *table_checksum;

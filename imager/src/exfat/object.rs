@@ -146,7 +146,7 @@ impl FileOrDirectory {
 
     pub fn read_directory(destination: &path::PathBuf, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
         let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
-        let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries);
+        let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries, clusters);
         let file_directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entries
             .iter()
             .filter(|directory_entry| match directory_entry {
@@ -179,7 +179,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn upcase_table(&self, clusters: &cluster::Clusters) -> upcase_table::UpcaseTable {
+    pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
         if let Self::Directory {
             children: _,
             directory_entries,
@@ -188,10 +188,11 @@ impl FileOrDirectory {
                 .iter()
                 .find_map(|directory_entry| if let directory_entry::DirectoryEntry::UpcaseTable {
                     table_checksum: _,
-                    first_cluster,
-                    data_length,
+                    first_cluster: _,
+                    data_length: _,
+                    upcase_table,
                 } = directory_entry {
-                    Some(clusters.upcase_table(*first_cluster, *data_length))
+                    Some(upcase_table.clone())
                 } else {
                     None
                 })
@@ -377,6 +378,13 @@ impl Object {
             }
         } else {
             panic!("Can't read an object.");
+        }
+    }
+
+    fn upcase_table(&self) -> upcase_table::UpcaseTable {
+        match self.parent.borrow().upgrade() {
+            Some(parent) => parent.upcase_table(),
+            None => self.content.upcase_table(),
         }
     }
 }
