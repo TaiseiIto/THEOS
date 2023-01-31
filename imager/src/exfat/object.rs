@@ -343,10 +343,12 @@ impl Object {
             children,
             directory_entries: _,
         } = &object.content {
-            children
-                .borrow_mut()
-                .iter_mut()
-                .map(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
+            for child in children.borrow_mut().iter_mut() {
+                *child.parent.borrow_mut() = Rc::downgrade(&object);
+            }
+            for child in children.borrow().iter() {
+                eprintln!("child = {:?}", child.parent.borrow().upgrade());
+            }
         }
         object
     }
@@ -391,10 +393,12 @@ impl Object {
                     children,
                     directory_entries: _,
                 } = &object.content {
-                    children
-                        .borrow_mut()
-                        .iter_mut()
-                        .map(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
+                    for child in children.borrow_mut().iter_mut() {
+                        *child.parent.borrow_mut() = Rc::downgrade(&object)
+                    }
+                    for child in children.borrow().iter() {
+                        println!("child = {:?}", child.parent.borrow().upgrade());
+                    }
                 }
                 object
             } else {
@@ -416,9 +420,9 @@ impl Object {
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path: String = format!("{}", self.destination.display());
-        let path: String = self
-            .upcase_table()
-            .capitalize_str(&path);
+        // let path: String = self
+        //     .upcase_table()
+        //     .capitalize_str(&path);
         let content: String = format!("{}", self.content);
         write!(f, "{}\n{}", path, content)
     }
