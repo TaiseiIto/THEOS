@@ -1,9 +1,11 @@
 use {
     std::{
+        cell::RefCell,
         char,
         fmt,
         fs,
         path,
+        rc::Weak,
     },
     super::{
         allocation_bitmap,
@@ -285,6 +287,7 @@ pub struct Object {
     destination: path::PathBuf,
     directory_entry: directory_entry::DirectoryEntry,
     first_cluster: u32,
+    parent: RefCell<Weak<Self>>,
 }
 
 impl Object {
@@ -320,11 +323,13 @@ impl Object {
         let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let destination: path::PathBuf = destination.to_path_buf();
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
+        let parent = RefCell::new(Weak::new());
         Self {
             content,
             destination,
             directory_entry,
             first_cluster,
+            parent,
         }
     }
 
@@ -356,11 +361,13 @@ impl Object {
                 } else {
                     FileOrDirectory::read_file(clusters, first_cluster, *data_length)
                 };
+                let parent = RefCell::new(Weak::new());
                 Self {
                     content,
                     destination,
                     directory_entry,
                     first_cluster,
+                    parent,
                 }
             } else {
                 panic!("Can't read an object.");
