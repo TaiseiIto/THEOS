@@ -5,7 +5,10 @@ use {
         fmt,
         fs,
         path,
-        rc::Weak,
+        rc::{
+            Rc,
+            Weak,
+        }
     },
     super::{
         allocation_bitmap,
@@ -59,7 +62,7 @@ impl FileOrDirectory {
     fn new(
         source: &path::PathBuf,
         destination: &path::PathBuf,
-        is_root: bool,
+        parent: RefCell<Weak<Object>>,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
@@ -82,7 +85,7 @@ impl FileOrDirectory {
                         let source: &path::PathBuf = &directory.path();
                         let destination: &mut path::PathBuf = &mut destination.to_path_buf();
                         destination.push(source.file_name().expect("Can't create a file or directory."));
-                        Object::new(source, destination, false, boot_sector, clusters, upcase_table, rand_generator)
+                        Object::new(source, destination, parent.clone(), boot_sector, clusters, upcase_table, rand_generator)
                     })
                     .collect(),
                 _ => vec![],
@@ -91,33 +94,34 @@ impl FileOrDirectory {
                 .iter()
                 .map(|object| object.directory_entry.clone())
                 .collect();
-            let upcase_table: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters)),
-                false => None,
+            let parent: Option<Rc<Object>> = parent.borrow().upgrade();
+            let upcase_table: Option<directory_entry::DirectoryEntry> = match parent {
+                Some(_) => None,
+                None => Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters)),
             };
             match upcase_table {
                 Some(upcase_table) => directory_entries.push(upcase_table),
                 None => (),
             }
-            let volume_label: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::volume_label("THEOS")),
-                false => None,
+            let volume_label: Option<directory_entry::DirectoryEntry> = match parent {
+                Some(_) => None,
+                None => Some(directory_entry::DirectoryEntry::volume_label("THEOS")),
             };
             match volume_label {
                 Some(volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
-            let volume_guid: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128())),
-                false => None,
+            let volume_guid: Option<directory_entry::DirectoryEntry> = match parent {
+                Some(_) => None,
+                None => Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128())),
             };
             match volume_guid {
                 Some(volume_guid) => directory_entries.push(volume_guid),
                 None => (),
             }
-            let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = match is_root {
-                true => directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats()),
-                false => vec![],
+            let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = match parent {
+                Some(_) => vec![],
+                None => directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats()),
             };
             let mut allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = allocation_bitmaps
                 .into_iter()
@@ -307,23 +311,22 @@ impl Object {
         rand_generator: &mut rand::Generator,
     ) -> Self {
         let destination = &path::PathBuf::from("/");
-        let is_root = true;
-        Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, rand_generator)
+        let parent = RefCell::new(Weak::new());
+        Self::new(source, destination, parent, boot_sector, clusters, upcase_table, rand_generator)
     }
 
     fn new(
         source: &path::PathBuf,
         destination: &path::PathBuf,
-        is_root: bool,
+        parent: RefCell<Weak<Self>>,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
     ) -> Self {
-        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
+        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, parent.clone(), boot_sector, clusters, upcase_table, rand_generator);
         let destination: path::PathBuf = destination.to_path_buf();
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
-        let parent = RefCell::new(Weak::new());
         Self {
             content,
             destination,
