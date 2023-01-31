@@ -332,13 +332,23 @@ impl Object {
         let destination: path::PathBuf = destination.to_path_buf();
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
         let parent = RefCell::new(Weak::new());
-        Rc::new(Self {
+        let object = Rc::new(Self {
             content,
             destination,
             directory_entry,
             first_cluster,
             parent,
-        })
+        });
+        if let FileOrDirectory::Directory{
+            children,
+            directory_entries: _,
+        } = &object.content {
+            children
+                .borrow_mut()
+                .iter_mut()
+                .map(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
+        }
+        object
     }
 
     fn read(parent: &path::PathBuf, directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Rc<Self> {
