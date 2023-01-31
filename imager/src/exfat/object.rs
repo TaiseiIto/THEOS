@@ -399,7 +399,7 @@ impl Object {
                     directory_entries: _,
                 } = &object.content {
                     for child in children.borrow_mut().iter_mut() {
-                        *child.parent.borrow_mut() = Rc::downgrade(&object)
+                        *child.parent.borrow_mut() = Rc::downgrade(&object);
                     }
                 }
                 if let FileOrDirectory::Directory{
@@ -407,7 +407,10 @@ impl Object {
                     directory_entries: _,
                 } = &object.content {
                     for child in children.borrow().iter() {
-                        println!("child = {:?}", child.parent.borrow().upgrade());
+                        match child.parent.borrow().upgrade() {
+                            Some(parent) => println!("{} has a parent {}.", child.destination.display(), parent.destination.display()),
+                            None => println!("{} has no parent.", child.destination.display()),
+                        }
                     }
                 }
                 object
@@ -421,8 +424,14 @@ impl Object {
 
     fn upcase_table(&self) -> upcase_table::UpcaseTable {
         match self.parent.borrow().upgrade() {
-            Some(parent) => parent.upcase_table(),
-            None => self.content.upcase_table(),
+            Some(parent) => {
+                println!("{} has a parent.", self.destination.display());
+                parent.upcase_table()
+            },
+            None => {
+                println!("{} has no parent.", self.destination.display());
+                self.content.upcase_table()
+            },
         }
     }
 }
@@ -430,9 +439,9 @@ impl Object {
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path: String = format!("{}", self.destination.display());
-        // let path: String = self
-        //     .upcase_table()
-        //     .capitalize_str(&path);
+        let path: String = self
+            .upcase_table()
+            .capitalize_str(&path);
         let content: String = format!("{}", self.content);
         write!(f, "{}\n{}", path, content)
     }
