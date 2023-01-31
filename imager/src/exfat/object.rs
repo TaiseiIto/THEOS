@@ -346,6 +346,11 @@ impl Object {
             for child in children.borrow_mut().iter_mut() {
                 *child.parent.borrow_mut() = Rc::downgrade(&object);
             }
+        }
+        if let FileOrDirectory::Directory{
+            children,
+            directory_entries: _,
+        } = &object.content {
             for child in children.borrow().iter() {
                 eprintln!("child = {:?}", child.parent.borrow().upgrade());
             }
@@ -396,6 +401,11 @@ impl Object {
                     for child in children.borrow_mut().iter_mut() {
                         *child.parent.borrow_mut() = Rc::downgrade(&object)
                     }
+                }
+                if let FileOrDirectory::Directory{
+                    children,
+                    directory_entries: _,
+                } = &object.content {
                     for child in children.borrow().iter() {
                         println!("child = {:?}", child.parent.borrow().upgrade());
                     }
