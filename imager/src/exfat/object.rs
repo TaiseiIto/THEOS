@@ -31,7 +31,7 @@ pub enum FileOrDirectory {
         bytes: Vec<u8>,
     },
     Directory {
-        children: Vec<Object>,
+        children: RefCell<Vec<Rc<Object>>>,
         directory_entries: Vec<directory_entry::DirectoryEntry>,
     },
 }
@@ -77,7 +77,7 @@ impl FileOrDirectory {
             };
             (file, first_cluster, length)
         } else if source.is_dir() {
-            let children: Vec<Object> = match fs::read_dir(source) {
+            let children: Vec<Rc<Object>> = match fs::read_dir(source) {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
@@ -90,7 +90,9 @@ impl FileOrDirectory {
                     .collect(),
                 _ => vec![],
             };
+            let children: RefCell<Vec<Rc<Object>>> = RefCell::new(children);
             let mut directory_entries: Vec<directory_entry::DirectoryEntry> = children
+                .borrow()
                 .iter()
                 .map(|object| object.directory_entry.clone())
                 .collect();
@@ -160,10 +162,11 @@ impl FileOrDirectory {
             })
             .map(|directory_entry| directory_entry.clone())
             .collect();
-        let children: Vec<Object> = file_directory_entries
+        let children: Vec<Rc<Object>> = file_directory_entries
             .iter()
             .map(|file_directory_entry| Object::read(destination, file_directory_entry, clusters, fat, cluster_size))
             .collect();
+        let children: RefCell<Vec<Rc<Object>>> = RefCell::new(children);
         Self::Directory {
             children,
             directory_entries,
@@ -277,6 +280,7 @@ impl fmt::Display for FileOrDirectory {
                 children,
                 directory_entries: _,
             } => children
+                .borrow()
                 .iter()
                 .map(|child| format!("{}", child))
                 .fold(String::new(), |string, child| string + &child),
@@ -309,7 +313,7 @@ impl Object {
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
-    ) -> Self {
+    ) -> Rc<Self> {
         let destination = &path::PathBuf::from("/");
         let is_root: bool = true;
         Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, rand_generator)
@@ -323,21 +327,21 @@ impl Object {
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
         rand_generator: &mut rand::Generator,
-    ) -> Self {
+    ) -> Rc<Self> {
         let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let destination: path::PathBuf = destination.to_path_buf();
         let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
         let parent = RefCell::new(Weak::new());
-        Self {
+        Rc::new(Self {
             content,
             destination,
             directory_entry,
             first_cluster,
             parent,
-        }
+        })
     }
 
-    fn read(parent: &path::PathBuf, directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Self {
+    fn read(parent: &path::PathBuf, directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Rc<Self> {
         let directory_entry: directory_entry::DirectoryEntry = directory_entry.clone();
         if let directory_entry::DirectoryEntry::File {
             ref file_attributes,
@@ -366,13 +370,13 @@ impl Object {
                     FileOrDirectory::read_file(clusters, first_cluster, *data_length)
                 };
                 let parent = RefCell::new(Weak::new());
-                Self {
+                Rc::new(Self {
                     content,
                     destination,
                     directory_entry,
                     first_cluster,
                     parent,
-                }
+                })
             } else {
                 panic!("Can't read an object.");
             }
