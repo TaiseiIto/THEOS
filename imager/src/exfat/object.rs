@@ -342,6 +342,14 @@ impl Object {
             children,
             directory_entries: _,
         } = &object.content {
+            for child in children.borrow_mut().iter_mut() {
+                *child.parent.borrow_mut() = Rc::downgrade(&object);
+            }
+        }
+        if let FileOrDirectory::Directory{
+            children,
+            directory_entries: _,
+        } = &object.content {
             for child in children.borrow().iter() {
                 match child.parent.borrow().upgrade() {
                     Some(parent) => println!("{} has a parent {}.", child.destination.display(), parent.destination.display()),
@@ -499,9 +507,9 @@ impl Object {
 impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path: String = format!("{}", self.destination.display());
-        // let path: String = self
-        //     .upcase_table()
-        //     .capitalize_str(&path);
+        let path: String = self
+            .upcase_table()
+            .capitalize_str(&path);
         let content: String = format!("{}", self.content);
         write!(f, "{}\n{}", path, content)
     }
