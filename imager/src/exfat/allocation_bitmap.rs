@@ -15,11 +15,8 @@ pub struct AllocationBitmap {
 }
 
 impl AllocationBitmap {
-    pub fn all_clusters_are_used(num_of_clusters: usize) -> Self {
-        let num_of_clusters: u32 = num_of_clusters as u32;
-        let bitmap: HashMap<u32, bool> = (0..num_of_clusters)
-            .map(|n| (n + cluster::FIRST_CLUSTER_NUMBER, true))
-            .collect();
+    pub fn new(clusters: &cluster::Clusters) -> Self {
+        let bitmap: HashMap<u32, bool> = clusters.used_flags();
         Self {
             bitmap,
         }
