@@ -122,6 +122,16 @@ impl Clusters {
         upcase_table::UpcaseTable::read(upcase_table)
     }
 
+    pub fn used_flags(&self) -> HashMap<u32, bool> {
+        self.clusters
+            .iter()
+            .filter_map(|cluster| match cluster.used {
+                Some(used) => Some((cluster.cluster_number, used)),
+                None => None,
+            })
+            .collect()
+    }
+
     fn cluster_bytes(&self, cluster_number: u32) -> Option<Vec<u8>> {
         self.clusters
             .iter()
