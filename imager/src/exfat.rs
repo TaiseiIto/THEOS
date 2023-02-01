@@ -73,8 +73,22 @@ impl Exfat {
             .chunks(sector_size)
             .map(|sector| sector.to_vec())
             .collect();
+        let main_boot_region_sectors: Vec<Vec<u8>> = sectors[0..12].to_vec();
+        let backup_boot_region_sectors: Vec<Vec<u8>> = sectors[0..12].to_vec();
+        let main_boot_region_equals_backup_boot_region: bool = main_boot_region_sectors
+            .iter()
+            .zip(backup_boot_region_sectors.iter())
+            .map(|(main_boot_region_sector, backup_boot_region_sector)| main_boot_region_sector
+                .iter()
+                .zip(backup_boot_region_sector.iter())
+                .map(|(main_boot_region_byte, backup_boot_region_byte)| main_boot_region_byte == backup_boot_region_byte)
+                .fold(true, |sector_equality, byte_equality| sector_equality && byte_equality))
+            .fold(true, |region_equality, sector_equality| region_equality && sector_equality);
+        if !main_boot_region_equals_backup_boot_region {
+            panic!("The main boot region is not equal to the backup boot region.");
+        }
         let mut sector_offset: usize = 1;
-        let extended_boot_sectors: Vec<extended_boot_sector::ExtendedBootSector> = sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
+        let extended_boot_sectors: Vec<extended_boot_sector::ExtendedBootSector> = main_boot_region_sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
             .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
             .collect();
@@ -82,11 +96,11 @@ impl Exfat {
             .try_into()
             .expect("Can't read extended boot sectors.");
         sector_offset += NUM_OF_EXTENDED_BOOT_SECTORS;
-        let oem_parameters = oem_parameter::OemParameters::read(&sectors[sector_offset]);
+        let oem_parameters = oem_parameter::OemParameters::read(&main_boot_region_sectors[sector_offset]);
         sector_offset += 1;
-        let reserved_sector = reserved_sector::ReservedSector::read(&sectors[sector_offset]);
+        let reserved_sector = reserved_sector::ReservedSector::read(&main_boot_region_sectors[sector_offset]);
         sector_offset += 1;
-        let boot_checksum = boot_checksum::BootChecksum::read(&sectors[sector_offset]);
+        let boot_checksum = boot_checksum::BootChecksum::read(&main_boot_region_sectors[sector_offset]);
         let fat_offset: usize = boot_sector.fat_offset() as usize;
         let fat_length: usize = boot_sector.fat_length() as usize;
         let fat: Vec<Vec<u8>> = sectors[fat_offset..fat_offset + fat_length].to_vec();
