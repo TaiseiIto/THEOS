@@ -124,7 +124,7 @@ impl FileOrDirectory {
                 None => (),
             }
             let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = if is_root {
-                clusters.fix_size((1 << 20) - (boot_sector.fat_offset() as usize + boot_sector.num_of_fats() as usize) * boot_sector.bytes_per_sector());
+                clusters.fix_size((1 << 20) - (boot_sector.fat_offset() as usize + boot_sector.num_of_fats() as usize) * boot_sector.bytes_per_sector() - (1/* root directory */ + boot_sector.num_of_fats()) * boot_sector.cluster_size());
                 directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats())
             } else {
                 vec![]
