@@ -67,7 +67,7 @@ impl Clusters {
     }
 
     pub fn fix_size(&mut self, size: usize) {
-        while self.clusters.len() * self.cluster_size < size {
+        while self.number_of_clusters() * self.cluster_size < size {
             self.append_available_cluster();
         }
     }

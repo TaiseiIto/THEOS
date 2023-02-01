@@ -207,7 +207,7 @@ impl fmt::Display for BootSector {
         let drive_select: u8 = self.drive_select;
         let drive_select: String = format!("drive_select: {:#010x}", drive_select);
         let percent_in_use: u8 = self.percent_in_use;
-        let percent_in_use: String = format!("percent_in_use: {:#02x}", percent_in_use);
+        let percent_in_use: String = format!("percent_in_use: {:#04x}", percent_in_use);
         let reserved: String = "reserved:".to_string() + &self.reserved
             .iter()
             .map(|byte| format!(" {:02x}", byte))
