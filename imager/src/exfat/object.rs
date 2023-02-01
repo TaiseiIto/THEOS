@@ -123,6 +123,7 @@ impl FileOrDirectory {
                 Some(volume_guid) => directory_entries.push(volume_guid),
                 None => (),
             }
+            clusters.fix_size();
             let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = if is_root {
                 directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats())
             } else {

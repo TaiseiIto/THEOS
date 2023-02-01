@@ -37,6 +37,12 @@ impl Clusters {
         cluster_number
     }
 
+    pub fn append_available_cluster(&mut self) {
+        let cluster = Cluster::available_cluster(self);
+        let cluster_number: u32 = cluster.cluster_number;
+        self.clusters.push(cluster);
+    }
+
     pub fn cluster_chain(&self) -> HashMap<u32, Option<u32>> {
         self.clusters
             .iter()
@@ -58,6 +64,12 @@ impl Clusters {
             .find(|cluster| cluster.cluster_number == first_cluster_number) {
             Some(first_cluster) => first_cluster.cluster_chain_bytes(),
             None => vec![],
+        }
+    }
+
+    pub fn fix_size(&mut self) {
+        while self.clusters.len() * self.cluster_size < 1 << 20 {
+            self.append_available_cluster();
         }
     }
 
@@ -176,6 +188,16 @@ struct Cluster {
 }
 
 impl Cluster {
+    fn available_cluster(clusters: &mut Clusters) -> Self {
+        let blank: u8 = 0x00;
+        let cluster: Vec<u8> = (0..clusters.cluster_size)
+            .map(|_| blank)
+            .collect();
+        let mut cluster: Self = Self::new(clusters, &cluster, blank).expect("Can't create an available cluster.");
+        cluster.used = Some(false);
+        cluster
+    }
+
     fn cluster_chain(&self) -> HashMap<u32, Option<u32>> {
         match &self.next_cluster {
             Some(next_cluster) => {
