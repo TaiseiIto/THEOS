@@ -122,10 +122,10 @@ impl Clusters {
         upcase_table::UpcaseTable::read(upcase_table)
     }
 
-    fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
+    fn cluster_bytes(&self, cluster_number: u32) -> Option<Vec<u8>> {
         self.clusters
             .iter()
-            .find_map(|cluster| cluster.get_cluster(cluster_number))
+            .find_map(|cluster| cluster.bytes(cluster_number))
     }
 
     fn max_cluster_number(&self) -> u32 {
@@ -140,7 +140,7 @@ impl Clusters {
 impl Binary for Clusters {
     fn to_bytes(&self) -> Vec<u8> {
         (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
-            .map(|cluster_number| match self.get_cluster(cluster_number) {
+            .map(|cluster_number| match self.cluster_bytes(cluster_number) {
                 Some(bytes) => bytes,
                 None => (0..self.cluster_size)
                     .map(|_| 0u8)
@@ -181,12 +181,12 @@ impl Cluster {
         bytes
     }
 
-    fn get_cluster(&self, cluster_number: u32) -> Option<Vec<u8>> {
+    fn bytes(&self, cluster_number: u32) -> Option<Vec<u8>> {
         if cluster_number == self.cluster_number {
             Some(self.bytes.clone())
         } else {
             match &self.next_cluster {
-                Some(next_cluster) => next_cluster.get_cluster(cluster_number),
+                Some(next_cluster) => next_cluster.bytes(cluster_number),
                 None => None,
             }
         }
