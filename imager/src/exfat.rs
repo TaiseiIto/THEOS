@@ -209,6 +209,19 @@ impl fmt::Display for Exfat {
             .map(|line| format!("volume_guid.{}\n", line))
             .fold(String::new(), |volume_guid, line| volume_guid + &line);
         let volume_label: String = format!("volume_label: \"{}\"\n", self.volume_label());
+        let mut cluster_used_flags: Vec<(u32, bool)> = self.clusters
+            .used_flags()
+            .into_iter()
+            .collect();
+        cluster_used_flags.sort_by(|(left, _), (right, _)| left.partial_cmp(right).expect("Can't print an exFAT."));
+        let cluster_used_flags: String = cluster_used_flags
+            .into_iter()
+            .map(|(cluster_number, used)| format!("cluster[{}] is {}.\n", cluster_number, if used {
+                "used"
+            } else {
+                "available"
+            }))
+            .fold(String::new(), |cluster_used_flags, line| cluster_used_flags + &line);
         let root_directory: String = format!("{}", self.root_directory);
         let exfat: Vec<String> = vec![
             boot_sector,
@@ -220,6 +233,7 @@ impl fmt::Display for Exfat {
             volume_guid,
             volume_label,
             root_directory,
+            cluster_used_flags,
         ];
         let exfat: String = exfat
             .into_iter()
