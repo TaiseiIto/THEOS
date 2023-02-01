@@ -4,7 +4,7 @@ use {
         collections::VecDeque,
         ffi,
         mem,
-        path,
+        path::PathBuf,
         str,
     },
     super::{
@@ -119,7 +119,7 @@ impl DirectoryEntry {
             .collect()
     }
 
-    pub fn file(path: &path::PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    pub fn file(path: &PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = FileAttributes::new(path);
         let create_time: time::Time = time::Time::last_changed_time(path);
         let modified_time: time::Time = time::Time::last_modified_time(path);
@@ -743,7 +743,7 @@ impl FileAttributes {
         self.directory
     }
 
-    fn new(path: &path::PathBuf) -> Self {
+    fn new(path: &PathBuf) -> Self {
         let read_only = true;
         let hidden = false;
         let system = true;

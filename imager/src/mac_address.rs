@@ -2,7 +2,7 @@ use std::{
     fmt,
     fs,
     mem,
-    path,
+    path::PathBuf,
     str,
 };
 
@@ -18,7 +18,7 @@ impl MacAddress {
 
     pub fn me() -> Self {
         let address: &str = "/sys/class/net/eth0/address";
-        let address = path::PathBuf::from(address);
+        let address = PathBuf::from(address);
         let address: Vec<u8> = fs::read(address).expect("Can't read MAC address.");
         let address: &str = str::from_utf8(&address).expect("Can't read MAC address.");
         let address: String = address.to_lowercase();

@@ -2,7 +2,7 @@ use std::{
     ffi,
     fmt,
     os::raw,
-    path,
+    path::PathBuf,
 };
 
 #[repr(C)]
@@ -164,7 +164,7 @@ impl Time {
         10000000 * seconds + (self.nsec as u64) / 100
     }
 
-    pub fn last_accessed_time(path: &path::PathBuf) -> Self {
+    pub fn last_accessed_time(path: &PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -176,7 +176,7 @@ impl Time {
         }
     }
 
-    pub fn last_changed_time(path: &path::PathBuf) -> Self {
+    pub fn last_changed_time(path: &PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }
@@ -188,7 +188,7 @@ impl Time {
         }
     }
 
-    pub fn last_modified_time(path: &path::PathBuf) -> Self {
+    pub fn last_modified_time(path: &PathBuf) -> Self {
         if !path.exists() {
             panic!("\"{}\" is not found.", path.display());
         }

@@ -14,7 +14,7 @@ use {
     binary::Binary,
     std::{
         fmt,
-        path,
+        path::PathBuf,
         rc::Rc,
     },
     super::{
@@ -43,7 +43,7 @@ impl Exfat {
         self.root_directory.allocation_bitmap(&self.clusters)
     }
 
-    pub fn new(boot_sector: path::PathBuf, source_directory: path::PathBuf, rand_generator: &mut rand::Generator) -> Self {
+    pub fn new(boot_sector: PathBuf, source_directory: PathBuf, rand_generator: &mut rand::Generator) -> Self {
         let boot_sector = boot_sector::BootSector::new(boot_sector);
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];

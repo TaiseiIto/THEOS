@@ -1,17 +1,17 @@
 use std::{
     collections::HashMap,
     env,
-    path,
+    path::PathBuf,
 };
 
 #[derive(Debug)]
 pub enum Args {
     Read {
-        image: path::PathBuf,
+        image: PathBuf,
     },
     Write {
-        boot_sector: path::PathBuf,
-        source_directory: path::PathBuf,
+        boot_sector: PathBuf,
+        source_directory: PathBuf,
     },
 }
 
@@ -31,15 +31,15 @@ impl Args {
         let image: Option<&String> = args.get("-i");
         match (boot_sector, source_directory, image) {
             (Some(boot_sector), Some(source_directory), _) => {
-                let boot_sector = path::PathBuf::from(boot_sector);
-                let source_directory = path::PathBuf::from(source_directory);
+                let boot_sector = PathBuf::from(boot_sector);
+                let source_directory = PathBuf::from(source_directory);
                 Self::Write {
                     boot_sector,
                     source_directory,
                 }
             },
             (_, _, Some(image)) => {
-                let image = path::PathBuf::from(image);
+                let image = PathBuf::from(image);
                 Self::Read {
                     image,
                 }
