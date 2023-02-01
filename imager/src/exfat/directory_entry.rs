@@ -95,7 +95,6 @@ impl DirectoryEntry {
             }
             num_of_allocation_bitmap_clusters += 1;
         }
-        let num_of_clusters: usize = num_of_clusters + num_of_fats * num_of_allocation_bitmap_clusters;
         let allocation_bitmaps: Vec<allocation_bitmap::AllocationBitmap> = (0..num_of_fats)
             .map(|_| allocation_bitmap::AllocationBitmap::new(clusters))
             .collect();

@@ -39,7 +39,6 @@ impl Clusters {
 
     pub fn append_available_cluster(&mut self) {
         let cluster = Cluster::available_cluster(self);
-        let cluster_number: u32 = cluster.cluster_number;
         self.clusters.push(cluster);
     }
 

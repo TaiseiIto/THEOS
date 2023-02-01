@@ -232,8 +232,8 @@ impl fmt::Display for Exfat {
             allocation_bitmap,
             volume_guid,
             volume_label,
-            root_directory,
             cluster_used_flags,
+            root_directory,
         ];
         let exfat: String = exfat
             .into_iter()
