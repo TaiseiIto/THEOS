@@ -117,9 +117,11 @@ impl Exfat {
             .into_iter()
             .flatten()
             .collect();
-        let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
+        let mut clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
         let root_directory = object::Object::read_root_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        let allocation_bitmap: allocation_bitmap::AllocationBitmap = root_directory.allocation_bitmap(&clusters);
+        clusters.set_used_flags(&allocation_bitmap);
         Self {
             boot_checksum,
             boot_sector,
