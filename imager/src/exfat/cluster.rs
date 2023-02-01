@@ -117,6 +117,12 @@ impl Clusters {
         }
     }
 
+    pub fn set_used_flags(&mut self, allocation_bitmap: &allocation_bitmap::AllocationBitmap) {
+        for cluster in self.clusters.iter_mut() {
+            cluster.set_used_flag(allocation_bitmap);
+        }
+    }
+
     pub fn upcase_table(&self, first_cluster: u32, data_length: usize) -> upcase_table::UpcaseTable {
         let upcase_table: Vec<u8> = self.cluster_chain_bytes(first_cluster)[0..data_length].to_vec();
         upcase_table::UpcaseTable::read(upcase_table)
@@ -261,6 +267,15 @@ impl Cluster {
             bytes,
             next_cluster,
             used
+        }
+    }
+
+    fn set_used_flag(&mut self, allocation_bitmap: &allocation_bitmap::AllocationBitmap) {
+        if let Some(ref mut next_cluster) = &mut self.next_cluster {
+            next_cluster.set_used_flag(allocation_bitmap);
+        }
+        if let Some(used) = allocation_bitmap.map().get(&self.cluster_number) {
+            self.used = Some(*used);
         }
     }
 }
