@@ -94,6 +94,13 @@ impl Clusters {
             .sum()
     }
 
+    pub fn number_of_used_clusters(&self) -> usize {
+        self.clusters
+            .iter()
+            .map(|cluster| cluster.number_of_used_clusters())
+            .sum()
+    }
+
     pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) -> Self {
         let clusters: HashMap<u32, Vec<u8>> = bytes
             .chunks(cluster_size)
@@ -275,6 +282,18 @@ impl Cluster {
             Some(next_cluster) => 1 + next_cluster.number_of_clusters(),
             None => 1,
         }
+    }
+
+    fn number_of_used_clusters(&self) -> usize {
+        let used_cluster: usize = match &self.used {
+            Some(true) => 1,
+            _ => 0,
+        };
+        let following_used_cluster: usize = match &self.next_cluster {
+            Some(next_cluster) => next_cluster.number_of_used_clusters(),
+            None => 0,
+        };
+        used_cluster + following_used_cluster
     }
 
     fn read(mut clusters: VecDeque<(u32, Vec<u8>)>) -> Self {

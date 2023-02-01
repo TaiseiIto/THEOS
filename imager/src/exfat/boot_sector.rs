@@ -80,7 +80,10 @@ impl BootSector {
         let bytes_per_sector_shift: u8 = self.bytes_per_sector_shift;
         let sectors_per_cluster_shift: u8 = self.sectors_per_cluster_shift;
         let drive_select: u8 = self.drive_select;
-        let percent_in_use: u8 = self.percent_in_use;
+        let number_of_clusters: usize = clusters.number_of_clusters();
+        let number_of_used_clusters: usize = clusters.number_of_used_clusters();
+        let percent_in_use: f64 = 100f64 * number_of_used_clusters as f64 / number_of_clusters as f64;
+        let percent_in_use: u8 = percent_in_use.floor() as u8;
         let reserved: [u8; 0x7] = self.reserved;
         let boot_code: [u8; 0x186] = self.boot_code;
         let boot_signature: u16 = self.boot_signature;
@@ -204,7 +207,7 @@ impl fmt::Display for BootSector {
         let drive_select: u8 = self.drive_select;
         let drive_select: String = format!("drive_select: {:#010x}", drive_select);
         let percent_in_use: u8 = self.percent_in_use;
-        let percent_in_use: String = format!("percent_in_use: {:#010x}", percent_in_use);
+        let percent_in_use: String = format!("percent_in_use: {:#02x}", percent_in_use);
         let reserved: String = "reserved:".to_string() + &self.reserved
             .iter()
             .map(|byte| format!(" {:02x}", byte))
