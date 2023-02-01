@@ -134,9 +134,17 @@ impl BootSector {
         const SIZE: usize = mem::size_of::<BootSector>();
         let boot_sector = &bytes[0..SIZE];
         let boot_sector: [u8; SIZE] = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to [u8; SIZE]!");
-        unsafe {
+        let boot_sector: Self = unsafe {
             mem::transmute::<[u8; SIZE], Self>(boot_sector)
+        };
+        let validation: bool = boot_sector.must_be_zero
+            .iter()
+            .map(|byte| *byte == 0)
+            .fold(true, |entire_validation, byte_validation| entire_validation && byte_validation);
+        if !validation {
+            panic!("The boot sector is broken.");
         }
+        boot_sector
     }
 
     pub fn sectors_per_cluster(&self) -> usize {
