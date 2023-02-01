@@ -156,6 +156,7 @@ struct Cluster {
     cluster_number: u32,
     bytes: Vec<u8>,
     next_cluster: Option<Box<Self>>,
+    used: Option<bool>
 }
 
 impl Cluster {
@@ -222,10 +223,12 @@ impl Cluster {
             Some(next_cluster) => Some(Box::new(next_cluster)),
             None => None,
         };
+        let used: Option<bool> = Some(true);
         Some(Self {
             cluster_number,
             bytes,
             next_cluster,
+            used,
         })
     }
 
@@ -242,10 +245,12 @@ impl Cluster {
             0 => None,
             _ => Some(Box::new(Self::read(clusters))),
         };
+        let used: Option<bool> = None;
         Self {
             cluster_number,
             bytes,
             next_cluster,
+            used
         }
     }
 }
