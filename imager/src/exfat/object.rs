@@ -156,7 +156,7 @@ impl FileOrDirectory {
         cluster_number: u32,
         cluster_size: usize
     ) -> Self {
-        let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
+        let directory_entries: Vec<u8> = clusters.cluster_chain_bytes(cluster_number);
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries, clusters);
         let file_directory_entries: Vec<Option<directory_entry::DirectoryEntry>> = directory_entries
             .iter()
@@ -184,7 +184,7 @@ impl FileOrDirectory {
     }
 
     pub fn read_file(clusters: &cluster::Clusters, cluster_number: u32, length: usize) -> Self {
-        let mut bytes: Vec<u8> = clusters.get_bytes(cluster_number);
+        let mut bytes: Vec<u8> = clusters.cluster_chain_bytes(cluster_number);
         bytes.resize(length, 0x00);
         Self::File {
             bytes,

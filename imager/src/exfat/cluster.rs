@@ -22,7 +22,7 @@ pub struct Clusters {
 
 impl Clusters {
     pub fn allocation_bitmap(&self, first_cluster: u32) -> allocation_bitmap::AllocationBitmap {
-        let allocation_bitmap: Vec<u8> = self.get_bytes(first_cluster);
+        let allocation_bitmap: Vec<u8> = self.cluster_chain_bytes(first_cluster);
         let num_of_clusters: usize = self.clusters.len();
         allocation_bitmap::AllocationBitmap::read(allocation_bitmap, num_of_clusters)
     }
@@ -52,11 +52,11 @@ impl Clusters {
         self.cluster_size
     }
 
-    pub fn get_bytes(&self, first_cluster_number: u32) -> Vec<u8> {
+    pub fn cluster_chain_bytes(&self, first_cluster_number: u32) -> Vec<u8> {
         match self.clusters
             .iter()
             .find(|cluster| cluster.cluster_number == first_cluster_number) {
-            Some(first_cluster) => first_cluster.get_bytes(),
+            Some(first_cluster) => first_cluster.cluster_chain_bytes(),
             None => vec![],
         }
     }
@@ -118,7 +118,7 @@ impl Clusters {
     }
 
     pub fn upcase_table(&self, first_cluster: u32, data_length: usize) -> upcase_table::UpcaseTable {
-        let upcase_table: Vec<u8> = self.get_bytes(first_cluster)[0..data_length].to_vec();
+        let upcase_table: Vec<u8> = self.cluster_chain_bytes(first_cluster)[0..data_length].to_vec();
         upcase_table::UpcaseTable::read(upcase_table)
     }
 
@@ -171,10 +171,10 @@ impl Cluster {
         }
     }
 
-    fn get_bytes(&self) -> Vec<u8> {
+    fn cluster_chain_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.bytes.clone();
         let mut tail: Vec<u8> = match self.next_cluster {
-            Some(ref next_cluster) => next_cluster.get_bytes(),
+            Some(ref next_cluster) => next_cluster.cluster_chain_bytes(),
             None => vec![],
         };
         bytes.append(&mut tail);
