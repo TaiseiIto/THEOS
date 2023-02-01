@@ -345,7 +345,7 @@ impl Object {
         object
     }
 
-    pub fn root(
+    pub fn root_directory(
         source: &PathBuf,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
