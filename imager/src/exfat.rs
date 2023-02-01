@@ -15,6 +15,7 @@ use {
     std::{
         fmt,
         path,
+        rc::Rc,
     },
     super::{
         binary,
@@ -30,16 +31,16 @@ pub struct Exfat {
     boot_checksum: boot_checksum::BootChecksum,
     boot_sector: boot_sector::BootSector,
     clusters: cluster::Clusters,
-    directory_tree: object::FileOrDirectory,
     extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; NUM_OF_EXTENDED_BOOT_SECTORS],
     fat: fat::Fat,
     oem_parameters: oem_parameter::OemParameters,
     reserved_sector: reserved_sector::ReservedSector,
+    root_directory: Rc<object::Object>,
 }
 
 impl Exfat {
     pub fn allocation_bitmap(&self) -> allocation_bitmap::AllocationBitmap {
-        self.directory_tree.allocation_bitmap(&self.clusters)
+        self.root_directory.allocation_bitmap(&self.clusters)
     }
 
     pub fn new(boot_sector: path::PathBuf, source_directory: path::PathBuf, rand_generator: &mut rand::Generator) -> Self {
@@ -47,22 +48,21 @@ impl Exfat {
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
-        let object = object::Object::root(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
-        let directory_tree: object::FileOrDirectory = object.content();
+        let root_directory = object::Object::root(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
-        let boot_sector: boot_sector::BootSector = boot_sector.correct(&fat, &object, &clusters);
+        let boot_sector: boot_sector::BootSector = boot_sector.correct(&fat, &root_directory, &clusters);
         let boot_checksum = boot_checksum::BootChecksum::new(&boot_sector, &extended_boot_sectors, &oem_parameters, &reserved_sector, boot_sector.bytes_per_sector());
         Self {
             boot_checksum,
             boot_sector,
             clusters,
-            directory_tree,
             extended_boot_sectors,
             fat,
             oem_parameters,
             reserved_sector,
+            root_directory,
         }
     }
 
@@ -106,29 +106,29 @@ impl Exfat {
         let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
         let root_directory = path::PathBuf::from("/");
-        let directory_tree = object::FileOrDirectory::read_directory(&root_directory, &clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        let root_directory = object::Object::read_root_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
         Self {
             boot_checksum,
             boot_sector,
             clusters,
-            directory_tree,
             extended_boot_sectors,
             fat,
             oem_parameters,
             reserved_sector,
+            root_directory,
         }
     }
 
     pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
-        self.directory_tree.upcase_table()
+        self.root_directory.upcase_table()
     }
 
     pub fn volume_guid(&self) -> guid::Guid {
-        self.directory_tree.volume_guid()
+        self.root_directory.volume_guid()
     }
 
     pub fn volume_label(&self) -> String {
-        self.directory_tree.volume_label()
+        self.root_directory.volume_label()
     }
 }
 
@@ -202,7 +202,7 @@ impl fmt::Display for Exfat {
             .map(|line| format!("volume_guid.{}\n", line))
             .fold(String::new(), |volume_guid, line| volume_guid + &line);
         let volume_label: String = format!("volume_label: \"{}\"\n", self.volume_label());
-        let directory_tree: String = format!("{}", self.directory_tree);
+        let root_directory: String = format!("{}", self.root_directory);
         let exfat: Vec<String> = vec![
             boot_sector,
             extended_boot_sectors,
@@ -213,7 +213,7 @@ impl fmt::Display for Exfat {
             upcase_table,
             volume_guid,
             volume_label,
-            directory_tree,
+            root_directory,
         ];
         let exfat: String = exfat
             .into_iter()

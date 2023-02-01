@@ -149,7 +149,13 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn read_directory(destination: &path::PathBuf, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
+    pub fn read_directory(
+        destination: &path::PathBuf,
+        clusters: &cluster::Clusters,
+        fat: &fat::Fat,
+        cluster_number: u32,
+        cluster_size: usize
+    ) -> Self {
         let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries, clusters);
         let file_directory_entries: Vec<Option<directory_entry::DirectoryEntry>> = directory_entries
@@ -303,12 +309,47 @@ pub struct Object {
 }
 
 impl Object {
+    pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) -> allocation_bitmap::AllocationBitmap {
+        self.content.allocation_bitmap(clusters)
+    }
+
     pub fn content(&self) -> FileOrDirectory {
         self.content.clone()
     }
 
     pub fn first_cluster(&self) -> u32 {
         self.first_cluster
+    }
+
+    pub fn read_root_directory(
+        clusters: &cluster::Clusters,
+        fat: &fat::Fat,
+        first_cluster: u32,
+        cluster_size: usize
+    ) -> Rc<Self> {
+        let destination = path::PathBuf::from("/");
+        let content = FileOrDirectory::read_directory(&destination, clusters, fat, first_cluster, cluster_size);
+        let directory_entry: Option<directory_entry::DirectoryEntry> = None;
+        let parent = RefCell::new(Weak::new());
+        let object = Rc::new(Self {
+            content,
+            destination,
+            directory_entry,
+            first_cluster,
+            parent,
+        });
+        if let FileOrDirectory::Directory{
+            children,
+            directory_entries: _,
+        } = &object.content {
+            for child in children.borrow().iter() {
+                match child.parent.borrow().upgrade() {
+                    Some(parent) => println!("{} has a parent {}.", child.destination.display(), parent.destination.display()),
+                    None => println!("{} has no parent.", child.destination.display()),
+                }
+            }
+        }
+        object
     }
 
     pub fn root(
@@ -321,6 +362,27 @@ impl Object {
         let destination = &path::PathBuf::from("/");
         let is_root: bool = true;
         Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, rand_generator)
+    }
+
+    pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
+        match self.parent.borrow().upgrade() {
+            Some(parent) => {
+                println!("{} has a parent.", self.destination.display());
+                parent.upcase_table()
+            },
+            None => {
+                println!("{} has no parent.", self.destination.display());
+                self.content.upcase_table()
+            },
+        }
+    }
+
+    pub fn volume_guid(&self) -> guid::Guid {
+        self.content.volume_guid()
+    }
+
+    pub fn volume_label(&self) -> String {
+        self.content.volume_label()
     }
 
     fn new(
@@ -430,19 +492,6 @@ impl Object {
             }
         } else {
             panic!("Can't read an object.");
-        }
-    }
-
-    fn upcase_table(&self) -> upcase_table::UpcaseTable {
-        match self.parent.borrow().upgrade() {
-            Some(parent) => {
-                println!("{} has a parent.", self.destination.display());
-                parent.upcase_table()
-            },
-            None => {
-                println!("{} has no parent.", self.destination.display());
-                self.content.upcase_table()
-            },
         }
     }
 }
