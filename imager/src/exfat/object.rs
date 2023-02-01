@@ -96,33 +96,37 @@ impl FileOrDirectory {
                 .iter()
                 .map(|object| object.directory_entry.clone().expect("Can't create a file or directory."))
                 .collect();
-            let upcase_table: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters)),
-                false => None,
+            let upcase_table: Option<directory_entry::DirectoryEntry> = if is_root {
+                Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters))
+            } else {
+                None
             };
             match upcase_table {
                 Some(upcase_table) => directory_entries.push(upcase_table),
                 None => (),
             }
-            let volume_label: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::volume_label("THEOS")),
-                false => None,
+            let volume_label: Option<directory_entry::DirectoryEntry> = if is_root {
+                Some(directory_entry::DirectoryEntry::volume_label("THEOS"))
+            } else {
+                None
             };
             match volume_label {
                 Some(volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
-            let volume_guid: Option<directory_entry::DirectoryEntry> = match is_root {
-                true => Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128())),
-                false => None,
+            let volume_guid: Option<directory_entry::DirectoryEntry> = if is_root {
+                Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128()))
+            } else {
+                None
             };
             match volume_guid {
                 Some(volume_guid) => directory_entries.push(volume_guid),
                 None => (),
             }
-            let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = match is_root {
-                true => directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats()),
-                false => vec![],
+            let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = if is_root {
+                directory_entry::DirectoryEntry::allocation_bitmaps(clusters, &directory_entries, boot_sector.num_of_fats())
+            } else {
+                vec![]
             };
             let mut allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = allocation_bitmaps
                 .into_iter()
