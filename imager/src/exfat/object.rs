@@ -313,10 +313,6 @@ impl Object {
         self.content.allocation_bitmap(clusters)
     }
 
-    pub fn content(&self) -> FileOrDirectory {
-        self.content.clone()
-    }
-
     pub fn first_cluster(&self) -> u32 {
         self.first_cluster
     }
