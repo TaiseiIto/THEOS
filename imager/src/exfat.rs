@@ -193,10 +193,6 @@ impl fmt::Display for Exfat {
             .lines()
             .map(|line| format!("allocation_bitmap.{}\n", line))
             .fold(String::new(), |allocation_bitmap, line| allocation_bitmap + &line);
-        let upcase_table: String = format!("{}", self.upcase_table())
-            .lines()
-            .map(|line| format!("upcase_table.{}\n", line))
-            .fold(String::new(), |upcase_table, line| upcase_table + &line);
         let volume_guid: String = format!("{}", self.volume_guid())
             .lines()
             .map(|line| format!("volume_guid.{}\n", line))
@@ -210,7 +206,6 @@ impl fmt::Display for Exfat {
             reserved_sector,
             boot_checksum,
             allocation_bitmap,
-            upcase_table,
             volume_guid,
             volume_label,
             root_directory,
