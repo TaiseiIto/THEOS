@@ -94,7 +94,7 @@ impl FileOrDirectory {
             let mut directory_entries: Vec<directory_entry::DirectoryEntry> = children
                 .borrow()
                 .iter()
-                .map(|object| object.directory_entry.clone())
+                .map(|object| object.directory_entry.clone().expect("Can't create a file or directory."))
                 .collect();
             let upcase_table: Option<directory_entry::DirectoryEntry> = match is_root {
                 true => Some(directory_entry::DirectoryEntry::upcase_table(upcase_table, clusters)),
@@ -148,7 +148,7 @@ impl FileOrDirectory {
     pub fn read_directory(destination: &path::PathBuf, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_number: u32, cluster_size: usize) -> Self {
         let directory_entries: Vec<u8> = clusters.get_bytes(cluster_number);
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&directory_entries, clusters);
-        let file_directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entries
+        let file_directory_entries: Vec<Option<directory_entry::DirectoryEntry>> = directory_entries
             .iter()
             .filter(|directory_entry| match directory_entry {
                 directory_entry::DirectoryEntry::File {
@@ -160,7 +160,7 @@ impl FileOrDirectory {
                 } => true,
                 _ => false,
             })
-            .map(|directory_entry| directory_entry.clone())
+            .map(|directory_entry| Some(directory_entry.clone()))
             .collect();
         let children: Vec<Rc<Object>> = file_directory_entries
             .iter()
@@ -293,7 +293,7 @@ impl fmt::Display for FileOrDirectory {
 pub struct Object {
     content: FileOrDirectory,
     destination: path::PathBuf,
-    directory_entry: directory_entry::DirectoryEntry,
+    directory_entry: Option<directory_entry::DirectoryEntry>,
     first_cluster: u32,
     parent: RefCell<Weak<Self>>,
 }
@@ -330,7 +330,11 @@ impl Object {
     ) -> Rc<Self> {
         let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, rand_generator);
         let destination: path::PathBuf = destination.to_path_buf();
-        let directory_entry = directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table);
+        let directory_entry = if is_root {
+            None
+        } else {
+            Some(directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table))
+        };
         let parent = RefCell::new(Weak::new());
         let object = Rc::new(Self {
             content,
@@ -358,15 +362,15 @@ impl Object {
         object
     }
 
-    fn read(parent: &path::PathBuf, directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Rc<Self> {
-        let directory_entry: directory_entry::DirectoryEntry = directory_entry.clone();
-        if let directory_entry::DirectoryEntry::File {
+    fn read(parent: &path::PathBuf, directory_entry: &Option<directory_entry::DirectoryEntry>, clusters: &cluster::Clusters, fat: &fat::Fat, cluster_size: usize) -> Rc<Self> {
+        let directory_entry: Option<directory_entry::DirectoryEntry> = directory_entry.clone();
+        if let Some(directory_entry::DirectoryEntry::File {
             ref file_attributes,
             create_time: _,
             modified_time: _,
             accessed_time: _,
             ref stream_extension,
-        } = directory_entry {
+        }) = directory_entry {
             if let directory_entry::DirectoryEntry::StreamExtension {
                 general_flags: _,
                 name_length: _,
@@ -375,9 +379,12 @@ impl Object {
                 data_length,
                 file_name: _,
             } = &**stream_extension {
-                let file_name: String = directory_entry
-                    .get_file_name()
-                    .expect("Can't read an object.");
+                let file_name: String = match directory_entry {
+                    Some(ref directory_entry) => directory_entry
+                        .get_file_name()
+                        .expect("Can't read an object."),
+                    None => "".to_string(),
+                };
                 let mut destination: path::PathBuf = parent.to_path_buf();
                 destination.push(file_name);
                 let first_cluster: u32 = *first_cluster;
