@@ -12,7 +12,7 @@ pub struct MacAddress {
 }
 
 impl MacAddress {
-    pub fn get_address(&self) -> u64 {
+    pub fn address(&self) -> u64 {
         self.address
     }
 

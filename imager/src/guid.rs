@@ -65,7 +65,7 @@ impl Guid {
 
     pub fn to_u128(&self) -> u128 {
         let clock_sequence: u128 = (self.clock_sequence as u128) << 0x40;
-        let mac_address: u128 = (self.mac_address.get_address() as u128) << 0x50;
+        let mac_address: u128 = (self.mac_address.address() as u128) << 0x50;
         let time: u128 = self.time.guid_timestamp() as u128;
         let version: u128 = (self.version as u128) << 0x3c;
         clock_sequence + mac_address + time + version
