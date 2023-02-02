@@ -1,3 +1,4 @@
+mod args;
 mod binary;
 mod exfat;
 mod guid;
@@ -9,38 +10,30 @@ use {
     binary::Binary,
     std::{
         env,
+        fs,
         io,
         io::Write,
-        path,
     },
 };
 
 fn main() {
-    let args = Args::new(env::args());
-    let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
-    let exfat = exfat::Exfat::new(args.boot_sector, args.source_directory, &mut rand_generator);
-    let exfat: Vec<u8> = exfat.to_bytes();
-    io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
-}
-
-#[derive(Debug)]
-struct Args {
-    boot_sector: path::PathBuf,
-    source_directory: path::PathBuf,
-}
-
-impl Args {
-    fn new(mut args: env::Args) -> Self {
-        let usage: String = String::from("Usage: $ ./imager /path/to/boot/sector /path/to/source/directory");
-        let _my_path: String = args.next().expect(&format!("{}\n{}\n", "Program path is not specified!", usage));
-        let boot_sector: String = args.next().expect(&format!("{}\n{}\n", "Boot sector is not specified!", usage));
-        let boot_sector = path::PathBuf::from(boot_sector);
-        let source_directory: String = args.next().expect(&format!("{}\n{}\n", "Source directory is not specified!", usage));
-        let source_directory = path::PathBuf::from(source_directory);
-        Self {
+    match args::Args::new(env::args()) {
+        args::Args::Read {
+            image,
+        } => {
+            let image: Vec<u8> = fs::read(&image).expect(&format!("Can't read {}!", image.display()));
+            let exfat = exfat::Exfat::read(&image);
+            println!("{}", exfat);
+        },
+        args::Args::Write {
             boot_sector,
             source_directory,
-        }
+        } => {
+            let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
+            let exfat = exfat::Exfat::new(boot_sector, source_directory, &mut rand_generator);
+            let exfat: Vec<u8> = exfat.to_bytes();
+            io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
+        },
     }
 }
 

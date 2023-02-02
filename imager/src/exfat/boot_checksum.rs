@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        fmt,
+        mem,
+    },
     super::{
         boot_sector,
         extended_boot_sector,
@@ -50,6 +53,20 @@ impl BootChecksum {
             checksum,
         }
     }
+
+    pub fn read(bytes: &Vec<u8>) -> Self {
+        let size: usize = bytes.len();
+        let checksum: [u8; mem::size_of::<u32>()] = bytes[0..4]
+            .try_into()
+            .expect("Can't read boot checksum.");
+        let checksum: u32 = unsafe {
+            mem::transmute::<[u8; mem::size_of::<u32>()], u32>(checksum)
+        };
+        Self {
+            size,
+            checksum,
+        }
+    }
 }
 
 impl Binary for BootChecksum {
@@ -65,6 +82,14 @@ impl Binary for BootChecksum {
             .flatten()
             .collect();
         checksum
+    }
+}
+
+impl fmt::Display for BootChecksum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let checksum = format!("checksum: {:#010x}", self.checksum);
+        let size = format!("size: {:#x}", self.size);
+        write!(f, "{}\n{}", checksum, size)
     }
 }
 
