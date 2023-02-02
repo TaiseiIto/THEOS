@@ -1,3 +1,5 @@
+mod volume_label;
+
 use {
     std::{
         char,
@@ -282,9 +284,9 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::VolumeLabel => {
-                        let volume_label = RawVolumeLabel::read(&directory_entry);
-                        let character_count: usize = volume_label.character_count as usize;
-                        let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label;
+                        let volume_label = volume_label::RawVolumeLabel::read(&directory_entry);
+                        let character_count: usize = volume_label.character_count() as usize;
+                        let volume_label: [u16; volume_label::VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label();
                         let volume_label: String = char::decode_utf16(volume_label[0..character_count].iter().cloned())
                             .filter_map(|c| c.ok())
                             .collect();
@@ -551,7 +553,7 @@ impl DirectoryEntry {
             } => RawVolumeGuid::new(self).raw(),
             Self::VolumeLabel {
                 volume_label: _,
-            } => RawVolumeLabel::new(self).raw(),
+            } => volume_label::RawVolumeLabel::new(self).raw(),
         }
     }
 }
@@ -1275,61 +1277,6 @@ impl Raw for RawVolumeGuid {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawVolumeGuid."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
-}
-
-const VOLUME_LABEL_MAX_LENGTH: usize = 11;
-
-#[allow(dead_code)]
-#[repr(packed)]
-#[derive(Copy, Clone)]
-struct RawVolumeLabel {
-    entry_type: u8,
-    character_count: u8,
-    volume_label: [u16; VOLUME_LABEL_MAX_LENGTH],
-    reserved: u64,
-}
-
-impl Raw for RawVolumeLabel {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::VolumeLabel {
-                volume_label,
-            } => {
-                let mut volume_label: Vec<u16> = volume_label
-                    .encode_utf16()
-                    .collect();
-                let character_count = volume_label.len() as u8;
-                while volume_label.len() < VOLUME_LABEL_MAX_LENGTH {
-                    volume_label.push(0x0000);
-                }
-                let (volume_label, _): (&[u16], &[u16]) = volume_label.split_at(VOLUME_LABEL_MAX_LENGTH);
-                let volume_label: [u16; VOLUME_LABEL_MAX_LENGTH] = volume_label
-                    .try_into()
-                    .expect("Can't convert volume label into [u16; VOLUME_LABEL_MAX_LENGTH].");
-                let reserved: u64 = 0;
-                Self {
-                    entry_type,
-                    character_count,
-                    volume_label,
-                    reserved,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawVolumeLabel."),
         }
     }
 
