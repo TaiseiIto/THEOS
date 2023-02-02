@@ -1,3 +1,4 @@
+mod raw_allocation_bitmap;
 mod raw_file;
 mod raw_file_name;
 mod raw_stream_extension;
@@ -309,10 +310,10 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::AllocationBitmap => {
-                        let allocation_bitmap = RawAllocationBitmap::read(&directory_entry);
-                        let bitmap_identifier: bool = allocation_bitmap.bitmap_flags & 0x01 != 0;
-                        let first_cluster: u32 = allocation_bitmap.first_cluster;
-                        let data_length: usize = allocation_bitmap.data_length as usize;
+                        let allocation_bitmap = raw_allocation_bitmap::RawAllocationBitmap::read(&directory_entry);
+                        let bitmap_identifier: bool = allocation_bitmap.bitmap_flags() & 0x01 != 0;
+                        let first_cluster: u32 = allocation_bitmap.first_cluster();
+                        let data_length: usize = allocation_bitmap.data_length() as usize;
                         Some(Self::AllocationBitmap {
                             bitmap_identifier,
                             first_cluster,
@@ -525,7 +526,7 @@ impl DirectoryEntry {
                 bitmap_identifier: _,
                 first_cluster: _,
                 data_length: _,
-            } => RawAllocationBitmap::new(self).raw(),
+            } => raw_allocation_bitmap::RawAllocationBitmap::new(self).raw(),
             Self::File {
                 file_attributes: _,
                 create_time: _,
@@ -912,57 +913,5 @@ trait Raw {
     fn new(directory_entry: &DirectoryEntry) -> Self;
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
     fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct RawAllocationBitmap {
-    entry_type: u8,
-    bitmap_flags: u8,
-    reserved: [u8; 0x12],
-    first_cluster: u32,
-    data_length: u64,
-}
-
-impl Raw for RawAllocationBitmap {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => {
-                let bitmap_flags: u8 = match bitmap_identifier {
-                    true => 0x01,
-                    false => 0x00,
-                };
-                let reserved: [u8; 0x12] = [0; 0x12];
-                let first_cluster: u32 = *first_cluster;
-                let data_length: u64 = *data_length as u64;
-                Self {
-                    entry_type,
-                    bitmap_flags,
-                    reserved,
-                    first_cluster,
-                    data_length,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
 }
 
