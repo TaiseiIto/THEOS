@@ -217,7 +217,7 @@ impl fmt::Display for Exfat {
         let cluster_used_flags: String = cluster_used_flags
             .into_iter()
             .map(|(cluster_number, used)| format!("cluster[{}] is {}.\n", cluster_number, if used {
-                "used"
+                "in use"
             } else {
                 "available"
             }))

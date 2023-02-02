@@ -79,7 +79,7 @@ impl fmt::Display for AllocationBitmap {
         let bitmap: String = bitmap
             .into_iter()
             .map(|(cluster, used)| format!("cluster[{:#010x}]: {}\n", cluster, if used {
-                "used"
+                "in use"
             } else {
                 "available"
             }))
