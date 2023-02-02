@@ -1,3 +1,4 @@
+mod file_attributes;
 mod general_flags;
 mod raw_allocation_bitmap;
 mod raw_file;
@@ -39,7 +40,7 @@ pub enum DirectoryEntry {
         data_length: usize,
     },
     File {
-        file_attributes: FileAttributes,
+        file_attributes: file_attributes::FileAttributes,
         create_time: time::Time,
         modified_time: time::Time,
         accessed_time: time::Time,
@@ -129,7 +130,7 @@ impl DirectoryEntry {
     }
 
     pub fn file(path: &PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let file_attributes = FileAttributes::new(path);
+        let file_attributes = file_attributes::FileAttributes::new(path);
         let create_time: time::Time = time::Time::last_changed_time(path);
         let modified_time: time::Time = time::Time::last_modified_time(path);
         let accessed_time: time::Time = time::Time::last_accessed_time(path);
@@ -218,7 +219,7 @@ impl DirectoryEntry {
                         let file_attributes: u16 = unsafe {
                             mem::transmute::<[u8; 2], u16>(file_attributes)
                         };
-                        let file_attributes = FileAttributes::read(file_attributes);
+                        let file_attributes = file_attributes::FileAttributes::read(file_attributes);
                         let create_time = time::Time::from_fat_timestamp(file.create_timestamp(), file.create_10ms_increment(), file.create_utc_offset());
                         let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp(), file.last_modified_10ms_increment(), file.last_modified_utc_offset());
                         let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp(), 0, file.last_accessed_utc_offset());
@@ -740,75 +741,6 @@ impl EntryType {
             type_importance,
             type_category,
             in_use,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct FileAttributes {
-    read_only: bool,
-    hidden: bool,
-    system: bool,
-    directory: bool,
-    archive: bool,
-}
-
-impl FileAttributes {
-    pub fn is_dir(&self) -> bool {
-        self.directory
-    }
-
-    fn new(path: &PathBuf) -> Self {
-        let read_only = true;
-        let hidden = false;
-        let system = true;
-        let directory = path.is_dir();
-        let archive = false;
-        Self {
-            read_only,
-            hidden,
-            system,
-            directory,
-            archive,
-        }
-    }
-
-    fn to_word(&self) -> u16 {
-        let read_only: u16 = match self.read_only {
-            true => 1,
-            false => 0,
-        };
-        let hidden: u16 = match self.hidden {
-            true => 1 << 1,
-            false => 0,
-        };
-        let system: u16 = match self.system {
-            true => 1 << 2,
-            false => 0,
-        };
-        let directory: u16 = match self.directory {
-            true => 1 << 4,
-            false => 0,
-        };
-        let archive: u16 = match self.archive {
-            true => 1 << 5,
-            false => 0,
-        };
-        read_only + hidden + system + directory + archive
-    }
-
-    fn read(word: u16) -> Self {
-        let read_only: bool = word & 0x0001 != 0;
-        let hidden: bool = word & 0x0002 != 0;
-        let system: bool = word & 0x0004 != 0;
-        let directory: bool = word & 0x0010 != 0;
-        let archive: bool = word & 0x0020 != 0;
-        Self {
-            read_only,
-            hidden,
-            system,
-            directory,
-            archive,
         }
     }
 }
