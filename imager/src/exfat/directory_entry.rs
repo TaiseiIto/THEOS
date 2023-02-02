@@ -1,3 +1,4 @@
+mod raw_stream_extension;
 mod raw_upcase_table;
 mod raw_volume_guid;
 mod raw_volume_label;
@@ -227,12 +228,12 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::StreamExtension => {
-                        let stream_extension = RawStreamExtension::read(&directory_entry);
-                        let general_flags = GeneralFlags::read(stream_extension.general_flags);
-                        let name_length: u8 = stream_extension.name_length;
-                        let name_hash: u16 = stream_extension.name_hash;
-                        let first_cluster: u32 = stream_extension.first_cluster;
-                        let data_length: usize = stream_extension.data_length as usize;
+                        let stream_extension = raw_stream_extension::RawStreamExtension::read(&directory_entry);
+                        let general_flags = GeneralFlags::read(stream_extension.general_flags());
+                        let name_length: u8 = stream_extension.name_length();
+                        let name_hash: u16 = stream_extension.name_hash();
+                        let first_cluster: u32 = stream_extension.first_cluster();
+                        let data_length: usize = stream_extension.data_length() as usize;
                         let file_name: Self = directory_entries.remove(0).expect("Can't read stream extension directory entry.");
                         let file_name: Box<Self> = Box::new(file_name);
                         Some(Self::StreamExtension {
@@ -542,7 +543,7 @@ impl DirectoryEntry {
                 first_cluster: _,
                 data_length: _,
                 file_name: _,
-            } => RawStreamExtension::new(self).raw(),
+            } => raw_stream_extension::RawStreamExtension::new(self).raw(),
             Self::UpcaseTable {
                 table_checksum: _,
                 first_cluster: _,
@@ -1093,73 +1094,6 @@ impl Raw for RawFileName {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawFileName."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct RawStreamExtension {
-    entry_type: u8,
-    general_flags: u8,
-    reserved_1: u8,
-    name_length: u8,
-    name_hash: u16,
-    reserved_2: u16,
-    valid_data_length: u64,
-    reserved_3: u32,
-    first_cluster: u32,
-    data_length: u64,
-}
-
-impl Raw for RawStreamExtension {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::StreamExtension {
-                general_flags,
-                name_length,
-                name_hash,
-                first_cluster,
-                data_length,
-                file_name: _,
-            } => {
-                let general_flags: u8 = general_flags.to_byte();
-                let reserved_1: u8 = 0;
-                let name_length: u8 = *name_length;
-                let name_hash: u16 = *name_hash;
-                let reserved_2: u16 = 0;
-                let reserved_3: u32 = 0;
-                let data_length: u64 = *data_length as u64;
-                let valid_data_length: u64 = data_length;
-                let first_cluster: u32 = *first_cluster;
-                Self {
-                    entry_type,
-                    general_flags,
-                    reserved_1,
-                    name_length,
-                    name_hash,
-                    reserved_2,
-                    valid_data_length,
-                    reserved_3,
-                    first_cluster,
-                    data_length,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawStreamExtension."),
         }
     }
 
