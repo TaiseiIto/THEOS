@@ -1,3 +1,4 @@
+mod entry_type;
 mod file_attributes;
 mod general_flags;
 mod raw_allocation_bitmap;
@@ -411,25 +412,25 @@ impl DirectoryEntry {
         }
     }
 
-    fn entry_type(&self) -> EntryType {
+    fn entry_type(&self) -> entry_type::EntryType {
         match self {
             Self::AllocationBitmap {
                 bitmap_identifier: _,
                 first_cluster: _,
                 data_length: _,
-            } => EntryType::allocation_bitmap(),
+            } => entry_type::EntryType::allocation_bitmap(),
             Self::File {
                 file_attributes: _,
                 create_time: _,
                 modified_time: _,
                 accessed_time: _,
                 stream_extension: _,
-            } => EntryType::file(),
+            } => entry_type::EntryType::file(),
             Self::FileName {
                 general_flags: _,
                 file_name: _,
                 next_file_name: _,
-            } => EntryType::file_name(),
+            } => entry_type::EntryType::file_name(),
             Self::StreamExtension {
                 general_flags: _,
                 name_length: _,
@@ -437,20 +438,20 @@ impl DirectoryEntry {
                 first_cluster: _,
                 data_length: _,
                 file_name: _,
-            } => EntryType::stream_extension(),
+            } => entry_type::EntryType::stream_extension(),
             Self::UpcaseTable {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
                 upcase_table: _,
-            } => EntryType::upcase_table(),
+            } => entry_type::EntryType::upcase_table(),
             Self::VolumeGuid {
                 general_flags: _,
                 volume_guid: _,
-            } => EntryType::volume_guid(),
+            } => entry_type::EntryType::volume_guid(),
             Self::VolumeLabel {
                 volume_label: _,
-            } => EntryType::volume_label(),
+            } => entry_type::EntryType::volume_label(),
         }
     }
 
@@ -622,126 +623,5 @@ trait Raw {
     fn new(directory_entry: &DirectoryEntry) -> Self;
     fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
     fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
-}
-
-#[derive(Debug)]
-struct EntryType {
-    type_code: type_code::TypeCode,
-    type_importance: bool,
-    type_category: bool,
-    in_use: bool,
-}
-
-impl EntryType {
-    fn allocation_bitmap() -> Self {
-        let type_code = type_code::TypeCode::AllocationBitmap;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn file() -> Self {
-        let type_code = type_code::TypeCode::File;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn file_name() -> Self {
-        let type_code = type_code::TypeCode::FileName;
-        let type_importance = false;
-        let type_category = true;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn stream_extension() -> Self {
-        let type_code = type_code::TypeCode::StreamExtension;
-        let type_importance = false;
-        let type_category = true;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn to_byte(&self) -> u8 {
-        let type_code: u8 = self.type_code.to_byte();
-        let type_importance: u8 = if self.type_importance {
-            1 << 5
-        } else {
-            0
-        };
-        let type_category: u8 = if self.type_category {
-            1 << 6
-        } else {
-            0
-        };
-        let in_use: u8 = if self.in_use {
-            1 << 7
-        } else {
-            0
-        };
-        type_code + type_importance + type_category + in_use
-    }
-
-    fn upcase_table() -> Self {
-        let type_code = type_code::TypeCode::UpcaseTable;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_guid() -> Self {
-        let type_code = type_code::TypeCode::VolumeGuid;
-        let type_importance = true;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
-
-    fn volume_label() -> Self {
-        let type_code = type_code::TypeCode::VolumeLabel;
-        let type_importance = false;
-        let type_category = false;
-        let in_use = true;
-        Self {
-            type_code,
-            type_importance,
-            type_category,
-            in_use,
-        }
-    }
 }
 
