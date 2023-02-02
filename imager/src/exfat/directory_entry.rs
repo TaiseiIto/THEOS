@@ -1,3 +1,4 @@
+mod raw_file_name;
 mod raw_stream_extension;
 mod raw_upcase_table;
 mod raw_volume_guid;
@@ -246,9 +247,9 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::FileName => {
-                        let file_name = RawFileName::read(&directory_entry);
-                        let general_flags = GeneralFlags::read(file_name.general_flags);
-                        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name;
+                        let file_name = raw_file_name::RawFileName::read(&directory_entry);
+                        let general_flags = GeneralFlags::read(file_name.general_flags());
+                        let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name();
                         let next_file_name: Option<Box<Self>> = match directory_entries.remove(0) {
                             Some(directory_entry) => match directory_entry {
                                 Self::FileName {
@@ -535,7 +536,7 @@ impl DirectoryEntry {
                 general_flags: _,
                 file_name: _,
                 next_file_name: _,
-            } => RawFileName::new(self).raw(),
+            } => raw_file_name::RawFileName::new(self).raw(),
             Self::StreamExtension {
                 general_flags: _,
                 name_length: _,
@@ -1051,49 +1052,6 @@ impl Raw for RawFile {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawFile."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct RawFileName {
-    entry_type: u8,
-    general_flags: u8,
-    file_name: [u16; FILE_NAME_BLOCK_LENGTH],
-}
-
-impl Raw for RawFileName {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::FileName {
-                general_flags,
-                file_name,
-                next_file_name: _,
-            } => {
-                let general_flags: u8 = general_flags.to_byte();
-                let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
-                Self {
-                    entry_type,
-                    general_flags,
-                    file_name,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawFileName."),
         }
     }
 
