@@ -5,6 +5,7 @@ mod raw_stream_extension;
 mod raw_upcase_table;
 mod raw_volume_guid;
 mod raw_volume_label;
+mod type_code;
 
 use {
     std::{
@@ -206,9 +207,9 @@ impl DirectoryEntry {
         let directory_entry: Option<Self> = match directory_entry {
             Some(directory_entry) => {
                 let type_code: u8 = directory_entry[0];
-                let type_code = TypeCode::read(type_code);
+                let type_code = type_code::TypeCode::read(type_code);
                 match type_code {
-                    TypeCode::File => {
+                    type_code::TypeCode::File => {
                         let file = raw_file::RawFile::read(&directory_entry);
                         let file_attributes: [u8; 2] = directory_entry[4..6]
                             .try_into()
@@ -230,7 +231,7 @@ impl DirectoryEntry {
                             stream_extension,
                         })
                     },
-                    TypeCode::StreamExtension => {
+                    type_code::TypeCode::StreamExtension => {
                         let stream_extension = raw_stream_extension::RawStreamExtension::read(&directory_entry);
                         let general_flags = GeneralFlags::read(stream_extension.general_flags());
                         let name_length: u8 = stream_extension.name_length();
@@ -248,7 +249,7 @@ impl DirectoryEntry {
                             file_name,
                         })
                     },
-                    TypeCode::FileName => {
+                    type_code::TypeCode::FileName => {
                         let file_name = raw_file_name::RawFileName::read(&directory_entry);
                         let general_flags = GeneralFlags::read(file_name.general_flags());
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name();
@@ -276,7 +277,7 @@ impl DirectoryEntry {
                             next_file_name,
                         })
                     },
-                    TypeCode::UpcaseTable => {
+                    type_code::TypeCode::UpcaseTable => {
                         let upcase_table = raw_upcase_table::RawUpcaseTable::read(&directory_entry);
                         let table_checksum: u32 = upcase_table.table_checksum();
                         let first_cluster: u32 = upcase_table.first_cluster();
@@ -289,7 +290,7 @@ impl DirectoryEntry {
                             upcase_table,
                         })
                     },
-                    TypeCode::VolumeLabel => {
+                    type_code::TypeCode::VolumeLabel => {
                         let volume_label = raw_volume_label::RawVolumeLabel::read(&directory_entry);
                         let character_count: usize = volume_label.character_count() as usize;
                         let volume_label: [u16; raw_volume_label::VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label();
@@ -300,7 +301,7 @@ impl DirectoryEntry {
                             volume_label,
                         })
                     },
-                    TypeCode::VolumeGuid => {
+                    type_code::TypeCode::VolumeGuid => {
                         let volume_guid = raw_volume_guid::RawVolumeGuid::read(&directory_entry);
                         let general_flags = GeneralFlags::read(volume_guid.general_flags() as u8);
                         let volume_guid: u128 = volume_guid.volume_guid();
@@ -309,7 +310,7 @@ impl DirectoryEntry {
                             volume_guid,
                         })
                     },
-                    TypeCode::AllocationBitmap => {
+                    type_code::TypeCode::AllocationBitmap => {
                         let allocation_bitmap = raw_allocation_bitmap::RawAllocationBitmap::read(&directory_entry);
                         let bitmap_identifier: bool = allocation_bitmap.bitmap_flags() & 0x01 != 0;
                         let first_cluster: u32 = allocation_bitmap.first_cluster();
@@ -615,9 +616,15 @@ impl Binary for DirectoryEntry {
     }
 }
 
+trait Raw {
+    fn new(directory_entry: &DirectoryEntry) -> Self;
+    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
+    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
+}
+
 #[derive(Debug)]
 struct EntryType {
-    type_code: TypeCode,
+    type_code: type_code::TypeCode,
     type_importance: bool,
     type_category: bool,
     in_use: bool,
@@ -625,7 +632,7 @@ struct EntryType {
 
 impl EntryType {
     fn allocation_bitmap() -> Self {
-        let type_code = TypeCode::AllocationBitmap;
+        let type_code = type_code::TypeCode::AllocationBitmap;
         let type_importance = false;
         let type_category = false;
         let in_use = true;
@@ -638,7 +645,7 @@ impl EntryType {
     }
 
     fn file() -> Self {
-        let type_code = TypeCode::File;
+        let type_code = type_code::TypeCode::File;
         let type_importance = false;
         let type_category = false;
         let in_use = true;
@@ -651,7 +658,7 @@ impl EntryType {
     }
 
     fn file_name() -> Self {
-        let type_code = TypeCode::FileName;
+        let type_code = type_code::TypeCode::FileName;
         let type_importance = false;
         let type_category = true;
         let in_use = true;
@@ -664,7 +671,7 @@ impl EntryType {
     }
 
     fn stream_extension() -> Self {
-        let type_code = TypeCode::StreamExtension;
+        let type_code = type_code::TypeCode::StreamExtension;
         let type_importance = false;
         let type_category = true;
         let in_use = true;
@@ -697,7 +704,7 @@ impl EntryType {
     }
 
     fn upcase_table() -> Self {
-        let type_code = TypeCode::UpcaseTable;
+        let type_code = type_code::TypeCode::UpcaseTable;
         let type_importance = false;
         let type_category = false;
         let in_use = true;
@@ -710,7 +717,7 @@ impl EntryType {
     }
 
     fn volume_guid() -> Self {
-        let type_code = TypeCode::VolumeGuid;
+        let type_code = type_code::TypeCode::VolumeGuid;
         let type_importance = true;
         let type_category = false;
         let in_use = true;
@@ -723,7 +730,7 @@ impl EntryType {
     }
 
     fn volume_label() -> Self {
-        let type_code = TypeCode::VolumeLabel;
+        let type_code = type_code::TypeCode::VolumeLabel;
         let type_importance = false;
         let type_category = false;
         let in_use = true;
@@ -861,57 +868,5 @@ impl GeneralFlags {
             no_fat_chain,
         }
     }
-}
-
-#[derive(Debug)]
-enum TypeCode {
-    File,
-    StreamExtension,
-    FileName,
-    UpcaseTable,
-    VolumeLabel,
-    VolumeGuid,
-    AllocationBitmap,
-}
-
-impl TypeCode {
-    fn read(byte: u8) -> Self {
-        let type_code: u8 = byte & 0x1f;
-        let type_category: bool = byte & 0x40 != 0;
-        match type_code {
-            0x00 => if type_category {
-                Self::StreamExtension
-            } else {
-                Self::VolumeGuid
-            },
-            0x01 => if type_category {
-                Self::FileName
-            } else {
-                Self::AllocationBitmap
-            },
-            0x02 => Self::UpcaseTable,
-            0x03 => Self::VolumeLabel,
-            0x05 => Self::File,
-            _ => panic!("Can't read type code."),
-        }
-    }
-
-    fn to_byte(&self) -> u8 {
-        match self {
-            Self::File => 0x05,
-            Self::StreamExtension => 0x00,
-            Self::FileName => 0x01,
-            Self::UpcaseTable => 0x02,
-            Self::VolumeLabel => 0x03,
-            Self::VolumeGuid => 0x00,
-            Self::AllocationBitmap => 0x01,
-        }
-    }
-}
-
-trait Raw {
-    fn new(directory_entry: &DirectoryEntry) -> Self;
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
 }
 
