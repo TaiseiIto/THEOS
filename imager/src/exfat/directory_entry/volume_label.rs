@@ -1,4 +1,11 @@
-use super::*;
+use {
+    std::mem,
+    super::{
+        DirectoryEntry,
+        DIRECTORY_ENTRY_SIZE,
+        Raw,
+    }
+};
 
 pub const VOLUME_LABEL_MAX_LENGTH: usize = 11;
 
