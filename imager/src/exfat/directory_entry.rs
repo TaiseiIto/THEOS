@@ -1,5 +1,6 @@
-mod volume_guid;
-mod volume_label;
+mod raw_upcase_table;
+mod raw_volume_guid;
+mod raw_volume_label;
 
 use {
     std::{
@@ -272,10 +273,10 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::UpcaseTable => {
-                        let upcase_table = RawUpcaseTable::read(&directory_entry);
-                        let table_checksum: u32 = upcase_table.table_checksum;
-                        let first_cluster: u32 = upcase_table.first_cluster;
-                        let data_length: usize = upcase_table.data_length as usize;
+                        let upcase_table = raw_upcase_table::RawUpcaseTable::read(&directory_entry);
+                        let table_checksum: u32 = upcase_table.table_checksum();
+                        let first_cluster: u32 = upcase_table.first_cluster();
+                        let data_length: usize = upcase_table.data_length() as usize;
                         let upcase_table: upcase_table::UpcaseTable = clusters.upcase_table(first_cluster, data_length);
                         Some(Self::UpcaseTable {
                             table_checksum,
@@ -285,9 +286,9 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::VolumeLabel => {
-                        let volume_label = volume_label::RawVolumeLabel::read(&directory_entry);
+                        let volume_label = raw_volume_label::RawVolumeLabel::read(&directory_entry);
                         let character_count: usize = volume_label.character_count() as usize;
-                        let volume_label: [u16; volume_label::VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label();
+                        let volume_label: [u16; raw_volume_label::VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label();
                         let volume_label: String = char::decode_utf16(volume_label[0..character_count].iter().cloned())
                             .filter_map(|c| c.ok())
                             .collect();
@@ -296,7 +297,7 @@ impl DirectoryEntry {
                         })
                     },
                     TypeCode::VolumeGuid => {
-                        let volume_guid = volume_guid::RawVolumeGuid::read(&directory_entry);
+                        let volume_guid = raw_volume_guid::RawVolumeGuid::read(&directory_entry);
                         let general_flags = GeneralFlags::read(volume_guid.general_flags() as u8);
                         let volume_guid: u128 = volume_guid.volume_guid();
                         Some(Self::VolumeGuid {
@@ -547,14 +548,14 @@ impl DirectoryEntry {
                 first_cluster: _,
                 data_length: _,
                 upcase_table: _,
-            } => RawUpcaseTable::new(self).raw(),
+            } => raw_upcase_table::RawUpcaseTable::new(self).raw(),
             Self::VolumeGuid {
                 general_flags: _,
                 volume_guid: _,
-            } => volume_guid::RawVolumeGuid::new(self).raw(),
+            } => raw_volume_guid::RawVolumeGuid::new(self).raw(),
             Self::VolumeLabel {
                 volume_label: _,
-            } => volume_label::RawVolumeLabel::new(self).raw(),
+            } => raw_volume_label::RawVolumeLabel::new(self).raw(),
         }
     }
 }
@@ -1159,59 +1160,6 @@ impl Raw for RawStreamExtension {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawStreamExtension."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct RawUpcaseTable {
-    entry_type: u8,
-    reserved_1: [u8; 0x3],
-    table_checksum: u32,
-    reserved_2: [u8; 0xc],
-    first_cluster: u32,
-    data_length: u64,
-}
-
-impl Raw for RawUpcaseTable {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::UpcaseTable {
-                table_checksum,
-                first_cluster,
-                data_length,
-                upcase_table: _,
-            } => {
-                let reserved_1: [u8; 0x3] = [0x0; 0x3];
-                let table_checksum: u32 = *table_checksum;
-                let reserved_2: [u8; 0xc] = [0x0; 0xc];
-                let first_cluster: u32 = *first_cluster;
-                let data_length: u64 = *data_length as u64;
-                Self {
-                    entry_type,
-                    reserved_1,
-                    table_checksum,
-                    reserved_2,
-                    first_cluster,
-                    data_length,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawUpcaseTable."),
         }
     }
 
