@@ -1,3 +1,4 @@
+mod general_flags;
 mod raw_allocation_bitmap;
 mod raw_file;
 mod raw_file_name;
@@ -45,12 +46,12 @@ pub enum DirectoryEntry {
         stream_extension: Box<Self>,
     },
     FileName {
-        general_flags: GeneralFlags,
+        general_flags: general_flags::GeneralFlags,
         file_name: [u16; FILE_NAME_BLOCK_LENGTH],
         next_file_name: Option<Box<Self>>,
     },
     StreamExtension {
-        general_flags: GeneralFlags,
+        general_flags: general_flags::GeneralFlags,
         name_length: u8,
         name_hash: u16,
         first_cluster: u32,
@@ -64,7 +65,7 @@ pub enum DirectoryEntry {
         upcase_table: upcase_table::UpcaseTable,
     },
     VolumeGuid {
-        general_flags: GeneralFlags,
+        general_flags: general_flags::GeneralFlags,
         volume_guid: u128,
     },
     VolumeLabel {
@@ -233,7 +234,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::StreamExtension => {
                         let stream_extension = raw_stream_extension::RawStreamExtension::read(&directory_entry);
-                        let general_flags = GeneralFlags::read(stream_extension.general_flags());
+                        let general_flags = general_flags::GeneralFlags::read(stream_extension.general_flags());
                         let name_length: u8 = stream_extension.name_length();
                         let name_hash: u16 = stream_extension.name_hash();
                         let first_cluster: u32 = stream_extension.first_cluster();
@@ -251,7 +252,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::FileName => {
                         let file_name = raw_file_name::RawFileName::read(&directory_entry);
-                        let general_flags = GeneralFlags::read(file_name.general_flags());
+                        let general_flags = general_flags::GeneralFlags::read(file_name.general_flags());
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name();
                         let next_file_name: Option<Box<Self>> = match directory_entries.remove(0) {
                             Some(directory_entry) => match directory_entry {
@@ -303,7 +304,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::VolumeGuid => {
                         let volume_guid = raw_volume_guid::RawVolumeGuid::read(&directory_entry);
-                        let general_flags = GeneralFlags::read(volume_guid.general_flags() as u8);
+                        let general_flags = general_flags::GeneralFlags::read(volume_guid.general_flags() as u8);
                         let volume_guid: u128 = volume_guid.volume_guid();
                         Some(Self::VolumeGuid {
                             general_flags,
@@ -349,7 +350,7 @@ impl DirectoryEntry {
     }
 
     pub fn volume_guid(volume_guid: u128) -> Self {
-        let general_flags = GeneralFlags::volume_guid();
+        let general_flags = general_flags::GeneralFlags::volume_guid();
         Self::VolumeGuid {
             general_flags,
             volume_guid,
@@ -453,7 +454,7 @@ impl DirectoryEntry {
     }
 
     fn file_name(mut file_name: Vec<u16>) -> Self {
-        let general_flags = GeneralFlags::file_name();
+        let general_flags = general_flags::GeneralFlags::file_name();
         let remaining_file_name: Option<Vec<u16>> = if FILE_NAME_BLOCK_LENGTH < file_name.len() {
             Some(file_name.split_off(FILE_NAME_BLOCK_LENGTH))
         } else {
@@ -499,7 +500,7 @@ impl DirectoryEntry {
     }
 
     fn stream_extension(file_name: String, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
-        let general_flags = GeneralFlags::stream_extension();
+        let general_flags = general_flags::GeneralFlags::stream_extension();
         let file_name: Vec<u16> = file_name
             .encode_utf16()
             .collect();
@@ -808,64 +809,6 @@ impl FileAttributes {
             system,
             directory,
             archive,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct GeneralFlags {
-    allocation_possible: bool,
-    no_fat_chain: bool,
-}
-
-impl GeneralFlags {
-    fn file_name() -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = false;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
-    fn read(byte: u8) -> Self {
-        let allocation_possible: bool = byte & 0x01 != 0;
-        let no_fat_chain: bool = byte & 0x02 != 0;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
-    fn stream_extension() -> Self {
-        let allocation_possible = true;
-        let no_fat_chain = false;
-        Self {
-            allocation_possible,
-            no_fat_chain,
-        }
-    }
-
-    fn to_byte(&self) -> u8 {
-        let allocation_possible = if self.allocation_possible {
-            1
-        } else {
-            0
-        };
-        let no_fat_chain = if self.no_fat_chain {
-            2
-        } else {
-            0
-        };
-        allocation_possible + no_fat_chain
-    }
-
-    fn volume_guid() -> Self {
-        let allocation_possible = false;
-        let no_fat_chain = true;
-        Self {
-            allocation_possible,
-            no_fat_chain,
         }
     }
 }
