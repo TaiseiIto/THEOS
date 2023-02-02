@@ -1,3 +1,4 @@
+mod raw_file;
 mod raw_file_name;
 mod raw_stream_extension;
 mod raw_upcase_table;
@@ -207,7 +208,7 @@ impl DirectoryEntry {
                 let type_code = TypeCode::read(type_code);
                 match type_code {
                     TypeCode::File => {
-                        let file = RawFile::read(&directory_entry);
+                        let file = raw_file::RawFile::read(&directory_entry);
                         let file_attributes: [u8; 2] = directory_entry[4..6]
                             .try_into()
                             .expect("Can't read a file directory entry.");
@@ -215,9 +216,9 @@ impl DirectoryEntry {
                             mem::transmute::<[u8; 2], u16>(file_attributes)
                         };
                         let file_attributes = FileAttributes::read(file_attributes);
-                        let create_time = time::Time::from_fat_timestamp(file.create_timestamp, file.create_10ms_increment, file.create_utc_offset);
-                        let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp, file.last_modified_10ms_increment, file.last_modified_utc_offset);
-                        let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp, 0, file.last_accessed_utc_offset);
+                        let create_time = time::Time::from_fat_timestamp(file.create_timestamp(), file.create_10ms_increment(), file.create_utc_offset());
+                        let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp(), file.last_modified_10ms_increment(), file.last_modified_utc_offset());
+                        let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp(), 0, file.last_accessed_utc_offset());
                         let stream_extension: Self = directory_entries.remove(0).expect("Can't read a file directory entry.");
                         let stream_extension: Box<Self> = Box::new(stream_extension);
                         Some(Self::File {
@@ -531,7 +532,7 @@ impl DirectoryEntry {
                 modified_time: _,
                 accessed_time: _,
                 stream_extension: _,
-            } => RawFile::new(self).raw(),
+            } => raw_file::RawFile::new(self).raw(),
             Self::FileName {
                 general_flags: _,
                 file_name: _,
@@ -949,109 +950,6 @@ impl Raw for RawAllocationBitmap {
                 }
             },
             _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-#[repr(packed)]
-struct RawFile {
-    entry_type: u8,
-    secondary_count: u8,
-    set_checksum: u16,
-    file_attributes: u16,
-    reserved_1: u16,
-    create_timestamp: u32,
-    last_modified_timestamp: u32,
-    last_accessed_timestamp: u32,
-    create_10ms_increment: u8,
-    last_modified_10ms_increment: u8,
-    create_utc_offset: i8,
-    last_modified_utc_offset: i8,
-    last_accessed_utc_offset: i8,
-    reserved_2: [u8; 7],
-}
-
-impl Raw for RawFile {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::File {
-                file_attributes,
-                create_time,
-                modified_time,
-                accessed_time,
-                stream_extension,
-            } => {
-                let secondary_count: u8 = stream_extension.directory_entry_set_length() as u8;
-                let set_checksum: u16 = 0;
-                let file_attributes: u16 = file_attributes.to_word();
-                let reserved_1: u16 = 0;
-                let create_timestamp: u32 = create_time.fat_timestamp();
-                let last_modified_timestamp: u32 = modified_time.fat_timestamp();
-                let last_accessed_timestamp: u32 = accessed_time.fat_timestamp();
-                let create_10ms_increment: u8 = create_time.get_10ms_increment();
-                let last_modified_10ms_increment: u8 = modified_time.get_10ms_increment();
-                let create_utc_offset: i8 = create_time.utc_offset();
-                let last_modified_utc_offset: i8 = modified_time.utc_offset();
-                let last_accessed_utc_offset: i8 = accessed_time.utc_offset();
-                let reserved_2: [u8; 7] = [0; 7];
-                let raw_file = Self {
-                    entry_type,
-                    secondary_count,
-                    set_checksum,
-                    file_attributes,
-                    reserved_1,
-                    create_timestamp,
-                    last_modified_timestamp,
-                    last_accessed_timestamp,
-                    create_10ms_increment,
-                    last_modified_10ms_increment,
-                    create_utc_offset,
-                    last_modified_utc_offset,
-                    last_accessed_utc_offset,
-                    reserved_2,
-                };
-                let mut bytes: Vec<u8> = raw_file.raw().to_vec();
-                let mut tail_bytes: Vec<u8> = stream_extension.to_bytes();
-                bytes.append(&mut tail_bytes);
-                let set_checksum: u16 = bytes
-                    .into_iter()
-                    .enumerate()
-                    .filter(|(i, _)| *i != 2 && *i != 3)
-                    .map(|(_, byte)| byte)
-                    .fold(0u16, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u16);
-                Self {
-                    entry_type,
-                    secondary_count,
-                    set_checksum,
-                    file_attributes,
-                    reserved_1,
-                    create_timestamp,
-                    last_modified_timestamp,
-                    last_accessed_timestamp,
-                    create_10ms_increment,
-                    last_modified_10ms_increment,
-                    create_utc_offset,
-                    last_modified_utc_offset,
-                    last_accessed_utc_offset,
-                    reserved_2,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawFile."),
         }
     }
 
