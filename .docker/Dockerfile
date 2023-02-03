@@ -39,8 +39,9 @@ RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 RUN apt install vim -y
 
 # Build EDK2
-RUN apt install nasm -y
 RUN apt install acpica-tools -y
+RUN apt install nasm -y
+RUN apt install python3 -y
 RUN apt install uuid-dev -y
 WORKDIR /root
 RUN git clone --recursive https://github.com/tianocore/edk2.git
@@ -52,7 +53,6 @@ RUN apt install libglib2.0-dev -y
 RUN apt install libpixman-1-dev -y
 RUN apt install ninja-build -y
 RUN apt install pkg-config -y
-RUN apt install python3 -y
 WORKDIR /root
 RUN git clone https://github.com/qemu-project/qemu.git
 WORKDIR /root/qemu
