@@ -38,6 +38,19 @@ RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 # Install an editor.
 RUN apt install vim -y
 
+# Install qemu.
+RUN apt install libglib2.0-dev -y
+RUN apt install libpixman-1-dev -y
+RUN apt install ninja-build -y
+RUN apt install pkg-config -y
+RUN apt install python3 -y
+WORKDIR /root
+RUN git clone https://github.com/qemu-project/qemu.git
+WORKDIR /root/qemu
+RUN ./config --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN make
+RUN make install
+
 # Clone this repository.
 WORKDIR /root
 RUN git clone https://github.com/TaiseiIto/THEOS.git
