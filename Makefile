@@ -1,16 +1,17 @@
-THEOS_ROOT=disk
 BOOT_SECTOR=src/boot_sector/boot_sector.bin
 BOOT_SOURCE=src/EFI/BOOT/BOOTX64.EFI
 BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
+COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
 THEOS=theos.img
+THEOS_ROOT=disk
 
 # Build THEOS
 all:
 	make -C imager
 	make -C src
-	cp $(BOOT_SOURCE) $(BOOT)
+	$(COPY) $(BOOT_SOURCE) $(BOOT)
 	$(IMAGER) -b $(BOOT_SECTOR) -s $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
 	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
 
