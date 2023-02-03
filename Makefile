@@ -5,7 +5,7 @@ COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
 THEOS=theos.img
-THEOS_ROOT=disk
+THEOS_ROOT=root
 
 # Build THEOS
 all:
