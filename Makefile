@@ -1,11 +1,18 @@
+THEOS_ROOT=disk
+BOOT_SECTOR=src/boot_sector/boot_sector.bin
+BOOT_SOURCE=src/EFI/BOOT/BOOTX64.EFI
+BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
+IMAGER=imager/target/release/imager
+IMAGER_LOG=imager.log
+THEOS=theos.img
+
 # Build THEOS
 all:
-	make -C src
-	cp src/EFI/BOOT/BOOTX64.EFI disk/EFI/BOOT/BOOTX64.EFI
 	make -C imager
-	imager/target/release/imager -b src/boot_sector/boot_sector.bin -s disk > theos.img 2> imager_output.txt
-	imager/target/release/imager -i theos.img >> imager_output.txt
-	cat imager_output.txt
+	make -C src
+	cp $(BOOT_SOURCE) $(BOOT)
+	$(IMAGER) -b $(BOOT_SECTOR) -s $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
+	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker

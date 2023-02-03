@@ -1,9 +1,9 @@
+*.EFI
 *.a
 *.bin
 *.efi
-*.EFI
 *.img
+*.log
 *.map
 *.o
-imager_output.txt
 
