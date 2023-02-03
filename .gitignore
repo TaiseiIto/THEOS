@@ -1,5 +1,7 @@
 *.a
 *.bin
+*.efi
+*.EFI
 *.img
 *.map
 *.o

@@ -1,0 +1,6 @@
+TARGET=BOOTX64.EFI
+SOURCE=$(TARGET:.EFI=.TXT)
+
+$(TARGET): $(SOURCE)
+	xxd -p -r $^ > $@
+
