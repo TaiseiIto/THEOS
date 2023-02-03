@@ -20,6 +20,7 @@ RUN_CONTAINER = $(RUN_PREFIX)$(CONTAINER)
 IMAGE = .image
 IMAGE_NAME = $(NAME)
 NO_IMAGE = $(NO_PREFIX)$(IMAGE)
+VNC_PORT = 5900
 
 # Enter development environment.
 all: $(RUN_CONTAINER)
@@ -49,7 +50,7 @@ $(RUN_CONTAINER): $(CONTAINER)
 	
 # Make a Docker container.
 $(CONTAINER): $(IMAGE)
-	$(DOCKER) create --name $(CONTAINER_NAME) -i -t $(IMAGE_NAME) /bin/bash
+	$(DOCKER) create --name $(CONTAINER_NAME) -p $(VNC_PORT):$(VNC_PORT) -i -t $(IMAGE_NAME) /bin/bash
 	$(CLEAR) $(NO_CONTAINER)
 	$(DONE) $@
 
