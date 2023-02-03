@@ -54,7 +54,7 @@ RUN apt install libpixman-1-dev -y
 RUN apt install ninja-build -y
 RUN apt install pkg-config -y
 WORKDIR /root
-RUN git clone https://github.com/qemu-project/qemu.git
+RUN git clone https://gitlab.com/qemu-project/qemu.git
 WORKDIR /root/qemu
 RUN ./config --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
