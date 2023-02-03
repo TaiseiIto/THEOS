@@ -56,7 +56,7 @@ RUN apt install pkg-config -y
 WORKDIR /root
 RUN git clone https://gitlab.com/qemu-project/qemu.git
 WORKDIR /root/qemu
-RUN ./config --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
 RUN make install
 
