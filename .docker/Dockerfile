@@ -38,6 +38,14 @@ RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 # Install an editor.
 RUN apt install vim -y
 
+# Build EDK2
+RUN apt install nasm -y
+RUN apt install acpica-tools -y
+WORKDIR /root
+RUN git clone --recursive https://github.com/tianocore/edk2.git
+WORKDIR /root/edk2
+RUN ./OvmfPkg/build.sh -a X64
+
 # Install qemu.
 RUN apt install libglib2.0-dev -y
 RUN apt install libpixman-1-dev -y

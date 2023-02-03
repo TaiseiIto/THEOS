@@ -4,6 +4,8 @@ BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
 COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
+OVMF_CODE=/root/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
+OVMF_VARS=/root/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
 THEOS=theos.img
 THEOS_ROOT=root
 
