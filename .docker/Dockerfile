@@ -41,6 +41,7 @@ RUN apt install vim -y
 # Build EDK2
 RUN apt install nasm -y
 RUN apt install acpica-tools -y
+RUN apt install uuid-dev -y
 WORKDIR /root
 RUN git clone --recursive https://github.com/tianocore/edk2.git
 WORKDIR /root/edk2
