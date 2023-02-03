@@ -1,2 +1,0 @@
-Hello, World! in /dir0/dir0.0/test.txt
-

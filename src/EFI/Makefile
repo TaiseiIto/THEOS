@@ -1,0 +1,5 @@
+BOOT_DIRECTORY = BOOT
+
+all:
+	make -C $(BOOT_DIRECTORY)
+
