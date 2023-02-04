@@ -24,6 +24,10 @@ WORKDIR /root
 RUN wget http://mirrors.kernel.org/ubuntu/pool/universe/e/exfat-utils/exfat-utils_1.3.0-1_amd64.deb
 RUN apt install ./exfat-utils_1.3.0-1_amd64.deb -y
 RUN rm exfat-utils_1.3.0-1_amd64.deb
+RUN apt install exfatprogs -y
+
+# Install mtools
+RUN apt install mtools -y
 
 # Install a version control system.
 RUN apt install git -y
