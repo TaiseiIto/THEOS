@@ -13,6 +13,17 @@ RUN apt install build-essential -y
 
 # Install data transmission system.
 RUN apt install curl -y
+RUN apt install wget -y
+
+# Install mkfs.fat
+RUN apt install dosfstools -y
+
+# Install mkfs.exfat
+RUN apt install exfat-fuse -y
+WORKDIR /root
+RUN wget http://mirrors.kernel.org/ubuntu/pool/universe/e/exfat-utils/exfat-utils_1.3.0-1_amd64.deb
+RUN apt install ./exfat-utils_1.3.0-1_amd64.deb -y
+RUN rm exfat-utils_1.3.0-1_amd64.deb
 
 # Install a version control system.
 RUN apt install git -y
