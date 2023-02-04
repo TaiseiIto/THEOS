@@ -50,7 +50,7 @@ $(RUN_CONTAINER): $(CONTAINER)
 	
 # Make a Docker container.
 $(CONTAINER): $(IMAGE)
-	$(DOCKER) create --name $(CONTAINER_NAME) -p $(VNC_PORT):$(VNC_PORT) -i -t $(IMAGE_NAME) /bin/bash
+	$(DOCKER) create --name $(CONTAINER_NAME) -p $(VNC_PORT):$(VNC_PORT) --privileged -i -t $(IMAGE_NAME) /bin/bash
 	$(CLEAR) $(NO_CONTAINER)
 	$(DONE) $@
 
