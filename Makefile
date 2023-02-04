@@ -4,8 +4,6 @@ BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
 COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
-OVMF_CODE=/root/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
-OVMF_VARS=/root/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
 THEOS=theos.img
 THEOS_ROOT=root
 
@@ -31,6 +29,11 @@ clean_docker:
 # Usage: $ make rebuild_docker
 rebuild_docker:
 	make rebuild -C .docker
+
+# Run THEOS on QEMU.
+# Usage: $ make run
+run:
+	make -C .qemu
 
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.
