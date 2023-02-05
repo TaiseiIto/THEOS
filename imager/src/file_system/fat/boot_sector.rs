@@ -14,7 +14,7 @@ use {
     },
 };
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum BootSector {
     Fat12 {
         content: fat12::Fat12,

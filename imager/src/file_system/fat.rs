@@ -3,6 +3,7 @@ mod boot_sector;
 use {
     std::{
         fmt,
+        fs,
         path::PathBuf,
     },
     super::super::binary::Binary,
@@ -13,7 +14,15 @@ pub struct Fat {
 }
 
 impl Fat {
-    pub fn new(boot_sectors: Vec<PathBuf>) -> Self {
+    pub fn new(boot_sector_candidates: Vec<PathBuf>) -> Self {
+        let boot_sector_candidates: Vec<boot_sector::BootSector> = boot_sector_candidates
+            .into_iter()
+            .map(|boot_sector_path| {
+                let boot_sector_binary: Vec<u8> = fs::read(&boot_sector_path).expect("Can't generate a FAT file system.");
+                boot_sector::BootSector::read(&boot_sector_binary)
+            })
+            .collect();
+        let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
         }
     }
