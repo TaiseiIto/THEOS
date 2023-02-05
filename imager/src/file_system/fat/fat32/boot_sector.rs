@@ -100,6 +100,22 @@ impl fmt::Display for BootSector {
         let hidden_sectors: String = format!("hidden_sectors: {:#010x}", hidden_sectors);
         let sectors32: u32 = self.sectors32;
         let sectors32: String = format!("sectors32: {:#010x}", sectors32);
+        let sectors_per_fat32: u32 = self.sectors_per_fat32;
+        let sectors_per_fat32: String = format!("sectors_per_fat32: {:#010x}", sectors_per_fat32);
+        let fat_flags: u16 = self.fat_flags;
+        let fat_flags: String = format!("fat_flags: {:#06x}", fat_flags);
+        let file_system_version: u16 = self.file_system_version;
+        let file_system_version: String = format!("file_system_version: {:#06x}", file_system_version);
+        let root_directory_cluster: u32 = self.root_directory_cluster;
+        let root_directory_cluster: String = format!("root_directory_cluster: {:#010x}", root_directory_cluster);
+        let file_system_information_sector: u16 = self.file_system_information_sector;
+        let file_system_information_sector: String = format!("file_system_information_sector: {:#06x}", file_system_information_sector);
+        let backup_boot_sector: u16 = self.backup_boot_sector;
+        let backup_boot_sector: String = format!("backup_boot_sector: {:#06x}", backup_boot_sector);
+        let reserved0: String = "reserved0:".to_string() + &self.reserved0
+            .iter()
+            .map(|byte| format!(" {:02x}", byte))
+            .fold(String::new(), |reserved0, byte| reserved0 + &byte);
         let drive_number: u8 = self.drive_number;
         let drive_number: String = format!("drive_number: {:#04x}", drive_number);
         let reserved1: u8 = self.reserved1;
@@ -132,6 +148,13 @@ impl fmt::Display for BootSector {
             heads,
             hidden_sectors,
             sectors32,
+            sectors_per_fat32,
+            fat_flags,
+            file_system_version,
+            root_directory_cluster,
+            file_system_information_sector,
+            backup_boot_sector,
+            reserved0,
             drive_number,
             reserved1,
             extended_boot_signature,
