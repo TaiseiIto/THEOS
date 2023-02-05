@@ -2,6 +2,7 @@ pub mod exfat;
 
 use {
     std::{
+        fs,
         path::PathBuf,
         str,
     },
@@ -17,7 +18,23 @@ pub enum FileSystem {
 }
 
 impl FileSystem {
-    pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, rand_generator: &mut rand::Generator) {
+    pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, rand_generator: &mut rand::Generator) -> Self {
+        let file_system: Vec<FileSystemType> = boot_sector_candidates
+            .iter()
+            .map(|boot_sector| FileSystemType::identify(&fs::read(&boot_sector).expect("Can't read file system.")))
+            .collect();
+        match file_system[0] {
+            FileSystemType::Exfat => {
+                let boot_sector: PathBuf = boot_sector_candidates[0].clone();
+                let content = exfat::Exfat::new(boot_sector, source_directory, rand_generator);
+                Self::Exfat {
+                    content,
+                }
+            },
+            FileSystemType::Fat12 |
+            FileSystemType::Fat16 |
+            FileSystemType::Fat32 => Self::Fat,
+        }
     }
 }
 
