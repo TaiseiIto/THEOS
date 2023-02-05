@@ -1,5 +1,6 @@
 mod exfat;
 mod fat;
+mod file_system_type;
 
 use {
     std::{
@@ -7,7 +8,6 @@ use {
         fmt,
         fs,
         path::PathBuf,
-        str,
     },
     super::{
         binary::Binary,
@@ -27,18 +27,18 @@ pub enum FileSystem {
 
 impl FileSystem {
     pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, rand_generator: &mut rand::Generator) -> Self {
-        let boot_sector_candidates: HashMap<FileSystemType, PathBuf> = boot_sector_candidates
+        let boot_sector_candidates: HashMap<file_system_type::FileSystemType, PathBuf> = boot_sector_candidates
             .into_iter()
             .map(|boot_sector| {
                 let binary: Vec<u8> = fs::read(&boot_sector).expect("Can't generate a file system.");
-                let file_system = FileSystemType::identify(&binary);
+                let file_system = file_system_type::FileSystemType::identify(&binary);
                 (file_system, boot_sector)
             })
             .collect();
-        let exfat_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Exfat);
-        let fat12_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat12);
-        let fat16_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat16);
-        let fat32_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat32);
+        let exfat_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&file_system_type::FileSystemType::Exfat);
+        let fat12_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&file_system_type::FileSystemType::Fat12);
+        let fat16_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&file_system_type::FileSystemType::Fat16);
+        let fat32_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&file_system_type::FileSystemType::Fat32);
         match (
             exfat_boot_sector,
             fat12_boot_sector,
@@ -72,17 +72,17 @@ impl FileSystem {
     }
 
     pub fn read(bytes: &Vec<u8>) -> Self {
-        let file_system = FileSystemType::identify(bytes);
+        let file_system = file_system_type::FileSystemType::identify(bytes);
         match file_system {
-            FileSystemType::Exfat => {
+            file_system_type::FileSystemType::Exfat => {
                 let content = exfat::Exfat::read(bytes);
                 Self::Exfat {
                     content,
                 }
             },
-            FileSystemType::Fat12 |
-            FileSystemType::Fat16 |
-            FileSystemType::Fat32 => {
+            file_system_type::FileSystemType::Fat12 |
+            file_system_type::FileSystemType::Fat16 |
+            file_system_type::FileSystemType::Fat32 => {
                 let content = fat::Fat::read(bytes);
                 Self::Fat {
                     content,
@@ -114,37 +114,6 @@ impl fmt::Display for FileSystem {
             Self::Fat {
                 content,
             } => write!(f, "{}", content),
-        }
-    }
-}
-
-#[derive(Debug, Eq, Hash, PartialEq)]
-pub enum FileSystemType {
-    Exfat,
-    Fat12,
-    Fat16,
-    Fat32,
-}
-
-impl FileSystemType {
-    fn identify(bytes: &Vec<u8>) -> Self {
-        let file_system: &str = str::from_utf8(&bytes[3..11]).expect("Can't identify file system.");
-        match file_system {
-            "EXFAT   " => Self::Exfat,
-            _ => {
-                let file_system: &str = str::from_utf8(&bytes[54..62]).expect("Can't identify file system.");
-                match file_system {
-                    "FAT12   " => Self::Fat12,
-                    "FAT16   " => Self::Fat16,
-                    _ => {
-                        let file_system: &str = str::from_utf8(&bytes[82..90]).expect("Can't identify file system.");
-                        match file_system {
-                            "FAT32   " => Self::Fat32,
-                            _ => panic!("Can't identify file system."),
-                        }
-                    },
-                }
-            },
         }
     }
 }
