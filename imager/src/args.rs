@@ -11,7 +11,7 @@ pub enum Args {
     },
     Write {
         boot_sector: PathBuf,
-        source_directory: PathBuf,
+        root_directory: PathBuf,
     },
 }
 
@@ -27,15 +27,15 @@ impl Args {
             })
             .collect();
         let boot_sector: Option<&String> = args.get("-b");
-        let source_directory: Option<&String> = args.get("-s");
+        let root_directory: Option<&String> = args.get("-r");
         let image: Option<&String> = args.get("-i");
-        match (boot_sector, source_directory, image) {
-            (Some(boot_sector), Some(source_directory), _) => {
+        match (boot_sector, root_directory, image) {
+            (Some(boot_sector), Some(root_directory), _) => {
                 let boot_sector = PathBuf::from(boot_sector);
-                let source_directory = PathBuf::from(source_directory);
+                let root_directory = PathBuf::from(root_directory);
                 Self::Write {
                     boot_sector,
-                    source_directory,
+                    root_directory,
                 }
             },
             (_, _, Some(image)) => {

@@ -12,7 +12,7 @@ all:
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
-	$(IMAGER) -b $(BOOT_SECTOR) -s $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
+	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
 	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
