@@ -1,5 +1,5 @@
 use {
-    super::super::binary::Binary,
+    super::super::super::binary::Binary,
     std::fmt,
 };
 

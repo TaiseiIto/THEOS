@@ -16,7 +16,7 @@ use {
         cluster,
         directory_entry,
         fat,
-        super::{
+        super::super::{
             binary::Binary,
             guid,
             rand,

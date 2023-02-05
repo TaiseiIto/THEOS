@@ -3,7 +3,7 @@ use {
         fmt,
         mem,
     },
-    super::super::binary::Binary,
+    super::super::super::binary::Binary,
 };
 
 #[derive(Clone, Copy, Debug)]

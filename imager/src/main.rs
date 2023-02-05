@@ -1,6 +1,5 @@
 mod args;
 mod binary;
-mod exfat;
 mod file_system;
 mod guid;
 mod mac_address;
@@ -24,7 +23,7 @@ fn main() {
             image,
         } => {
             let image: Vec<u8> = fs::read(&image).expect(&format!("Can't read {}!", image.display()));
-            let exfat = exfat::Exfat::read(&image);
+            let exfat = file_system::exfat::Exfat::read(&image);
             println!("{}", exfat);
         },
         args::Args::Write {
@@ -33,7 +32,7 @@ fn main() {
             root_directory,
         } => match file_system {
             file_system::FileSystem::ExFat => {
-                let exfat = exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
+                let exfat = file_system::exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
                 let exfat: Vec<u8> = exfat.to_bytes();
                 io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
             },

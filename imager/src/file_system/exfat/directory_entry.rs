@@ -22,7 +22,7 @@ use {
     super::{
         allocation_bitmap,
         cluster,
-        super::{
+        super::super::{
             binary::Binary,
             time,
         },

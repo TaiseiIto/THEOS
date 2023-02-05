@@ -4,7 +4,7 @@ use {
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
         Raw,
-        super::super::Binary,
+        super::super::super::Binary,
     }
 };
 

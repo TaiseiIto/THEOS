@@ -5,7 +5,7 @@ use {
     },
     super::{
         cluster,
-        super::binary::Binary,
+        super::super::binary::Binary,
     },
 };
 

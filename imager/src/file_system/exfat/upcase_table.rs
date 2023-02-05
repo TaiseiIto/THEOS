@@ -4,7 +4,7 @@ use {
         collections::HashMap,
         fmt,
     },
-    super::super::binary::Binary,
+    super::super::super::binary::Binary,
 };
 
 #[derive(Clone, Debug)]

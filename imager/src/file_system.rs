@@ -1,3 +1,5 @@
+pub mod exfat;
+
 use std::{
     convert,
     str,

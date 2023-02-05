@@ -6,7 +6,7 @@ use {
     super::{
         allocation_bitmap,
         fat,
-        super::binary::Binary,
+        super::super::binary::Binary,
         upcase_table,
     },
 };
