@@ -4,7 +4,6 @@ use {
         env,
         path::PathBuf,
     },
-    super::file_system,
 };
 
 #[derive(Debug)]
@@ -13,7 +12,7 @@ pub enum Args {
         image: PathBuf,
     },
     Write {
-        boot_sector: PathBuf,
+        boot_sector: Vec<PathBuf>,
         root_directory: PathBuf,
     },
 }
@@ -33,15 +32,18 @@ impl Args {
         let root_directory: Option<&String> = args.get("-r");
         let image: Option<&String> = args.get("-i");
         match (boot_sector, root_directory, image) {
-            (Some(boot_sector), Some(root_directory), _) => {
-                let boot_sector = PathBuf::from(boot_sector);
+            (Some(boot_sector), Some(root_directory), None) => {
+                let boot_sector: Vec<PathBuf> = boot_sector
+                    .split(',')
+                    .map(|boot_sector| PathBuf::from(boot_sector))
+                    .collect();
                 let root_directory = PathBuf::from(root_directory);
                 Self::Write {
                     boot_sector,
                     root_directory,
                 }
             },
-            (_, _, Some(image)) => {
+            (None, None, Some(image)) => {
                 let image = PathBuf::from(image);
                 Self::Read {
                     image,

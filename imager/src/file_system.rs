@@ -1,4 +1,4 @@
-pub mod exfat;
+mod exfat;
 
 use {
     std::{

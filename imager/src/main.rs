@@ -23,16 +23,16 @@ fn main() {
             image,
         } => {
             let image: Vec<u8> = fs::read(&image).expect(&format!("Can't read {}!", image.display()));
-            let exfat = file_system::exfat::Exfat::read(&image);
-            println!("{}", exfat);
+            let file_system = file_system::FileSystem::read(&image);
+            println!("{}", file_system);
         },
         args::Args::Write {
             boot_sector,
             root_directory,
         } => {
-            let exfat = file_system::exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
-            let exfat: Vec<u8> = exfat.to_bytes();
-            io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
+            let file_system = file_system::FileSystem::new(boot_sector, root_directory, &mut rand_generator);
+            let file_system: Vec<u8> = file_system.to_bytes();
+            io::stdout().write_all(&file_system).expect("Can't write image to stdout.");
         },
     }
 }
