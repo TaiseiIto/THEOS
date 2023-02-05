@@ -15,6 +15,7 @@ all:
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
 	$(IMAGER) -b $(BOOT_SECTOR) -f $(FILE_SYSTEM) -r $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
 	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
+	cat $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
