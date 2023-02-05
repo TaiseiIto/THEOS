@@ -1,4 +1,5 @@
 mod fat12;
+mod fat16;
 
 use {
     std::{
