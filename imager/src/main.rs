@@ -27,8 +27,10 @@ fn main() {
         },
         args::Args::Write {
             boot_sector,
+            file_system,
             root_directory,
         } => {
+            eprintln!("file_system = {:?}", file_system);
             let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
             let exfat = exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
             let exfat: Vec<u8> = exfat.to_bytes();
