@@ -1,4 +1,5 @@
 mod exfat;
+mod fat;
 
 use {
     std::{
@@ -8,7 +9,7 @@ use {
         str,
     },
     super::{
-        binary,
+        binary::Binary,
         rand,
     },
 };
@@ -60,7 +61,7 @@ impl FileSystem {
     }
 }
 
-impl binary::Binary for FileSystem {
+impl Binary for FileSystem {
     fn to_bytes(&self) -> Vec<u8> {
         match self {
             Self::Exfat {
