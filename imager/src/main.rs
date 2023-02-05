@@ -17,6 +17,7 @@ use {
 };
 
 fn main() {
+    let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
     match args::Args::new(env::args()) {
         args::Args::Read {
             image,
@@ -29,12 +30,14 @@ fn main() {
             boot_sector,
             file_system,
             root_directory,
-        } => {
-            eprintln!("file_system = {:?}", file_system);
-            let mut rand_generator = rand::Generator::new(time::Time::current_time().unix_timestamp() as u32);
-            let exfat = exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
-            let exfat: Vec<u8> = exfat.to_bytes();
-            io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
+        } => match file_system {
+            args::FileSystem::ExFat => {
+                let exfat = exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
+                let exfat: Vec<u8> = exfat.to_bytes();
+                io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
+            },
+            args::FileSystem::Fat => {
+            },
         },
     }
 }
