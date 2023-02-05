@@ -8,7 +8,10 @@ use {
         fs,
         path::PathBuf,
     },
-    super::super::file_system_type,
+    super::super::{
+        file_system_type,
+        super::binary::Binary,
+    },
 };
 
 #[derive(Debug)]
@@ -52,6 +55,22 @@ impl BootSector {
                     content,
                 }
             },
+        }
+    }
+}
+
+impl Binary for BootSector {
+    fn to_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.to_bytes(),
+            Self::Fat16 {
+                content,
+            } => content.to_bytes(),
+            Self::Fat32 {
+                content,
+            } => content.to_bytes(),
         }
     }
 }
