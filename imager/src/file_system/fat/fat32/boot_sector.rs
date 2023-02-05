@@ -22,18 +22,25 @@ pub struct BootSector {
     root_directory_entries: u16,
     sectors16: u16,
     media: u8,
-    sectors_per_fat: u16,
+    sectors_per_fat16: u16,
     sectors_per_track: u16,
     heads: u16,
     hidden_sectors: u32,
     sectors32: u32,
+    sectors_per_fat32: u32,
+    fat_flags: u16,
+    file_system_version: u16,
+    root_directory_cluster: u32,
+    file_system_information_sector: u16,
+    backup_boot_sector: u16,
+    reserved0: [u8; 0xc],
     drive_number: u8,
-    reserved: u8,
+    reserved1: u8,
     extended_boot_signature: u8,
     volume_id: u32,
     volume_label: [u8; 0xb],
     file_system_type: [u8; 0x8],
-    boot_code: [u8; 0x1c0],
+    boot_code: [u8; 0x1a4],
     boot_signature: u16,
 }
 
@@ -83,8 +90,8 @@ impl fmt::Display for BootSector {
         let sectors16: String = format!("sectors16: {:#06x}", sectors16);
         let media: u8 = self.media;
         let media: String = format!("media: {:#04x}", media);
-        let sectors_per_fat: u16 = self.sectors_per_fat;
-        let sectors_per_fat: String = format!("sectors_per_fat: {:#06x}", sectors_per_fat);
+        let sectors_per_fat16: u16 = self.sectors_per_fat16;
+        let sectors_per_fat16: String = format!("sectors_per_fat16: {:#06x}", sectors_per_fat16);
         let sectors_per_track: u16 = self.sectors_per_track;
         let sectors_per_track: String = format!("sectors_per_track: {:#06x}", sectors_per_track);
         let heads: u16 = self.heads;
@@ -95,8 +102,8 @@ impl fmt::Display for BootSector {
         let sectors32: String = format!("sectors32: {:#010x}", sectors32);
         let drive_number: u8 = self.drive_number;
         let drive_number: String = format!("drive_number: {:#04x}", drive_number);
-        let reserved: u8 = self.reserved;
-        let reserved: String = format!("reserved: {:#04x}", reserved);
+        let reserved1: u8 = self.reserved1;
+        let reserved1: String = format!("reserved: {:#04x}", reserved1);
         let extended_boot_signature: u8 = self.extended_boot_signature;
         let extended_boot_signature: String = format!("extended_boot_signature: {:#04x}", extended_boot_signature);
         let volume_id: u32 = self.volume_id;
@@ -120,13 +127,13 @@ impl fmt::Display for BootSector {
             root_directory_entries,
             sectors16,
             media,
-            sectors_per_fat,
+            sectors_per_fat16,
             sectors_per_track,
             heads,
             hidden_sectors,
             sectors32,
             drive_number,
-            reserved,
+            reserved1,
             extended_boot_signature,
             volume_id,
             volume_label,

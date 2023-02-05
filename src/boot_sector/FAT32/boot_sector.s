@@ -80,7 +80,7 @@ volume_label:
 	.ascii	"THEOS      "
 
 file_system_type:
-	.ascii	"FAT16   "
+	.ascii	"FAT32   "
 
 boot_code:	# Print error message when booting on legacy BIOS.
 	movw	$stack_floor,%bp
