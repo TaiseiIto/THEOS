@@ -128,7 +128,7 @@ pub enum FileSystemType {
 
 impl FileSystemType {
     fn identify(bytes: &Vec<u8>) -> Self {
-        let file_system: &str = str::from_utf8(&bytes[3..11]).expect("Can't identify file sistem.");
+        let file_system: &str = str::from_utf8(&bytes[3..11]).expect("Can't identify file system.");
         match file_system {
             "EXFAT   " => Self::Exfat,
             _ => {
