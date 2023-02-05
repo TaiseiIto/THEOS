@@ -3,6 +3,7 @@ mod fat;
 
 use {
     std::{
+        collections::HashMap,
         fmt,
         fs,
         path::PathBuf,
@@ -26,33 +27,49 @@ pub enum FileSystem {
 
 impl FileSystem {
     pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, rand_generator: &mut rand::Generator) -> Self {
-        let file_system: Vec<FileSystemType> = boot_sector_candidates
-            .iter()
-            .map(|boot_sector| FileSystemType::identify(&fs::read(&boot_sector).expect("Can't generate a file system.")))
+        let boot_sector_candidates: HashMap<FileSystemType, PathBuf> = boot_sector_candidates
+            .into_iter()
+            .map(|boot_sector| {
+                let binary: Vec<u8> = fs::read(&boot_sector).expect("Can't generate a file system.");
+                let file_system = FileSystemType::identify(&binary);
+                (file_system, boot_sector)
+            })
             .collect();
-        match file_system[0] {
-            FileSystemType::Exfat => {
-                let boot_sector: PathBuf = boot_sector_candidates
-                    .into_iter()
-                    .next()
-                    .expect("Can't generate a file system.");
-                let content = exfat::Exfat::new(boot_sector, source_directory, rand_generator);
+        let exfat_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Exfat);
+        let fat12_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat12);
+        let fat16_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat16);
+        let fat32_boot_sector: Option<&PathBuf> = boot_sector_candidates.get(&FileSystemType::Fat32);
+        match (
+            exfat_boot_sector,
+            fat12_boot_sector,
+            fat16_boot_sector,
+            fat32_boot_sector,
+        ) {
+            (
+                Some(exfat_boot_sector),
+                None,
+                None,
+                None,
+            ) => {
+                let exfat_boot_sector: PathBuf = exfat_boot_sector.clone();
+                let content = exfat::Exfat::new(exfat_boot_sector, source_directory, rand_generator);
                 Self::Exfat {
                     content,
                 }
             },
-            FileSystemType::Fat12 |
-            FileSystemType::Fat16 |
-            FileSystemType::Fat32 => {
-                let fat12_boot_sector: PathBuf = boot_sector_candidates
-                    .into_iter()
-                    .next()
-                    .expect("Can't generate a file system.");
+            (
+                None,
+                Some(fat12_boot_sector),
+                Some(fat16_boot_sector),
+                Some(fat32_boot_sector),
+            ) => {
+                let fat12_boot_sector: PathBuf = fat12_boot_sector.clone();
                 let content = fat::Fat::new(fat12_boot_sector);
                 Self::Fat {
                     content,
                 }
             },
+            _ => panic!("Can't generate a file system."),
         }
     }
 
@@ -103,7 +120,7 @@ impl fmt::Display for FileSystem {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub enum FileSystemType {
     Exfat,
     Fat12,
