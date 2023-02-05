@@ -1,3 +1,5 @@
+mod boot_sector;
+
 use {
     std::{
         fmt,

@@ -12,7 +12,7 @@ use {
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
-pub struct BootSector {
+pub struct Fat16 {
     jump_boot: [u8; 0x3],
     oem_name: [u8; 0x8],
     bytes_per_sector: u16,
@@ -37,14 +37,14 @@ pub struct BootSector {
     boot_signature: u16,
 }
 
-impl BootSector {
+impl Fat16 {
     pub fn new(boot_sector: &PathBuf) -> Self {
         let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
         Self::read(&boot_sector)
     }
 
     pub fn read(bytes: &Vec<u8>) -> Self {
-        const SIZE: usize = mem::size_of::<BootSector>();
+        const SIZE: usize = mem::size_of::<Fat16>();
         let boot_sector = &bytes[0..SIZE];
         let boot_sector: [u8; SIZE] = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to [u8; SIZE]!");
         unsafe {
@@ -53,7 +53,7 @@ impl BootSector {
     }
 }
 
-impl Binary for BootSector {
+impl Binary for Fat16 {
     fn to_bytes(&self) -> Vec<u8> {
         let boot_sector: [u8; mem::size_of::<Self>()] = unsafe {
             mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
@@ -64,7 +64,7 @@ impl Binary for BootSector {
     }
 }
 
-impl fmt::Display for BootSector {
+impl fmt::Display for Fat16 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let jump_boot: String = "jump_boot:".to_string() + &self.jump_boot
             .iter()
