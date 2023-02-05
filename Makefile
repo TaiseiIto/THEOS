@@ -1,4 +1,4 @@
-BOOT_SECTOR=src/boot_sector/boot_sector.bin
+BOOT_SECTOR=src/boot_sector/exFAT/boot_sector.bin
 BOOT_SOURCE=src/EFI/BOOT/BOOTX64.EFI
 BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
 COPY=.bash/copy.sh
