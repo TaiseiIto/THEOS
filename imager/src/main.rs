@@ -1,6 +1,7 @@
 mod args;
 mod binary;
 mod exfat;
+mod file_system;
 mod guid;
 mod mac_address;
 mod rand;
@@ -31,12 +32,12 @@ fn main() {
             file_system,
             root_directory,
         } => match file_system {
-            args::FileSystem::ExFat => {
+            file_system::FileSystem::ExFat => {
                 let exfat = exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
                 let exfat: Vec<u8> = exfat.to_bytes();
                 io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
             },
-            args::FileSystem::Fat => {
+            file_system::FileSystem::Fat => {
             },
         },
     }
