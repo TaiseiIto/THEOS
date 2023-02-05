@@ -19,7 +19,9 @@ pub enum FileSystem {
     Exfat {
         content: exfat::Exfat,
     },
-    Fat,
+    Fat {
+        content: fat::Fat,
+    },
 }
 
 impl FileSystem {
@@ -41,7 +43,16 @@ impl FileSystem {
             },
             FileSystemType::Fat12 |
             FileSystemType::Fat16 |
-            FileSystemType::Fat32 => Self::Fat,
+            FileSystemType::Fat32 => {
+                let fat12_boot_sector: PathBuf = boot_sector_candidates
+                    .into_iter()
+                    .next()
+                    .expect("Can't generate a file system.");
+                let content = fat::Fat::new(fat12_boot_sector);
+                Self::Fat {
+                    content,
+                }
+            },
         }
     }
 
@@ -56,7 +67,12 @@ impl FileSystem {
             },
             FileSystemType::Fat12 |
             FileSystemType::Fat16 |
-            FileSystemType::Fat32 => Self::Fat,
+            FileSystemType::Fat32 => {
+                let content = fat::Fat::read(bytes);
+                Self::Fat {
+                    content,
+                }
+            },
         }
     }
 }
@@ -67,7 +83,9 @@ impl Binary for FileSystem {
             Self::Exfat {
                 content,
             } => content.to_bytes(),
-            Self::Fat => vec![],
+            Self::Fat {
+                content,
+            } => content.to_bytes(),
         }
     }
 }
@@ -78,7 +96,9 @@ impl fmt::Display for FileSystem {
             Self::Exfat {
                 content,
             } => write!(f, "{}", content),
-            Self::Fat => write!(f, ""),
+            Self::Fat {
+                content,
+            } => write!(f, "{}", content),
         }
     }
 }
