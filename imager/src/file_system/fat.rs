@@ -1,3 +1,5 @@
+mod fat12;
+
 use {
     std::fmt,
     super::super::binary::Binary,
