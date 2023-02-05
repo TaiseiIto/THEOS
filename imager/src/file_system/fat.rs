@@ -11,6 +11,7 @@ use {
 
 #[derive(Debug)]
 pub struct Fat {
+    boot_sector: boot_sector::BootSector,
 }
 
 impl Fat {
@@ -24,24 +25,27 @@ impl Fat {
             .collect();
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
+            boot_sector,
         }
     }
 
     pub fn read(bytes: &Vec<u8>) -> Self {
+        let boot_sector = boot_sector::BootSector::read(bytes);
         Self {
+            boot_sector,
         }
     }
 }
 
 impl Binary for Fat {
     fn to_bytes(&self) -> Vec<u8> {
-        vec![]
+        self.boot_sector.to_bytes()
     }
 }
 
 impl fmt::Display for Fat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "")
+        write!(f, "{}", self.boot_sector)
     }
 }
 
