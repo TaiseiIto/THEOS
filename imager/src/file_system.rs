@@ -62,7 +62,12 @@ impl FileSystem {
                 Some(fat16_boot_sector),
                 Some(fat32_boot_sector),
             ) => {
-                let content = fat::Fat::new(fat12_boot_sector);
+                let boot_sector_candidates: Vec<PathBuf> = vec![
+                    fat12_boot_sector.clone(),
+                    fat16_boot_sector.clone(),
+                    fat32_boot_sector.clone(),
+                ];
+                let content = fat::Fat::new(boot_sector_candidates);
                 Self::Fat {
                     content,
                 }

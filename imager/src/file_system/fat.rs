@@ -13,7 +13,7 @@ pub struct Fat {
 }
 
 impl Fat {
-    pub fn new(fat12_boot_sector: &PathBuf) -> Self {
+    pub fn new(boot_sectors: Vec<PathBuf>) -> Self {
         Self {
         }
     }
