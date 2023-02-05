@@ -124,8 +124,8 @@ impl BootSector {
         self.first_cluster_of_root_directory
     }
 
-    pub fn new(boot_sector: PathBuf) -> Self {
-        let boot_sector: Vec<u8> = fs::read(&boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
+    pub fn new(boot_sector: &PathBuf) -> Self {
+        let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
         Self::read(&boot_sector)
     }
 

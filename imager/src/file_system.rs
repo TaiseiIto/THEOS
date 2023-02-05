@@ -51,8 +51,7 @@ impl FileSystem {
                 None,
                 None,
             ) => {
-                let exfat_boot_sector: PathBuf = exfat_boot_sector.clone();
-                let content = exfat::Exfat::new(exfat_boot_sector, source_directory, rand_generator);
+                let content = exfat::Exfat::new(exfat_boot_sector, &source_directory, rand_generator);
                 Self::Exfat {
                     content,
                 }
@@ -63,7 +62,6 @@ impl FileSystem {
                 Some(fat16_boot_sector),
                 Some(fat32_boot_sector),
             ) => {
-                let fat12_boot_sector: PathBuf = fat12_boot_sector.clone();
                 let content = fat::Fat::new(fat12_boot_sector);
                 Self::Fat {
                     content,

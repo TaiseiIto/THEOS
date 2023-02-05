@@ -16,7 +16,7 @@ pub struct Fat {
 }
 
 impl Fat {
-    pub fn new(fat12_boot_sector: PathBuf) -> Self {
+    pub fn new(fat12_boot_sector: &PathBuf) -> Self {
         let fat12_boot_sector: Option<fat12::boot_sector::BootSector> = Some(fat12::boot_sector::BootSector::new(fat12_boot_sector));
         Self {
             fat12_boot_sector,
