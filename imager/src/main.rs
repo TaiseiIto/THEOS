@@ -28,16 +28,11 @@ fn main() {
         },
         args::Args::Write {
             boot_sector,
-            file_system,
             root_directory,
-        } => match file_system {
-            file_system::FileSystem::ExFat => {
-                let exfat = file_system::exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
-                let exfat: Vec<u8> = exfat.to_bytes();
-                io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
-            },
-            file_system::FileSystem::Fat => {
-            },
+        } => {
+            let exfat = file_system::exfat::Exfat::new(boot_sector, root_directory, &mut rand_generator);
+            let exfat: Vec<u8> = exfat.to_bytes();
+            io::stdout().write_all(&exfat).expect("Can't write image to stdout.");
         },
     }
 }

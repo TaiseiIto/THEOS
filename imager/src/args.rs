@@ -14,7 +14,6 @@ pub enum Args {
     },
     Write {
         boot_sector: PathBuf,
-        file_system: file_system::FileSystem,
         root_directory: PathBuf,
     },
 }
@@ -31,21 +30,18 @@ impl Args {
             })
             .collect();
         let boot_sector: Option<&String> = args.get("-b");
-        let file_system: Option<&String> = args.get("-f");
         let root_directory: Option<&String> = args.get("-r");
         let image: Option<&String> = args.get("-i");
-        match (boot_sector, file_system, root_directory, image) {
-            (Some(boot_sector), Some(file_system), Some(root_directory), _) => {
+        match (boot_sector, root_directory, image) {
+            (Some(boot_sector), Some(root_directory), _) => {
                 let boot_sector = PathBuf::from(boot_sector);
-                let file_system: file_system::FileSystem = file_system.parse().expect("Can't interpret args.");
                 let root_directory = PathBuf::from(root_directory);
                 Self::Write {
                     boot_sector,
-                    file_system,
                     root_directory,
                 }
             },
-            (_, _, _, Some(image)) => {
+            (_, _, Some(image)) => {
                 let image = PathBuf::from(image);
                 Self::Read {
                     image,
