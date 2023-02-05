@@ -4,6 +4,7 @@ mod fat32;
 
 use {
     std::{
+        fmt,
         fs,
         path::PathBuf,
     },
@@ -51,6 +52,22 @@ impl BootSector {
                     content,
                 }
             },
+        }
+    }
+}
+
+impl fmt::Display for BootSector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Fat12 {
+                content,
+            } => write!(f, "FAT12 boot sector\n{}", content),
+            Self::Fat16 {
+                content,
+            } => write!(f, "FAT16 boot sector\n{}", content),
+            Self::Fat32 {
+                content,
+            } => write!(f, "FAT32 boot sector\n{}", content),
         }
     }
 }
