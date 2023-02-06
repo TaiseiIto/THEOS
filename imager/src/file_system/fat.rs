@@ -1,4 +1,5 @@
 mod boot_sector;
+mod cluster;
 mod node;
 
 use {
