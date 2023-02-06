@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    fmt,
     fs,
     path::PathBuf,
     rc::{
@@ -39,6 +40,30 @@ impl Node {
         }
         node
     }
+
+    fn get_path(&self) -> PathBuf {
+        let mut path: PathBuf = match self.parent.borrow().upgrade() {
+            Some(parent) => parent.get_path(),
+            None => PathBuf::new(),
+        };
+        path.push(&self.name);
+        path
+    }
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let content: String = format!("{}", self.content);
+        let name: String = format!("{}\n", self.get_path().display());
+        let string: Vec<String> = vec![
+            name,
+            content,
+        ];
+        let string: String = string
+            .into_iter()
+            .fold(String::new(), |string, element| string + &element);
+        write!(f, "{}", string)
+    }
 }
 
 #[derive(Debug)]
@@ -72,6 +97,22 @@ impl FileOrDirectory {
         } else {
             panic!("{} is not found.", path.display())
         }
+    }
+}
+
+impl fmt::Display for FileOrDirectory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = match self {
+            Self::File => format!(""),
+            Self::Directory {
+                children
+            } => children
+                .borrow()
+                .iter()
+                .map(|child| format!("{}", child))
+                .fold(String::new(), |string, child| string + &child)
+        };
+        write!(f, "{}", string)
     }
 }
 

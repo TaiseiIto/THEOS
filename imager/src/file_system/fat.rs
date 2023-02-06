@@ -27,7 +27,7 @@ impl Fat {
             })
             .collect();
         let root = node::FileOrDirectory::new(root);
-        eprintln!("{:?}", root);
+        eprintln!("{}", root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
