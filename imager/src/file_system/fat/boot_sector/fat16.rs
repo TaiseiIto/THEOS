@@ -38,6 +38,10 @@ pub struct Fat16 {
 }
 
 impl Fat16 {
+    pub fn get_cluster_size(&self) -> usize {
+        self.bytes_per_sector as usize * self.sectors_per_cluster as usize
+    }
+
     pub fn new(boot_sector: &PathBuf) -> Self {
         let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
         Self::read(&boot_sector)

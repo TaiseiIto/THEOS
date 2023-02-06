@@ -28,6 +28,20 @@ pub enum BootSector {
 }
 
 impl BootSector {
+    pub fn get_cluster_size(&self) -> usize {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.get_cluster_size(),
+            Self::Fat16 {
+                content,
+            } => content.get_cluster_size(),
+            Self::Fat32 {
+                content,
+            } => content.get_cluster_size(),
+        }
+    }
+
     pub fn new(boot_sector: &PathBuf) -> Self {
         let boot_sector: Vec<u8> = fs::read(boot_sector).expect("Can't generate a boot sector.");
         Self::read(&boot_sector)

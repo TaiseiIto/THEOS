@@ -26,6 +26,20 @@ impl Fat {
                 boot_sector::BootSector::read(&boot_sector_binary)
             })
             .collect();
+        let cluster_size: usize = boot_sector_candidates
+            .iter()
+            .map(|boot_sector_candidate| boot_sector_candidate.get_cluster_size())
+            .fold((None, true), |(cluster_size, unanimous), next_cluster_size| match cluster_size {
+                Some(cluster_size) => if unanimous && cluster_size == next_cluster_size {
+                    (Some(cluster_size), unanimous)
+                } else {
+                    (None, false)
+                },
+                None => (Some(next_cluster_size), unanimous),
+            })
+            .0
+            .expect("Boot sector candidates are not unanimous about cluster size.");
+        eprintln!("cluster_size: {:#x}", cluster_size);
         let root = node::FileOrDirectory::new(root);
         eprintln!("{}", root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
