@@ -151,6 +151,26 @@ impl FileOrDirectory {
             panic!("{} is not found.", path.display())
         }
     }
+
+    fn number_of_clusters(&self, cluster_size: usize) -> usize {
+        let length: usize = match self {
+            Self::File {
+                bytes,
+            } => bytes.len(),
+            Self::Directory {
+                children,
+            } => {
+                let number_of_directory_entries: usize = children
+                    .borrow()
+                    .iter()
+                    .map(|child| child.number_of_directory_entries())
+                    .sum::<usize>() + 2;
+                const DIRECTORY_ENTRY_LENGTH: usize = 0x20;
+                number_of_directory_entries * DIRECTORY_ENTRY_LENGTH
+            }
+        };
+        (length + cluster_size - 1) / cluster_size
+    }
 }
 
 impl fmt::Display for FileOrDirectory {
