@@ -1,6 +1,7 @@
 mod exfat;
 mod fat;
 mod file_system_type;
+mod node;
 
 use {
     std::{
