@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    char,
     fmt,
     fs,
     path::PathBuf,
@@ -44,7 +45,7 @@ impl Node {
     fn get_path(&self) -> PathBuf {
         let mut path: PathBuf = match self.parent.borrow().upgrade() {
             Some(parent) => parent.get_path(),
-            None => PathBuf::new(),
+            None => PathBuf::from("/"),
         };
         path.push(&self.name);
         path
@@ -68,7 +69,9 @@ impl fmt::Display for Node {
 
 #[derive(Debug)]
 pub enum FileOrDirectory {
-    File,
+    File {
+        bytes: Vec<u8>,
+    },
     Directory {
         children: RefCell<Vec<Rc<Node>>>,
     },
@@ -77,7 +80,10 @@ pub enum FileOrDirectory {
 impl FileOrDirectory {
     pub fn new(path: &PathBuf) -> Self {
         if path.is_file() {
-            Self::File
+            let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+            Self::File {
+                bytes,
+            }
         } else if path.is_dir() {
             let children: Vec<Rc<Node>> = match fs::read_dir(path) {
                 Ok(directory) => directory
@@ -103,7 +109,33 @@ impl FileOrDirectory {
 impl fmt::Display for FileOrDirectory {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string: String = match self {
-            Self::File => format!(""),
+            Self::File {
+                bytes,
+            } => bytes
+                .chunks(0x10)
+                .map(|bytes| bytes
+                    .into_iter()
+                    .map(|byte| (format!("{:02x} ", byte), char::from_u32(*byte as u32).unwrap_or(char::REPLACEMENT_CHARACTER)))
+                    .map(|(hex, c)| {
+                        let c: char = match c {
+                            '\n' |
+                            '\t' |
+                            '\r' => ' ',
+                            c => c,
+                        };
+                        (hex, c)
+                    })
+                    .fold((String::new(), String::new()), |(hex_line, mut c_line), (hex, c)| {
+                        c_line.push(c);
+                        (hex_line + &hex, c_line)
+                    }))
+                .map(|(mut hex_line, c_line)| {
+                    while hex_line.len() < 0x30 {
+                        hex_line.push(' ');
+                    }
+                    hex_line + &c_line + "\n"
+                })
+                .fold(String::new(), |string, line| string + &line),
             Self::Directory {
                 children
             } => children
