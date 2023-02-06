@@ -32,6 +32,9 @@ pub struct Node {
 impl Node {
     pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
+        let cluster_size: usize = clusters.cluster_size();
+        let number_of_clusters: usize = content.number_of_clusters(cluster_size);
+        eprintln!("Number of clusters of {}: {}", path.display(), number_of_clusters);
         let last_accessed_time = time::Time::last_accessed_time(path);
         let last_changed_time = time::Time::last_changed_time(path);
         let last_modified_time = time::Time::last_modified_time(path);
