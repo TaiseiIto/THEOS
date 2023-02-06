@@ -1,18 +1,22 @@
-use std::{
-    cell::RefCell,
-    char,
-    fmt,
-    fs,
-    path::PathBuf,
-    rc::{
-        Rc,
-        Weak,
+use {
+    std::{
+        cell::RefCell,
+        char,
+        fmt,
+        fs,
+        path::PathBuf,
+        rc::{
+            Rc,
+            Weak,
+        },
     },
+    super::super::time,
 };
 
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
+    last_accessed_time: time::Time,
     name: String,
     parent: RefCell<Weak<Self>>,
 }
@@ -20,6 +24,7 @@ pub struct Node {
 impl Node {
     pub fn new(path: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(path);
+        let last_accessed_time = time::Time::last_accessed_time(path);
         let name: String = path
             .file_name()
             .expect("Can't generate a node.")
@@ -29,6 +34,7 @@ impl Node {
         let parent = RefCell::new(Weak::new());
         let node: Rc<Self> = Rc::new(Self {
             content,
+            last_accessed_time,
             name,
             parent,
         });
@@ -55,14 +61,16 @@ impl Node {
 impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let content: String = format!("{}", self.content);
-        let name: String = format!("{}\n", self.get_path().display());
+        let last_accessed_time: String = format!("last_accessed_time: {}", self.last_accessed_time);
+        let name: String = format!("{}", self.get_path().display());
         let string: Vec<String> = vec![
             name,
+            last_accessed_time,
             content,
         ];
         let string: String = string
             .into_iter()
-            .fold(String::new(), |string, element| string + &element);
+            .fold(String::new(), |string, element| string + "\n" + &element);
         write!(f, "{}", string)
     }
 }
