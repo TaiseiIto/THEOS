@@ -1,4 +1,5 @@
 mod boot_sector;
+mod node;
 
 use {
     std::{
@@ -7,7 +8,6 @@ use {
         path::PathBuf,
     },
     super::{
-        node,
         super::binary::Binary,
     },
 };
