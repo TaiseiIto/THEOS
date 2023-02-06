@@ -71,6 +71,17 @@ impl Node {
         path.push(&self.name);
         path
     }
+
+    fn long_name(&self) -> Vec<u16> {
+        self.name
+            .encode_utf16()
+            .collect()
+    }
+
+    fn number_of_directory_entries(&self) -> usize {
+        const LETTERS_PER_LONG_NAME_ENTRY: usize = 13;
+        self.long_name().len() / LETTERS_PER_LONG_NAME_ENTRY + 1
+    }
 }
 
 impl fmt::Display for Node {
