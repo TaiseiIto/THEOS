@@ -21,6 +21,9 @@ pub struct Node {
     last_modified_time: time::Time,
     name: String,
     parent: RefCell<Weak<Self>>,
+    hidden: bool,
+    read_only: bool,
+    system: bool,
 }
 
 impl Node {
@@ -36,6 +39,9 @@ impl Node {
             .expect("Can't generate a node.")
             .to_string();
         let parent = RefCell::new(Weak::new());
+        let hidden = false;
+        let read_only = true;
+        let system = true;
         let node: Rc<Self> = Rc::new(Self {
             content,
             last_accessed_time,
@@ -43,6 +49,9 @@ impl Node {
             last_modified_time,
             name,
             parent,
+            hidden,
+            read_only,
+            system,
         });
         if let FileOrDirectory::Directory {
             children,
@@ -71,11 +80,17 @@ impl fmt::Display for Node {
         let last_changed_time: String = format!("last_changed_time: {}", self.last_changed_time);
         let last_modified_time: String = format!("last_modified_time: {}", self.last_modified_time);
         let name: String = format!("{}", self.get_path().display());
+        let hidden: String = format!("hidden: {}", self.hidden);
+        let read_only: String = format!("read_only: {}", self.read_only);
+        let system: String = format!("system: {}", self.system);
         let string: Vec<String> = vec![
             name,
             last_accessed_time,
             last_changed_time,
             last_modified_time,
+            hidden,
+            read_only,
+            system,
             content,
         ];
         let string: String = string
