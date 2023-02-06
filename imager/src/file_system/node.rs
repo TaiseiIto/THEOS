@@ -17,6 +17,8 @@ use {
 pub struct Node {
     content: FileOrDirectory,
     last_accessed_time: time::Time,
+    last_changed_time: time::Time,
+    last_modified_time: time::Time,
     name: String,
     parent: RefCell<Weak<Self>>,
 }
@@ -25,6 +27,8 @@ impl Node {
     pub fn new(path: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(path);
         let last_accessed_time = time::Time::last_accessed_time(path);
+        let last_changed_time = time::Time::last_changed_time(path);
+        let last_modified_time = time::Time::last_modified_time(path);
         let name: String = path
             .file_name()
             .expect("Can't generate a node.")
@@ -35,6 +39,8 @@ impl Node {
         let node: Rc<Self> = Rc::new(Self {
             content,
             last_accessed_time,
+            last_changed_time,
+            last_modified_time,
             name,
             parent,
         });
@@ -62,10 +68,14 @@ impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let content: String = format!("{}", self.content);
         let last_accessed_time: String = format!("last_accessed_time: {}", self.last_accessed_time);
+        let last_changed_time: String = format!("last_changed_time: {}", self.last_changed_time);
+        let last_modified_time: String = format!("last_modified_time: {}", self.last_modified_time);
         let name: String = format!("{}", self.get_path().display());
         let string: Vec<String> = vec![
             name,
             last_accessed_time,
+            last_changed_time,
+            last_modified_time,
             content,
         ];
         let string: String = string
