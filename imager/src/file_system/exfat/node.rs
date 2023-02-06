@@ -31,7 +31,7 @@ pub enum FileOrDirectory {
         bytes: Vec<u8>,
     },
     Directory {
-        children: RefCell<Vec<Rc<Object>>>,
+        children: RefCell<Vec<Rc<Node>>>,
         directory_entries: Vec<directory_entry::DirectoryEntry>,
     },
 }
@@ -77,7 +77,7 @@ impl FileOrDirectory {
             };
             (file, first_cluster, length)
         } else if source.is_dir() {
-            let children: Vec<Rc<Object>> = match fs::read_dir(source) {
+            let children: Vec<Rc<Node>> = match fs::read_dir(source) {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
@@ -85,12 +85,12 @@ impl FileOrDirectory {
                         let source: &PathBuf = &directory.path();
                         let destination: &mut PathBuf = &mut destination.to_path_buf();
                         destination.push(source.file_name().expect("Can't create a file or directory."));
-                        Object::new(source, destination, false, boot_sector, clusters, upcase_table, rand_generator)
+                        Node::new(source, destination, false, boot_sector, clusters, upcase_table, rand_generator)
                     })
                     .collect(),
                 _ => vec![],
             };
-            let children: RefCell<Vec<Rc<Object>>> = RefCell::new(children);
+            let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
             let mut directory_entries: Vec<directory_entry::DirectoryEntry> = children
                 .borrow()
                 .iter()
@@ -181,11 +181,11 @@ impl FileOrDirectory {
             })
             .map(|directory_entry| Some(directory_entry.clone()))
             .collect();
-        let children: Vec<Rc<Object>> = file_directory_entries
+        let children: Vec<Rc<Node>> = file_directory_entries
             .iter()
-            .map(|file_directory_entry| Object::read(destination, file_directory_entry, clusters, fat, cluster_size))
+            .map(|file_directory_entry| Node::read(destination, file_directory_entry, clusters, fat, cluster_size))
             .collect();
-        let children: RefCell<Vec<Rc<Object>>> = RefCell::new(children);
+        let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
         Self::Directory {
             children,
             directory_entries,
@@ -313,7 +313,7 @@ impl fmt::Display for FileOrDirectory {
 }
 
 #[derive(Clone, Debug)]
-pub struct Object {
+pub struct Node {
     content: FileOrDirectory,
     destination: PathBuf,
     directory_entry: Option<directory_entry::DirectoryEntry>,
@@ -321,7 +321,7 @@ pub struct Object {
     parent: RefCell<Weak<Self>>,
 }
 
-impl Object {
+impl Node {
     pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) -> allocation_bitmap::AllocationBitmap {
         self.content.allocation_bitmap(clusters)
     }
@@ -477,7 +477,7 @@ impl Object {
     }
 }
 
-impl fmt::Display for Object {
+impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path: String = format!("{}", self.destination.display());
         let path: String = self

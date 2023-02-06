@@ -5,7 +5,7 @@ mod cluster;
 mod directory_entry;
 mod extended_boot_sector;
 mod fat;
-mod object;
+mod node;
 mod oem_parameter;
 mod reserved_sector;
 mod upcase_table;
@@ -35,7 +35,7 @@ pub struct Exfat {
     fat: fat::Fat,
     oem_parameters: oem_parameter::OemParameters,
     reserved_sector: reserved_sector::ReservedSector,
-    root_directory: Rc<object::Object>,
+    root_directory: Rc<node::Node>,
 }
 
 impl Exfat {
@@ -48,7 +48,7 @@ impl Exfat {
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
-        let root_directory = object::Object::root_directory(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
+        let root_directory = node::Node::root_directory(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
@@ -119,7 +119,7 @@ impl Exfat {
             .collect();
         let mut clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         let first_cluster_of_root_directory: u32 = boot_sector.first_cluster_of_root_directory();
-        let root_directory = object::Object::read_root_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
+        let root_directory = node::Node::read_root_directory(&clusters, &fat, first_cluster_of_root_directory, cluster_size);
         let allocation_bitmap: allocation_bitmap::AllocationBitmap = root_directory.allocation_bitmap(&clusters);
         clusters.set_used_flags(&allocation_bitmap);
         Self {
