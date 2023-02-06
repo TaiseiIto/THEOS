@@ -405,7 +405,7 @@ impl Object {
             first_cluster,
             parent,
         });
-        if let FileOrDirectory::Directory{
+        if let FileOrDirectory::Directory {
             children,
             directory_entries: _,
         } = &object.content {

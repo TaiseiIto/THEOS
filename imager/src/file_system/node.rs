@@ -2,13 +2,17 @@ use std::{
     cell::RefCell,
     fs,
     path::PathBuf,
-    rc::Rc,
+    rc::{
+        Rc,
+        Weak,
+    },
 };
 
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
     name: String,
+    parent: RefCell<Weak<Self>>,
 }
 
 impl Node {
@@ -20,10 +24,20 @@ impl Node {
             .to_str()
             .expect("Can't generate a node.")
             .to_string();
-        Rc::new(Self {
+        let parent = RefCell::new(Weak::new());
+        let node: Rc<Self> = Rc::new(Self {
             content,
             name,
-        })
+            parent,
+        });
+        if let FileOrDirectory::Directory {
+            children,
+        } = &node.content {
+            for child in children.borrow_mut().iter_mut() {
+                *child.parent.borrow_mut() = Rc::downgrade(&node);
+            }
+        }
+        node
     }
 }
 
