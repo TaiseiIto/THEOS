@@ -68,7 +68,7 @@ impl FileSystem {
                     fat16_boot_sector.clone(),
                     fat32_boot_sector.clone(),
                 ];
-                let content = fat::Fat::new(boot_sector_candidates);
+                let content = fat::Fat::new(boot_sector_candidates, &source_directory);
                 Self::Fat {
                     content,
                 }

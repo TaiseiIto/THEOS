@@ -6,7 +6,10 @@ use {
         fs,
         path::PathBuf,
     },
-    super::super::binary::Binary,
+    super::{
+        node,
+        super::binary::Binary,
+    },
 };
 
 #[derive(Debug)]
@@ -15,7 +18,7 @@ pub struct Fat {
 }
 
 impl Fat {
-    pub fn new(boot_sector_candidates: Vec<PathBuf>) -> Self {
+    pub fn new(boot_sector_candidates: Vec<PathBuf>, root: &PathBuf) -> Self {
         let boot_sector_candidates: Vec<boot_sector::BootSector> = boot_sector_candidates
             .into_iter()
             .map(|boot_sector_path| {
@@ -23,6 +26,8 @@ impl Fat {
                 boot_sector::BootSector::read(&boot_sector_binary)
             })
             .collect();
+        let root = node::FileOrDirectory::new(root);
+        eprintln!("{:?}", root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
