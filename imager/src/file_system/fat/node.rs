@@ -10,7 +10,10 @@ use {
             Weak,
         },
     },
-    super::super::super::time,
+    super::{
+        cluster,
+        super::super::time,
+    },
 };
 
 #[derive(Debug)]
@@ -27,8 +30,8 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(path: &PathBuf) -> Rc<Self> {
-        let content = FileOrDirectory::new(path);
+    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
+        let content = FileOrDirectory::new(path, clusters);
         let last_accessed_time = time::Time::last_accessed_time(path);
         let last_changed_time = time::Time::last_changed_time(path);
         let last_modified_time = time::Time::last_modified_time(path);
@@ -122,7 +125,7 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    pub fn new(path: &PathBuf) -> Self {
+    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             Self::File {
@@ -135,7 +138,7 @@ impl FileOrDirectory {
                     .filter_map(|directory| directory.ok())
                     .map(|directory| {
                         let directory: &PathBuf = &directory.path();
-                        Node::new(directory)
+                        Node::new(directory, clusters)
                     })
                     .collect(),
                 _ => vec![],
