@@ -274,7 +274,11 @@ impl fmt::Display for FileOrDirectory {
                 .chunks(0x10)
                 .map(|bytes| bytes
                     .into_iter()
-                    .map(|byte| (format!("{:02x} ", byte), char::from_u32(*byte as u32).unwrap_or(char::REPLACEMENT_CHARACTER)))
+                    .map(|byte| (format!("{:02x} ", byte), if 0x20 <= *byte && *byte <= 0x7f {
+                        char::from(*byte)
+                    } else {
+                        ' '
+                    }))
                     .map(|(hex, c)| {
                         let c: char = match c {
                             '\n' |
