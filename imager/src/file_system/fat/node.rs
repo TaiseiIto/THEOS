@@ -70,7 +70,8 @@ impl Node {
                 *child.parent.borrow_mut() = Rc::downgrade(&node);
             }
         }
-        node
+        const FIRST_CLUSTER: u32 = 2;
+        node.set_first_cluster(FIRST_CLUSTER).0
     }
 
     fn get_path(&self) -> PathBuf {
