@@ -26,6 +26,7 @@ pub struct Node {
     hidden: bool,
     read_only: bool,
     system: bool,
+    first_cluster: u32,
     number_of_clusters: usize,
     parent: RefCell<Weak<Self>>,
 }
@@ -34,6 +35,8 @@ impl Node {
     pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
+        const FIRST_CLUSTER: u32 = 2;
+        let first_cluster: u32 = FIRST_CLUSTER;
         let number_of_clusters: usize = content.number_of_clusters(cluster_size);
         let last_accessed_time = time::Time::last_accessed_time(path);
         let last_changed_time = time::Time::last_changed_time(path);
@@ -57,6 +60,7 @@ impl Node {
             hidden,
             read_only,
             system,
+            first_cluster,
             number_of_clusters,
             parent,
         });
@@ -101,6 +105,7 @@ impl fmt::Display for Node {
         let hidden: String = format!("hidden: {}", self.hidden);
         let read_only: String = format!("read_only: {}", self.read_only);
         let system: String = format!("system: {}", self.system);
+        let first_cluster: String = format!("first_cluster: {}", self.first_cluster);
         let number_of_clusters: String = format!("number_of_clusters: {}", self.number_of_clusters);
         let string: Vec<String> = vec![
             name,
@@ -110,6 +115,7 @@ impl fmt::Display for Node {
             hidden,
             read_only,
             system,
+            first_cluster,
             number_of_clusters,
             content,
         ];
