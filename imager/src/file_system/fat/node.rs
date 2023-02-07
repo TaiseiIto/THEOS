@@ -26,7 +26,7 @@ pub struct Node {
     hidden: bool,
     read_only: bool,
     system: bool,
-    first_cluster: u32,
+    first_cluster: Option<u32>,
     number_of_clusters: usize,
     parent: RefCell<Weak<Self>>,
 }
@@ -35,8 +35,7 @@ impl Node {
     pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
-        const FIRST_CLUSTER: u32 = 2;
-        let first_cluster: u32 = FIRST_CLUSTER;
+        let first_cluster: Option<u32> = None;
         let number_of_clusters: usize = content.number_of_clusters(cluster_size);
         let last_accessed_time = time::Time::last_accessed_time(path);
         let last_changed_time = time::Time::last_changed_time(path);
@@ -93,6 +92,38 @@ impl Node {
         const LETTERS_PER_LONG_NAME_ENTRY: usize = 13;
         self.long_name().len() / LETTERS_PER_LONG_NAME_ENTRY + 1
     }
+
+    fn set_first_cluster(&self, first_cluster: u32) -> (Rc<Self>, u32) {
+        let Self {
+            content,
+            last_accessed_time,
+            last_changed_time,
+            last_modified_time,
+            name,
+            hidden,
+            read_only,
+            system,
+            first_cluster: _,
+            number_of_clusters,
+            parent,
+        } = self;
+        let next_cluster: u32 = first_cluster + *number_of_clusters as u32;
+        let (content, next_cluster): (FileOrDirectory, u32) = content.set_first_cluster(next_cluster);
+        let first_cluster: Option<u32> = Some(first_cluster);
+        (Rc::new(Self {
+            content,
+            last_accessed_time: *last_accessed_time,
+            last_changed_time: *last_changed_time,
+            last_modified_time: *last_modified_time,
+            name: name.clone(),
+            hidden: *hidden,
+            read_only: *read_only,
+            system: *system,
+            first_cluster,
+            number_of_clusters: *number_of_clusters,
+            parent: parent.clone(),
+        }), next_cluster)
+    }
 }
 
 impl fmt::Display for Node {
@@ -105,7 +136,10 @@ impl fmt::Display for Node {
         let hidden: String = format!("hidden: {}", self.hidden);
         let read_only: String = format!("read_only: {}", self.read_only);
         let system: String = format!("system: {}", self.system);
-        let first_cluster: String = format!("first_cluster: {}", self.first_cluster);
+        let first_cluster: String = format!("first_cluster: {}", match self.first_cluster{
+            Some(first_cluster) => format!("{}", first_cluster),
+            None => "Undefined".to_string(),
+        });
         let number_of_clusters: String = format!("number_of_clusters: {}", self.number_of_clusters);
         let string: Vec<String> = vec![
             name,
@@ -182,6 +216,31 @@ impl FileOrDirectory {
             }
         };
         (length + cluster_size - 1) / cluster_size
+    }
+
+    fn set_first_cluster(&self, first_cluster: u32) -> (Self, u32) {
+        match self {
+            Self::File {
+                bytes,
+            } => (Self::File {
+                bytes: bytes.clone(),
+            }, first_cluster),
+            Self::Directory {
+                children,
+            } => {
+                let mut first_cluster: u32 = first_cluster;
+                let mut new_children: Vec<Rc<Node>> = vec![];
+                for child in children.clone().into_inner().into_iter() {
+                    let (child, next_cluster): (Rc<Node>, u32) = child.set_first_cluster(first_cluster);
+                    new_children.push(child);
+                    first_cluster = next_cluster;
+                }
+                let children: RefCell<Vec<Rc<Node>>> = RefCell::new(new_children);
+                (Self::Directory {
+                    children,
+                }, first_cluster)
+            },
+        }
     }
 }
 
