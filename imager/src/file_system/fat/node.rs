@@ -23,10 +23,11 @@ pub struct Node {
     last_changed_time: time::Time,
     last_modified_time: time::Time,
     name: String,
-    parent: RefCell<Weak<Self>>,
     hidden: bool,
     read_only: bool,
     system: bool,
+    number_of_clusters: usize,
+    parent: RefCell<Weak<Self>>,
 }
 
 impl Node {
@@ -34,7 +35,6 @@ impl Node {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
         let number_of_clusters: usize = content.number_of_clusters(cluster_size);
-        eprintln!("Number of clusters of {}: {}", path.display(), number_of_clusters);
         let last_accessed_time = time::Time::last_accessed_time(path);
         let last_changed_time = time::Time::last_changed_time(path);
         let last_modified_time = time::Time::last_modified_time(path);
@@ -54,10 +54,11 @@ impl Node {
             last_changed_time,
             last_modified_time,
             name,
-            parent,
             hidden,
             read_only,
             system,
+            number_of_clusters,
+            parent,
         });
         if let FileOrDirectory::Directory {
             children,
@@ -100,6 +101,7 @@ impl fmt::Display for Node {
         let hidden: String = format!("hidden: {}", self.hidden);
         let read_only: String = format!("read_only: {}", self.read_only);
         let system: String = format!("system: {}", self.system);
+        let number_of_clusters: String = format!("number_of_clusters: {}", self.number_of_clusters);
         let string: Vec<String> = vec![
             name,
             last_accessed_time,
@@ -108,6 +110,7 @@ impl fmt::Display for Node {
             hidden,
             read_only,
             system,
+            number_of_clusters,
             content,
         ];
         let string: String = string
