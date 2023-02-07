@@ -12,7 +12,10 @@ use {
     },
     super::{
         cluster,
-        super::super::time,
+        super::super::{
+            binary::Binary,
+            time,
+        }
     },
 };
 
@@ -32,7 +35,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
+    pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
         let first_cluster: Option<u32> = None;
@@ -127,6 +130,12 @@ impl Node {
     }
 }
 
+impl Binary for Node {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.content.to_bytes()
+    }
+}
+
 impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let content: String = format!("{}", self.content);
@@ -172,7 +181,7 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
-    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Self {
+    pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             Self::File {
@@ -288,6 +297,19 @@ impl fmt::Display for FileOrDirectory {
                 .fold(String::new(), |string, child| string + &child)
         };
         write!(f, "{}", string)
+    }
+}
+
+impl Binary for FileOrDirectory {
+    fn to_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::File {
+                bytes,
+            } => bytes.clone(),
+            Self::Directory {
+                children,
+            } => vec![],
+        }
     }
 }
 
