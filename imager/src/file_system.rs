@@ -103,7 +103,7 @@ impl Into<Vec<u8>> for &FileSystem {
         match self {
             FileSystem::Exfat {
                 content,
-            } => content.to_bytes(),
+            } => content.into(),
             FileSystem::Fat {
                 content,
             } => content.to_bytes(),
