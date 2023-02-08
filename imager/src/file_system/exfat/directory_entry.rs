@@ -620,7 +620,7 @@ impl Into<Vec<u8>> for &DirectoryEntry {
     }
 }
 
-trait Test<'a> where
+trait Raw<'a> where
     Self: From<&'a DirectoryEntry> + From<&'a [u8; DIRECTORY_ENTRY_SIZE]>,
     &'a Self: 'a + Into<[u8; DIRECTORY_ENTRY_SIZE]> {
 }

@@ -9,7 +9,7 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Test,
+        Raw,
     },
 };
 
@@ -84,6 +84,6 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawUpcaseTable {
     }
 }
 
-impl<'a> Test<'a> for RawUpcaseTable {
+impl<'a> Raw<'a> for RawUpcaseTable {
 }
 

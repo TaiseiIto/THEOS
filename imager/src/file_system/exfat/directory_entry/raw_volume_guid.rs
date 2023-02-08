@@ -9,7 +9,7 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Test,
+        Raw,
     }
 };
 
@@ -94,6 +94,6 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawVolumeGuid {
     }
 }
 
-impl<'a> Test<'a> for RawVolumeGuid {
+impl<'a> Raw<'a> for RawVolumeGuid {
 }
 

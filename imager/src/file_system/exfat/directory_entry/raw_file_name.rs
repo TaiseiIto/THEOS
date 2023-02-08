@@ -10,7 +10,7 @@ use {
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
         FILE_NAME_BLOCK_LENGTH,
-        Test,
+        Raw,
     },
 };
 
@@ -71,6 +71,6 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawFileName {
     }
 }
 
-impl<'a> Test<'a> for RawFileName {
+impl<'a> Raw<'a> for RawFileName {
 }
 

@@ -9,7 +9,7 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Test,
+        Raw,
     }
 };
 
@@ -106,6 +106,6 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawStreamExtension {
     }
 }
 
-impl<'a> Test<'a> for RawStreamExtension {
+impl<'a> Raw<'a> for RawStreamExtension {
 }
 
