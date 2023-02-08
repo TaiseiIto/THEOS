@@ -1,6 +1,9 @@
 use {
     std::{
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         fmt,
         mem,
     },
@@ -23,8 +26,10 @@ impl OemParameters {
             size,
         }
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for OemParameters {
+    fn from(bytes: &Vec<u8>) -> Self {
         let size: usize = bytes.len();
         let oem_parameter_size: usize = guid::GUID_SIZE + CUSTOM_DEFINED_SIZE;
         let parameters: Vec<Vec<u8>> = bytes
@@ -33,7 +38,7 @@ impl OemParameters {
             .collect();
         let parameters: Vec<OemParameter> = parameters[..NUM_OF_OEM_PARAMETERS]
             .into_iter()
-            .map(|parameter| OemParameter::read(parameter))
+            .map(|parameter| OemParameter::from(parameter))
             .collect();
         let parameters: [OemParameter; NUM_OF_OEM_PARAMETERS] = parameters
             .try_into()
@@ -90,8 +95,10 @@ impl OemParameter {
             custom_defined,
         }
     }
+}
 
-    fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for OemParameter {
+    fn from(bytes: &Vec<u8>) -> Self {
         let bytes: Vec<u8> = bytes.clone();
         let (parameter_guid, bytes): (&[u8], &[u8]) = bytes
             .split_at(guid::GUID_SIZE);
