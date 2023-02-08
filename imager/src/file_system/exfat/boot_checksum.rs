@@ -9,7 +9,6 @@ use {
         extended_boot_sector,
         oem_parameter,
         reserved_sector,
-        super::super::binary::Binary,
     },
 };
 

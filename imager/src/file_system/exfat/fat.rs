@@ -4,10 +4,7 @@ use {
         convert::Into,
         mem,
     },
-    super::{
-        cluster,
-        super::super::binary::Binary,
-    },
+    super::cluster,
 };
 
 #[derive(Debug)]

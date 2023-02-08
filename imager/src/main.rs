@@ -1,19 +1,15 @@
 mod args;
-mod binary;
 mod file_system;
 mod guid;
 mod mac_address;
 mod rand;
 mod time;
 
-use {
-    binary::Binary,
-    std::{
-        env,
-        fs,
-        io,
-        io::Write,
-    },
+use std::{
+    env,
+    fs,
+    io,
+    io::Write,
 };
 
 fn main() {

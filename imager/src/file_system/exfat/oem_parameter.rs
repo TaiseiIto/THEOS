@@ -4,10 +4,7 @@ use {
         fmt,
         mem,
     },
-    super::super::super::{
-        binary::Binary,
-        guid,
-    },
+    super::super::super::guid,
 };
 
 const NUM_OF_OEM_PARAMETERS: usize = 0xa;

@@ -10,10 +10,7 @@ use {
         fs,
         path::PathBuf,
     },
-    super::{
-        binary::Binary,
-        rand,
-    },
+    super::rand,
 };
 
 #[derive(Debug)]

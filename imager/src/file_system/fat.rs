@@ -3,16 +3,11 @@ mod cluster;
 mod directory_entry;
 mod node;
 
-use {
-    std::{
-        convert::Into,
-        fmt,
-        fs,
-        path::PathBuf,
-    },
-    super::{
-        super::binary::Binary,
-    },
+use std::{
+    convert::Into,
+    fmt,
+    fs,
+    path::PathBuf,
 };
 
 #[derive(Debug)]

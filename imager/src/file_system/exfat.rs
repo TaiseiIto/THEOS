@@ -18,7 +18,6 @@ use {
         rc::Rc,
     },
     super::super::{
-        binary::Binary,
         guid,
         rand,
     },

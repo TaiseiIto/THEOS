@@ -1,11 +1,8 @@
-use {
-    std::{
-        char,
-        collections::HashMap,
-        convert::Into,
-        fmt,
-    },
-    super::super::super::binary::Binary,
+use std::{
+    char,
+    collections::HashMap,
+    convert::Into,
+    fmt,
 };
 
 #[derive(Clone, Debug)]

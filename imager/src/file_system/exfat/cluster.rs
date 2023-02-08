@@ -9,7 +9,6 @@ use {
     super::{
         allocation_bitmap,
         fat,
-        super::super::binary::Binary,
         upcase_table,
     },
 };

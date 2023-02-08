@@ -9,10 +9,7 @@ use {
         fs,
         path::PathBuf,
     },
-    super::super::{
-        file_system_type,
-        super::binary::Binary,
-    },
+    super::super::file_system_type,
 };
 
 #[derive(Clone, Copy, Debug)]

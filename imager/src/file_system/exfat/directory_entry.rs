@@ -23,10 +23,7 @@ use {
     super::{
         allocation_bitmap,
         cluster,
-        super::super::{
-            binary::Binary,
-            time,
-        },
+        super::super::time,
         upcase_table,
     },
 };

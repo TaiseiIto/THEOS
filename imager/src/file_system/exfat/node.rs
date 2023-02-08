@@ -17,7 +17,6 @@ use {
         directory_entry,
         fat,
         super::super::{
-            binary::Binary,
             guid,
             rand,
         },
