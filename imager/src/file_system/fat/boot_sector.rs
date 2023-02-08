@@ -79,7 +79,7 @@ impl Into<Vec<u8>> for &BootSector {
         match self {
             BootSector::Fat12 {
                 content,
-            } => content.to_bytes(),
+            } => content.into(),
             BootSector::Fat16 {
                 content,
             } => content.to_bytes(),

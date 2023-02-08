@@ -1,12 +1,12 @@
 use {
     std::{
+        convert::Into,
         fmt,
         fs,
         mem,
         path::PathBuf,
         str,
     },
-    super::super::super::super::binary::Binary,
 };
 
 #[allow(dead_code)]
@@ -57,10 +57,10 @@ impl Fat12 {
     }
 }
 
-impl Binary for Fat12 {
-    fn to_bytes(&self) -> Vec<u8> {
-        let boot_sector: [u8; mem::size_of::<Self>()] = unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+impl Into<Vec<u8>> for &Fat12 {
+    fn into(self) -> Vec<u8> {
+        let boot_sector: [u8; mem::size_of::<Fat12>()] = unsafe {
+            mem::transmute::<Fat12, [u8; mem::size_of::<Fat12>()]>(*self)
         };
         let mut boot_sector: Vec<u8> = boot_sector.to_vec();
         boot_sector.resize(self.bytes_per_sector as usize, 0x00);
