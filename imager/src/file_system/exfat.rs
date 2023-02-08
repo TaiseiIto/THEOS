@@ -171,7 +171,7 @@ impl Into<Vec<u8>> for &Exfat {
         let cluster_heap_offset: usize = self.boot_sector.cluster_heap_offset() as usize;
         let cluster_heap_offset: usize = cluster_heap_offset * self.boot_sector.bytes_per_sector();
         bytes.resize(cluster_heap_offset, 0x00);
-        let mut clusters: Vec<u8> = self.clusters.to_bytes();
+        let mut clusters: Vec<u8> = (&self.clusters).into();
         bytes.append(&mut clusters);
         bytes
     }
