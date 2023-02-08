@@ -14,6 +14,7 @@ use {
     std::{
         char,
         collections::VecDeque,
+        convert::Into,
         ffi,
         mem,
         path::PathBuf,
@@ -112,7 +113,7 @@ impl DirectoryEntry {
             .collect();
         let allocation_bitmaps: Vec<Vec<u8>> = allocation_bitmaps
             .into_iter()
-            .map(|allocation_bitmap| allocation_bitmap.to_bytes())
+            .map(|ref allocation_bitmap| allocation_bitmap.into())
             .collect();
         let allocation_bitmap_length: usize = allocation_bitmaps
             .iter()
