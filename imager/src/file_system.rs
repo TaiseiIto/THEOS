@@ -106,7 +106,7 @@ impl Into<Vec<u8>> for &FileSystem {
             } => content.into(),
             FileSystem::Fat {
                 content,
-            } => content.to_bytes(),
+            } => content.into(),
         }
     }
 }

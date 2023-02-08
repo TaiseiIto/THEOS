@@ -5,6 +5,7 @@ mod node;
 
 use {
     std::{
+        convert::Into,
         fmt,
         fs,
         path::PathBuf,
@@ -59,8 +60,8 @@ impl Fat {
     }
 }
 
-impl Binary for Fat {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &Fat {
+    fn into(self) -> Vec<u8> {
         self.boot_sector.to_bytes()
     }
 }
