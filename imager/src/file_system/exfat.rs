@@ -102,7 +102,7 @@ impl From<&Vec<u8>> for Exfat {
         let mut sector_offset: usize = 1;
         let extended_boot_sectors: Vec<extended_boot_sector::ExtendedBootSector> = main_boot_region_sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
-            .map(|sector| extended_boot_sector::ExtendedBootSector::read(sector))
+            .map(|sector| extended_boot_sector::ExtendedBootSector::from(sector))
             .collect();
         let extended_boot_sectors: [extended_boot_sector::ExtendedBootSector; NUM_OF_EXTENDED_BOOT_SECTORS] = extended_boot_sectors
             .try_into()

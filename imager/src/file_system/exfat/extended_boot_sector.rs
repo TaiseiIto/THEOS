@@ -1,6 +1,9 @@
 use {
     std::{
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         fmt,
         mem,
     },
@@ -20,8 +23,10 @@ impl ExtendedBootSector {
             size,
         }
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for ExtendedBootSector {
+    fn from(bytes: &Vec<u8>) -> Self {
         let size: usize = bytes.len();
         let extended_boot_signature: Vec<u8> = bytes[size - mem::size_of::<u32>()..].to_vec();
         let extended_boot_signature: [u8; mem::size_of::<u32>()] = extended_boot_signature.try_into().expect("Can't read extended boot signature.");
