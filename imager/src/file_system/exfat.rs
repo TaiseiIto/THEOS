@@ -161,7 +161,7 @@ impl Into<Vec<u8>> for &Exfat {
         bytes.append(&mut reserved_sector);
         bytes.append(&mut boot_checksum);
         bytes.append(&mut bytes.clone());
-        let fat: Vec<u8> = self.fat.to_bytes();
+        let fat: Vec<u8> = (&self.fat).into();
         let num_of_fats: usize = self.boot_sector.num_of_fats();
         let mut fat: Vec<u8> = (0..num_of_fats)
             .map(|_| fat.clone().into_iter())

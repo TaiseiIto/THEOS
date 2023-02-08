@@ -1,6 +1,7 @@
 use {
     std::{
         collections::HashMap,
+        convert::Into,
         mem,
     },
     super::{
@@ -56,7 +57,8 @@ impl Fat {
     }
 
     pub fn sectors_per_fat(&self) -> usize {
-        self.to_bytes().len() / self.sector_size
+        let bytes: Vec<u8> = self.into();
+        bytes.len() / self.sector_size
     }
 
     pub fn to_chains(&self) -> HashMap<u32, Vec<u32>> {
@@ -93,8 +95,8 @@ impl Fat {
     }
 }
 
-impl Binary for Fat {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &Fat {
+    fn into(self) -> Vec<u8> {
         let max_cluster_number: u32 = *self.cluster_chain
             .keys()
             .max()
