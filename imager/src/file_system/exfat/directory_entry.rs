@@ -14,7 +14,10 @@ use {
     std::{
         char,
         collections::VecDeque,
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         ffi,
         mem,
         path::PathBuf,
@@ -218,7 +221,7 @@ impl DirectoryEntry {
                         let file_attributes: u16 = unsafe {
                             mem::transmute::<[u8; 2], u16>(file_attributes)
                         };
-                        let file_attributes = file_attributes::FileAttributes::read(file_attributes);
+                        let file_attributes = file_attributes::FileAttributes::from(file_attributes);
                         let create_time = time::Time::from_fat_timestamp(file.create_timestamp(), file.create_10ms_increment(), file.create_utc_offset());
                         let modified_time = time::Time::from_fat_timestamp(file.last_modified_timestamp(), file.last_modified_10ms_increment(), file.last_modified_utc_offset());
                         let accessed_time = time::Time::from_fat_timestamp(file.last_accessed_timestamp(), 0, file.last_accessed_utc_offset());

@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        convert::Into,
+        mem,
+    },
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
@@ -74,7 +77,7 @@ impl Raw for RawFile {
             } => {
                 let secondary_count: u8 = stream_extension.directory_entry_set_length() as u8;
                 let set_checksum: u16 = 0;
-                let file_attributes: u16 = file_attributes.to_word();
+                let file_attributes: u16 = file_attributes.into();
                 let reserved_1: u16 = 0;
                 let create_timestamp: u32 = create_time.fat_timestamp();
                 let last_modified_timestamp: u32 = modified_time.fat_timestamp();

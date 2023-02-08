@@ -1,4 +1,10 @@
-use std::path::PathBuf;
+use std::{
+    convert::{
+        From,
+        Into,
+    },
+    path::PathBuf,
+};
 
 #[derive(Clone, Debug)]
 pub struct FileAttributes {
@@ -28,8 +34,10 @@ impl FileAttributes {
             archive,
         }
     }
+}
 
-    pub fn to_word(&self) -> u16 {
+impl Into<u16> for &FileAttributes {
+    fn into(self) -> u16 {
         let read_only: u16 = match self.read_only {
             true => 1,
             false => 0,
@@ -52,8 +60,10 @@ impl FileAttributes {
         };
         read_only + hidden + system + directory + archive
     }
+}
 
-    pub fn read(word: u16) -> Self {
+impl From<u16> for FileAttributes {
+    fn from(word: u16) -> Self {
         let read_only: bool = word & 0x0001 != 0;
         let hidden: bool = word & 0x0002 != 0;
         let system: bool = word & 0x0004 != 0;
