@@ -79,7 +79,7 @@ impl Exfat {
 
 impl From<&Vec<u8>> for Exfat {
     fn from(bytes: &Vec<u8>) -> Self {
-        let boot_sector = boot_sector::BootSector::read(bytes);
+        let boot_sector = boot_sector::BootSector::from(bytes);
         let sector_size: usize = boot_sector.bytes_per_sector();
         let sectors: Vec<Vec<u8>> = bytes
             .chunks(sector_size)
