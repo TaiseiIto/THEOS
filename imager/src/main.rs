@@ -19,7 +19,7 @@ fn main() {
             image,
         } => {
             let image: Vec<u8> = fs::read(&image).expect(&format!("Can't read {}!", image.display()));
-            let file_system = file_system::FileSystem::read(&image);
+            let file_system = file_system::FileSystem::from(&image);
             println!("{}", file_system);
         },
         args::Args::Write {

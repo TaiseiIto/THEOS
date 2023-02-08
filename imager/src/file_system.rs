@@ -5,7 +5,10 @@ mod file_system_type;
 use {
     std::{
         collections::HashMap,
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         fmt,
         fs,
         path::PathBuf,
@@ -73,8 +76,10 @@ impl FileSystem {
             _ => panic!("Can't generate a file system."),
         }
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for FileSystem {
+    fn from(bytes: &Vec<u8>) -> Self {
         let file_system = file_system_type::FileSystemType::identify(bytes);
         match file_system {
             file_system_type::FileSystemType::Exfat => {
