@@ -2,6 +2,7 @@ use {
     std::{
         cell::RefCell,
         char,
+        convert::Into,
         fmt,
         fs,
         path::PathBuf,
@@ -12,10 +13,7 @@ use {
     },
     super::{
         cluster,
-        super::super::{
-            binary::Binary,
-            time,
-        }
+        super::super::time,
     },
 };
 
@@ -146,9 +144,9 @@ impl Node {
     }
 }
 
-impl Binary for Node {
-    fn to_bytes(&self) -> Vec<u8> {
-        self.content.to_bytes()
+impl Into<Vec<u8>> for &Node {
+    fn into(self) -> Vec<u8> {
+        (&self.content).into()
     }
 }
 
@@ -327,13 +325,13 @@ impl fmt::Display for FileOrDirectory {
     }
 }
 
-impl Binary for FileOrDirectory {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &FileOrDirectory {
+    fn into(self) -> Vec<u8> {
         match self {
-            Self::File {
+            FileOrDirectory::File {
                 bytes,
             } => bytes.clone(),
-            Self::Directory {
+            FileOrDirectory::Directory {
                 children,
             } => vec![],
         }
