@@ -30,8 +30,8 @@ fn main() {
             boot_sector,
             root_directory,
         } => {
-            let file_system = file_system::FileSystem::new(boot_sector, root_directory, &mut rand_generator);
-            let file_system: Vec<u8> = file_system.to_bytes();
+            let file_system = &file_system::FileSystem::new(boot_sector, root_directory, &mut rand_generator);
+            let file_system: Vec<u8> = file_system.into();
             io::stdout().write_all(&file_system).expect("Can't write image to stdout.");
         },
     }

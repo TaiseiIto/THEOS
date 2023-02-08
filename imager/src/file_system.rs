@@ -5,6 +5,7 @@ mod file_system_type;
 use {
     std::{
         collections::HashMap,
+        convert::Into,
         fmt,
         fs,
         path::PathBuf,
@@ -97,13 +98,13 @@ impl FileSystem {
     }
 }
 
-impl Binary for FileSystem {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &FileSystem {
+    fn into(self) -> Vec<u8> {
         match self {
-            Self::Exfat {
+            FileSystem::Exfat {
                 content,
             } => content.to_bytes(),
-            Self::Fat {
+            FileSystem::Fat {
                 content,
             } => content.to_bytes(),
         }
