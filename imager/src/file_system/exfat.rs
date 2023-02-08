@@ -146,7 +146,7 @@ impl Exfat {
 impl Into<Vec<u8>> for &Exfat {
     fn into(self) -> Vec<u8> {
         let mut bytes: Vec<u8> = vec![];
-        let mut boot_sector: Vec<u8> = self.boot_sector.to_bytes();
+        let mut boot_sector: Vec<u8> = (&self.boot_sector).into();
         let mut extended_boot_sectors: Vec<u8> = self.extended_boot_sectors
             .iter()
             .map(|extended_boot_sector| extended_boot_sector.to_bytes().into_iter())

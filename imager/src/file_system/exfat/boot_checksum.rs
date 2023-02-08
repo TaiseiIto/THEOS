@@ -27,7 +27,7 @@ impl BootChecksum {
         reserved_sector: &reserved_sector::ReservedSector,
         size: usize,
     ) -> Self {
-        let boot_sector: Vec<u8> = boot_sector.to_bytes();
+        let boot_sector: Vec<u8> = boot_sector.into();
         let extended_boot_sector: Vec<u8> = extended_boot_sector
             .iter()
             .map(|extended_boot_sector| extended_boot_sector.to_bytes().into_iter())

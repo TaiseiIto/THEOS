@@ -1,5 +1,6 @@
 use {
     std::{
+        convert::Into,
         fmt,
         fs,
         mem,
@@ -10,10 +11,7 @@ use {
         cluster,
         fat,
         node,
-        super::super::{
-            binary::Binary,
-            time,
-        },
+        super::super::time,
     },
 };
 
@@ -155,10 +153,10 @@ impl BootSector {
     }
 }
 
-impl Binary for BootSector {
-    fn to_bytes(&self) -> Vec<u8> {
-        let boot_sector: [u8; mem::size_of::<Self>()] = unsafe {
-            mem::transmute::<Self, [u8; mem::size_of::<Self>()]>(*self)
+impl Into<Vec<u8>> for &BootSector {
+    fn into(self) -> Vec<u8> {
+        let boot_sector: [u8; mem::size_of::<BootSector>()] = unsafe {
+            mem::transmute::<BootSector, [u8; mem::size_of::<BootSector>()]>(*self)
         };
         let mut boot_sector: Vec<u8> = boot_sector.to_vec();
         boot_sector.resize(self.bytes_per_sector(), 0x00);
