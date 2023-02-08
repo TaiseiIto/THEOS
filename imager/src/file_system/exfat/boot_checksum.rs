@@ -34,7 +34,7 @@ impl BootChecksum {
             .flatten()
             .collect();
         let oem_parameters: Vec<u8> = oem_parameters.into();
-        let reserved_sector: Vec<u8> = reserved_sector.to_bytes();
+        let reserved_sector: Vec<u8> = reserved_sector.into();
         let bytes: Vec<u8> = [boot_sector, extended_boot_sector, oem_parameters, reserved_sector]
             .into_iter()
             .map(|sector| sector.into_iter())

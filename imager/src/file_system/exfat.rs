@@ -153,7 +153,7 @@ impl Into<Vec<u8>> for &Exfat {
             .flatten()
             .collect();
         let mut oem_parameters: Vec<u8> = (&self.oem_parameters).into();
-        let mut reserved_sector: Vec<u8> = self.reserved_sector.to_bytes();
+        let mut reserved_sector: Vec<u8> = (&self.reserved_sector).into();
         let mut boot_checksum: Vec<u8> = (&self.boot_checksum).into();
         bytes.append(&mut boot_sector);
         bytes.append(&mut extended_boot_sectors);

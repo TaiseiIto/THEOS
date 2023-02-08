@@ -1,6 +1,6 @@
-use {
-    super::super::super::binary::Binary,
-    std::fmt,
+use std::{
+    convert::Into,
+    fmt,
 };
 
 #[derive(Debug)]
@@ -23,8 +23,8 @@ impl ReservedSector {
     }
 }
 
-impl Binary for ReservedSector {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &ReservedSector {
+    fn into(self) -> Vec<u8> {
         (0..self.size)
             .map(|_| 0)
             .collect()
