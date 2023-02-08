@@ -1,9 +1,9 @@
 use {
     std::{
+        convert::Into,
         fmt,
         mem,
     },
-    super::super::super::binary::Binary,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -35,8 +35,8 @@ impl ExtendedBootSector {
     }
 }
 
-impl Binary for ExtendedBootSector {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &ExtendedBootSector {
+    fn into(self) -> Vec<u8> {
         let mut extended_boot_signature: Vec<u8> = unsafe {
             mem::transmute::<u32, [u8; 4]>(self.extended_boot_signature)
         }.to_vec();
