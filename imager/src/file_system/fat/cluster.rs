@@ -1,9 +1,11 @@
 use {
-    std::collections::{
-        HashMap,
-        VecDeque,
+    std::{
+        collections::{
+            HashMap,
+            VecDeque,
+        },
+        convert::Into,
     },
-    super::super::super::binary::Binary,
 };
 
 pub const FIRST_CLUSTER_NUMBER: u32 = 2;
@@ -114,8 +116,8 @@ impl Clusters {
     }
 }
 
-impl Binary for Clusters {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &Clusters {
+    fn into(self) -> Vec<u8> {
         (FIRST_CLUSTER_NUMBER..=self.max_cluster_number())
             .map(|cluster_number| match self.cluster_bytes(cluster_number) {
                 Some(bytes) => bytes,
