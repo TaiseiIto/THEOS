@@ -35,6 +35,22 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn is_read_only(&self) -> bool {
+        self.read_only
+    }
+
+    pub fn is_hidden(&self) -> bool {
+        self.hidden
+    }
+
+    pub fn is_system(&self) -> bool {
+        self.system
+    }
+
+    pub fn is_directory(&self) -> bool {
+        self.content.is_directory()
+    }
+
     pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
@@ -181,6 +197,17 @@ pub enum FileOrDirectory {
 }
 
 impl FileOrDirectory {
+    pub fn is_directory(&self) -> bool {
+        match self {
+            Self::File {
+                bytes: _,
+            } => false,
+            Self::Directory {
+                children: _,
+            } => true,
+        }
+    }
+
     pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Self {
         if path.is_file() {
             let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
