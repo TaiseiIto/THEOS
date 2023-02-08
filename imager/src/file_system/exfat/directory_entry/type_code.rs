@@ -1,3 +1,7 @@
+use std::convert::{
+    From,
+    Into,
+};
 
 #[derive(Debug)]
 pub enum TypeCode {
@@ -10,8 +14,8 @@ pub enum TypeCode {
     AllocationBitmap,
 }
 
-impl TypeCode {
-    pub fn read(byte: u8) -> Self {
+impl From<u8> for TypeCode {
+    fn from(byte: u8) -> Self {
         let type_code: u8 = byte & 0x1f;
         let type_category: bool = byte & 0x40 != 0;
         match type_code {
@@ -31,16 +35,18 @@ impl TypeCode {
             _ => panic!("Can't read type code."),
         }
     }
+}
 
-    pub fn to_byte(&self) -> u8 {
+impl Into<u8> for &TypeCode {
+    fn into(self) -> u8 {
         match self {
-            Self::File => 0x05,
-            Self::StreamExtension => 0x00,
-            Self::FileName => 0x01,
-            Self::UpcaseTable => 0x02,
-            Self::VolumeLabel => 0x03,
-            Self::VolumeGuid => 0x00,
-            Self::AllocationBitmap => 0x01,
+            TypeCode::File => 0x05,
+            TypeCode::StreamExtension => 0x00,
+            TypeCode::FileName => 0x01,
+            TypeCode::UpcaseTable => 0x02,
+            TypeCode::VolumeLabel => 0x03,
+            TypeCode::VolumeGuid => 0x00,
+            TypeCode::AllocationBitmap => 0x01,
         }
     }
 }

@@ -211,7 +211,7 @@ impl DirectoryEntry {
         let directory_entry: Option<Self> = match directory_entry {
             Some(directory_entry) => {
                 let type_code: u8 = directory_entry[0];
-                let type_code = type_code::TypeCode::read(type_code);
+                let type_code = type_code::TypeCode::from(type_code);
                 match type_code {
                     type_code::TypeCode::File => {
                         let file = raw_file::RawFile::read(&directory_entry);

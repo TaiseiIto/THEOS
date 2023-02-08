@@ -62,7 +62,7 @@ impl EntryType {
     }
 
     pub fn to_byte(&self) -> u8 {
-        let type_code: u8 = self.type_code.to_byte();
+        let type_code: u8 = (&self.type_code).into();
         let type_importance: u8 = if self.type_importance {
             1 << 5
         } else {
