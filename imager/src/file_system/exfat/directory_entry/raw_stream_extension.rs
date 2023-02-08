@@ -57,7 +57,7 @@ impl Raw for RawStreamExtension {
                 data_length,
                 file_name: _,
             } => {
-                let general_flags: u8 = general_flags.to_byte();
+                let general_flags: u8 = general_flags.into();
                 let reserved_1: u8 = 0;
                 let name_length: u8 = *name_length;
                 let name_hash: u16 = *name_hash;

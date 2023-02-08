@@ -237,7 +237,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::StreamExtension => {
                         let stream_extension = raw_stream_extension::RawStreamExtension::read(&directory_entry);
-                        let general_flags = general_flags::GeneralFlags::read(stream_extension.general_flags());
+                        let general_flags = general_flags::GeneralFlags::from(stream_extension.general_flags());
                         let name_length: u8 = stream_extension.name_length();
                         let name_hash: u16 = stream_extension.name_hash();
                         let first_cluster: u32 = stream_extension.first_cluster();
@@ -255,7 +255,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::FileName => {
                         let file_name = raw_file_name::RawFileName::read(&directory_entry);
-                        let general_flags = general_flags::GeneralFlags::read(file_name.general_flags());
+                        let general_flags = general_flags::GeneralFlags::from(file_name.general_flags());
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name();
                         let next_file_name: Option<Box<Self>> = match directory_entries.remove(0) {
                             Some(directory_entry) => match directory_entry {
@@ -307,7 +307,7 @@ impl DirectoryEntry {
                     },
                     type_code::TypeCode::VolumeGuid => {
                         let volume_guid = raw_volume_guid::RawVolumeGuid::read(&directory_entry);
-                        let general_flags = general_flags::GeneralFlags::read(volume_guid.general_flags() as u8);
+                        let general_flags = general_flags::GeneralFlags::from(volume_guid.general_flags() as u8);
                         let volume_guid: u128 = volume_guid.volume_guid();
                         Some(Self::VolumeGuid {
                             general_flags,

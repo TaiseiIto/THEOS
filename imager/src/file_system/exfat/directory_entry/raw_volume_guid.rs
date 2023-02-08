@@ -1,5 +1,8 @@
 use {
-    std::mem,
+    std::{
+        convert::Into,
+        mem,
+    },
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
@@ -39,7 +42,7 @@ impl Raw for RawVolumeGuid {
             } => {
                 let secondary_count: u8 = 0;
                 let set_checksum: u16 = 0;
-                let general_flags: u16 = general_flags.to_byte() as u16;
+                let general_flags: u16 = Into::<u8>::into(general_flags) as u16;
                 let volume_guid: u128 = *volume_guid;
                 let reserved: [u8; 0xa] = [0; 0xa];
                 let raw_volume_guid = Self {

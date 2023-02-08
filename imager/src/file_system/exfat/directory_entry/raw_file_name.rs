@@ -36,7 +36,7 @@ impl Raw for RawFileName {
                 file_name,
                 next_file_name: _,
             } => {
-                let general_flags: u8 = general_flags.to_byte();
+                let general_flags: u8 = general_flags.into();
                 let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = *file_name;
                 Self {
                     entry_type,
