@@ -143,7 +143,7 @@ impl FileOrDirectory {
             directory_entries.append(&mut allocation_bitmaps);
             let bytes: Vec<u8> = directory_entries
                 .iter()
-                .map(|directory_entry| directory_entry.to_bytes())
+                .map(|directory_entry| Into::<Vec<u8>>::into(directory_entry))
                 .flatten()
                 .collect();
             let length: usize = bytes.len();

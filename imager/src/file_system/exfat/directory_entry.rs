@@ -569,47 +569,47 @@ impl DirectoryEntry {
     }
 }
 
-impl Binary for DirectoryEntry {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &DirectoryEntry {
+    fn into(self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.raw().to_vec();
         let mut tail_bytes: Vec<u8> = match self {
-            Self::File {
+            DirectoryEntry::File {
                 file_attributes: _,
                 create_time: _,
                 modified_time: _,
                 accessed_time: _,
                 stream_extension,
-            } => stream_extension.to_bytes(),
-            Self::StreamExtension {
+            } => stream_extension.as_ref().into(),
+            DirectoryEntry::StreamExtension {
                 general_flags: _,
                 name_length: _,
                 name_hash: _,
                 first_cluster: _,
                 data_length: _,
                 file_name,
-            } => file_name.to_bytes(),
-            Self::FileName {
+            } => file_name.as_ref().into(),
+            DirectoryEntry::FileName {
                 general_flags: _,
                 file_name: _,
                 next_file_name,
             } => match next_file_name {
-                Some(next_file_name) => next_file_name.to_bytes(),
+                Some(next_file_name) => next_file_name.as_ref().into(),
                 None => vec![],
             },
-            Self::UpcaseTable {
+            DirectoryEntry::UpcaseTable {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
                 upcase_table: _,
             } => vec![],
-            Self::VolumeLabel {
+            DirectoryEntry::VolumeLabel {
                 volume_label: _,
             } => vec![],
-            Self::VolumeGuid {
+            DirectoryEntry::VolumeGuid {
                 general_flags: _,
                 volume_guid: _,
             } => vec![],
-            Self::AllocationBitmap {
+            DirectoryEntry::AllocationBitmap {
                 bitmap_identifier: _,
                 first_cluster: _,
                 data_length: _,

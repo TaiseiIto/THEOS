@@ -103,7 +103,7 @@ impl Raw for RawFile {
                     reserved_2,
                 };
                 let mut bytes: Vec<u8> = raw_file.raw().to_vec();
-                let mut tail_bytes: Vec<u8> = stream_extension.to_bytes();
+                let mut tail_bytes: Vec<u8> = stream_extension.as_ref().into();
                 bytes.append(&mut tail_bytes);
                 let set_checksum: u16 = bytes
                     .into_iter()
