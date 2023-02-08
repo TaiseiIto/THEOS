@@ -62,7 +62,7 @@ impl Fat {
 
 impl Into<Vec<u8>> for &Fat {
     fn into(self) -> Vec<u8> {
-        self.boot_sector.to_bytes()
+        (&self.boot_sector).into()
     }
 }
 

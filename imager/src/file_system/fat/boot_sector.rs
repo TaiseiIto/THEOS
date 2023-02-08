@@ -4,6 +4,7 @@ mod fat32;
 
 use {
     std::{
+        convert::Into,
         fmt,
         fs,
         path::PathBuf,
@@ -73,16 +74,16 @@ impl BootSector {
     }
 }
 
-impl Binary for BootSector {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &BootSector {
+    fn into(self) -> Vec<u8> {
         match self {
-            Self::Fat12 {
+            BootSector::Fat12 {
                 content,
             } => content.to_bytes(),
-            Self::Fat16 {
+            BootSector::Fat16 {
                 content,
             } => content.to_bytes(),
-            Self::Fat32 {
+            BootSector::Fat32 {
                 content,
             } => content.to_bytes(),
         }
