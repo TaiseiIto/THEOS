@@ -9,7 +9,6 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Raw,
         Test,
     }
 };
@@ -85,46 +84,5 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawAllocationBitmap {
 }
 
 impl<'a> Test<'a> for RawAllocationBitmap {
-}
-
-impl Raw for RawAllocationBitmap {
-    fn new(directory_entry: &DirectoryEntry) -> Self {
-        let entry_type: u8 = directory_entry.entry_type().to_byte();
-        match directory_entry {
-            DirectoryEntry::AllocationBitmap {
-                bitmap_identifier,
-                first_cluster,
-                data_length,
-            } => {
-                let bitmap_flags: u8 = match bitmap_identifier {
-                    true => 0x01,
-                    false => 0x00,
-                };
-                let reserved: [u8; 0x12] = [0; 0x12];
-                let first_cluster: u32 = *first_cluster;
-                let data_length: u64 = *data_length as u64;
-                Self {
-                    entry_type,
-                    bitmap_flags,
-                    reserved,
-                    first_cluster,
-                    data_length,
-                }
-            },
-            _ => panic!("Can't convert a DirectoryEntry into a RawAllocationBitmap."),
-        }
-    }
-
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE] {
-        unsafe {
-            mem::transmute::<Self, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
-        }
-    }
-
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
-        unsafe {
-            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
-        }
-    }
 }
 

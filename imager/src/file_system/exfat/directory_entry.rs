@@ -214,7 +214,7 @@ impl DirectoryEntry {
                 let type_code = type_code::TypeCode::from(type_code);
                 match type_code {
                     type_code::TypeCode::File => {
-                        let file = raw_file::RawFile::read(&directory_entry);
+                        let file = raw_file::RawFile::from(&directory_entry);
                         let file_attributes: [u8; 2] = directory_entry[4..6]
                             .try_into()
                             .expect("Can't read a file directory entry.");
@@ -236,7 +236,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::StreamExtension => {
-                        let stream_extension = raw_stream_extension::RawStreamExtension::read(&directory_entry);
+                        let stream_extension = raw_stream_extension::RawStreamExtension::from(&directory_entry);
                         let general_flags = general_flags::GeneralFlags::from(stream_extension.general_flags());
                         let name_length: u8 = stream_extension.name_length();
                         let name_hash: u16 = stream_extension.name_hash();
@@ -254,7 +254,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::FileName => {
-                        let file_name = raw_file_name::RawFileName::read(&directory_entry);
+                        let file_name = raw_file_name::RawFileName::from(&directory_entry);
                         let general_flags = general_flags::GeneralFlags::from(file_name.general_flags());
                         let file_name: [u16; FILE_NAME_BLOCK_LENGTH] = file_name.file_name();
                         let next_file_name: Option<Box<Self>> = match directory_entries.remove(0) {
@@ -282,7 +282,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::UpcaseTable => {
-                        let upcase_table = raw_upcase_table::RawUpcaseTable::read(&directory_entry);
+                        let upcase_table = raw_upcase_table::RawUpcaseTable::from(&directory_entry);
                         let table_checksum: u32 = upcase_table.table_checksum();
                         let first_cluster: u32 = upcase_table.first_cluster();
                         let data_length: usize = upcase_table.data_length() as usize;
@@ -295,7 +295,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::VolumeLabel => {
-                        let volume_label = raw_volume_label::RawVolumeLabel::read(&directory_entry);
+                        let volume_label = raw_volume_label::RawVolumeLabel::from(&directory_entry);
                         let character_count: usize = volume_label.character_count() as usize;
                         let volume_label: [u16; raw_volume_label::VOLUME_LABEL_MAX_LENGTH] = volume_label.volume_label();
                         let volume_label: String = char::decode_utf16(volume_label[0..character_count].iter().cloned())
@@ -306,7 +306,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::VolumeGuid => {
-                        let volume_guid = raw_volume_guid::RawVolumeGuid::read(&directory_entry);
+                        let volume_guid = raw_volume_guid::RawVolumeGuid::from(&directory_entry);
                         let general_flags = general_flags::GeneralFlags::from(volume_guid.general_flags() as u8);
                         let volume_guid: u128 = volume_guid.volume_guid();
                         Some(Self::VolumeGuid {
@@ -315,7 +315,7 @@ impl DirectoryEntry {
                         })
                     },
                     type_code::TypeCode::AllocationBitmap => {
-                        let allocation_bitmap = raw_allocation_bitmap::RawAllocationBitmap::read(&directory_entry);
+                        let allocation_bitmap = raw_allocation_bitmap::RawAllocationBitmap::from(&directory_entry);
                         let bitmap_identifier: bool = allocation_bitmap.bitmap_flags() & 0x01 != 0;
                         let first_cluster: u32 = allocation_bitmap.first_cluster();
                         let data_length: usize = allocation_bitmap.data_length() as usize;
@@ -531,19 +531,19 @@ impl DirectoryEntry {
                 bitmap_identifier: _,
                 first_cluster: _,
                 data_length: _,
-            } => raw_allocation_bitmap::RawAllocationBitmap::new(self).raw(),
+            } => (&raw_allocation_bitmap::RawAllocationBitmap::from(self)).into(),
             Self::File {
                 file_attributes: _,
                 create_time: _,
                 modified_time: _,
                 accessed_time: _,
                 stream_extension: _,
-            } => raw_file::RawFile::new(self).raw(),
+            } => (&raw_file::RawFile::from(self)).into(),
             Self::FileName {
                 general_flags: _,
                 file_name: _,
                 next_file_name: _,
-            } => raw_file_name::RawFileName::new(self).raw(),
+            } => (&raw_file_name::RawFileName::from(self)).into(),
             Self::StreamExtension {
                 general_flags: _,
                 name_length: _,
@@ -551,20 +551,20 @@ impl DirectoryEntry {
                 first_cluster: _,
                 data_length: _,
                 file_name: _,
-            } => raw_stream_extension::RawStreamExtension::new(self).raw(),
+            } => (&raw_stream_extension::RawStreamExtension::from(self)).into(),
             Self::UpcaseTable {
                 table_checksum: _,
                 first_cluster: _,
                 data_length: _,
                 upcase_table: _,
-            } => raw_upcase_table::RawUpcaseTable::new(self).raw(),
+            } => (&raw_upcase_table::RawUpcaseTable::from(self)).into(),
             Self::VolumeGuid {
                 general_flags: _,
                 volume_guid: _,
-            } => raw_volume_guid::RawVolumeGuid::new(self).raw(),
+            } => (&raw_volume_guid::RawVolumeGuid::from(self)).into(),
             Self::VolumeLabel {
                 volume_label: _,
-            } => raw_volume_label::RawVolumeLabel::new(self).raw(),
+            } => (&raw_volume_label::RawVolumeLabel::from(self)).into(),
         }
     }
 }
@@ -618,12 +618,6 @@ impl Into<Vec<u8>> for &DirectoryEntry {
         bytes.append(&mut tail_bytes);
         bytes
     }
-}
-
-trait Raw {
-    fn new(directory_entry: &DirectoryEntry) -> Self;
-    fn raw(&self) -> [u8; DIRECTORY_ENTRY_SIZE];
-    fn read(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self;
 }
 
 trait Test<'a> where
