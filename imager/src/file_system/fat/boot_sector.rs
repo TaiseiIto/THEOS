@@ -82,7 +82,7 @@ impl Into<Vec<u8>> for &BootSector {
             } => content.into(),
             BootSector::Fat16 {
                 content,
-            } => content.to_bytes(),
+            } => content.into(),
             BootSector::Fat32 {
                 content,
             } => content.to_bytes(),
