@@ -112,7 +112,7 @@ impl From<&Vec<u8>> for Exfat {
         sector_offset += 1;
         let reserved_sector = reserved_sector::ReservedSector::read(&main_boot_region_sectors[sector_offset]);
         sector_offset += 1;
-        let boot_checksum = boot_checksum::BootChecksum::read(&main_boot_region_sectors[sector_offset]);
+        let boot_checksum = boot_checksum::BootChecksum::from(&main_boot_region_sectors[sector_offset]);
         let fat_offset: usize = boot_sector.fat_offset() as usize;
         let fat_length: usize = boot_sector.fat_length() as usize;
         let fat: Vec<Vec<u8>> = sectors[fat_offset..fat_offset + fat_length].to_vec();

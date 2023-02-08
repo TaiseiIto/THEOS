@@ -1,6 +1,9 @@
 use {
     std::{
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         fmt,
         mem,
     },
@@ -53,8 +56,10 @@ impl BootChecksum {
             checksum,
         }
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for BootChecksum {
+    fn from(bytes: &Vec<u8>) -> Self {
         let size: usize = bytes.len();
         let checksum: [u8; mem::size_of::<u32>()] = bytes[0..4]
             .try_into()
