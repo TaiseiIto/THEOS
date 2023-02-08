@@ -1,9 +1,16 @@
 use {
-    std::mem,
+    std::{
+        convert::{
+            From,
+            Into,
+        },
+        mem,
+    },
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
         Raw,
+        Test,
     }
 };
 
@@ -43,6 +50,64 @@ impl RawStreamExtension {
     pub fn data_length(&self) -> u64 {
         self.data_length
     }
+}
+
+impl From<&DirectoryEntry> for RawStreamExtension {
+    fn from(directory_entry: &DirectoryEntry) -> Self {
+        let entry_type: u8 = directory_entry.entry_type().to_byte();
+        match directory_entry {
+            DirectoryEntry::StreamExtension {
+                general_flags,
+                name_length,
+                name_hash,
+                first_cluster,
+                data_length,
+                file_name: _,
+            } => {
+                let general_flags: u8 = general_flags.into();
+                let reserved_1: u8 = 0;
+                let name_length: u8 = *name_length;
+                let name_hash: u16 = *name_hash;
+                let reserved_2: u16 = 0;
+                let reserved_3: u32 = 0;
+                let data_length: u64 = *data_length as u64;
+                let valid_data_length: u64 = data_length;
+                let first_cluster: u32 = *first_cluster;
+                Self {
+                    entry_type,
+                    general_flags,
+                    reserved_1,
+                    name_length,
+                    name_hash,
+                    reserved_2,
+                    valid_data_length,
+                    reserved_3,
+                    first_cluster,
+                    data_length,
+                }
+            },
+            _ => panic!("Can't convert a DirectoryEntry into a RawStreamExtension."),
+        }
+    }
+}
+
+impl From<&[u8; DIRECTORY_ENTRY_SIZE]> for RawStreamExtension {
+    fn from(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
+        }
+    }
+}
+
+impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawStreamExtension {
+    fn into(self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<RawStreamExtension, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
+        }
+    }
+}
+
+impl<'a> Test<'a> for RawStreamExtension {
 }
 
 impl Raw for RawStreamExtension {
