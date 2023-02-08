@@ -1,5 +1,6 @@
 use {
     std::{
+        convert::Into,
         fmt,
         mem,
     },
@@ -69,8 +70,8 @@ impl BootChecksum {
     }
 }
 
-impl Binary for BootChecksum {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &BootChecksum {
+    fn into(self) -> Vec<u8> {
         let checksum: [u8; 4] = unsafe {
             mem::transmute::<u32, [u8; 4]>(self.checksum)
         };
