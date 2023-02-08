@@ -2,6 +2,7 @@ use {
     std::{
         char,
         collections::HashMap,
+        convert::Into,
         fmt,
     },
     super::super::super::binary::Binary,
@@ -75,8 +76,7 @@ impl UpcaseTable {
     }
 
     pub fn table_checksum(&self) -> u32 {
-        self
-            .to_bytes()
+        Into::<Vec<u8>>::into(self)
             .into_iter()
             .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u32)
     }
@@ -99,8 +99,8 @@ impl UpcaseTable {
     }
 }
 
-impl Binary for UpcaseTable {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &UpcaseTable {
+    fn into(self) -> Vec<u8> {
         let mut map: Vec<(u16, u16)> = self.map
             .iter()
             .filter(|(c, u)| c != u)
