@@ -110,7 +110,7 @@ impl From<&Vec<u8>> for Exfat {
         sector_offset += NUM_OF_EXTENDED_BOOT_SECTORS;
         let oem_parameters = oem_parameter::OemParameters::from(&main_boot_region_sectors[sector_offset]);
         sector_offset += 1;
-        let reserved_sector = reserved_sector::ReservedSector::read(&main_boot_region_sectors[sector_offset]);
+        let reserved_sector = reserved_sector::ReservedSector::from(&main_boot_region_sectors[sector_offset]);
         sector_offset += 1;
         let boot_checksum = boot_checksum::BootChecksum::from(&main_boot_region_sectors[sector_offset]);
         let fat_offset: usize = boot_sector.fat_offset() as usize;

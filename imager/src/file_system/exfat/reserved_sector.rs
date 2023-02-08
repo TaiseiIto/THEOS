@@ -1,5 +1,8 @@
 use std::{
-    convert::Into,
+    convert::{
+        From,
+        Into,
+    },
     fmt,
 };
 
@@ -14,8 +17,10 @@ impl ReservedSector {
             size,
         }
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&Vec<u8>> for ReservedSector {
+    fn from(bytes: &Vec<u8>) -> Self {
         let size: usize = bytes.len();
         Self {
             size,
