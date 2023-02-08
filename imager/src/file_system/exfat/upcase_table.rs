@@ -1,7 +1,10 @@
 use std::{
     char,
     collections::HashMap,
-    convert::Into,
+    convert::{
+        From,
+        Into,
+    },
     fmt,
 };
 
@@ -35,7 +38,32 @@ impl UpcaseTable {
         }
     }
 
-    pub fn read(map: Vec<u8>) -> Self {
+    pub fn table_checksum(&self) -> u32 {
+        Into::<Vec<u8>>::into(self)
+            .into_iter()
+            .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u32)
+    }
+
+    pub fn capitalize_char(&self, c: u16) -> u16 {
+        match self.map.get(&c) {
+            Some(upcase) => *upcase,
+            None => c,
+        }
+    }
+
+    pub fn capitalize_str(&self, string: &str) -> String {
+        let string: Vec<u16> = string
+            .encode_utf16()
+            .map(|c| self.capitalize_char(c))
+            .collect();
+        char::decode_utf16(string)
+            .filter_map(|c| c.ok())
+            .collect()
+    }
+}
+
+impl From<&Vec<u8>> for UpcaseTable {
+    fn from(map: &Vec<u8>) -> Self {
         let map: HashMap<u16, u16> = map
             .chunks(2)
             .map(|pair| match pair {
@@ -70,29 +98,6 @@ impl UpcaseTable {
         Self {
             map
         }
-    }
-
-    pub fn table_checksum(&self) -> u32 {
-        Into::<Vec<u8>>::into(self)
-            .into_iter()
-            .fold(0 as u32, |checksum, byte| (checksum << 15) + (checksum >> 1) + byte as u32)
-    }
-
-    pub fn capitalize_char(&self, c: u16) -> u16 {
-        match self.map.get(&c) {
-            Some(upcase) => *upcase,
-            None => c,
-        }
-    }
-
-    pub fn capitalize_str(&self, string: &str) -> String {
-        let string: Vec<u16> = string
-            .encode_utf16()
-            .map(|c| self.capitalize_char(c))
-            .collect();
-        char::decode_utf16(string)
-            .filter_map(|c| c.ok())
-            .collect()
     }
 }
 

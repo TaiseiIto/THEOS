@@ -145,7 +145,7 @@ impl Clusters {
 
     pub fn upcase_table(&self, first_cluster: u32, data_length: usize) -> upcase_table::UpcaseTable {
         let upcase_table: Vec<u8> = self.cluster_chain_bytes(first_cluster)[0..data_length].to_vec();
-        upcase_table::UpcaseTable::read(upcase_table)
+        upcase_table::UpcaseTable::from(&upcase_table)
     }
 
     pub fn used_flags(&self) -> HashMap<u32, bool> {
