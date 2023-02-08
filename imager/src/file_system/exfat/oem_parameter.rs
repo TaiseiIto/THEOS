@@ -1,5 +1,6 @@
 use {
     std::{
+        convert::Into,
         fmt,
         mem,
     },
@@ -47,11 +48,11 @@ impl OemParameters {
     }
 }
 
-impl Binary for OemParameters {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &OemParameters {
+    fn into(self) -> Vec<u8> {
         let mut bytes: Vec<u8> = self.parameters
             .iter()
-            .map(|parameter| parameter.to_bytes().into_iter())
+            .map(|parameter| Into::<Vec<u8>>::into(parameter).into_iter())
             .flatten()
             .collect();
         bytes.resize(self.size, 0x00);
@@ -116,8 +117,8 @@ impl OemParameter {
     }
 }
 
-impl Binary for OemParameter {
-    fn to_bytes(&self) -> Vec<u8> {
+impl Into<Vec<u8>> for &OemParameter {
+    fn into(self) -> Vec<u8> {
         let parameter_guid: u128 = self.parameter_guid.to_u128();
         let parameter_guid: [u8; 0x10] = unsafe {
             mem::transmute::<u128, [u8; 0x10]>(parameter_guid)
