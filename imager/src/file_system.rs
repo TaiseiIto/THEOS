@@ -83,7 +83,7 @@ impl From<&Vec<u8>> for FileSystem {
         let file_system = file_system_type::FileSystemType::identify(bytes);
         match file_system {
             file_system_type::FileSystemType::Exfat => {
-                let content = exfat::Exfat::read(bytes);
+                let content = exfat::Exfat::from(bytes);
                 Self::Exfat {
                     content,
                 }

@@ -12,7 +12,10 @@ mod upcase_table;
 
 use {
     std::{
-        convert::Into,
+        convert::{
+            From,
+            Into,
+        },
         fmt,
         path::PathBuf,
         rc::Rc,
@@ -65,7 +68,17 @@ impl Exfat {
         }
     }
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+    pub fn volume_guid(&self) -> guid::Guid {
+        self.root_directory.volume_guid()
+    }
+
+    pub fn volume_label(&self) -> String {
+        self.root_directory.volume_label()
+    }
+}
+
+impl From<&Vec<u8>> for Exfat {
+    fn from(bytes: &Vec<u8>) -> Self {
         let boot_sector = boot_sector::BootSector::read(bytes);
         let sector_size: usize = boot_sector.bytes_per_sector();
         let sectors: Vec<Vec<u8>> = bytes
@@ -131,14 +144,6 @@ impl Exfat {
             reserved_sector,
             root_directory,
         }
-    }
-
-    pub fn volume_guid(&self) -> guid::Guid {
-        self.root_directory.volume_guid()
-    }
-
-    pub fn volume_label(&self) -> String {
-        self.root_directory.volume_label()
     }
 }
 
