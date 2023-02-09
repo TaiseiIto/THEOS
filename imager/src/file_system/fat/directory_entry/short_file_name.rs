@@ -33,7 +33,68 @@ impl From<&DirectoryEntry> for ShortFileName {
             long_file_name,
         } = directory_entry {
             let irreversible: bool = false;
-            let name: String = name.to_uppercase();
+            let (name, irreversible): (String, bool) = name
+                .chars()
+                .fold((String::new(), false), |(name, irreversible), c| match c {
+                    'a' | 'A' |
+                    'b' | 'B' |
+                    'c' | 'C' |
+                    'd' | 'D' |
+                    'e' | 'E' |
+                    'f' | 'F' |
+                    'g' | 'G' |
+                    'h' | 'H' |
+                    'i' | 'I' |
+                    'j' | 'J' |
+                    'k' | 'K' |
+                    'l' | 'L' |
+                    'm' | 'M' |
+                    'n' | 'N' |
+                    'o' | 'O' |
+                    'p' | 'P' |
+                    'q' | 'Q' |
+                    'r' | 'R' |
+                    's' | 'S' |
+                    't' | 'T' |
+                    'u' | 'U' |
+                    'v' | 'V' |
+                    'w' | 'W' |
+                    'x' | 'X' |
+                    'y' | 'Y' |
+                    'z' | 'Z' |
+                    '0' |
+                    '1' |
+                    '2' |
+                    '3' |
+                    '4' |
+                    '5' |
+                    '6' |
+                    '7' |
+                    '8' |
+                    '9' |
+                    '$' |
+                    '%' |
+                    '\'' |
+                    '-' |
+                    '_' |
+                    '@' |
+                    '~' |
+                    '`' |
+                    '!' |
+                    '(' |
+                    ')' |
+                    '{' |
+                    '}' |
+                    '^' |
+                    '#' |
+                    '&' |
+                    '.' => {
+                        let mut name: String = name;
+                        name.push(c);
+                        (name, irreversible)
+                    }
+                    _ => (name, true),
+                });
             let mut name: Vec<u8> = name.into_bytes();
             name.resize(NAME_LENGTH, 0x20);
             let name: [u8; NAME_LENGTH] = name
