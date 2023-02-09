@@ -33,9 +33,9 @@ impl From<&DirectoryEntry> for ShortFileName {
             long_file_name,
         } = directory_entry {
             let irreversible: bool = false;
-            let (name, irreversible, _): (String, bool, bool) = name
+            let (name, irreversible, _, _): (String, bool, bool, bool) = name
                 .chars()
-                .fold((String::new(), false, false), |(name, irreversible, dot_flag), c| match c {
+                .fold((String::new(), false, false, true), |(name, irreversible, dot_flag, head_flag), c| match c {
                     'a' | 'A' |
                     'b' | 'B' |
                     'c' | 'C' |
@@ -89,18 +89,20 @@ impl From<&DirectoryEntry> for ShortFileName {
                     '#' |
                     '&' => {
                         let mut name: String = name;
-                        if dot_flag {
+                        if dot_flag && !head_flag {
                             name.push('.');
                         }
                         name.push(c);
-                        (name, irreversible, false)
+                        (name, irreversible, false, false)
                     },
-                    ' ' => (name, true, false),
-                    '.' => (name, true, true),
+                    ' ' => (name, true, false, false),
+                    '.' => {
+                        (name, true, true, head_flag)
+                    },
                     _ => {
                         let mut name: String = name;
                         name.push('_');
-                        (name, true, false)
+                        (name, true, false, false)
                     },
                 });
             let mut name: Vec<u8> = name.into_bytes();
