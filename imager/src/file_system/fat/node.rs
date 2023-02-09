@@ -110,6 +110,10 @@ impl Node {
         node.set_first_cluster(FIRST_CLUSTER).0
     }
 
+    pub fn size(&self) -> usize {
+        self.content.size()
+    }
+
     fn get_path(&self) -> PathBuf {
         let mut path: PathBuf = match self.parent.borrow().upgrade() {
             Some(parent) => parent.get_path(),
@@ -227,7 +231,7 @@ impl FileOrDirectory {
 
     pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Self {
         if path.is_file() {
-            let mut bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
+            let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             Self::File {
                 bytes,
             }
@@ -252,8 +256,8 @@ impl FileOrDirectory {
         }
     }
 
-    fn number_of_clusters(&self, cluster_size: usize) -> usize {
-        let length: usize = match self {
+    pub fn size(&self) -> usize {
+        match self {
             Self::File {
                 bytes,
             } => bytes.len(),
@@ -268,8 +272,11 @@ impl FileOrDirectory {
                 const DIRECTORY_ENTRY_LENGTH: usize = 0x20;
                 number_of_directory_entries * DIRECTORY_ENTRY_LENGTH
             }
-        };
-        (length + cluster_size - 1) / cluster_size
+        }
+    }
+
+    fn number_of_clusters(&self, cluster_size: usize) -> usize {
+        (self.size() + cluster_size - 1) / cluster_size
     }
 
     fn set_first_cluster(&self, first_cluster: u32) -> (Self, u32) {
