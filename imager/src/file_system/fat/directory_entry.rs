@@ -11,6 +11,7 @@ use {
 #[derive(Debug)]
 pub enum DirectoryEntry {
     ShortFileName {
+        name: String,
         attribute: attribute::Attribute,
         accessed_time: time::Time,
         created_time: time::Time,
@@ -22,6 +23,7 @@ pub enum DirectoryEntry {
 
 impl From<&node::Node> for DirectoryEntry {
     fn from(node: &node::Node) -> Self {
+        let name: String = node.name();
         let attribute = attribute::Attribute::from(node);
         let accessed_time: time::Time = node.last_accessed_time();
         let created_time: time::Time = node.last_changed_time();
@@ -33,6 +35,7 @@ impl From<&node::Node> for DirectoryEntry {
             node.size()
         };
         Self::ShortFileName {
+            name,
             attribute,
             accessed_time,
             created_time,

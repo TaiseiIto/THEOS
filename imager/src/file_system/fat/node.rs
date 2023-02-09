@@ -68,6 +68,10 @@ impl Node {
         self.last_modified_time
     }
 
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
     pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Rc<Self> {
         let content = FileOrDirectory::new(path, clusters);
         let cluster_size: usize = clusters.cluster_size();
