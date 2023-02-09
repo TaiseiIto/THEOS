@@ -33,6 +33,13 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn first_cluster(&self) -> u32 {
+        match self.first_cluster {
+            Some(first_cluster) => first_cluster,
+            None => panic!("Can't get first cluster."),
+        }
+    }
+
     pub fn is_read_only(&self) -> bool {
         self.read_only
     }
