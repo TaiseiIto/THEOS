@@ -10,7 +10,6 @@ use {
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
         FILE_NAME_BLOCK_LENGTH,
-        Raw,
     },
 };
 
@@ -69,8 +68,5 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawFileName {
             mem::transmute::<RawFileName, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
         }
     }
-}
-
-impl<'a> Raw<'a> for RawFileName {
 }
 

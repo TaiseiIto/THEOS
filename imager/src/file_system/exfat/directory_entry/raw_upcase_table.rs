@@ -9,7 +9,6 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Raw,
     },
 };
 
@@ -82,8 +81,5 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawUpcaseTable {
             mem::transmute::<RawUpcaseTable, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
         }
     }
-}
-
-impl<'a> Raw<'a> for RawUpcaseTable {
 }
 

@@ -9,7 +9,6 @@ use {
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
-        Raw,
     }
 };
 
@@ -104,8 +103,5 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &RawStreamExtension {
             mem::transmute::<RawStreamExtension, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
         }
     }
-}
-
-impl<'a> Raw<'a> for RawStreamExtension {
 }
 
