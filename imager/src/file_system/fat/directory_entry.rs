@@ -228,3 +228,45 @@ impl From<&node::Node> for DirectoryEntry {
     }
 }
 
+impl Into<Vec<u8>> for &DirectoryEntry {
+    fn into(self) -> Vec<u8> {
+        match self {
+            DirectoryEntry::ShortFileName {
+                name,
+                attribute,
+                accessed_time,
+                created_time,
+                written_time,
+                first_cluster,
+                size,
+                long_file_name,
+            } => {
+                let mut bytes: Vec<u8> = match long_file_name {
+                    Some(long_file_name) => long_file_name.as_ref().into(),
+                    None => vec![],
+                };
+                let short_file_name: short_file_name::ShortFileName = self.into();
+                let short_file_name: [u8; DIRECTORY_ENTRY_SIZE] = (&short_file_name).into();
+                let short_file_name: Vec<u8> = short_file_name.to_vec();
+                bytes.extend(short_file_name);
+                bytes
+            },
+            DirectoryEntry::LongFileName {
+                name,
+                order,
+                next,
+            } => {
+                let mut bytes: Vec<u8> = match next {
+                    Some(next) => next.as_ref().into(),
+                    None => vec![],
+                };
+                let long_file_name: long_file_name::LongFileName = self.into();
+                let long_file_name: [u8; DIRECTORY_ENTRY_SIZE] = (&long_file_name).into();
+                let long_file_name: Vec<u8> = long_file_name.to_vec();
+                bytes.extend(long_file_name);
+                bytes
+            },
+        }
+    }
+}
+
