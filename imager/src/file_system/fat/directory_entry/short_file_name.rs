@@ -123,8 +123,15 @@ impl From<&DirectoryEntry> for ShortFileName {
                 None => ("".to_string(), "".to_string()),
             };
             let mut basename: Vec<u8> = basename.into_bytes();
-            basename.resize(BASENAME_LENGTH, 0x20);
             let mut extension: Vec<u8> = extension.into_bytes();
+            let irreversible: bool = irreversible || BASENAME_LENGTH < basename.len() || EXTENSION_LENGTH < extension.len();
+            if irreversible {
+                basename.resize(BASENAME_LENGTH - 2, 0x20);
+                basename.push('~' as u8);
+                basename.push('1' as u8);
+            } else {
+                basename.resize(BASENAME_LENGTH, 0x20);
+            }
             extension.resize(EXTENSION_LENGTH, 0x20);
             let name: Vec<u8> = [basename, extension].concat();
             let name: [u8; NAME_LENGTH] = name
