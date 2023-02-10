@@ -17,6 +17,20 @@ pub struct Attribute {
     long_file_name: bool,
 }
 
+impl Attribute {
+    pub fn long_file_name() -> Self {
+        Self {
+            read_only: false,
+            hidden: false,
+            system: false,
+            volume_id: false,
+            directory: false,
+            archive: false,
+            long_file_name: true,
+        }
+    }
+}
+
 impl From<&node::Node> for Attribute {
     fn from(node: &node::Node) -> Self {
         let read_only: bool = node.is_read_only();
