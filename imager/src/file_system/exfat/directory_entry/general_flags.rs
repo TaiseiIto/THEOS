@@ -1,8 +1,3 @@
-use std::convert::{
-    From,
-    Into,
-};
-
 #[derive(Clone, Debug)]
 pub struct GeneralFlags {
     allocation_possible: bool,

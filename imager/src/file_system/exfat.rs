@@ -12,10 +12,6 @@ mod upcase_table;
 
 use {
     std::{
-        convert::{
-            From,
-            Into,
-        },
         fmt,
         path::PathBuf,
         rc::Rc,

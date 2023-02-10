@@ -4,7 +4,6 @@ mod directory_entry;
 mod node;
 
 use std::{
-    convert::Into,
     fmt,
     fs,
     path::PathBuf,

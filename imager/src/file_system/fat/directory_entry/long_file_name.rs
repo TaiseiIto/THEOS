@@ -1,9 +1,6 @@
-use {
-    std::convert::Into,
-    super::{
-        attribute,
-        DirectoryEntry,
-    }
+use super::{
+    attribute,
+    DirectoryEntry,
 };
 
 #[repr(packed)]

@@ -1,7 +1,6 @@
 use {
     std::{
         collections::HashMap,
-        convert::Into,
         mem,
     },
     super::cluster,

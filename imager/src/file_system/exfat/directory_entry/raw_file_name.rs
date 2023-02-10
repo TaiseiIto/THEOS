@@ -1,11 +1,5 @@
 use {
-    std::{
-        convert::{
-            From,
-            Into,
-        },
-        mem,
-    },
+    std::mem,
     super::{
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,

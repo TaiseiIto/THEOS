@@ -5,10 +5,6 @@ mod file_system_type;
 use {
     std::{
         collections::HashMap,
-        convert::{
-            From,
-            Into,
-        },
         fmt,
         fs,
         path::PathBuf,

@@ -1,8 +1,3 @@
-use std::convert::{
-    From,
-    Into,
-};
-
 #[derive(Debug)]
 pub enum TypeCode {
     File,

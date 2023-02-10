@@ -1,10 +1,4 @@
-use std::{
-    convert::{
-        From,
-        Into,
-    },
-    path::PathBuf,
-};
+use std::path::PathBuf;
 
 #[derive(Clone, Debug)]
 pub struct FileAttributes {

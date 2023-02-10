@@ -1,10 +1,4 @@
-use {
-    std::convert::{
-        From,
-        Into,
-    },
-    super::super::node,
-};
+use super::super::node;
 
 #[derive(Debug)]
 pub struct Attribute {

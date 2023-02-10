@@ -2,7 +2,6 @@ use {
     std::{
         cell::RefCell,
         char,
-        convert::Into,
         fmt,
         fs,
         path::PathBuf,

@@ -4,7 +4,6 @@ mod fat32;
 
 use {
     std::{
-        convert::Into,
         fmt,
         fs,
         path::PathBuf,

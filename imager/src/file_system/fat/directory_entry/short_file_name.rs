@@ -1,9 +1,6 @@
-use {
-    std::convert::From,
-    super::{
-        DirectoryEntry,
-        NAME_LENGTH,
-    },
+use super::{
+    DirectoryEntry,
+    NAME_LENGTH,
 };
 
 #[repr(packed)]

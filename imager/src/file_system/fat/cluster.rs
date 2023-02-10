@@ -1,10 +1,7 @@
 use {
-    std::{
-        collections::{
-            HashMap,
-            VecDeque,
-        },
-        convert::Into,
+    std::collections::{
+        HashMap,
+        VecDeque,
     },
 };
 

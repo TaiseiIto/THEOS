@@ -2,12 +2,9 @@ mod attribute;
 mod long_file_name;
 mod short_file_name;
 
-use {
-    std::convert::From,
-    super::{
-        node,
-        super::super::time,
-    },
+use super::{
+    node,
+    super::super::time,
 };
 
 #[derive(Debug)]

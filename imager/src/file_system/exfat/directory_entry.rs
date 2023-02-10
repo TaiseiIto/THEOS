@@ -14,10 +14,6 @@ use {
     std::{
         char,
         collections::VecDeque,
-        convert::{
-            From,
-            Into,
-        },
         ffi,
         mem,
         path::PathBuf,

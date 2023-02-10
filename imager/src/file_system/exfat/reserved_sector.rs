@@ -1,10 +1,4 @@
-use std::{
-    convert::{
-        From,
-        Into,
-    },
-    fmt,
-};
+use std::fmt;
 
 #[derive(Debug)]
 pub struct ReservedSector {
