@@ -1,8 +1,13 @@
-use super::{
-    attribute,
-    DirectoryEntry,
+use {
+    std::mem,
+    super::{
+        attribute,
+        DirectoryEntry,
+        DIRECTORY_ENTRY_SIZE,
+    },
 };
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct LongFileName {
     order: u8,
@@ -55,6 +60,22 @@ impl From<&DirectoryEntry> for LongFileName {
                 }
             }
             _ => panic!("Can't generate a long file name directory entry."),
+        }
+    }
+}
+
+impl From<&[u8; DIRECTORY_ENTRY_SIZE]> for LongFileName {
+    fn from(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
+        }
+    }
+}
+
+impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &LongFileName {
+    fn into(self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<LongFileName, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
         }
     }
 }
