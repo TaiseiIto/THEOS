@@ -18,7 +18,9 @@ pub struct ShortFileName {
     file_size: u32,
 }
 
-pub const NAME_LENGTH: usize = 11;
+const BASENAME_LENGTH: usize = 8;
+const EXTENSION_LENGTH: usize = 3;
+pub const NAME_LENGTH: usize = BASENAME_LENGTH + EXTENSION_LENGTH;
 
 impl From<&DirectoryEntry> for ShortFileName {
     fn from(directory_entry: &DirectoryEntry) -> Self {
@@ -32,7 +34,6 @@ impl From<&DirectoryEntry> for ShortFileName {
             size,
             long_file_name,
         } = directory_entry {
-            let irreversible: bool = false;
             let (name, irreversible, _, _): (String, bool, bool, bool) = name
                 .chars()
                 .fold((String::new(), false, false, true), |(name, irreversible, dot_flag, head_flag), c| match c {
@@ -105,8 +106,27 @@ impl From<&DirectoryEntry> for ShortFileName {
                         (name, true, false, false)
                     },
                 });
-            let mut name: Vec<u8> = name.into_bytes();
-            name.resize(NAME_LENGTH, 0x20);
+            let mut name: Vec<String> = name
+                .split(".")
+                .map(|name| name.to_string())
+                .collect();
+            let (basename, extension): (String, String) = match name.pop() {
+                Some(extension) => {
+                    let base_name: String = name
+                        .iter()
+                        .fold(String::new(), |base_name, name| base_name + name);
+                    match base_name.len() {
+                        0 => (extension, "".to_string()),
+                        _ => (base_name, extension),
+                    }
+                },
+                None => ("".to_string(), "".to_string()),
+            };
+            let mut basename: Vec<u8> = basename.into_bytes();
+            basename.resize(BASENAME_LENGTH, 0x20);
+            let mut extension: Vec<u8> = extension.into_bytes();
+            extension.resize(EXTENSION_LENGTH, 0x20);
+            let name: Vec<u8> = [basename, extension].concat();
             let name: [u8; NAME_LENGTH] = name
                 .try_into()
                 .expect("Can't generate a short file name.");
