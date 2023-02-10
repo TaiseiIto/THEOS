@@ -6,7 +6,6 @@ use {
     },
 };
 
-#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct ShortFileName {
     name: [u8; NAME_LENGTH],

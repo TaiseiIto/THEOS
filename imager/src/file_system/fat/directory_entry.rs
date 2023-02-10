@@ -1,4 +1,5 @@
 mod attribute;
+mod long_file_name;
 mod short_file_name;
 
 use {
@@ -62,32 +63,62 @@ impl DirectoryEntry {
         let (name, irreversible, _, _): (String, bool, bool, bool) = name
             .chars()
             .fold((String::new(), false, false, true), |(name, irreversible, dot_flag, head_flag), c| match c {
-                'a' | 'A' |
-                'b' | 'B' |
-                'c' | 'C' |
-                'd' | 'D' |
-                'e' | 'E' |
-                'f' | 'F' |
-                'g' | 'G' |
-                'h' | 'H' |
-                'i' | 'I' |
-                'j' | 'J' |
-                'k' | 'K' |
-                'l' | 'L' |
-                'm' | 'M' |
-                'n' | 'N' |
-                'o' | 'O' |
-                'p' | 'P' |
-                'q' | 'Q' |
-                'r' | 'R' |
-                's' | 'S' |
-                't' | 'T' |
-                'u' | 'U' |
-                'v' | 'V' |
-                'w' | 'W' |
-                'x' | 'X' |
-                'y' | 'Y' |
-                'z' | 'Z' |
+                'a' |
+                'b' |
+                'c' |
+                'd' |
+                'e' |
+                'f' |
+                'g' |
+                'h' |
+                'i' |
+                'j' |
+                'k' |
+                'l' |
+                'm' |
+                'n' |
+                'o' |
+                'p' |
+                'q' |
+                'r' |
+                's' |
+                't' |
+                'u' |
+                'v' |
+                'w' |
+                'x' |
+                'y' |
+                'z' => {
+                    let uppercase: String = c.to_uppercase().collect();
+                    let name: String = name + &uppercase;
+                    (name, true, false, false)
+                },
+                'A' |
+                'B' |
+                'C' |
+                'D' |
+                'E' |
+                'F' |
+                'G' |
+                'H' |
+                'I' |
+                'J' |
+                'K' |
+                'L' |
+                'M' |
+                'N' |
+                'O' |
+                'P' |
+                'Q' |
+                'R' |
+                'S' |
+                'T' |
+                'U' |
+                'V' |
+                'W' |
+                'X' |
+                'Y' |
+                'Z' |
                 '0' |
                 '1' |
                 '2' |
