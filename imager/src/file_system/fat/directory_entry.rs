@@ -26,6 +26,7 @@ pub enum DirectoryEntry {
     },
 }
 
+const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 const BASENAME_LENGTH: usize = 8;
 const EXTENSION_LENGTH: usize = 3;
 pub const NAME_LENGTH: usize = BASENAME_LENGTH + EXTENSION_LENGTH;

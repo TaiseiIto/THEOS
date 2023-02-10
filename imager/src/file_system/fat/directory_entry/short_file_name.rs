@@ -1,8 +1,13 @@
-use super::{
-    DirectoryEntry,
-    NAME_LENGTH,
+use {
+    std::mem,
+    super::{
+        DirectoryEntry,
+        NAME_LENGTH,
+        DIRECTORY_ENTRY_SIZE,
+    },
 };
 
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct ShortFileName {
     name: [u8; NAME_LENGTH],
@@ -53,6 +58,22 @@ impl From<&DirectoryEntry> for ShortFileName {
             }
         } else {
             panic!("Can't generate a short file name.");
+        }
+    }
+}
+
+impl From<&[u8; DIRECTORY_ENTRY_SIZE]> for ShortFileName {
+    fn from(bytes: &[u8; DIRECTORY_ENTRY_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; DIRECTORY_ENTRY_SIZE], Self>(*bytes)
+        }
+    }
+}
+
+impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &ShortFileName {
+    fn into(self) -> [u8; DIRECTORY_ENTRY_SIZE] {
+        unsafe {
+            mem::transmute::<ShortFileName, [u8; DIRECTORY_ENTRY_SIZE]>(*self)
         }
     }
 }
