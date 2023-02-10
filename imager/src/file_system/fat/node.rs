@@ -12,6 +12,7 @@ use {
     },
     super::{
         cluster,
+        directory_entry,
         super::super::time,
     },
 };
@@ -362,7 +363,20 @@ impl Into<Vec<u8>> for &FileOrDirectory {
             } => bytes.clone(),
             FileOrDirectory::Directory {
                 children,
-            } => vec![],
+            } => children
+                .borrow()
+                .iter()
+                .map(|child| {
+                    let child: directory_entry::DirectoryEntry = (&**child).into();
+                    let child: Vec<u8> = (&child).into();
+                    child
+                })
+                .fold(vec![], |children, child| {
+                    let mut children: Vec<u8> = children;
+                    let mut child: Vec<u8> = child;
+                    children.append(&mut child);
+                    children
+                }),
         }
     }
 }
