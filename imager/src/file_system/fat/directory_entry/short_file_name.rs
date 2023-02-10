@@ -1,6 +1,9 @@
 use {
     std::convert::From,
-    super::DirectoryEntry,
+    super::{
+        DirectoryEntry,
+        NAME_LENGTH,
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -18,10 +21,6 @@ pub struct ShortFileName {
     file_size: u32,
 }
 
-const BASENAME_LENGTH: usize = 8;
-const EXTENSION_LENGTH: usize = 3;
-pub const NAME_LENGTH: usize = BASENAME_LENGTH + EXTENSION_LENGTH;
-
 impl From<&DirectoryEntry> for ShortFileName {
     fn from(directory_entry: &DirectoryEntry) -> Self {
         if let DirectoryEntry::ShortFileName {
@@ -34,109 +33,7 @@ impl From<&DirectoryEntry> for ShortFileName {
             size,
             long_file_name,
         } = directory_entry {
-            let (name, irreversible, _, _): (String, bool, bool, bool) = name
-                .chars()
-                .fold((String::new(), false, false, true), |(name, irreversible, dot_flag, head_flag), c| match c {
-                    'a' | 'A' |
-                    'b' | 'B' |
-                    'c' | 'C' |
-                    'd' | 'D' |
-                    'e' | 'E' |
-                    'f' | 'F' |
-                    'g' | 'G' |
-                    'h' | 'H' |
-                    'i' | 'I' |
-                    'j' | 'J' |
-                    'k' | 'K' |
-                    'l' | 'L' |
-                    'm' | 'M' |
-                    'n' | 'N' |
-                    'o' | 'O' |
-                    'p' | 'P' |
-                    'q' | 'Q' |
-                    'r' | 'R' |
-                    's' | 'S' |
-                    't' | 'T' |
-                    'u' | 'U' |
-                    'v' | 'V' |
-                    'w' | 'W' |
-                    'x' | 'X' |
-                    'y' | 'Y' |
-                    'z' | 'Z' |
-                    '0' |
-                    '1' |
-                    '2' |
-                    '3' |
-                    '4' |
-                    '5' |
-                    '6' |
-                    '7' |
-                    '8' |
-                    '9' |
-                    '$' |
-                    '%' |
-                    '\'' |
-                    '-' |
-                    '_' |
-                    '@' |
-                    '~' |
-                    '`' |
-                    '!' |
-                    '(' |
-                    ')' |
-                    '{' |
-                    '}' |
-                    '^' |
-                    '#' |
-                    '&' => {
-                        let mut name: String = name;
-                        if dot_flag && !head_flag {
-                            name.push('.');
-                        }
-                        name.push(c);
-                        (name, irreversible, false, false)
-                    },
-                    ' ' => (name, true, false, false),
-                    '.' => {
-                        (name, true, true, head_flag)
-                    },
-                    _ => {
-                        let mut name: String = name;
-                        name.push('_');
-                        (name, true, false, false)
-                    },
-                });
-            let mut name: Vec<String> = name
-                .split(".")
-                .map(|name| name.to_string())
-                .collect();
-            let (basename, extension): (String, String) = match name.pop() {
-                Some(extension) => {
-                    let base_name: String = name
-                        .iter()
-                        .fold(String::new(), |base_name, name| base_name + name);
-                    match base_name.len() {
-                        0 => (extension, "".to_string()),
-                        _ => (base_name, extension),
-                    }
-                },
-                None => ("".to_string(), "".to_string()),
-            };
-            let mut basename: Vec<u8> = basename.into_bytes();
-            let mut extension: Vec<u8> = extension.into_bytes();
-            let irreversible: bool = irreversible || BASENAME_LENGTH < basename.len() || EXTENSION_LENGTH < extension.len();
-            if irreversible {
-                basename.resize(BASENAME_LENGTH - 2, 0x20);
-                basename.push('~' as u8);
-                basename.push('1' as u8);
-            } else {
-                basename.resize(BASENAME_LENGTH, 0x20);
-            }
-            extension.resize(EXTENSION_LENGTH, 0x20);
-            let name: Vec<u8> = [basename, extension].concat();
-            let name: [u8; NAME_LENGTH] = name
-                .try_into()
-                .expect("Can't generate a short file name.");
+            let name: [u8; NAME_LENGTH] = *name;
             let attribute: u8 = attribute.into();
             let name_flags: u8 = 0;
             let created_time_centi_second: u8 = created_time.fat_centi_second();
