@@ -169,7 +169,7 @@ impl DirectoryEntry {
                 'z' => {
                     let uppercase: String = c.to_uppercase().collect();
                     let name: String = name + &uppercase;
-                    (name, true, false, false)
+                    (name, irreversible, false, false)
                 },
                 'A' |
                 'B' |
@@ -224,15 +224,21 @@ impl DirectoryEntry {
                 '#' |
                 '&' => {
                     let mut name: String = name;
-                    if dot_flag && !head_flag {
-                        name.push('.');
+                    let mut irreversible: bool = irreversible;
+                    if dot_flag {
+                        if head_flag {
+                            irreversible = true;
+                        } else {
+                            name.push('.');
+                        }
                     }
                     name.push(c);
-                    (name, irreversible, false, false)
+                    (name, irreversible , false, false)
                 },
                 ' ' => (name, true, false, false),
                 '.' => {
-                    (name, true, true, head_flag)
+                    let irreversible: bool = irreversible || dot_flag;
+                    (name, irreversible, true, head_flag)
                 },
                 _ => {
                     let mut name: String = name;
