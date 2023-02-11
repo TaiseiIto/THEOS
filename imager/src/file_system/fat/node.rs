@@ -111,7 +111,7 @@ impl Node {
             }
         }
         const FIRST_CLUSTER: u32 = 2;
-        node.set_first_cluster(FIRST_CLUSTER).0
+        node.set_first_cluster(FIRST_CLUSTER + 1).0
     }
 
     pub fn search_by_first_cluster(self: Rc<Self>, first_cluster: u32) -> Option<Rc<Self>> {
