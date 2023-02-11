@@ -72,7 +72,7 @@ impl Node {
         self.name.clone()
     }
 
-    pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Rc<Self> {
+    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
         let is_root: bool = false;
         let content = FileOrDirectory::new(path, clusters, is_root);
         let cluster_size: usize = clusters.cluster_size();
@@ -252,7 +252,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn new(path: &PathBuf, clusters: &cluster::Clusters, is_root: bool) -> Self {
+    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters, is_root: bool) -> Self {
         if path.is_file() {
             let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             Self::File {
@@ -271,9 +271,14 @@ impl FileOrDirectory {
                 _ => vec![],
             };
             let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
-            Self::Directory {
+            let directory = Self::Directory {
                 children,
+            };
+            if is_root {
+                let root: Vec<u8> = (&directory).into();
+                clusters.append(&root, 0x00);
             }
+            directory
         } else {
             panic!("{} is not found.", path.display())
         }
