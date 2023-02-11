@@ -115,7 +115,7 @@ impl Node {
     }
 
     pub fn search_by_first_cluster(self: Rc<Self>, first_cluster: u32) -> Option<Rc<Self>> {
-        if self.first_cluster == Some(first_cluster) {
+        if self.first_cluster == Some(first_cluster) && 0 < self.number_of_clusters {
             Some(self)
         } else {
             match &self.clone().content {
@@ -276,24 +276,24 @@ impl FileOrDirectory {
             let mut directory = Self::Directory {
                 children,
             };
-            // if is_root {
-            //     let root: Vec<u8> = (&directory).into();
-            //     clusters.append(&root, 0x00);
-            //     if let Self::Directory {
-            //         children,
-            //     } = &directory {
-            //         while let Some(node) = children
-            //             .borrow()
-            //             .iter()
-            //             .find_map(|child| child
-            //                 .clone()
-            //                 .search_by_first_cluster(clusters
-            //                     .next_cluster_number())) {
-            //             let node: Vec<u8> = (&*node).into();
-            //             clusters.append(&node, 0x00);
-            //         }
-            //     }
-            // }
+            if is_root {
+                let root: Vec<u8> = (&directory).into();
+                clusters.append(&root, 0x00);
+                if let Self::Directory {
+                    children,
+                } = &directory {
+                    while let Some(node) = children
+                        .borrow()
+                        .iter()
+                        .find_map(|child| child
+                            .clone()
+                            .search_by_first_cluster(clusters
+                                .next_cluster_number())) {
+                        let node: Vec<u8> = (&*node).into();
+                        clusters.append(&node, 0x00);
+                    }
+                }
+            }
             directory
         } else {
             panic!("{} is not found.", path.display())
