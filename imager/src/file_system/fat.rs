@@ -40,21 +40,21 @@ impl Fat {
         eprintln!("cluster_size: {:#x}", cluster_size);
         let is_root: bool = true;
         let root = node::FileOrDirectory::new(root, &mut clusters, is_root);
-        let clusters: Vec<u8> = (&clusters).into();
-        for bytes in clusters.chunks(16) {
-            for byte in bytes {
-                eprint!("{:02x} ", byte);
-            }
-            for byte in bytes {
-                let c: char = if 0x20 <= *byte && *byte <= 0x7e {
-                    *byte as char
-                } else {
-                    ' '
-                };
-                eprint!("{}", c);
-            }
-            eprintln!("");
-        }
+        // let clusters: Vec<u8> = (&clusters).into();
+        // for bytes in clusters.chunks(16) {
+        //     for byte in bytes {
+        //         eprint!("{:02x} ", byte);
+        //     }
+        //     for byte in bytes {
+        //         let c: char = if 0x20 <= *byte && *byte <= 0x7e {
+        //             *byte as char
+        //         } else {
+        //             ' '
+        //         };
+        //         eprint!("{}", c);
+        //     }
+        //     eprintln!("");
+        // }
         eprintln!("{}", root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
