@@ -73,7 +73,8 @@ impl Node {
     }
 
     pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Rc<Self> {
-        let content = FileOrDirectory::new(path, clusters);
+        let is_root: bool = false;
+        let content = FileOrDirectory::new(path, clusters, is_root);
         let cluster_size: usize = clusters.cluster_size();
         let first_cluster: Option<u32> = None;
         let number_of_clusters: usize = content.number_of_clusters(cluster_size);
@@ -251,7 +252,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn new(path: &PathBuf, clusters: &cluster::Clusters) -> Self {
+    pub fn new(path: &PathBuf, clusters: &cluster::Clusters, is_root: bool) -> Self {
         if path.is_file() {
             let bytes: Vec<u8> = fs::read(path).expect(&format!("Can't read {}!", path.display()));
             Self::File {
