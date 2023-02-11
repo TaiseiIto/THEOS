@@ -114,6 +114,24 @@ impl Node {
         node.set_first_cluster(FIRST_CLUSTER).0
     }
 
+    pub fn search_by_first_cluster(self: Rc<Self>, first_cluster: u32) -> Option<Rc<Self>> {
+        if self.first_cluster == Some(first_cluster) {
+            Some(self)
+        } else {
+            match &self.clone().content {
+                FileOrDirectory::File {
+                    bytes: _,
+                } => None,
+                FileOrDirectory::Directory {
+                    children,
+                } => children
+                    .borrow()
+                    .iter()
+                    .find_map(|child| child.clone().search_by_first_cluster(first_cluster)),
+            }
+        }
+    }
+
     pub fn size(&self) -> usize {
         self.content.size()
     }
