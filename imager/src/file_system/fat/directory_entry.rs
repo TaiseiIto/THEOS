@@ -47,8 +47,15 @@ impl DirectoryEntry {
             } => {
                 let mut name: [u8; SHORT_FILE_NAME_LENGTH] = name;
                 while let Some(other_name) = names.iter().find(|other_name| **other_name == name) {
-                    let name_string: String = String::from_utf8(name.to_vec()).expect("Cant' avoid name duplication.");
-                    let name_words: Vec<String> = name_string
+                    let basename: [u8; BASENAME_LENGTH] = name[..BASENAME_LENGTH]
+                        .try_into()
+                        .expect("Can't avoid name duplication.");
+                    let basename: String = String::from_utf8(basename.to_vec()).expect("Cant' avoid name duplication.");
+                    let extension: [u8; EXTENSION_LENGTH] = name[BASENAME_LENGTH..]
+                        .try_into()
+                        .expect("Can't avoid name duplication.");
+                    let extension: Vec<u8> = extension.to_vec();
+                    let name_words: Vec<String> = basename
                         .split("~")
                         .map(|word| word.to_string())
                         .collect();
@@ -63,7 +70,7 @@ impl DirectoryEntry {
                                     (prefix, suffix)
                                 },
                                 _ => {
-                                    let prefix: String = name_string;
+                                    let prefix: String = basename;
                                     let suffix: String = "~1".to_string();
                                     (prefix, suffix)
                                 },
@@ -74,16 +81,19 @@ impl DirectoryEntry {
                     let mut suffix: Vec<u8> = suffix
                         .as_bytes()
                         .to_vec();
-                    suffix.truncate(SHORT_FILE_NAME_LENGTH);
+                    suffix.truncate(BASENAME_LENGTH);
                     let suffix_length: usize = suffix.len();
-                    let prefix_length: usize = SHORT_FILE_NAME_LENGTH - suffix_length;
+                    let prefix_length: usize = BASENAME_LENGTH - suffix_length;
                     let mut prefix: Vec<u8> = prefix
                         .as_bytes()
                         .to_vec();
                     prefix.resize(prefix_length, 0x20);
+                    let mut basename: Vec<u8> = vec![];
+                    basename.extend(prefix);
+                    basename.extend(suffix);
                     let mut name_vec: Vec<u8> = vec![];
-                    name_vec.extend(prefix);
-                    name_vec.extend(suffix);
+                    name_vec.extend(basename);
+                    name_vec.extend(extension);
                     name = name_vec
                         .try_into()
                         .expect("Can't avoid name duplication.");
