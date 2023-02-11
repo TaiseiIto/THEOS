@@ -2,7 +2,7 @@ use {
     std::mem,
     super::{
         DirectoryEntry,
-        NAME_LENGTH,
+        SHORT_FILE_NAME_LENGTH,
         DIRECTORY_ENTRY_SIZE,
     },
 };
@@ -10,7 +10,7 @@ use {
 #[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct ShortFileName {
-    name: [u8; NAME_LENGTH],
+    name: [u8; SHORT_FILE_NAME_LENGTH],
     attribute: u8,
     name_flags: u8,
     created_time_centi_second: u8,
@@ -34,7 +34,7 @@ impl From<&DirectoryEntry> for ShortFileName {
             size,
             long_file_name,
         } = directory_entry {
-            let name: [u8; NAME_LENGTH] = *name;
+            let name: [u8; SHORT_FILE_NAME_LENGTH] = *name;
             let attribute: u8 = attribute.into();
             let name_flags: u8 = 0;
             let created_time_centi_second: u8 = created_time.fat_centi_second();

@@ -10,7 +10,7 @@ use super::{
 #[derive(Debug)]
 pub enum DirectoryEntry {
     ShortFileName {
-        name: [u8; NAME_LENGTH],
+        name: [u8; SHORT_FILE_NAME_LENGTH],
         attribute: attribute::Attribute,
         accessed_time: time::Time,
         created_time: time::Time,
@@ -29,10 +29,80 @@ pub enum DirectoryEntry {
 const DIRECTORY_ENTRY_SIZE: usize = 0x20;
 const BASENAME_LENGTH: usize = 8;
 const EXTENSION_LENGTH: usize = 3;
-pub const NAME_LENGTH: usize = BASENAME_LENGTH + EXTENSION_LENGTH;
+pub const SHORT_FILE_NAME_LENGTH: usize = BASENAME_LENGTH + EXTENSION_LENGTH;
 const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
+    pub fn avoid_name_duplication(self, names: &Vec<[u8; SHORT_FILE_NAME_LENGTH]>) -> Self {
+        match self {
+            Self::ShortFileName {
+                name,
+                attribute,
+                accessed_time,
+                created_time,
+                written_time,
+                first_cluster,
+                size,
+                long_file_name,
+            } => {
+                let mut name: [u8; SHORT_FILE_NAME_LENGTH] = name;
+                while let Some(other_name) = names.iter().find(|other_name| **other_name == name) {
+                    let name_string: String = String::from_utf8(name.to_vec()).expect("Cant' avoid name duplication.");
+                    let name_words: Vec<String> = name_string
+                        .split("~")
+                        .map(|word| word.to_string())
+                        .collect();
+                    let (prefix, suffix): (String, String) = match name_words.split_last() {
+                        Some((suffix, prefix)) => {
+                            match suffix.parse::<u32>() {
+                                Ok(number) => {
+                                    let prefix: String = prefix.to_vec().join("");
+                                    let number: u32 = number + 1;
+                                    let mut suffix: String = number.to_string();
+                                    suffix.insert(0, '~');
+                                    (prefix, suffix)
+                                },
+                                _ => {
+                                    let prefix: String = name_string;
+                                    let suffix: String = "~1".to_string();
+                                    (prefix, suffix)
+                                },
+                            }
+                        },
+                        None => panic!("Can't avoid name duplication."),
+                    };
+                    let mut suffix: Vec<u8> = suffix
+                        .as_bytes()
+                        .to_vec();
+                    suffix.truncate(SHORT_FILE_NAME_LENGTH);
+                    let suffix_length: usize = suffix.len();
+                    let prefix_length: usize = SHORT_FILE_NAME_LENGTH - suffix_length;
+                    let mut prefix: Vec<u8> = prefix
+                        .as_bytes()
+                        .to_vec();
+                    prefix.resize(prefix_length, 0x20);
+                    let mut name_vec: Vec<u8> = vec![];
+                    name_vec.extend(prefix);
+                    name_vec.extend(suffix);
+                    name = name_vec
+                        .try_into()
+                        .expect("Can't avoid name duplication.");
+                }
+                Self::ShortFileName {
+                    name,
+                    attribute,
+                    accessed_time,
+                    created_time,
+                    written_time,
+                    first_cluster,
+                    size,
+                    long_file_name,
+                }
+            }
+            _ => self,
+        }
+    }
+
     fn long_file_name(mut name: Vec<u16>, order: usize) -> Self {
         let (name, next): ([u16; LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if LONG_FILE_NAME_LENGTH <= name.len() {
             let (name, next): (&[u16], &[u16]) = name.split_at(LONG_FILE_NAME_LENGTH);
@@ -57,7 +127,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn short_file_name(name: String) -> ([u8; NAME_LENGTH], bool) {
+    fn short_file_name(name: String) -> ([u8; SHORT_FILE_NAME_LENGTH], bool) {
         let (name, irreversible, _, _): (String, bool, bool, bool) = name
             .chars()
             .fold((String::new(), false, false, true), |(name, irreversible, dot_flag, head_flag), c| match c {
@@ -188,7 +258,7 @@ impl DirectoryEntry {
         }
         extension.resize(EXTENSION_LENGTH, 0x20);
         let name: Vec<u8> = [basename, extension].concat();
-        let name: [u8; NAME_LENGTH] = name
+        let name: [u8; SHORT_FILE_NAME_LENGTH] = name
             .try_into()
             .expect("Can't generate a short file name.");
         (name, irreversible)
@@ -199,7 +269,7 @@ impl From<&node::Node> for DirectoryEntry {
     fn from(node: &node::Node) -> Self {
         let name: String = node.name();
         let long_file_name: Vec<u16> = name.encode_utf16().collect();
-        let (name, irreversible): ([u8; NAME_LENGTH], bool) = Self::short_file_name(name);
+        let (name, irreversible): ([u8; SHORT_FILE_NAME_LENGTH], bool) = Self::short_file_name(name);
         let long_file_name: Option<Box<Self>> = if irreversible {
             Some(Box::new(Self::long_file_name(long_file_name, 1)))
         } else {
