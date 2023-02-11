@@ -74,6 +74,10 @@ impl Clusters {
         }
     }
 
+    pub fn next_cluster_number(&self) -> u32 {
+        self.next_cluster_number
+    }
+
     pub fn number_of_clusters(&self) -> usize {
         self.clusters
             .iter()
