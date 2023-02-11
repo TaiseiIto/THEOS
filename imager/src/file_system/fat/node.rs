@@ -368,9 +368,49 @@ impl Into<Vec<u8>> for &FileOrDirectory {
                 .iter()
                 .map(|child| {
                     let child: directory_entry::DirectoryEntry = (&**child).into();
-                    let child: Vec<u8> = (&child).into();
                     child
                 })
+                .fold((vec![], vec![]), |(children, names), child| {
+                    let mut children: Vec<directory_entry::DirectoryEntry> = children;
+                    let mut names: Vec<[u8; directory_entry::SHORT_FILE_NAME_LENGTH]> = names;
+                    let (child, name): (directory_entry::DirectoryEntry, Option<[u8; directory_entry::SHORT_FILE_NAME_LENGTH]>) = match child {
+                        directory_entry::DirectoryEntry::ShortFileName {
+                            name: _,
+                            attribute: _,
+                            accessed_time: _,
+                            created_time: _,
+                            written_time: _,
+                            first_cluster: _,
+                            size: _,
+                            long_file_name: _,
+                        } => {
+                            let child: directory_entry::DirectoryEntry = child.avoid_name_duplication(&names);
+                            let name: Option<[u8; directory_entry::SHORT_FILE_NAME_LENGTH]> = match child {
+                                directory_entry::DirectoryEntry::ShortFileName {
+                                    name,
+                                    attribute: _,
+                                    accessed_time: _,
+                                    created_time: _,
+                                    written_time: _,
+                                    first_cluster: _,
+                                    size: _,
+                                    long_file_name: _,
+                                } => Some(name),
+                                _ => None,
+                            };
+                            (child, name)
+                        },
+                        _ => (child, None),
+                    };
+                    children.push(child);
+                    if let Some(name) = name {
+                        names.push(name);
+                    }
+                    (children, names)
+                })
+                .0
+                .iter()
+                .map(|child| Into::<Vec<u8>>::into(child))
                 .fold(vec![], |children, child| {
                     let mut children: Vec<u8> = children;
                     let mut child: Vec<u8> = child;
