@@ -72,7 +72,7 @@ impl Node {
         self.name.clone()
     }
 
-    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters) -> Rc<Self> {
+    pub fn new(path: &PathBuf, clusters: &mut cluster::Clusters, cluster_number: u32) -> (Rc<Self>, u32) {
         let is_root: bool = false;
         let content = FileOrDirectory::new(path, clusters, is_root);
         let cluster_size: usize = clusters.cluster_size();
@@ -111,8 +111,7 @@ impl Node {
                 *child.parent.borrow_mut() = Rc::downgrade(&node);
             }
         }
-        const FIRST_CLUSTER: u32 = 2;
-        node.set_first_cluster(FIRST_CLUSTER + 1).0
+        node.set_first_cluster(cluster_number)
     }
 
     pub fn search_by_first_cluster(self: Rc<Self>, first_cluster: u32) -> Option<Rc<Self>> {
@@ -259,13 +258,16 @@ impl FileOrDirectory {
                 bytes,
             }
         } else if path.is_dir() {
+            let mut cluster_number: u32 = cluster::FIRST_CLUSTER_NUMBER + 1;
             let children: Vec<Rc<Node>> = match fs::read_dir(path) {
                 Ok(directory) => directory
                     .into_iter()
                     .filter_map(|directory| directory.ok())
                     .map(|directory| {
                         let directory: &PathBuf = &directory.path();
-                        Node::new(directory, clusters)
+                        let (node, next_cluster_number): (Rc<Node>, u32) = Node::new(directory, clusters, cluster_number);
+                        cluster_number = next_cluster_number;
+                        node
                     })
                     .collect(),
                 _ => vec![],
