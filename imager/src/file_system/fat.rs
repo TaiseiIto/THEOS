@@ -45,6 +45,14 @@ impl Fat {
             for byte in bytes {
                 eprint!("{:02x} ", byte);
             }
+            for byte in bytes {
+                let c: char = if 0x20 <= *byte && *byte <= 0x7e {
+                    *byte as char
+                } else {
+                    ' '
+                };
+                eprint!("{}", c);
+            }
             eprintln!("");
         }
         eprintln!("{}", root);
