@@ -104,6 +104,7 @@ impl Node {
             number_of_clusters,
             parent,
         });
+        let (node, next_cluster_number): (Rc<Self>, u32) = node.set_first_cluster(cluster_number);
         if let FileOrDirectory::Directory {
             children,
         } = &node.content {
@@ -111,7 +112,7 @@ impl Node {
                 *child.parent.borrow_mut() = Rc::downgrade(&node);
             }
         }
-        node.set_first_cluster(cluster_number)
+        (node, next_cluster_number)
     }
 
     pub fn search_by_first_cluster(self: Rc<Self>, first_cluster: u32) -> Option<Rc<Self>> {
