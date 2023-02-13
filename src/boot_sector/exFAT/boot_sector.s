@@ -47,7 +47,7 @@ sectors_per_cluster_shift:
 	.byte	0x03
 
 number_of_fats:
-	.byte	0x02
+	.byte	0x01
 
 drive_select:
 	.byte	0x80
