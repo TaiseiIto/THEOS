@@ -62,10 +62,10 @@ impl FileOrDirectory {
         source: &PathBuf,
         destination: &PathBuf,
         is_root: bool,
-        has_volume_guid: bool,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
+        has_volume_guid: bool,
         rand_generator: &mut rand::Generator,
     ) -> (Self, u32, usize) {
         if source.is_file() {
@@ -85,7 +85,7 @@ impl FileOrDirectory {
                         let source: &PathBuf = &directory.path();
                         let destination: &mut PathBuf = &mut destination.to_path_buf();
                         destination.push(source.file_name().expect("Can't create a file or directory."));
-                        Node::new(source, destination, false, has_volume_guid, boot_sector, clusters, upcase_table, rand_generator)
+                        Node::new(source, destination, false, boot_sector, clusters, upcase_table, has_volume_guid, rand_generator)
                     })
                     .collect(),
                 _ => vec![],
@@ -362,12 +362,12 @@ impl Node {
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
-        rand_generator: &mut rand::Generator,
         has_volume_guid: bool,
+        rand_generator: &mut rand::Generator,
     ) -> Rc<Self> {
         let destination = &PathBuf::from("/");
         let is_root: bool = true;
-        Self::new(source, destination, is_root, has_volume_guid, boot_sector, clusters, upcase_table, rand_generator)
+        Self::new(source, destination, is_root, boot_sector, clusters, upcase_table, has_volume_guid, rand_generator)
     }
 
     pub fn upcase_table(&self) -> upcase_table::UpcaseTable {
@@ -389,13 +389,13 @@ impl Node {
         source: &PathBuf,
         destination: &PathBuf,
         is_root: bool,
-        has_volume_guid: bool,
         boot_sector: &boot_sector::BootSector,
         clusters: &mut cluster::Clusters,
         upcase_table: &upcase_table::UpcaseTable,
+        has_volume_guid: bool,
         rand_generator: &mut rand::Generator,
     ) -> Rc<Self> {
-        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, has_volume_guid, boot_sector, clusters, upcase_table, rand_generator);
+        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, has_volume_guid, rand_generator);
         let destination: PathBuf = destination.to_path_buf();
         let directory_entry = if is_root {
             None
