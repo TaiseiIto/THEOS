@@ -127,8 +127,13 @@ impl DirectoryEntry {
             .collect()
     }
 
-    pub fn file(path: &PathBuf, first_cluster: u32, data_length: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
+    pub fn file(path: &PathBuf, first_cluster: u32, data_length: usize, cluster_size: usize, upcase_table: &upcase_table::UpcaseTable) -> Self {
         let file_attributes = file_attributes::FileAttributes::new(path);
+        let data_length: usize = if file_attributes.is_dir() {
+            ((data_length + cluster_size - 1) / cluster_size) * cluster_size
+        } else {
+            data_length
+        };
         let create_time: time::Time = time::Time::last_changed_time(path);
         let modified_time: time::Time = time::Time::last_modified_time(path);
         let accessed_time: time::Time = time::Time::last_accessed_time(path);

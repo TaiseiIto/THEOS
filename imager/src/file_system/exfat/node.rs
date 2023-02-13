@@ -398,7 +398,7 @@ impl Node {
         let directory_entry = if is_root {
             None
         } else {
-            Some(directory_entry::DirectoryEntry::file(&source, first_cluster, length, upcase_table))
+            Some(directory_entry::DirectoryEntry::file(&source, first_cluster, length, clusters.cluster_size(), upcase_table))
         };
         let parent = RefCell::new(Weak::new());
         let object = Rc::new(Self {
