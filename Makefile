@@ -7,18 +7,18 @@ BOOT_SECTOR=$(EXFAT_BOOT_SECTOR)
 BOOT_SOURCE=src/EFI/BOOT/BOOTX64.EFI
 BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
 COPY=.bash/copy.sh
-FILE_SYSTEM=exFAT
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
 THEOS=theos.img
 THEOS_ROOT=root
+HAS_VOLUME_GUID=false
 
 # Build THEOS
 all:
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
-	$(IMAGER) -b $(BOOT_SECTOR) -f $(FILE_SYSTEM) -r $(THEOS_ROOT) > $(THEOS) 2> $(IMAGER_LOG)
+	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $(THEOS) 2> $(IMAGER_LOG)
 	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
 	cat $(IMAGER_LOG)
 

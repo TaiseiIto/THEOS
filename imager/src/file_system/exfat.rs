@@ -41,12 +41,11 @@ impl Exfat {
         self.root_directory.allocation_bitmap(&self.clusters)
     }
 
-    pub fn new(boot_sector: &PathBuf, source_directory: &PathBuf, rand_generator: &mut rand::Generator) -> Self {
+    pub fn new(boot_sector: &PathBuf, source_directory: &PathBuf, has_volume_guid: bool, rand_generator: &mut rand::Generator) -> Self {
         let boot_sector = boot_sector::BootSector::new(boot_sector);
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
-        let has_volume_guid: bool = true;
         let root_directory = node::Node::root_directory(&source_directory, &boot_sector, &mut clusters, &upcase_table, has_volume_guid, rand_generator);
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());

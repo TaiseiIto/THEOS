@@ -25,8 +25,9 @@ fn main() {
         args::Args::Write {
             boot_sector,
             root_directory,
+            has_volume_guid,
         } => {
-            let file_system = &file_system::FileSystem::new(boot_sector, root_directory, &mut rand_generator);
+            let file_system = &file_system::FileSystem::new(boot_sector, root_directory, has_volume_guid, &mut rand_generator);
             let file_system: Vec<u8> = file_system.into();
             io::stdout().write_all(&file_system).expect("Can't write image to stdout.");
         },

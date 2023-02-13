@@ -23,7 +23,7 @@ pub enum FileSystem {
 }
 
 impl FileSystem {
-    pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, rand_generator: &mut rand::Generator) -> Self {
+    pub fn new(boot_sector_candidates: Vec<PathBuf>, source_directory: PathBuf, has_volume_guid: bool, rand_generator: &mut rand::Generator) -> Self {
         let boot_sector_candidates: HashMap<file_system_type::FileSystemType, PathBuf> = boot_sector_candidates
             .into_iter()
             .map(|boot_sector| {
@@ -48,7 +48,7 @@ impl FileSystem {
                 None,
                 None,
             ) => {
-                let content = exfat::Exfat::new(exfat_boot_sector, &source_directory, rand_generator);
+                let content = exfat::Exfat::new(exfat_boot_sector, &source_directory, has_volume_guid, rand_generator);
                 Self::Exfat {
                     content,
                 }
