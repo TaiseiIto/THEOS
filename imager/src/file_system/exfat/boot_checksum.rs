@@ -41,11 +41,10 @@ impl BootChecksum {
         let checksum: u32 = bytes
             .into_iter()
             .enumerate()
-            .filter(|(i, _)| match i {
-                106 | 107 | 112 => false,
-                _ => true,
+            .filter_map(|(i, byte)| match i {
+                106 | 107 | 112 => None,
+                _ => Some(byte),
             })
-            .map(|(_, byte)| byte)
             .fold(0u32, |checksum, byte| (checksum << 31) + (checksum >> 1) + (byte as u32));
         Self {
             size,
