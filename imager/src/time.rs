@@ -122,7 +122,7 @@ impl Time {
 
     pub fn get_10ms_increment(&self) -> u8 {
         let sec: u8 = 100 * (self.sec % 2);
-        let msec: u8 = (self.nsec / 10000) as u8;
+        let msec: u8 = (self.nsec / 10000000) as u8;
         sec + msec
     }
 
