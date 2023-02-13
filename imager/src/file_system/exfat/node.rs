@@ -113,15 +113,15 @@ impl FileOrDirectory {
                 Some(volume_label) => directory_entries.push(volume_label),
                 None => (),
             }
-            let volume_guid: Option<directory_entry::DirectoryEntry> = if is_root {
-                Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128()))
-            } else {
-                None
-            };
-            match volume_guid {
-                Some(volume_guid) => directory_entries.push(volume_guid),
-                None => (),
-            }
+            // let volume_guid: Option<directory_entry::DirectoryEntry> = if is_root {
+            //     Some(directory_entry::DirectoryEntry::volume_guid(guid::Guid::new(rand_generator).to_u128()))
+            // } else {
+            //     None
+            // };
+            // match volume_guid {
+            //     Some(volume_guid) => directory_entries.push(volume_guid),
+            //     None => (),
+            // }
             let allocation_bitmaps: Vec<directory_entry::DirectoryEntry> = if is_root {
                 let volume_size_lower_limit: usize  = 1 << 20;
                 let cluster_heap_offset: usize = (boot_sector.fat_offset() as usize + boot_sector.num_of_fats() as usize) * boot_sector.bytes_per_sector();
@@ -222,7 +222,7 @@ impl FileOrDirectory {
         }
     }
 
-    pub fn volume_guid(&self) -> guid::Guid {
+    pub fn volume_guid(&self) -> Option<guid::Guid> {
         if let Self::Directory {
             children: _,
             directory_entries,
@@ -237,9 +237,8 @@ impl FileOrDirectory {
                 } else {
                     None
                 })
-                .expect("Can't get a volume GUID.")
         } else {
-            panic!("Can't get a volume GUID.")
+            None
         }
     }
 
@@ -376,7 +375,7 @@ impl Node {
         }
     }
 
-    pub fn volume_guid(&self) -> guid::Guid {
+    pub fn volume_guid(&self) -> Option<guid::Guid> {
         self.content.volume_guid()
     }
 

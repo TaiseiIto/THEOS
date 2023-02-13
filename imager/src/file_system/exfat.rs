@@ -64,7 +64,7 @@ impl Exfat {
         }
     }
 
-    pub fn volume_guid(&self) -> guid::Guid {
+    pub fn volume_guid(&self) -> Option<guid::Guid> {
         self.root_directory.volume_guid()
     }
 
@@ -204,7 +204,11 @@ impl fmt::Display for Exfat {
             .lines()
             .map(|line| format!("allocation_bitmap.{}\n", line))
             .fold(String::new(), |allocation_bitmap, line| allocation_bitmap + &line);
-        let volume_guid: String = format!("{}", self.volume_guid())
+        let volume_guid: String = match self.volume_guid() {
+            Some(volume_guid) => format!("{}", volume_guid),
+            None => String::new(),
+        };
+        let volume_guid: String = volume_guid
             .lines()
             .map(|line| format!("volume_guid.{}\n", line))
             .fold(String::new(), |volume_guid, line| volume_guid + &line);
