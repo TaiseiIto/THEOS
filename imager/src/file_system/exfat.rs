@@ -46,7 +46,8 @@ impl Exfat {
         let mut clusters = cluster::Clusters::new(boot_sector.cluster_size());
         let extended_boot_sectors = [extended_boot_sector::ExtendedBootSector::new(boot_sector.bytes_per_sector()); NUM_OF_EXTENDED_BOOT_SECTORS];
         let upcase_table = upcase_table::UpcaseTable::new();
-        let root_directory = node::Node::root_directory(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator);
+        let has_volume_guid: bool = true;
+        let root_directory = node::Node::root_directory(&source_directory, &boot_sector, &mut clusters, &upcase_table, rand_generator, has_volume_guid);
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());

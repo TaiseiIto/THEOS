@@ -353,13 +353,13 @@ impl DirectoryEntry {
         }
     }
 
-    // pub fn volume_guid(volume_guid: u128) -> Self {
-    //     let general_flags = general_flags::GeneralFlags::volume_guid();
-    //     Self::VolumeGuid {
-    //         general_flags,
-    //         volume_guid,
-    //     }
-    // }
+    pub fn volume_guid(volume_guid: u128) -> Self {
+        let general_flags = general_flags::GeneralFlags::volume_guid();
+        Self::VolumeGuid {
+            general_flags,
+            volume_guid,
+        }
+    }
 
     pub fn volume_label(volume_label: &str) -> Self {
         let volume_label: String = volume_label.to_string();
