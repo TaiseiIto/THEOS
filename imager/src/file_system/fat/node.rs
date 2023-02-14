@@ -120,11 +120,14 @@ impl From<&PathBuf> for FileOrDirectory {
 
 #[derive(Debug)]
 pub struct Node {
+    name: String,
     content: FileOrDirectory,
     last_accessed_time: time::Time,
     last_changed_time: time::Time,
     last_modified_time: time::Time,
-    name: String,
+    hidden: bool,
+    read_only: bool,
+    system: bool,
     parent: RefCell<Weak<Self>>,
 }
 
@@ -186,23 +189,29 @@ impl fmt::Display for Node {
 
 impl From<&PathBuf> for Node {
     fn from(source: &PathBuf) -> Self {
-        let content: FileOrDirectory = source.into();
-        let last_accessed_time = time::Time::last_accessed_time(source);
-        let last_changed_time = time::Time::last_changed_time(source);
-        let last_modified_time = time::Time::last_modified_time(source);
         let name: String = source
             .file_name()
             .expect(&format!("Can't get a basename of {}!", source.display()))
             .to_str()
             .expect(&format!("Can't get a basename of {}!", source.display()))
             .to_string();
+        let content: FileOrDirectory = source.into();
+        let last_accessed_time = time::Time::last_accessed_time(source);
+        let last_changed_time = time::Time::last_changed_time(source);
+        let last_modified_time = time::Time::last_modified_time(source);
+        let hidden: bool = false;
+        let read_only: bool = true;
+        let system: bool = true;
         let parent = RefCell::new(Weak::new());
         Self {
+            name,
             content,
             last_accessed_time,
             last_changed_time,
             last_modified_time,
-            name,
+            hidden,
+            read_only,
+            system,
             parent,
         }
     }
