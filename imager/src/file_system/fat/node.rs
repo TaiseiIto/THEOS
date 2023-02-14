@@ -25,7 +25,8 @@ impl Node {
             name,
             parent,
         };
-        let root: Rc<Self> = Rc::new(root);
+        let mut root: Rc<Self> = Rc::new(root);
+        root.set_parent();
         root
     }
 
@@ -45,6 +46,23 @@ impl Node {
         };
         let node: Rc<Self> = Rc::new(node);
         node
+    }
+
+    fn set_parent(self: &Rc<Self>) {
+        if let FileOrDirectory::Directory {
+            children,
+        } = &self.clone().content {
+            children
+                .borrow_mut()
+                .iter_mut()
+                .map(|child| {
+                    child.set_parent();
+                    *child
+                        .clone()
+                        .parent
+                        .borrow_mut() = Rc::downgrade(self);
+                });
+        }
     }
 }
 
