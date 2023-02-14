@@ -132,6 +132,18 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn last_accessed_time(&self) -> time::Time {
+        self.last_accessed_time
+    }
+
+    pub fn last_changed_time(&self) -> time::Time {
+        self.last_changed_time
+    }
+
+    pub fn last_modified_time(&self) -> time::Time {
+        self.last_modified_time
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

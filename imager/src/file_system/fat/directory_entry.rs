@@ -4,7 +4,10 @@ use {
         fmt,
         path::PathBuf,
     },
-    super::node,
+    super::{
+        node,
+        super::super::time,
+    },
 };
 
 #[derive(Debug)]
@@ -12,6 +15,9 @@ pub enum DirectoryEntry {
     ShortFileName {
         stem: [u8; STEM_LENGTH],
         extension: [u8; EXTENSION_LENGTH],
+        accessed_time: time::Time,
+        created_time: time::Time,
+        written_time: time::Time,
     },
 }
 
@@ -218,9 +224,15 @@ impl From<&node::Node> for DirectoryEntry {
         let extension: [u8; EXTENSION_LENGTH] = extension
             .try_into()
             .expect("Can't generate a directory entry.");
+        let accessed_time: time::Time = node.last_accessed_time();
+        let created_time: time::Time = node.last_changed_time();
+        let written_time: time::Time = node.last_modified_time();
         Self::ShortFileName {
             stem,
             extension,
+            accessed_time,
+            created_time,
+            written_time,
         }
     }
 }
@@ -231,6 +243,9 @@ impl fmt::Display for DirectoryEntry {
             Self::ShortFileName {
                 stem,
                 extension,
+                accessed_time,
+                created_time,
+                written_time,
             } => {
                 let stem: Vec<u8> = stem.to_vec();
                 let extension: Vec<u8> = extension.to_vec();
@@ -238,7 +253,19 @@ impl fmt::Display for DirectoryEntry {
                 name.extend(stem);
                 name.extend(extension);
                 let name = String::from_utf8(name).expect("Can't print a directory entry.");
-                format!("short file name:{}", name)
+                let name: String = format!("short file name: {}", name);
+                let created_time: String = format!("created time: {}", created_time);
+                let written_time: String = format!("written time: {}", written_time);
+                let accessed_time: String = format!("accessed time: {}", accessed_time);
+                let elements: Vec<String> = vec![
+                    name,
+                    created_time,
+                    written_time,
+                    accessed_time,
+                ];
+                elements
+                    .into_iter()
+                    .fold(String::new(), |string, element| string + "\n" + &element)
             }
         };
         write!(f, "{}", string)
