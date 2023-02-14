@@ -193,7 +193,7 @@ impl fmt::Display for Node {
         let string: String = elements
             .into_iter()
             .fold(String::new(), |string, element| {
-                string + "\n" + &element
+                string + &element + "\n"
             });
         write!(f, "{}", string)
     }

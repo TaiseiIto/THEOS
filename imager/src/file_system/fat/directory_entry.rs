@@ -265,7 +265,7 @@ impl fmt::Display for DirectoryEntry {
                 ];
                 elements
                     .into_iter()
-                    .fold(String::new(), |string, element| string + "\n" + &element)
+                    .fold(String::new(), |string, element| string + &element + "\n")
             }
         };
         write!(f, "{}", string)
