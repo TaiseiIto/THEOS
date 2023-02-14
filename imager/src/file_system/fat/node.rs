@@ -64,6 +64,52 @@ impl FileOrDirectory {
     }
 }
 
+impl fmt::Display for FileOrDirectory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = match self {
+            Self::File {
+                bytes,
+            } => bytes
+                .chunks(0x10)
+                .map(|bytes| bytes
+                    .into_iter()
+                    .map(|byte| (format!("{:02x} ", byte), if 0x20 <= *byte && *byte <= 0x7f {
+                        char::from(*byte)
+                    } else {
+                        ' '
+                    }))
+                    .map(|(hex, c)| {
+                        let c: char = match c {
+                            '\n' |
+                            '\t' |
+                            '\r' => ' ',
+                            c => c,
+                        };
+                        (hex, c)
+                    })
+                    .fold((String::new(), String::new()), |(hex_line, mut c_line), (hex, c)| {
+                        c_line.push(c);
+                        (hex_line + &hex, c_line)
+                    }))
+                .map(|(mut hex_line, c_line)| {
+                    while hex_line.len() < 0x30 {
+                        hex_line.push(' ');
+                    }
+                    hex_line + &c_line + "\n"
+                })
+                .fold(String::new(), |string, line| string + &line),
+            Self::Directory {
+                children,
+            } => children
+                .borrow()
+                .iter()
+                .map(|child| format!("{}", child))
+                .fold(String::new(), |string, child| string + &child),
+        };
+        write!(f, "{}", string)
+    }
+}
+
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
@@ -105,6 +151,14 @@ impl Node {
                         .borrow_mut() = Rc::downgrade(self);
                 });
         }
+    }
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let path: String = self.name.clone();
+        let content: String = format!("{}", self.content);
+        write!(f, "{}\n{}", path, content)
     }
 }
 

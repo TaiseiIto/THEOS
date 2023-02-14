@@ -12,6 +12,7 @@ use std::{
 #[derive(Debug)]
 pub struct Fat {
     boot_sector: boot_sector::BootSector,
+    root_directory: node::FileOrDirectory,
 }
 
 impl Fat {
@@ -37,17 +38,11 @@ impl Fat {
             .0
             .expect("Boot sector candidates are not unanimous about cluster size.");
         eprintln!("cluster_size: {:#x}", cluster_size);
-        let root = node::FileOrDirectory::root(&root);
+        let root_directory = node::FileOrDirectory::root(&root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
-        }
-    }
-
-    pub fn read(bytes: &Vec<u8>) -> Self {
-        let boot_sector = boot_sector::BootSector::read(bytes);
-        Self {
-            boot_sector,
+            root_directory,
         }
     }
 }
@@ -60,7 +55,9 @@ impl Into<Vec<u8>> for &Fat {
 
 impl fmt::Display for Fat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.boot_sector)
+        let boot_sector: String = format!("{}", self.boot_sector);
+        let root_directory: String = format!("{}", self.root_directory);
+        write!(f, "{}\n{}", boot_sector, root_directory)
     }
 }
 
