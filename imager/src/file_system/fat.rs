@@ -1,10 +1,12 @@
 mod boot_sector;
 mod cluster;
+mod node;
 
 use std::{
     fmt,
     fs,
     path::PathBuf,
+    rc::Rc,
 };
 
 #[derive(Debug)]
@@ -35,6 +37,7 @@ impl Fat {
             .0
             .expect("Boot sector candidates are not unanimous about cluster size.");
         eprintln!("cluster_size: {:#x}", cluster_size);
+        let root: Rc<node::Node> = node::Node::new(&root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
