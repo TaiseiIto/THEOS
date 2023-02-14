@@ -132,6 +132,29 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn is_directory(&self) -> bool {
+        match &self.content {
+            FileOrDirectory::File {
+                bytes
+            } => false,
+            FileOrDirectory::Directory {
+                children,
+            } => true,
+        }
+    }
+
+    pub fn is_hidden(&self) -> bool {
+        self.hidden
+    }
+
+    pub fn is_read_only(&self) -> bool {
+        self.read_only
+    }
+
+    pub fn is_system(&self) -> bool {
+        self.system
+    }
+
     pub fn last_accessed_time(&self) -> time::Time {
         self.last_accessed_time
     }

@@ -1,3 +1,5 @@
+mod attribute;
+
 use {
     std::{
         ffi::OsStr,
