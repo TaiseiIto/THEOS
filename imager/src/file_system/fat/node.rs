@@ -136,6 +136,18 @@ impl Node {
         node
     }
 
+    fn path(&self) -> PathBuf {
+        let mut path: PathBuf = match self.parent.borrow().upgrade() {
+            Some(parent) => parent.path(),
+            None => {
+                let root = String::from("/");
+                PathBuf::from(root)
+            },
+        };
+        path.push(&self.name);
+        path
+    }
+
     fn set_parent(self: &Rc<Self>) {
         if let FileOrDirectory::Directory {
             children,
@@ -156,7 +168,11 @@ impl Node {
 
 impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let path: String = self.name.clone();
+        let path: PathBuf = self.path();
+        let path: String = path
+            .to_str()
+            .expect("Can't print a node.")
+            .to_string();
         let content: String = format!("{}", self.content);
         write!(f, "{}\n{}", path, content)
     }
