@@ -17,6 +17,7 @@ pub enum DirectoryEntry {
     ShortFileName {
         stem: [u8; STEM_LENGTH],
         extension: [u8; EXTENSION_LENGTH],
+        attribute: attribute::Attribute,
         accessed_time: time::Time,
         created_time: time::Time,
         written_time: time::Time,
@@ -226,12 +227,14 @@ impl From<&node::Node> for DirectoryEntry {
         let extension: [u8; EXTENSION_LENGTH] = extension
             .try_into()
             .expect("Can't generate a directory entry.");
+        let attribute: attribute::Attribute = node.into();
         let accessed_time: time::Time = node.last_accessed_time();
         let created_time: time::Time = node.last_changed_time();
         let written_time: time::Time = node.last_modified_time();
         Self::ShortFileName {
             stem,
             extension,
+            attribute,
             accessed_time,
             created_time,
             written_time,
@@ -245,6 +248,7 @@ impl fmt::Display for DirectoryEntry {
             Self::ShortFileName {
                 stem,
                 extension,
+                attribute,
                 accessed_time,
                 created_time,
                 written_time,
@@ -259,11 +263,13 @@ impl fmt::Display for DirectoryEntry {
                 let created_time: String = format!("created time: {}", created_time);
                 let written_time: String = format!("written time: {}", written_time);
                 let accessed_time: String = format!("accessed time: {}", accessed_time);
+                let attribute: String = format!("{}", attribute);
                 let elements: Vec<String> = vec![
                     name,
                     created_time,
                     written_time,
                     accessed_time,
+                    attribute,
                 ];
                 elements
                     .into_iter()

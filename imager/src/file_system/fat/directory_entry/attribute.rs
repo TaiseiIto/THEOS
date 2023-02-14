@@ -1,4 +1,7 @@
-use super::super::node;
+use {
+    std::fmt,
+    super::super::node,
+};
 
 #[derive(Debug)]
 pub struct Attribute {
@@ -25,6 +28,31 @@ impl Attribute {
     }
 }
 
+impl fmt::Display for Attribute {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let read_only: String = format!("read_only: {}", self.read_only);
+        let hidden: String = format!("hidden: {}", self.hidden);
+        let system: String = format!("system: {}", self.system);
+        let volume_id: String = format!("volume_id: {}", self.volume_id);
+        let directory: String = format!("directory: {}", self.directory);
+        let archive: String = format!("archive: {}", self.archive);
+        let long_file_name: String = format!("long_file_name: {}", self.long_file_name);
+        let elements: Vec<String> = vec![
+            read_only,
+            hidden,
+            system,
+            volume_id,
+            directory,
+            archive,
+            long_file_name,
+        ];
+        let string: String = elements
+            .into_iter()
+            .fold(String::new(), |string, element| string + &element + "\n");
+        write!(f, "{}", string)
+    }
+}
+
 impl From<&node::Node> for Attribute {
     fn from(node: &node::Node) -> Self {
         let read_only: bool = node.is_read_only();
@@ -45,6 +73,14 @@ impl From<&node::Node> for Attribute {
         }
     }
 }
+
+const READ_ONLY: u8 = 0x01;
+const HIDDEN: u8 = 0x02;
+const SYSTEM: u8 = 0x04;
+const VOLUME_ID: u8 = 0x08;
+const DIRECTORY: u8 = 0x10;
+const ARCHIVE: u8 = 0x20;
+const LONG_FILE_NAME: u8 = 0xf;
 
 impl From<u8> for Attribute {
     fn from(byte: u8) -> Self {
@@ -124,12 +160,4 @@ impl Into<u8> for &Attribute {
         }
     }
 }
-
-const READ_ONLY: u8 = 0x01;
-const HIDDEN: u8 = 0x02;
-const SYSTEM: u8 = 0x04;
-const VOLUME_ID: u8 = 0x08;
-const DIRECTORY: u8 = 0x10;
-const ARCHIVE: u8 = 0x20;
-const LONG_FILE_NAME: u8 = 0xf;
 
