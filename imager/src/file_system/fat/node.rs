@@ -170,13 +170,24 @@ impl Node {
 
 impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let path: PathBuf = self.path();
-        let path: String = path
+        let path: String = self
+            .path()
             .to_str()
             .expect("Can't print a node.")
             .to_string();
+        let directory_entry: String = format!("{}", self.directory_entry);
         let content: String = format!("{}", self.content);
-        write!(f, "{}\n{}", path, content)
+        let elements: Vec<String> = vec![
+            path,
+            directory_entry,
+            content,
+        ];
+        let string: String = elements
+            .into_iter()
+            .fold(String::new(), |string, element| {
+                string + "\n" + &element
+            });
+        write!(f, "{}", string)
     }
 }
 

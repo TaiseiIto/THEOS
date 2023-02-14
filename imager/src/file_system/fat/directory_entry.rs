@@ -1,5 +1,6 @@
 use std::{
     ffi::OsStr,
+    fmt,
     path::PathBuf,
 };
 
@@ -217,6 +218,26 @@ impl DirectoryEntry {
             stem,
             extension,
         }
+    }
+}
+
+impl fmt::Display for DirectoryEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = match self {
+            Self::ShortFileName {
+                stem,
+                extension,
+            } => {
+                let stem: Vec<u8> = stem.to_vec();
+                let extension: Vec<u8> = extension.to_vec();
+                let mut name: Vec<u8> = vec![];
+                name.extend(stem);
+                name.extend(extension);
+                let name = String::from_utf8(name).expect("Can't print a directory entry.");
+                format!("short file name:{}", name)
+            }
+        };
+        write!(f, "{}", string)
     }
 }
 

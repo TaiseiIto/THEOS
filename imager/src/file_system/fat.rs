@@ -7,7 +7,6 @@ use std::{
     fmt,
     fs,
     path::PathBuf,
-    rc::Rc,
 };
 
 #[derive(Debug)]
