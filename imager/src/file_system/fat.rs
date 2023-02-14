@@ -37,7 +37,7 @@ impl Fat {
             .0
             .expect("Boot sector candidates are not unanimous about cluster size.");
         eprintln!("cluster_size: {:#x}", cluster_size);
-        let root: Rc<node::Node> = node::Node::root(&root);
+        let root = node::FileOrDirectory::root(&root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
