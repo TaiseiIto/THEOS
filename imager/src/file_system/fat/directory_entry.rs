@@ -22,11 +22,14 @@ pub enum DirectoryEntry {
         created_time: time::Time,
         written_time: time::Time,
     },
-    LongFileName,
+    LongFileName {
+        name: [u16; LONG_FILE_NAME_LENGTH],
+    },
 }
 
 const STEM_LENGTH: usize = 8;
 const EXTENSION_LENGTH: usize = 3;
+const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl From<&node::Node> for DirectoryEntry {
     fn from(node: &node::Node) -> Self {
@@ -276,7 +279,12 @@ impl fmt::Display for DirectoryEntry {
                     .into_iter()
                     .fold(String::new(), |string, element| string + &element + "\n")
             },
-            Self::LongFileName => String::new(),
+            Self::LongFileName {
+                name,
+            } => {
+                let name = String::from_utf16(&name[..]).expect("Can't print a directory entry.");
+                format!("long file name: {}", name)
+            }
         };
         write!(f, "{}", string)
     }
