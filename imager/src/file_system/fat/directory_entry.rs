@@ -22,6 +22,7 @@ pub enum DirectoryEntry {
         created_time: time::Time,
         written_time: time::Time,
     },
+    LongFileName,
 }
 
 const STEM_LENGTH: usize = 8;
@@ -274,7 +275,8 @@ impl fmt::Display for DirectoryEntry {
                 elements
                     .into_iter()
                     .fold(String::new(), |string, element| string + &element + "\n")
-            }
+            },
+            Self::LongFileName => String::new(),
         };
         write!(f, "{}", string)
     }
