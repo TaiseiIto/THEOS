@@ -1,7 +1,10 @@
-use std::{
-    ffi::OsStr,
-    fmt,
-    path::PathBuf,
+use {
+    std::{
+        ffi::OsStr,
+        fmt,
+        path::PathBuf,
+    },
+    super::node,
 };
 
 #[derive(Debug)]
@@ -15,8 +18,9 @@ pub enum DirectoryEntry {
 const STEM_LENGTH: usize = 8;
 const EXTENSION_LENGTH: usize = 3;
 
-impl DirectoryEntry {
-    pub fn new(path: &PathBuf) -> Self {
+impl From<&node::Node> for DirectoryEntry {
+    fn from(node: &node::Node) -> Self {
+        let path = PathBuf::from(node.name());
         let (stem, stem_irreversibility, _, _): (String, bool, bool, bool) = path
             .file_stem()
             .unwrap_or(OsStr::new(""))

@@ -115,15 +115,17 @@ impl fmt::Display for FileOrDirectory {
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
-    directory_entry: directory_entry::DirectoryEntry,
     name: String,
     parent: RefCell<Weak<Self>>,
 }
 
 impl Node {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
     fn new(source: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(source);
-        let directory_entry = directory_entry::DirectoryEntry::new(source);
         let name: String = source
             .file_name()
             .expect(&format!("Can't get a basename of {}!", source.display()))
@@ -133,7 +135,6 @@ impl Node {
         let parent = RefCell::new(Weak::new());
         let node = Self {
             content,
-            directory_entry,
             name,
             parent,
         };
@@ -175,7 +176,8 @@ impl fmt::Display for Node {
             .to_str()
             .expect("Can't print a node.")
             .to_string();
-        let directory_entry: String = format!("{}", self.directory_entry);
+        let directory_entry: directory_entry::DirectoryEntry = self.into();
+        let directory_entry: String = format!("{}", directory_entry);
         let content: String = format!("{}", self.content);
         let elements: Vec<String> = vec![
             path,
