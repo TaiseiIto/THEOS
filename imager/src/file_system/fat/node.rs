@@ -8,13 +8,32 @@ use std::{
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
+    name: String,
 }
 
 impl Node {
-    pub fn new(source: &PathBuf) -> Rc<Self> {
+    pub fn root(root: &PathBuf) -> Rc<Self> {
+        let content = FileOrDirectory::new(root);
+        let name: String = "".to_string();
+        let root = Self {
+            content,
+            name,
+        };
+        let root: Rc<Self> = Rc::new(root);
+        root
+    }
+
+    fn new(source: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(source);
+        let name: String = source
+            .file_name()
+            .expect(&format!("Can't get a basename of {}!", source.display()))
+            .to_str()
+            .expect(&format!("Can't get a basename of {}!", source.display()))
+            .to_string();
         let node = Self {
             content,
+            name,
         };
         let node: Rc<Self> = Rc::new(node);
         node
