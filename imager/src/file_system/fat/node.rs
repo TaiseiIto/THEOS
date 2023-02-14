@@ -2,22 +2,28 @@ use std::{
     cell::RefCell,
     fs,
     path::PathBuf,
-    rc::Rc,
+    rc::{
+        Rc,
+        Weak,
+    },
 };
 
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
     name: String,
+    parent: RefCell<Weak<Self>>,
 }
 
 impl Node {
     pub fn root(root: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(root);
         let name: String = "".to_string();
+        let parent = RefCell::new(Weak::new());
         let root = Self {
             content,
             name,
+            parent,
         };
         let root: Rc<Self> = Rc::new(root);
         root
@@ -31,9 +37,11 @@ impl Node {
             .to_str()
             .expect(&format!("Can't get a basename of {}!", source.display()))
             .to_string();
+        let parent = RefCell::new(Weak::new());
         let node = Self {
             content,
             name,
+            parent,
         };
         let node: Rc<Self> = Rc::new(node);
         node
