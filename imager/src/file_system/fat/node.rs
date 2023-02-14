@@ -9,7 +9,10 @@ use {
             Weak,
         },
     },
-    super::directory_entry,
+    super::{
+        directory_entry,
+        super::super::time,
+    },
 };
 
 #[derive(Debug)]
@@ -118,6 +121,9 @@ impl From<&PathBuf> for FileOrDirectory {
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
+    last_accessed_time: time::Time,
+    last_changed_time: time::Time,
+    last_modified_time: time::Time,
     name: String,
     parent: RefCell<Weak<Self>>,
 }
@@ -181,6 +187,9 @@ impl fmt::Display for Node {
 impl From<&PathBuf> for Node {
     fn from(source: &PathBuf) -> Self {
         let content: FileOrDirectory = source.into();
+        let last_accessed_time = time::Time::last_accessed_time(source);
+        let last_changed_time = time::Time::last_changed_time(source);
+        let last_modified_time = time::Time::last_modified_time(source);
         let name: String = source
             .file_name()
             .expect(&format!("Can't get a basename of {}!", source.display()))
@@ -190,6 +199,9 @@ impl From<&PathBuf> for Node {
         let parent = RefCell::new(Weak::new());
         Self {
             content,
+            last_accessed_time,
+            last_changed_time,
+            last_modified_time,
             name,
             parent,
         }
