@@ -24,10 +24,9 @@ impl FileOrDirectory {
         if let Self::Directory {
             children,
         } = Self::new(source) {
-            children
-                .borrow()
-                .iter()
-                .map(|child| child.set_parent());
+            for child in children.borrow().iter() {
+                child.set_parent();
+            }
             Self::Directory {
                 children,
             }
@@ -152,16 +151,13 @@ impl Node {
         if let FileOrDirectory::Directory {
             children,
         } = &self.clone().content {
-            children
-                .borrow_mut()
-                .iter_mut()
-                .map(|child| {
-                    child.set_parent();
-                    *child
-                        .clone()
-                        .parent
-                        .borrow_mut() = Rc::downgrade(self);
-                });
+            for child in children.borrow_mut().iter_mut() {
+                child.set_parent();
+                *child
+                    .clone()
+                    .parent
+                    .borrow_mut() = Rc::downgrade(self);
+            }
         }
     }
 }
