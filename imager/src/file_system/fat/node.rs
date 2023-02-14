@@ -1,12 +1,15 @@
-use std::{
-    cell::RefCell,
-    fmt,
-    fs,
-    path::PathBuf,
-    rc::{
-        Rc,
-        Weak,
+use {
+    std::{
+        cell::RefCell,
+        fmt,
+        fs,
+        path::PathBuf,
+        rc::{
+            Rc,
+            Weak,
+        },
     },
+    super::directory_entry,
 };
 
 #[derive(Debug)]
@@ -112,6 +115,7 @@ impl fmt::Display for FileOrDirectory {
 #[derive(Debug)]
 pub struct Node {
     content: FileOrDirectory,
+    directory_entry: directory_entry::DirectoryEntry,
     name: String,
     parent: RefCell<Weak<Self>>,
 }
@@ -119,6 +123,7 @@ pub struct Node {
 impl Node {
     fn new(source: &PathBuf) -> Rc<Self> {
         let content = FileOrDirectory::new(source);
+        let directory_entry = directory_entry::DirectoryEntry::new(source);
         let name: String = source
             .file_name()
             .expect(&format!("Can't get a basename of {}!", source.display()))
@@ -128,6 +133,7 @@ impl Node {
         let parent = RefCell::new(Weak::new());
         let node = Self {
             content,
+            directory_entry,
             name,
             parent,
         };
