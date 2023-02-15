@@ -442,8 +442,7 @@ impl fmt::Display for DirectoryEntry {
                     long_file_name,
                 ];
                 elements
-                    .into_iter()
-                    .fold(String::new(), |string, element| string + &element + "\n")
+                    .join("\n")
             },
             Self::LongFileName {
                 name,
@@ -463,8 +462,7 @@ impl fmt::Display for DirectoryEntry {
                     next,
                 ];
                 elements
-                    .into_iter()
-                    .fold(String::new(), |string, element| string + &element + "\n")
+                    .join("\n")
             }
         };
         write!(f, "{}", string)

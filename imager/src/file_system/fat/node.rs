@@ -70,16 +70,18 @@ impl fmt::Display for FileOrDirectory {
                     while hex_line.len() < 0x30 {
                         hex_line.push(' ');
                     }
-                    hex_line + &c_line + "\n"
+                    hex_line + &c_line
                 })
-                .fold(String::new(), |string, line| string + &line),
+                .collect::<Vec<String>>()
+                .join("\n"),
             Self::Directory {
                 children,
             } => children
                 .borrow()
                 .iter()
                 .map(|child| format!("{}", child))
-                .fold(String::new(), |string, child| string + &child),
+                .collect::<Vec<String>>()
+                .join("\n"),
         };
         write!(f, "{}", string)
     }
@@ -187,10 +189,7 @@ impl fmt::Display for Node {
             content,
         ];
         let string: String = elements
-            .into_iter()
-            .fold(String::new(), |string, element| {
-                string + &element + "\n"
-            });
+            .join("\n");
         write!(f, "{}", string)
     }
 }

@@ -51,8 +51,7 @@ impl fmt::Display for Attribute {
             long_file_name,
         ];
         let string: String = elements
-            .into_iter()
-            .fold(String::new(), |string, element| string + &element + "\n");
+            .join("\n");
         write!(f, "{}", string)
     }
 }
