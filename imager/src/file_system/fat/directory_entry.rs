@@ -35,7 +35,7 @@ const EXTENSION_LENGTH: usize = 3;
 const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
-    fn current_directory_entry(&self) -> Self {
+    pub fn current_directory_entry(&self) -> Self {
         if let Self::ShortFileName {
             stem: _,
             extension: _,
