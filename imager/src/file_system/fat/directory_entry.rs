@@ -45,10 +45,10 @@ impl DirectoryEntry {
             let next: Option<Box<Self>> = Some(Box::new(Self::long_file_name(next, order + 1)));
             (name, next)
         } else {
-			let mut name: Vec<u16> = name;
-			if name.len() < LONG_FILE_NAME_LENGTH {
-				name.push(0x0000);
-			}
+            let mut name: Vec<u16> = name;
+            if name.len() < LONG_FILE_NAME_LENGTH {
+                name.push(0x0000);
+            }
             name.resize(LONG_FILE_NAME_LENGTH, 0xffff);
             let name: [u16; LONG_FILE_NAME_LENGTH] = name
                 .try_into()
@@ -268,9 +268,9 @@ impl From<&node::Node> for DirectoryEntry {
         let accessed_time: time::Time = node.last_accessed_time();
         let created_time: time::Time = node.last_changed_time();
         let written_time: time::Time = node.last_modified_time();
-		let long_file_name: Option<Box<Self>> = if stem_is_irreversible || extension_is_irreversible {
-			let long_file_name: Vec<u16> = path
-				.file_name()
+        let long_file_name: Option<Box<Self>> = if stem_is_irreversible || extension_is_irreversible {
+            let long_file_name: Vec<u16> = path
+                .file_name()
                 .expect("Can't generate a directory entry.")
                 .to_str()
                 .expect("Can't generate a directory entry.")
@@ -278,9 +278,9 @@ impl From<&node::Node> for DirectoryEntry {
                 .collect();
             let order: usize = 1;
             Some(Box::new(Self::long_file_name(long_file_name, order)))
-		} else {
-			None
-		};
+        } else {
+            None
+        };
         Self::ShortFileName {
             stem,
             extension,
@@ -288,7 +288,7 @@ impl From<&node::Node> for DirectoryEntry {
             accessed_time,
             created_time,
             written_time,
-			long_file_name,
+            long_file_name,
         }
     }
 }
