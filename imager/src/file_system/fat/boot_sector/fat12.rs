@@ -138,9 +138,7 @@ impl fmt::Display for Fat12 {
             boot_signature,
         ];
         let boot_sector: String = boot_sector
-            .into_iter()
-            .fold(String::new(), |boot_sector, element| boot_sector + "\n" + &element);
-        let boot_sector: String = boot_sector[1..].to_string();
+            .join("\n");
         write!(f, "{}", boot_sector)
     }
 }

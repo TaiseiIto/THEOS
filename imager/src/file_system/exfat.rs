@@ -179,40 +179,47 @@ impl Into<Vec<u8>> for &Exfat {
 
 impl fmt::Display for Exfat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let boot_sector: String = format!("{}\n", self.boot_sector)
+        let boot_sector: String = format!("{}", self.boot_sector)
             .lines()
-            .map(|line| format!("boot_sector.{}\n", line))
-            .fold(String::new(), |boot_sector, line| boot_sector + &line);
+            .map(|line| format!("boot_sector.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let extended_boot_sectors: String = self.extended_boot_sectors
             .iter()
             .enumerate()
             .map(|(i, extended_boot_sector)| format!("{}", extended_boot_sector)
                 .lines()
-                .map(|line| format!("extended_boot_sector[{}].{}\n", i, line))
-                .fold(String::new(), |extended_boot_sector, line| extended_boot_sector + &line))
-            .fold(String::new(), |extended_boot_sectors, extended_boot_sector| extended_boot_sectors + &extended_boot_sector);
-        let oem_parameters: String = format!("{}\n", self.oem_parameters)
+                .map(|line| format!("extended_boot_sector[{}].{}", i, line))
+                .collect::<Vec<String>>()
+                .join("\n"))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let oem_parameters: String = format!("{}", self.oem_parameters)
             .lines()
-            .map(|line| format!("oem_parameters.{}\n", line))
-            .fold(String::new(), |oem_parameters, line| oem_parameters + &line);
-        let reserved_sector: String = format!("reserved_sector.{}\n", self.reserved_sector);
+            .map(|line| format!("oem_parameters.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let reserved_sector: String = format!("reserved_sector.{}", self.reserved_sector);
         let boot_checksum: String = format!("{}", self.boot_checksum)
             .lines()
-            .map(|line| format!("boot_checksum.{}\n", line))
-            .fold(String::new(), |boot_checksum, line| boot_checksum + &line);
+            .map(|line| format!("boot_checksum.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let allocation_bitmap: String = format!("{}", self.allocation_bitmap())
             .lines()
-            .map(|line| format!("allocation_bitmap.{}\n", line))
-            .fold(String::new(), |allocation_bitmap, line| allocation_bitmap + &line);
+            .map(|line| format!("allocation_bitmap.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let volume_guid: String = match self.volume_guid() {
             Some(volume_guid) => format!("{}", volume_guid),
             None => String::new(),
         };
         let volume_guid: String = volume_guid
             .lines()
-            .map(|line| format!("volume_guid.{}\n", line))
-            .fold(String::new(), |volume_guid, line| volume_guid + &line);
-        let volume_label: String = format!("volume_label: \"{}\"\n", self.volume_label());
+            .map(|line| format!("volume_guid.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let volume_label: String = format!("volume_label: \"{}\"", self.volume_label());
         let mut cluster_used_flags: Vec<(u32, bool)> = self.clusters
             .used_flags()
             .into_iter()
@@ -220,7 +227,7 @@ impl fmt::Display for Exfat {
         cluster_used_flags.sort_by(|(left, _), (right, _)| left.partial_cmp(right).expect("Can't print an exFAT."));
         let cluster_used_flags: String = cluster_used_flags
             .into_iter()
-            .map(|(cluster_number, used)| format!("cluster[{}] is {}.\n", cluster_number, if used {
+            .map(|(cluster_number, used)| format!("cluster[{}] is {}.", cluster_number, if used {
                 "in use"
             } else {
                 "available"
@@ -240,8 +247,7 @@ impl fmt::Display for Exfat {
             root_directory,
         ];
         let exfat: String = exfat
-            .into_iter()
-            .fold(String::new(), |exfat, string| exfat + &string);
+            .join("\n");
         write!(f, "{}", exfat)
     }
 }

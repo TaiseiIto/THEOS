@@ -173,13 +173,15 @@ impl fmt::Display for BootSector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let jump_boot: String = "jump_boot:".to_string() + &self.jump_boot
             .iter()
-            .map(|byte| format!(" {:02x}", byte))
-            .fold(String::new(), |jump_boot, byte| jump_boot + &byte);
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join(" ");
         let file_system_name: String = format!("file_system_name: \"{}\"", str::from_utf8(&self.file_system_name).expect("Can't print a boot sector."));
         let must_be_zero: String = "must_be_zero:".to_string() + &self.must_be_zero
             .iter()
-            .map(|byte| format!(" {:02x}", byte))
-            .fold(String::new(), |must_be_zero, byte| must_be_zero + &byte);
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join(" ");
         let partition_offset: u64 = self.partition_offset;
         let partition_offset: String = format!("partition_offset: {:#018x}", partition_offset);
         let volume_length: u64 = self.volume_length;
@@ -213,12 +215,14 @@ impl fmt::Display for BootSector {
         let percent_in_use: String = format!("percent_in_use: {:#04x}", percent_in_use);
         let reserved: String = "reserved:".to_string() + &self.reserved
             .iter()
-            .map(|byte| format!(" {:02x}", byte))
-            .fold(String::new(), |reserved, byte| reserved + &byte);
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join(" ");
         let boot_code: String = "boot_code:".to_string() + &self.boot_code
             .iter()
-            .map(|byte| format!(" {:02x}", byte))
-            .fold(String::new(), |boot_code, byte| boot_code + &byte);
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join(" ");
         let boot_signature: u16 = self.boot_signature;
         let boot_signature: String = format!("boot_signature: {:#06x}", boot_signature);
         let boot_sector: Vec<String> = vec![
@@ -245,8 +249,7 @@ impl fmt::Display for BootSector {
             boot_signature,
         ];
         let boot_sector: String = boot_sector
-            .into_iter()
-            .fold(String::new(), |boot_sector, element| boot_sector + "\n" + &element);
+            .join("\n");
         let boot_sector: String = boot_sector[1..].to_string();
         write!(f, "{}", boot_sector)
     }

@@ -75,12 +75,13 @@ impl fmt::Display for AllocationBitmap {
         bitmap.sort_by(|(left_cluster, _), (right_cluster, _)| left_cluster.partial_cmp(right_cluster).unwrap());
         let bitmap: String = bitmap
             .into_iter()
-            .map(|(cluster, used)| format!("cluster[{:#010x}]: {}\n", cluster, if used {
+            .map(|(cluster, used)| format!("cluster[{:#010x}]: {}", cluster, if used {
                 "in use"
             } else {
                 "available"
             }))
-            .fold(String::new(), |bitmap, line| bitmap + &line);
+            .collect::<Vec<String>>()
+            .join("\n");
         write!(f, "{}", bitmap)
     }
 }

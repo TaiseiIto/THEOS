@@ -147,12 +147,13 @@ impl fmt::Display for UpcaseTable {
                     .filter_map(|upper| upper.ok())
                     .collect();
                 if 0 < lower.len() && 0 < upper.len() {
-                    Some(format!("map[\"{}\"]=\"{}\"\n", lower, upper))
+                    Some(format!("map[\"{}\"]=\"{}\"", lower, upper))
                 } else {
                     None
                 }
             })
-            .fold(String::new(), |map, line| map + &line);
+            .collect::<Vec<String>>()
+            .join("\n");
         write!(f, "{}", map)
     }
 }

@@ -63,10 +63,11 @@ impl fmt::Display for OemParameters {
         let parameters: String = self.parameters
             .iter()
             .enumerate()
-            .map(|(i, parameter)| format!("{}\n", parameter)
+            .map(|(i, parameter)| format!("{}", parameter)
                 .lines()
-                .map(|line| format!("parameters[{}].{}\n", i, line))
-                .fold(String::new(), |parameter, line| parameter + &line))
+                .map(|line| format!("parameters[{}].{}", i, line))
+                .collect::<Vec<String>>()
+                .join("\n"))
             .fold(String::new(), |parameters, parameter| parameters + &parameter);
         let size: String = format!("size: {:#x}", self.size);
         let oem_parameters: String = format!("{}{}", parameters, size);
@@ -135,12 +136,14 @@ impl fmt::Display for OemParameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let parameter_guid: String = format!("{}", self.parameter_guid)
             .lines()
-            .map(|line| format!("parameter_guid.{}\n", line))
-            .fold(String::new(), |parameter_guid, line| parameter_guid + &line);
+            .map(|line| format!("parameter_guid.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let custom_defined: String = self.custom_defined
             .iter()
-            .map(|byte| format!("{:02x} ", byte))
-            .fold(String::new(), |custom_defined, byte| custom_defined + &byte);
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join(" ");
         let custom_defined: String = custom_defined[0..custom_defined.len() - 1].to_string();
         let custom_defined: String = format!("custom_defined: {}", custom_defined);
         let oem_parameter: String = format!("{}{}", parameter_guid, custom_defined);

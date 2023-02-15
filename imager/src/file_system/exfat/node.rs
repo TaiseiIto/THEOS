@@ -295,9 +295,10 @@ impl fmt::Display for FileOrDirectory {
                     while hex_line.len() < 0x30 {
                         hex_line.push(' ');
                     }
-                    hex_line + &c_line + "\n"
+                    hex_line + &c_line
                 })
-                .fold(String::new(), |string, line| string + &line),
+                .collect::<Vec<String>>()
+                .join("\n"),
             Self::Directory {
                 children,
                 directory_entries: _,
