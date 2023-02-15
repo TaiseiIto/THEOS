@@ -448,7 +448,23 @@ impl fmt::Display for DirectoryEntry {
                 order,
                 next,
             } => {
-                let name = String::from_utf16(&name[..]).expect("Can't print a directory entry.");
+                let (name, _): (Vec<u16>, bool) = name
+                    .iter()
+                    .fold((vec![], true), |(name, continuity), c| if continuity {
+                        match c {
+                            0x0000 => {
+                                (name, false)
+                            },
+                            _ => {
+                                let mut name: Vec<u16> = name;
+                                name.push(*c);
+                                (name, true)
+                            },
+                        }
+                    } else {
+                        (name, continuity)
+                    });
+                let name = String::from_utf16(&name).expect("Can't print a directory entry.");
                 let name: String = format!("long file name: {}", name);
                 let order: String = format!("order: {}", order);
                 let next: String = match next {
