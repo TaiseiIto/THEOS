@@ -84,8 +84,7 @@ impl fmt::Display for Guid {
             time,
             clock_sequence,
         ];
-        let guid: String = guid
-            .join("\n");
+        let guid: String = guid.join("\n");
         write!(f, "{}", guid)
     }
 }

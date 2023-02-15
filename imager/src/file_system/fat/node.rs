@@ -188,8 +188,7 @@ impl fmt::Display for Node {
             parent_directory_entry,
             content,
         ];
-        let string: String = elements
-            .join("\n");
+        let string: String = elements.join("\n");
         write!(f, "{}", string)
     }
 }

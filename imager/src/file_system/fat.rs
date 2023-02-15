@@ -55,9 +55,18 @@ impl Into<Vec<u8>> for &Fat {
 
 impl fmt::Display for Fat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let boot_sector: String = format!("{}", self.boot_sector);
+        let boot_sector: String = format!("{}", self.boot_sector)
+            .lines()
+            .map(|line| format!("boot_sector.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let root_directory: String = format!("{}", self.root_directory);
-        write!(f, "{}\n{}", boot_sector, root_directory)
+        let fat: Vec<String> = vec![
+            boot_sector,
+            root_directory,
+        ];
+        let fat: String = fat.join("\n");
+        write!(f, "{}", fat)
     }
 }
 

@@ -247,8 +247,7 @@ impl fmt::Display for Exfat {
             cluster_used_flags,
             root_directory,
         ];
-        let exfat: String = exfat
-            .join("\n");
+        let exfat: String = exfat.join("\n");
         write!(f, "{}", exfat)
     }
 }
