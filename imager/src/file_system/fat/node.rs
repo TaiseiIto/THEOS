@@ -9,10 +9,7 @@ use {
             Weak,
         },
     },
-    super::{
-        directory_entry,
-        super::super::time,
-    },
+    super::directory_entry,
 };
 
 #[derive(Debug)]
@@ -122,12 +119,7 @@ impl From<&PathBuf> for FileOrDirectory {
 pub struct Node {
     name: String,
     content: FileOrDirectory,
-    last_accessed_time: time::Time,
-    last_changed_time: time::Time,
-    last_modified_time: time::Time,
-    hidden: bool,
-    read_only: bool,
-    system: bool,
+    directory_entry: directory_entry::DirectoryEntry,
     parent: RefCell<Weak<Self>>,
 }
 
@@ -141,30 +133,6 @@ impl Node {
                 children,
             } => true,
         }
-    }
-
-    pub fn is_hidden(&self) -> bool {
-        self.hidden
-    }
-
-    pub fn is_read_only(&self) -> bool {
-        self.read_only
-    }
-
-    pub fn is_system(&self) -> bool {
-        self.system
-    }
-
-    pub fn last_accessed_time(&self) -> time::Time {
-        self.last_accessed_time
-    }
-
-    pub fn last_changed_time(&self) -> time::Time {
-        self.last_changed_time
-    }
-
-    pub fn last_modified_time(&self) -> time::Time {
-        self.last_modified_time
     }
 
     pub fn name(&self) -> &str {
@@ -206,8 +174,10 @@ impl fmt::Display for Node {
             .expect("Can't print a node.")
             .to_string();
         let content: String = format!("{}", self.content);
+        let directory_entry: String = format!("{}", self.directory_entry);
         let elements: Vec<String> = vec![
             path,
+            directory_entry,
             content,
         ];
         let string: String = elements
@@ -228,22 +198,12 @@ impl From<&PathBuf> for Node {
             .expect(&format!("Can't get a basename of {}!", source.display()))
             .to_string();
         let content: FileOrDirectory = source.into();
-        let last_accessed_time = time::Time::last_accessed_time(source);
-        let last_changed_time = time::Time::last_changed_time(source);
-        let last_modified_time = time::Time::last_modified_time(source);
-        let hidden: bool = false;
-        let read_only: bool = true;
-        let system: bool = true;
+        let directory_entry: directory_entry::DirectoryEntry = source.into();
         let parent = RefCell::new(Weak::new());
         Self {
             name,
             content,
-            last_accessed_time,
-            last_changed_time,
-            last_modified_time,
-            hidden,
-            read_only,
-            system,
+            directory_entry,
             parent,
         }
     }
