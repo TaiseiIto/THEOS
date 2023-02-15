@@ -171,13 +171,13 @@ impl Into<Vec<u8>> for &BootSector {
 
 impl fmt::Display for BootSector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let jump_boot: String = "jump_boot:".to_string() + &self.jump_boot
+        let jump_boot: String = "jump_boot: ".to_string() + &self.jump_boot
             .iter()
             .map(|byte| format!("{:02x}", byte))
             .collect::<Vec<String>>()
             .join(" ");
         let file_system_name: String = format!("file_system_name: \"{}\"", str::from_utf8(&self.file_system_name).expect("Can't print a boot sector."));
-        let must_be_zero: String = "must_be_zero:".to_string() + &self.must_be_zero
+        let must_be_zero: String = "must_be_zero: ".to_string() + &self.must_be_zero
             .iter()
             .map(|byte| format!("{:02x}", byte))
             .collect::<Vec<String>>()
@@ -213,12 +213,12 @@ impl fmt::Display for BootSector {
         let drive_select: String = format!("drive_select: {:#010x}", drive_select);
         let percent_in_use: u8 = self.percent_in_use;
         let percent_in_use: String = format!("percent_in_use: {:#04x}", percent_in_use);
-        let reserved: String = "reserved:".to_string() + &self.reserved
+        let reserved: String = "reserved: ".to_string() + &self.reserved
             .iter()
             .map(|byte| format!("{:02x}", byte))
             .collect::<Vec<String>>()
             .join(" ");
-        let boot_code: String = "boot_code:".to_string() + &self.boot_code
+        let boot_code: String = "boot_code: ".to_string() + &self.boot_code
             .iter()
             .map(|byte| format!("{:02x}", byte))
             .collect::<Vec<String>>()
@@ -250,7 +250,6 @@ impl fmt::Display for BootSector {
         ];
         let boot_sector: String = boot_sector
             .join("\n");
-        let boot_sector: String = boot_sector[1..].to_string();
         write!(f, "{}", boot_sector)
     }
 }

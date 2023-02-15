@@ -212,7 +212,7 @@ impl fmt::Display for Exfat {
             .join("\n");
         let volume_guid: String = match self.volume_guid() {
             Some(volume_guid) => format!("{}", volume_guid),
-            None => String::new(),
+            None => "None".to_string(),
         };
         let volume_guid: String = volume_guid
             .lines()
@@ -232,7 +232,8 @@ impl fmt::Display for Exfat {
             } else {
                 "available"
             }))
-            .fold(String::new(), |cluster_used_flags, line| cluster_used_flags + &line);
+            .collect::<Vec<String>>()
+            .join("\n");
         let root_directory: String = format!("{}", self.root_directory);
         let exfat: Vec<String> = vec![
             boot_sector,
