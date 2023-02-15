@@ -64,9 +64,8 @@ impl DirectoryEntry {
     }
 }
 
-impl From<&node::Node> for DirectoryEntry {
-    fn from(node: &node::Node) -> Self {
-        let path = PathBuf::from(node.name());
+impl From<&PathBuf> for DirectoryEntry {
+    fn from(path: &PathBuf) -> Self {
         let (stem, stem_is_irreversible, _, _): (String, bool, bool, bool) = path
             .file_stem()
             .unwrap_or(OsStr::new(""))
@@ -264,10 +263,10 @@ impl From<&node::Node> for DirectoryEntry {
         let extension: [u8; EXTENSION_LENGTH] = extension
             .try_into()
             .expect("Can't generate a directory entry.");
-        let attribute: attribute::Attribute = node.into();
-        let accessed_time: time::Time = node.last_accessed_time();
-        let created_time: time::Time = node.last_changed_time();
-        let written_time: time::Time = node.last_modified_time();
+        let attribute: attribute::Attribute = path.into();
+        let accessed_time = time::Time::last_accessed_time(path);
+        let created_time = time::Time::last_changed_time(path);
+        let written_time = time::Time::last_modified_time(path);
         let long_file_name: Option<Box<Self>> = if stem_is_irreversible || extension_is_irreversible {
             let long_file_name: Vec<u16> = path
                 .file_name()

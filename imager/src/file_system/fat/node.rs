@@ -205,12 +205,9 @@ impl fmt::Display for Node {
             .to_str()
             .expect("Can't print a node.")
             .to_string();
-        let directory_entry: directory_entry::DirectoryEntry = self.into();
-        let directory_entry: String = format!("{}", directory_entry);
         let content: String = format!("{}", self.content);
         let elements: Vec<String> = vec![
             path,
-            directory_entry,
             content,
         ];
         let string: String = elements

@@ -1,5 +1,9 @@
 use {
-    std::fmt,
+    std::{
+        fmt,
+        fs,
+        path::PathBuf,
+    },
     super::super::node,
 };
 
@@ -53,23 +57,34 @@ impl fmt::Display for Attribute {
     }
 }
 
-impl From<&node::Node> for Attribute {
-    fn from(node: &node::Node) -> Self {
-        let read_only: bool = node.is_read_only();
-        let hidden: bool = node.is_hidden();
-        let system: bool = node.is_system();
-        let volume_id: bool = false;
-        let directory: bool = node.is_directory();
-        let archive: bool = false;
-        let long_file_name: bool = false;
-        Self {
-            read_only,
-            hidden,
-            system,
-            volume_id,
-            directory,
-            archive,
-            long_file_name,
+impl From<&PathBuf> for Attribute {
+    fn from(path: &PathBuf) -> Self {
+        if let Ok(metadata) = fs::metadata(path) {
+            let read_only: bool = metadata
+                .permissions()
+                .readonly();
+            let hidden: bool = path
+                .file_name()
+                .expect("Can't generate an attribute.")
+                .to_str()
+                .expect("Can't generate an attribute.")
+                .starts_with(".");
+            let system: bool = true;
+            let volume_id: bool = false;
+            let directory: bool = path.is_dir();
+            let archive: bool = false;
+            let long_file_name: bool = false;
+            Self {
+                read_only,
+                hidden,
+                system,
+                volume_id,
+                directory,
+                archive,
+                long_file_name,
+            }
+        } else {
+            panic!("Can't generate an attribute.")
         }
     }
 }
