@@ -7,7 +7,7 @@ use {
     super::super::node,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Attribute {
     read_only: bool,
     hidden: bool,

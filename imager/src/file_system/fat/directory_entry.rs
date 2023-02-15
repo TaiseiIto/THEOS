@@ -35,6 +35,46 @@ const EXTENSION_LENGTH: usize = 3;
 const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
+    fn current_directory_entry(&self) -> Self {
+        if let Self::ShortFileName {
+            stem: _,
+            extension: _,
+            attribute,
+            accessed_time,
+            created_time,
+            written_time,
+            long_file_name: _,
+        } = self {
+            let mut stem: Vec<u8> = "."
+                .as_bytes().to_vec();
+            stem.resize(STEM_LENGTH, ' ' as u8);
+            let stem: [u8; STEM_LENGTH] = stem
+                .try_into()
+                .expect("Can't generate a current directory entry.");
+            let mut extension: Vec<u8> = vec![];
+            extension.resize(EXTENSION_LENGTH, ' ' as u8);
+            let extension: [u8; EXTENSION_LENGTH] = extension
+                .try_into()
+                .expect("Can't generate a current directory entry.");
+            let attribute: attribute::Attribute = *attribute;
+            let accessed_time: time::Time = *accessed_time;
+            let created_time: time::Time = *created_time;
+            let written_time: time::Time = *written_time;
+            let long_file_name: Option<Box<Self>> = None;
+            Self::ShortFileName {
+                stem,
+                extension,
+                attribute,
+                accessed_time,
+                created_time,
+                written_time,
+                long_file_name,
+            }
+        } else {
+            panic!("Can't generate a current directory entry.")
+        }
+    }
+
     fn long_file_name(name: Vec<u16>, order: usize) -> Self {
         let (name, next): ([u16; LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if LONG_FILE_NAME_LENGTH <= name.len() {
             let (name, next): (&[u16], &[u16]) = name.split_at(LONG_FILE_NAME_LENGTH);
