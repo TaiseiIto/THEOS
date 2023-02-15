@@ -119,8 +119,9 @@ impl From<&PathBuf> for FileOrDirectory {
 pub struct Node {
     name: String,
     content: FileOrDirectory,
-    current_directory_entry: directory_entry::DirectoryEntry,
     directory_entry: directory_entry::DirectoryEntry,
+    current_directory_entry: directory_entry::DirectoryEntry,
+    parent_directory_entry: directory_entry::DirectoryEntry,
     parent: RefCell<Weak<Self>>,
 }
 
@@ -175,12 +176,14 @@ impl fmt::Display for Node {
             .expect("Can't print a node.")
             .to_string();
         let content: String = format!("{}", self.content);
-        let current_directory_entry: String = format!("{}", self.current_directory_entry);
         let directory_entry: String = format!("{}", self.directory_entry);
+        let current_directory_entry: String = format!("{}", self.current_directory_entry);
+        let parent_directory_entry: String = format!("{}", self.parent_directory_entry);
         let elements: Vec<String> = vec![
             path,
-            current_directory_entry,
             directory_entry,
+            current_directory_entry,
+            parent_directory_entry,
             content,
         ];
         let string: String = elements
@@ -203,12 +206,14 @@ impl From<&PathBuf> for Node {
         let content: FileOrDirectory = source.into();
         let directory_entry: directory_entry::DirectoryEntry = source.into();
         let current_directory_entry: directory_entry::DirectoryEntry = directory_entry.current_directory_entry();
+        let parent_directory_entry: directory_entry::DirectoryEntry = directory_entry.parent_directory_entry();
         let parent = RefCell::new(Weak::new());
         Self {
             name,
             content,
-            current_directory_entry,
             directory_entry,
+            current_directory_entry,
+            parent_directory_entry,
             parent,
         }
     }

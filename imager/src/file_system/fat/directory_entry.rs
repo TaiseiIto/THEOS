@@ -75,35 +75,7 @@ impl DirectoryEntry {
         }
     }
 
-    fn long_file_name(name: Vec<u16>, order: usize) -> Self {
-        let (name, next): ([u16; LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if LONG_FILE_NAME_LENGTH <= name.len() {
-            let (name, next): (&[u16], &[u16]) = name.split_at(LONG_FILE_NAME_LENGTH);
-            let name: [u16; LONG_FILE_NAME_LENGTH] = name
-                .try_into()
-                .expect("Can't generate a long file name directory entry.");
-            let next: Vec<u16> = next.to_vec();
-            let next: Option<Box<Self>> = Some(Box::new(Self::long_file_name(next, order + 1)));
-            (name, next)
-        } else {
-            let mut name: Vec<u16> = name;
-            if name.len() < LONG_FILE_NAME_LENGTH {
-                name.push(0x0000);
-            }
-            name.resize(LONG_FILE_NAME_LENGTH, 0xffff);
-            let name: [u16; LONG_FILE_NAME_LENGTH] = name
-                .try_into()
-                .expect("Can't generate a long file name directory entry.");
-            let next: Option<Box<Self>> = None;
-            (name, next)
-        };
-        Self::LongFileName {
-            name,
-            order,
-            next,
-        }
-    }
-
-    fn parent_directory_entry(&self) -> Self {
+    pub fn parent_directory_entry(&self) -> Self {
         if let Self::ShortFileName {
             stem: _,
             extension: _,
@@ -140,6 +112,34 @@ impl DirectoryEntry {
             }
         } else {
             panic!("Can't generate a current directory entry.")
+        }
+    }
+
+    fn long_file_name(name: Vec<u16>, order: usize) -> Self {
+        let (name, next): ([u16; LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if LONG_FILE_NAME_LENGTH <= name.len() {
+            let (name, next): (&[u16], &[u16]) = name.split_at(LONG_FILE_NAME_LENGTH);
+            let name: [u16; LONG_FILE_NAME_LENGTH] = name
+                .try_into()
+                .expect("Can't generate a long file name directory entry.");
+            let next: Vec<u16> = next.to_vec();
+            let next: Option<Box<Self>> = Some(Box::new(Self::long_file_name(next, order + 1)));
+            (name, next)
+        } else {
+            let mut name: Vec<u16> = name;
+            if name.len() < LONG_FILE_NAME_LENGTH {
+                name.push(0x0000);
+            }
+            name.resize(LONG_FILE_NAME_LENGTH, 0xffff);
+            let name: [u16; LONG_FILE_NAME_LENGTH] = name
+                .try_into()
+                .expect("Can't generate a long file name directory entry.");
+            let next: Option<Box<Self>> = None;
+            (name, next)
+        };
+        Self::LongFileName {
+            name,
+            order,
+            next,
         }
     }
 }
