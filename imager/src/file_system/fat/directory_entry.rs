@@ -2,6 +2,7 @@ mod attribute;
 
 use {
     std::{
+        cell::RefCell,
         ffi::OsStr,
         fmt,
         path::PathBuf,
@@ -21,6 +22,7 @@ pub enum DirectoryEntry {
         accessed_time: time::Time,
         created_time: time::Time,
         written_time: time::Time,
+        cluster: RefCell<Option<u32>>,
         long_file_name: Option<Box<Self>>,
     },
     LongFileName {
@@ -43,6 +45,7 @@ impl DirectoryEntry {
             accessed_time,
             created_time,
             written_time,
+            cluster,
             long_file_name: _,
         } = self {
             let mut stem: Vec<u8> = "."
@@ -60,6 +63,7 @@ impl DirectoryEntry {
             let accessed_time: time::Time = *accessed_time;
             let created_time: time::Time = *created_time;
             let written_time: time::Time = *written_time;
+            let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
                 stem,
@@ -68,6 +72,7 @@ impl DirectoryEntry {
                 accessed_time,
                 created_time,
                 written_time,
+                cluster,
                 long_file_name,
             }
         } else {
@@ -83,6 +88,7 @@ impl DirectoryEntry {
             accessed_time,
             created_time,
             written_time,
+            cluster,
             long_file_name: _,
         } = self {
             let mut stem: Vec<u8> = ".."
@@ -100,6 +106,7 @@ impl DirectoryEntry {
             let accessed_time: time::Time = *accessed_time;
             let created_time: time::Time = *created_time;
             let written_time: time::Time = *written_time;
+            let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
                 stem,
@@ -108,6 +115,7 @@ impl DirectoryEntry {
                 accessed_time,
                 created_time,
                 written_time,
+                cluster,
                 long_file_name,
             }
         } else {
@@ -347,6 +355,7 @@ impl From<&PathBuf> for DirectoryEntry {
         let accessed_time = time::Time::last_accessed_time(path);
         let created_time = time::Time::last_changed_time(path);
         let written_time = time::Time::last_modified_time(path);
+        let cluster: RefCell<Option<u32>> = RefCell::new(None);
         let long_file_name: Option<Box<Self>> = if stem_is_irreversible || extension_is_irreversible {
             let long_file_name: Vec<u16> = path
                 .file_name()
@@ -367,6 +376,7 @@ impl From<&PathBuf> for DirectoryEntry {
             accessed_time,
             created_time,
             written_time,
+            cluster,
             long_file_name,
         }
     }
@@ -382,6 +392,7 @@ impl fmt::Display for DirectoryEntry {
                 accessed_time,
                 created_time,
                 written_time,
+                cluster,
                 long_file_name,
             } => {
                 let stem: Vec<u8> = stem.to_vec();
@@ -395,6 +406,7 @@ impl fmt::Display for DirectoryEntry {
                 let written_time: String = format!("written time: {}", written_time);
                 let accessed_time: String = format!("accessed time: {}", accessed_time);
                 let attribute: String = format!("{}", attribute);
+                let cluster: String = format!("cluster: {:?}", cluster.borrow());
                 let long_file_name: String = match long_file_name {
                     Some(long_file_name) => format!("{}", long_file_name.as_ref()),
                     None => String::new(),
@@ -405,6 +417,7 @@ impl fmt::Display for DirectoryEntry {
                     written_time,
                     accessed_time,
                     attribute,
+                    cluster,
                     long_file_name,
                 ];
                 elements
