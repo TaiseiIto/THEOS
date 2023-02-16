@@ -1,4 +1,5 @@
 mod attribute;
+mod short_file_name;
 
 use {
     std::{
@@ -17,8 +18,8 @@ use {
 #[derive(Debug)]
 pub enum DirectoryEntry {
     ShortFileName {
-        stem: [u8; STEM_LENGTH],
-        extension: [u8; EXTENSION_LENGTH],
+        stem: [u8; short_file_name::STEM_LENGTH],
+        extension: [u8; short_file_name::EXTENSION_LENGTH],
         attribute: attribute::Attribute,
         accessed_time: time::Time,
         created_time: time::Time,
@@ -34,8 +35,6 @@ pub enum DirectoryEntry {
     },
 }
 
-const STEM_LENGTH: usize = 8;
-const EXTENSION_LENGTH: usize = 3;
 const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
@@ -53,13 +52,13 @@ impl DirectoryEntry {
         } = self {
             let mut stem: Vec<u8> = "."
                 .as_bytes().to_vec();
-            stem.resize(STEM_LENGTH, ' ' as u8);
-            let stem: [u8; STEM_LENGTH] = stem
+            stem.resize(short_file_name::STEM_LENGTH, ' ' as u8);
+            let stem: [u8; short_file_name::STEM_LENGTH] = stem
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let mut extension: Vec<u8> = vec![];
-            extension.resize(EXTENSION_LENGTH, ' ' as u8);
-            let extension: [u8; EXTENSION_LENGTH] = extension
+            extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
+            let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let attribute: attribute::Attribute = *attribute;
@@ -99,13 +98,13 @@ impl DirectoryEntry {
         } = self {
             let mut stem: Vec<u8> = ".."
                 .as_bytes().to_vec();
-            stem.resize(STEM_LENGTH, ' ' as u8);
-            let stem: [u8; STEM_LENGTH] = stem
+            stem.resize(short_file_name::STEM_LENGTH, ' ' as u8);
+            let stem: [u8; short_file_name::STEM_LENGTH] = stem
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let mut extension: Vec<u8> = vec![];
-            extension.resize(EXTENSION_LENGTH, ' ' as u8);
-            let extension: [u8; EXTENSION_LENGTH] = extension
+            extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
+            let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let attribute: attribute::Attribute = *attribute;
@@ -270,9 +269,9 @@ impl From<&PathBuf> for DirectoryEntry {
                 },
             });
         let mut stem: Vec<u8> = stem.into_bytes();
-        let stem_is_irreversible: bool = stem_is_irreversible || STEM_LENGTH < stem.len();
-        stem.resize(STEM_LENGTH, ' ' as u8);
-        let stem: [u8; STEM_LENGTH] = stem
+        let stem_is_irreversible: bool = stem_is_irreversible || short_file_name::STEM_LENGTH < stem.len();
+        stem.resize(short_file_name::STEM_LENGTH, ' ' as u8);
+        let stem: [u8; short_file_name::STEM_LENGTH] = stem
             .try_into()
             .expect("Can't generate a directory entry.");
         let (extension, extension_is_irreversible): (String, bool) = path
@@ -354,9 +353,9 @@ impl From<&PathBuf> for DirectoryEntry {
                 },
             });
         let mut extension: Vec<u8> = extension.into_bytes();
-        let extension_is_irreversible: bool = extension_is_irreversible || EXTENSION_LENGTH < extension.len();
-        extension.resize(EXTENSION_LENGTH, ' ' as u8);
-        let extension: [u8; EXTENSION_LENGTH] = extension
+        let extension_is_irreversible: bool = extension_is_irreversible || short_file_name::EXTENSION_LENGTH < extension.len();
+        extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
+        let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
             .try_into()
             .expect("Can't generate a directory entry.");
         let attribute: attribute::Attribute = path.into();
