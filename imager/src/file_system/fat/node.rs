@@ -19,6 +19,7 @@ pub enum FileOrDirectory {
     },
     Directory {
         children: RefCell<Vec<Rc<Node>>>,
+        is_root: bool,
     },
 }
 
@@ -26,12 +27,15 @@ impl FileOrDirectory {
     pub fn root(source: &PathBuf) -> Self {
         if let Self::Directory {
             children,
+            is_root: _,
         } = source.into() {
+            let is_root: bool = true;
             for child in children.borrow().iter() {
                 child.set_parent();
             }
             Self::Directory {
                 children,
+                is_root,
             }
         } else {
             panic!("Can't generate a root directory.");
@@ -76,6 +80,7 @@ impl fmt::Display for FileOrDirectory {
                 .join("\n"),
             Self::Directory {
                 children,
+                is_root: _,
             } => children
                 .borrow()
                 .iter()
@@ -108,8 +113,10 @@ impl From<&PathBuf> for FileOrDirectory {
                 _ => panic!("Can't read a directory {}!", source.display()),
             };
             let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
+            let is_root: bool = false;
             Self::Directory {
                 children,
+                is_root,
             }
         } else {
             panic!("Can't find {}!", source.display())
@@ -131,10 +138,11 @@ impl Node {
     pub fn is_directory(&self) -> bool {
         match &self.content {
             FileOrDirectory::File {
-                bytes
+                bytes: _,
             } => false,
             FileOrDirectory::Directory {
-                children,
+                children: _,
+                is_root: _,
             } => true,
         }
     }
@@ -158,6 +166,7 @@ impl Node {
     fn set_parent(self: &Rc<Self>) {
         if let FileOrDirectory::Directory {
             children,
+            is_root: _,
         } = &self.clone().content {
             for child in children.borrow_mut().iter_mut() {
                 child.set_parent();
