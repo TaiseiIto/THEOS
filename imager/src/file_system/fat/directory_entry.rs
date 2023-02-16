@@ -37,6 +37,7 @@ pub enum DirectoryEntry {
     },
 }
 
+pub const DIRECTORY_ENTRY_SIZE: usize = 32;
 const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
