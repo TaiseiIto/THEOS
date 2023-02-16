@@ -1,4 +1,5 @@
 mod attribute;
+mod long_file_name;
 mod name_flags;
 mod short_file_name;
 
@@ -31,14 +32,13 @@ pub enum DirectoryEntry {
         long_file_name: Option<Box<Self>>,
     },
     LongFileName {
-        name: [u16; LONG_FILE_NAME_LENGTH],
+        name: [u16; long_file_name::LONG_FILE_NAME_LENGTH],
         order: usize,
         next: Option<Box<Self>>,
     },
 }
 
 pub const DIRECTORY_ENTRY_SIZE: usize = 32;
-const LONG_FILE_NAME_LENGTH: usize = 13;
 
 impl DirectoryEntry {
     pub fn current_directory_entry(&self) -> Self {
@@ -140,9 +140,9 @@ impl DirectoryEntry {
     }
 
     fn long_file_name(name: Vec<u16>, order: usize) -> Self {
-        let (name, next): ([u16; LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if LONG_FILE_NAME_LENGTH <= name.len() {
-            let (name, next): (&[u16], &[u16]) = name.split_at(LONG_FILE_NAME_LENGTH);
-            let name: [u16; LONG_FILE_NAME_LENGTH] = name
+        let (name, next): ([u16; long_file_name::LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if long_file_name::LONG_FILE_NAME_LENGTH <= name.len() {
+            let (name, next): (&[u16], &[u16]) = name.split_at(long_file_name::LONG_FILE_NAME_LENGTH);
+            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
                 .try_into()
                 .expect("Can't generate a long file name directory entry.");
             let next: Vec<u16> = next.to_vec();
@@ -150,11 +150,11 @@ impl DirectoryEntry {
             (name, next)
         } else {
             let mut name: Vec<u16> = name;
-            if name.len() < LONG_FILE_NAME_LENGTH {
+            if name.len() < long_file_name::LONG_FILE_NAME_LENGTH {
                 name.push(0x0000);
             }
-            name.resize(LONG_FILE_NAME_LENGTH, 0xffff);
-            let name: [u16; LONG_FILE_NAME_LENGTH] = name
+            name.resize(long_file_name::LONG_FILE_NAME_LENGTH, 0xffff);
+            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
                 .try_into()
                 .expect("Can't generate a long file name directory entry.");
             let next: Option<Box<Self>> = None;
