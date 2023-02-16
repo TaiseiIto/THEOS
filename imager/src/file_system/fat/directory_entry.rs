@@ -431,14 +431,15 @@ impl fmt::Display for DirectoryEntry {
                 name.extend(extension);
                 let name = String::from_utf8(name).expect("Can't print a directory entry.");
                 let name: String = format!("short file name: {}", name);
-                let created_time: String = format!("created time: {}", created_time);
-                let written_time: String = format!("written time: {}", written_time);
-                let accessed_time: String = format!("accessed time: {}", accessed_time);
                 let attribute: String = format!("{}", attribute)
                     .lines()
                     .map(|line| format!("attribute.{}", line))
                     .collect::<Vec<String>>()
                     .join("\n");
+                let name_flags: String = format!("{}", name_flags);
+                let created_time: String = format!("created time: {}", created_time);
+                let accessed_time: String = format!("accessed time: {}", accessed_time);
+                let written_time: String = format!("written time: {}", written_time);
                 let cluster: String = format!("cluster: {:?}", cluster.borrow());
                 let size: String = format!("size: {}", size);
                 let long_file_name: String = match long_file_name {
@@ -447,10 +448,11 @@ impl fmt::Display for DirectoryEntry {
                 };
                 let elements: Vec<String> = vec![
                     name,
-                    created_time,
-                    written_time,
-                    accessed_time,
                     attribute,
+                    name_flags,
+                    created_time,
+                    accessed_time,
+                    written_time,
                     cluster,
                     size,
                     long_file_name,

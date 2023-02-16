@@ -1,5 +1,6 @@
 use std::{
     ffi::OsStr,
+    fmt,
     path::PathBuf,
 };
 
@@ -45,6 +46,19 @@ impl Into<u8> for &NameFlags {
             0x00
         };
         lowercase_stem + lowercase_extension
+    }
+}
+
+impl fmt::Display for NameFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let lowercase_stem: String = format!("lowercase_stem: {}", self.lowercase_stem);
+        let lowercase_extension: String = format!("lowercase_extension: {}", self.lowercase_extension);
+        let elements: Vec<String> = vec![
+            lowercase_stem,
+            lowercase_extension,
+        ];
+        let string: String = elements.join("\n");
+        write!(f, "{}", string)
     }
 }
 
