@@ -13,7 +13,7 @@ use {
 };
 
 #[derive(Debug)]
-pub enum FileOrDirectory {
+pub enum Content {
     File {
         bytes: Vec<u8>,
     },
@@ -23,7 +23,7 @@ pub enum FileOrDirectory {
     },
 }
 
-impl FileOrDirectory {
+impl Content {
     pub fn root(source: &PathBuf) -> Self {
         if let Self::Directory {
             children,
@@ -43,7 +43,7 @@ impl FileOrDirectory {
     }
 }
 
-impl fmt::Display for FileOrDirectory {
+impl fmt::Display for Content {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string: String = match self {
             Self::File {
@@ -92,7 +92,7 @@ impl fmt::Display for FileOrDirectory {
     }
 }
 
-impl From<&PathBuf> for FileOrDirectory {
+impl From<&PathBuf> for Content {
     fn from(source: &PathBuf) -> Self {
         if source.is_file() {
             let bytes: Vec<u8> = fs::read(source).expect(&format!("Can't read {}!", source.display()));
@@ -127,7 +127,7 @@ impl From<&PathBuf> for FileOrDirectory {
 #[derive(Debug)]
 pub struct Node {
     name: String,
-    content: FileOrDirectory,
+    content: Content,
     directory_entry: directory_entry::DirectoryEntry,
     current_directory_entry: directory_entry::DirectoryEntry,
     parent_directory_entry: directory_entry::DirectoryEntry,
@@ -137,10 +137,10 @@ pub struct Node {
 impl Node {
     pub fn is_directory(&self) -> bool {
         match &self.content {
-            FileOrDirectory::File {
+            Content::File {
                 bytes: _,
             } => false,
-            FileOrDirectory::Directory {
+            Content::Directory {
                 children: _,
                 is_root: _,
             } => true,
@@ -164,7 +164,7 @@ impl Node {
     }
 
     fn set_parent(self: &Rc<Self>) {
-        if let FileOrDirectory::Directory {
+        if let Content::Directory {
             children,
             is_root: _,
         } = &self.clone().content {
@@ -234,7 +234,7 @@ impl From<&PathBuf> for Node {
             .to_str()
             .expect(&format!("Can't get a basename of {}!", source.display()))
             .to_string();
-        let content: FileOrDirectory = source.into();
+        let content: Content = source.into();
         let directory_entry: directory_entry::DirectoryEntry = source.into();
         let current_directory_entry: directory_entry::DirectoryEntry = directory_entry.current_directory_entry();
         let parent_directory_entry: directory_entry::DirectoryEntry = directory_entry.parent_directory_entry();

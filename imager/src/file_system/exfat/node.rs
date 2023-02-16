@@ -25,7 +25,7 @@ use {
 };
 
 #[derive(Clone, Debug)]
-pub enum FileOrDirectory {
+pub enum Content {
     File {
         bytes: Vec<u8>,
     },
@@ -35,7 +35,7 @@ pub enum FileOrDirectory {
     },
 }
 
-impl FileOrDirectory {
+impl Content {
     pub fn allocation_bitmap(&self, clusters: &cluster::Clusters) -> allocation_bitmap::AllocationBitmap {
         if let Self::Directory {
             children: _,
@@ -264,7 +264,7 @@ impl FileOrDirectory {
     }
 }
 
-impl fmt::Display for FileOrDirectory {
+impl fmt::Display for Content {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string: String = match self {
             Self::File {
@@ -314,7 +314,7 @@ impl fmt::Display for FileOrDirectory {
 
 #[derive(Clone, Debug)]
 pub struct Node {
-    content: FileOrDirectory,
+    content: Content,
     destination: PathBuf,
     directory_entry: Option<directory_entry::DirectoryEntry>,
     first_cluster: u32,
@@ -337,7 +337,7 @@ impl Node {
         cluster_size: usize
     ) -> Rc<Self> {
         let destination = PathBuf::from("/");
-        let content = FileOrDirectory::read_directory(&destination, clusters, fat, first_cluster, cluster_size);
+        let content = Content::read_directory(&destination, clusters, fat, first_cluster, cluster_size);
         let directory_entry: Option<directory_entry::DirectoryEntry> = None;
         let parent = RefCell::new(Weak::new());
         let object = Rc::new(Self {
@@ -347,7 +347,7 @@ impl Node {
             first_cluster,
             parent,
         });
-        if let FileOrDirectory::Directory{
+        if let Content::Directory{
             children,
             directory_entries: _,
         } = &object.content {
@@ -396,7 +396,7 @@ impl Node {
         has_volume_guid: bool,
         rand_generator: &mut rand::Generator,
     ) -> Rc<Self> {
-        let (content, first_cluster, length) = FileOrDirectory::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, has_volume_guid, rand_generator);
+        let (content, first_cluster, length) = Content::new(&source, &destination, is_root, boot_sector, clusters, upcase_table, has_volume_guid, rand_generator);
         let destination: PathBuf = destination.to_path_buf();
         let directory_entry = if is_root {
             None
@@ -411,7 +411,7 @@ impl Node {
             first_cluster,
             parent,
         });
-        if let FileOrDirectory::Directory {
+        if let Content::Directory {
             children,
             directory_entries: _,
         } = &object.content {
@@ -449,9 +449,9 @@ impl Node {
                 destination.push(file_name);
                 let first_cluster: u32 = *first_cluster;
                 let content = if file_attributes.is_dir() {
-                    FileOrDirectory::read_directory(&destination, clusters, fat, first_cluster, cluster_size)
+                    Content::read_directory(&destination, clusters, fat, first_cluster, cluster_size)
                 } else {
-                    FileOrDirectory::read_file(clusters, first_cluster, *data_length)
+                    Content::read_file(clusters, first_cluster, *data_length)
                 };
                 let parent = RefCell::new(Weak::new());
                 let object = Rc::new(Self {
@@ -461,7 +461,7 @@ impl Node {
                     first_cluster,
                     parent,
                 });
-                if let FileOrDirectory::Directory{
+                if let Content::Directory{
                     children,
                     directory_entries: _,
                 } = &object.content {

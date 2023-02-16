@@ -12,7 +12,7 @@ use std::{
 #[derive(Debug)]
 pub struct Fat {
     boot_sector: boot_sector::BootSector,
-    root_directory: node::FileOrDirectory,
+    root_directory: node::Content,
 }
 
 impl Fat {
@@ -37,7 +37,7 @@ impl Fat {
             })
             .0
             .expect("Boot sector candidates are not unanimous about cluster size.");
-        let root_directory = node::FileOrDirectory::root(&root);
+        let root_directory = node::Content::root(&root);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
