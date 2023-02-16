@@ -22,6 +22,7 @@ pub enum DirectoryEntry {
         stem: [u8; short_file_name::STEM_LENGTH],
         extension: [u8; short_file_name::EXTENSION_LENGTH],
         attribute: attribute::Attribute,
+        name_flags: name_flags::NameFlags,
         created_time: time::Time,
         accessed_time: time::Time,
         written_time: time::Time,
@@ -44,6 +45,7 @@ impl DirectoryEntry {
             stem: _,
             extension: _,
             attribute,
+            name_flags,
             created_time,
             accessed_time,
             written_time,
@@ -63,8 +65,9 @@ impl DirectoryEntry {
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let attribute: attribute::Attribute = *attribute;
-            let accessed_time: time::Time = *accessed_time;
+            let name_flags: name_flags::NameFlags = *name_flags;
             let created_time: time::Time = *created_time;
+            let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
             let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
             let size: usize = *size;
@@ -73,6 +76,7 @@ impl DirectoryEntry {
                 stem,
                 extension,
                 attribute,
+                name_flags,
                 created_time,
                 accessed_time,
                 written_time,
@@ -90,6 +94,7 @@ impl DirectoryEntry {
             stem: _,
             extension: _,
             attribute,
+            name_flags,
             created_time,
             accessed_time,
             written_time,
@@ -109,8 +114,9 @@ impl DirectoryEntry {
                 .try_into()
                 .expect("Can't generate a current directory entry.");
             let attribute: attribute::Attribute = *attribute;
-            let accessed_time: time::Time = *accessed_time;
+            let name_flags: name_flags::NameFlags = *name_flags;
             let created_time: time::Time = *created_time;
+            let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
             let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
             let size: usize = *size;
@@ -119,6 +125,7 @@ impl DirectoryEntry {
                 stem,
                 extension,
                 attribute,
+                name_flags,
                 created_time,
                 accessed_time,
                 written_time,
@@ -360,8 +367,9 @@ impl From<&PathBuf> for DirectoryEntry {
             .try_into()
             .expect("Can't generate a directory entry.");
         let attribute: attribute::Attribute = path.into();
-        let accessed_time = time::Time::last_accessed_time(path);
+        let name_flags: name_flags::NameFlags = path.into();
         let created_time = time::Time::last_changed_time(path);
+        let accessed_time = time::Time::last_accessed_time(path);
         let written_time = time::Time::last_modified_time(path);
         let cluster: RefCell<Option<u32>> = RefCell::new(None);
         let size: usize = if path.is_file() {
@@ -390,6 +398,7 @@ impl From<&PathBuf> for DirectoryEntry {
             stem,
             extension,
             attribute,
+            name_flags,
             created_time,
             accessed_time,
             written_time,
@@ -407,6 +416,7 @@ impl fmt::Display for DirectoryEntry {
                 stem,
                 extension,
                 attribute,
+                name_flags,
                 created_time,
                 accessed_time,
                 written_time,

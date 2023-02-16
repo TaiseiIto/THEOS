@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct NameFlags {
     lowercase_stem: bool,
     lowercase_extension: bool,
