@@ -29,3 +29,19 @@ impl From<&PathBuf> for NameFlags {
     }
 }
 
+impl Into<u8> for &NameFlags {
+    fn into(self) -> u8 {
+        let lowercase_stem: u8 = if self.lowercase_stem {
+            0x08
+        } else {
+            0x00
+        };
+        let lowercase_extension: u8 = if self.lowercase_extension {
+            0x10
+        } else {
+            0x00
+        };
+        lowercase_stem + lowercase_extension
+    }
+}
+
