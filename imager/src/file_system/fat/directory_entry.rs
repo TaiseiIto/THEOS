@@ -1,4 +1,5 @@
 mod attribute;
+mod name_flags;
 mod short_file_name;
 
 use {
