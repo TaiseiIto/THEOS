@@ -89,3 +89,10 @@ impl Into<[u8; DIRECTORY_ENTRY_SIZE]> for &ShortFileName {
     }
 }
 
+impl Into<Vec<u8>> for &ShortFileName {
+    fn into(self) -> Vec<u8> {
+        let bytes: [u8; DIRECTORY_ENTRY_SIZE] = self.into();
+        bytes.to_vec()
+    }
+}
+

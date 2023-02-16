@@ -168,6 +168,104 @@ impl DirectoryEntry {
     }
 }
 
+impl fmt::Display for DirectoryEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let string: String = match self {
+            Self::ShortFileName {
+                stem,
+                extension,
+                attribute,
+                name_flags,
+                created_time,
+                accessed_time,
+                written_time,
+                cluster,
+                size,
+                long_file_name,
+            } => {
+                let stem: Vec<u8> = stem.to_vec();
+                let extension: Vec<u8> = extension.to_vec();
+                let mut name: Vec<u8> = vec![];
+                name.extend(stem);
+                name.extend(extension);
+                let name = String::from_utf8(name).expect("Can't print a directory entry.");
+                let name: String = format!("short file name: {}", name);
+                let attribute: String = format!("{}", attribute)
+                    .lines()
+                    .map(|line| format!("attribute.{}", line))
+                    .collect::<Vec<String>>()
+                    .join("\n");
+                let name_flags: String = format!("{}", name_flags);
+                let created_time: String = format!("created time: {}", created_time);
+                let accessed_time: String = format!("accessed time: {}", accessed_time);
+                let written_time: String = format!("written time: {}", written_time);
+                let cluster: String = format!("cluster: {:?}", cluster.borrow());
+                let size: String = format!("size: {}", size);
+                let long_file_name: String = match long_file_name {
+                    Some(long_file_name) => format!("{}", long_file_name.as_ref()),
+                    None => String::new(),
+                };
+                let elements: Vec<String> = vec![
+                    name,
+                    attribute,
+                    name_flags,
+                    created_time,
+                    accessed_time,
+                    written_time,
+                    cluster,
+                    size,
+                    long_file_name,
+                ];
+                elements
+                    .into_iter()
+                    .filter(|element| 0 < element.len())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            },
+            Self::LongFileName {
+                name,
+                order,
+                next,
+            } => {
+                let (name, _): (Vec<u16>, bool) = name
+                    .iter()
+                    .fold((vec![], true), |(name, continuity), c| if continuity {
+                        match c {
+                            0x0000 => {
+                                (name, false)
+                            },
+                            _ => {
+                                let mut name: Vec<u16> = name;
+                                name.push(*c);
+                                (name, true)
+                            },
+                        }
+                    } else {
+                        (name, continuity)
+                    });
+                let name = String::from_utf16(&name).expect("Can't print a directory entry.");
+                let name: String = format!("long file name: {}", name);
+                let order: String = format!("order: {}", order);
+                let next: String = match next {
+                    Some(next) => format!("{}", next.as_ref()),
+                    None => String::new(),
+                };
+                let elements: Vec<String> = vec![
+                    name,
+                    order,
+                    next,
+                ];
+                elements
+                    .into_iter()
+                    .filter(|element| 0 < element.len())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            }
+        };
+        write!(f, "{}", string)
+    }
+}
+
 impl From<&PathBuf> for DirectoryEntry {
     fn from(path: &PathBuf) -> Self {
         let (stem, stem_is_irreversible, _, _): (String, bool, bool, bool) = path
@@ -410,10 +508,10 @@ impl From<&PathBuf> for DirectoryEntry {
     }
 }
 
-impl fmt::Display for DirectoryEntry {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let string: String = match self {
-            Self::ShortFileName {
+impl Into<Vec<u8>> for &DirectoryEntry {
+    fn into(self) -> Vec<u8> {
+        match self {
+            DirectoryEntry::ShortFileName {
                 stem,
                 extension,
                 attribute,
@@ -425,86 +523,40 @@ impl fmt::Display for DirectoryEntry {
                 size,
                 long_file_name,
             } => {
-                let stem: Vec<u8> = stem.to_vec();
-                let extension: Vec<u8> = extension.to_vec();
-                let mut name: Vec<u8> = vec![];
-                name.extend(stem);
-                name.extend(extension);
-                let name = String::from_utf8(name).expect("Can't print a directory entry.");
-                let name: String = format!("short file name: {}", name);
-                let attribute: String = format!("{}", attribute)
-                    .lines()
-                    .map(|line| format!("attribute.{}", line))
-                    .collect::<Vec<String>>()
-                    .join("\n");
-                let name_flags: String = format!("{}", name_flags);
-                let created_time: String = format!("created time: {}", created_time);
-                let accessed_time: String = format!("accessed time: {}", accessed_time);
-                let written_time: String = format!("written time: {}", written_time);
-                let cluster: String = format!("cluster: {:?}", cluster.borrow());
-                let size: String = format!("size: {}", size);
-                let long_file_name: String = match long_file_name {
-                    Some(long_file_name) => format!("{}", long_file_name.as_ref()),
-                    None => String::new(),
+                let long_file_name: Vec<u8> = match long_file_name {
+                    Some(long_file_name) => {
+                        let long_file_name: &long_file_name::LongFileName = &long_file_name.as_ref().into();
+                        long_file_name.into()
+                    },
+                    None => vec![],
                 };
-                let elements: Vec<String> = vec![
-                    name,
-                    attribute,
-                    name_flags,
-                    created_time,
-                    accessed_time,
-                    written_time,
-                    cluster,
-                    size,
-                    long_file_name,
-                ];
-                elements
-                    .into_iter()
-                    .filter(|element| 0 < element.len())
-                    .collect::<Vec<String>>()
-                    .join("\n")
+                let short_file_name: &short_file_name::ShortFileName = &self.into();
+                let short_file_name: Vec<u8> = short_file_name.into();
+                let mut bytes: Vec<u8> = vec![];
+                bytes.extend(long_file_name);
+                bytes.extend(short_file_name);
+                bytes
             },
-            Self::LongFileName {
+            DirectoryEntry::LongFileName {
                 name,
                 order,
                 next,
             } => {
-                let (name, _): (Vec<u16>, bool) = name
-                    .iter()
-                    .fold((vec![], true), |(name, continuity), c| if continuity {
-                        match c {
-                            0x0000 => {
-                                (name, false)
-                            },
-                            _ => {
-                                let mut name: Vec<u16> = name;
-                                name.push(*c);
-                                (name, true)
-                            },
-                        }
-                    } else {
-                        (name, continuity)
-                    });
-                let name = String::from_utf16(&name).expect("Can't print a directory entry.");
-                let name: String = format!("long file name: {}", name);
-                let order: String = format!("order: {}", order);
-                let next: String = match next {
-                    Some(next) => format!("{}", next.as_ref()),
-                    None => String::new(),
+                let next: Vec<u8> = match next {
+                    Some(next) => {
+                        let next: &long_file_name::LongFileName = &next.as_ref().into();
+                        next.into()
+                    },
+                    None => vec![],
                 };
-                let elements: Vec<String> = vec![
-                    name,
-                    order,
-                    next,
-                ];
-                elements
-                    .into_iter()
-                    .filter(|element| 0 < element.len())
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            }
-        };
-        write!(f, "{}", string)
+                let long_file_name: &long_file_name::LongFileName = &self.into();
+                let long_file_name: Vec<u8> = long_file_name.into();
+                let mut bytes: Vec<u8> = vec![];
+                bytes.extend(next);
+                bytes.extend(long_file_name);
+                bytes
+            },
+        }
     }
 }
 
