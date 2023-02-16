@@ -178,9 +178,21 @@ impl fmt::Display for Node {
             .expect("Can't print a node.")
             .to_string();
         let content: String = format!("{}", self.content);
-        let directory_entry: String = format!("{}", self.directory_entry);
-        let current_directory_entry: String = format!("{}", self.current_directory_entry);
-        let parent_directory_entry: String = format!("{}", self.parent_directory_entry);
+        let directory_entry: String = format!("{}", self.directory_entry)
+            .lines()
+            .map(|line| format!("directory_entry.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let current_directory_entry: String = format!("{}", self.current_directory_entry)
+            .lines()
+            .map(|line| format!("current_directory_entry.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let parent_directory_entry: String = format!("{}", self.parent_directory_entry)
+            .lines()
+            .map(|line| format!("parent_directory_entry.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
         let directory_entries: Vec<String> = vec![
             directory_entry,
             current_directory_entry,
@@ -196,7 +208,11 @@ impl fmt::Display for Node {
             directory_entries,
             content,
         ];
-        let string: String = elements.join("\n");
+        let string: String = elements
+            .into_iter()
+            .filter(|element| 0 < element.len())
+            .collect::<Vec<String>>()
+            .join("\n");
         write!(f, "{}", string)
     }
 }
