@@ -166,6 +166,104 @@ impl DirectoryEntry {
             next,
         }
     }
+
+    fn volume_label(volume_label: &str) -> Self {
+        let volume_label: String = volume_label
+            .to_string()
+            .to_uppercase()
+            .chars()
+            .filter(|c| match c {
+                'A' |
+                'B' |
+                'C' |
+                'D' |
+                'E' |
+                'F' |
+                'G' |
+                'H' |
+                'I' |
+                'J' |
+                'K' |
+                'L' |
+                'M' |
+                'N' |
+                'O' |
+                'P' |
+                'Q' |
+                'R' |
+                'S' |
+                'T' |
+                'U' |
+                'V' |
+                'W' |
+                'X' |
+                'Y' |
+                'Z' |
+                '$' |
+                '0' |
+                '1' |
+                '2' |
+                '3' |
+                '4' |
+                '5' |
+                '6' |
+                '7' |
+                '8' |
+                '9' |
+                '%' |
+                '\'' |
+                '-' |
+                '_' |
+                '@' |
+                '~' |
+                '`' |
+                '!' |
+                '(' |
+                ')' |
+                '{' |
+                '}' |
+                '^' |
+                '#' |
+                '&' |
+                ' ' => true,
+                _ => false,
+            })
+            .collect();
+        let mut volume_label: Vec<u8> = volume_label
+            .as_bytes()
+            .to_vec();
+        volume_label.resize(short_file_name::BASENAME_LENGTH, ' ' as u8);
+        let volume_label: [u8; short_file_name::BASENAME_LENGTH] = volume_label
+            .try_into()
+            .expect("Can't generate a volume label.");
+        let stem: [u8; short_file_name::STEM_LENGTH] = volume_label[..short_file_name::STEM_LENGTH]
+            .try_into()
+            .expect("Can't generate a volume label.");
+        let extension: [u8; short_file_name::EXTENSION_LENGTH] = volume_label[short_file_name::STEM_LENGTH..]
+            .try_into()
+            .expect("Can't generate a volume label.");
+        let attribute = attribute::Attribute::volume_label();
+        let name_flags = name_flags::NameFlags::volume_label();
+        let current_time = time::Time::current_time();
+        let created_time = current_time;
+        let accessed_time = current_time;
+        let written_time = current_time;
+        let cluster: RefCell<Option<u32>> = RefCell::new(Some(0));
+        let size: usize = 0;
+        let long_file_name: Option<Box<Self>> = None;
+        Self::ShortFileName {
+            stem,
+            extension,
+            attribute,
+            name_flags,
+            created_time,
+            accessed_time,
+            written_time,
+            cluster,
+            size,
+            long_file_name,
+        }
+    }
 }
 
 impl fmt::Display for DirectoryEntry {

@@ -30,6 +30,18 @@ impl Attribute {
             long_file_name: true,
         }
     }
+
+    pub fn volume_label() -> Self {
+        Self {
+            read_only: false,
+            hidden: false,
+            system: false,
+            volume_id: true,
+            directory: false,
+            archive: false,
+            long_file_name: false,
+        }
+    }
 }
 
 impl fmt::Display for Attribute {

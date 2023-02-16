@@ -24,6 +24,7 @@ pub struct ShortFileName {
 
 pub const STEM_LENGTH: usize = 8;
 pub const EXTENSION_LENGTH: usize = 3;
+pub const BASENAME_LENGTH: usize = STEM_LENGTH + EXTENSION_LENGTH;
 
 impl From<&DirectoryEntry> for ShortFileName {
     fn from(directory_entry: &DirectoryEntry) -> Self {

@@ -10,6 +10,15 @@ pub struct NameFlags {
     lowercase_extension: bool,
 }
 
+impl NameFlags {
+    pub fn volume_label() -> Self {
+        Self {
+            lowercase_stem: false,
+            lowercase_extension: false,
+        }
+    }
+}
+
 impl From<&PathBuf> for NameFlags {
     fn from(path: &PathBuf) -> Self {
         let stem: String = path
