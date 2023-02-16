@@ -181,11 +181,19 @@ impl fmt::Display for Node {
         let directory_entry: String = format!("{}", self.directory_entry);
         let current_directory_entry: String = format!("{}", self.current_directory_entry);
         let parent_directory_entry: String = format!("{}", self.parent_directory_entry);
-        let elements: Vec<String> = vec![
-            path,
+        let directory_entries: Vec<String> = vec![
             directory_entry,
             current_directory_entry,
             parent_directory_entry,
+        ];
+        let directory_entries: String = directory_entries
+            .join("\n")
+            .lines()
+            .map(|line| format!("{} {}", path, line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let elements: Vec<String> = vec![
+            directory_entries,
             content,
         ];
         let string: String = elements.join("\n");

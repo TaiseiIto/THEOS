@@ -445,7 +445,11 @@ impl fmt::Display for DirectoryEntry {
                     size,
                     long_file_name,
                 ];
-                elements.join("\n")
+                elements
+                    .into_iter()
+                    .filter(|element| 0 < element.len())
+                    .collect::<Vec<String>>()
+                    .join("\n")
             },
             Self::LongFileName {
                 name,
@@ -480,7 +484,11 @@ impl fmt::Display for DirectoryEntry {
                     order,
                     next,
                 ];
-                elements.join("\n")
+                elements
+                    .into_iter()
+                    .filter(|element| 0 < element.len())
+                    .collect::<Vec<String>>()
+                    .join("\n")
             }
         };
         write!(f, "{}", string)
