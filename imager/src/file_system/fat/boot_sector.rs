@@ -39,12 +39,32 @@ impl BootSector {
         }
     }
 
-    pub fn new(boot_sector: &PathBuf) -> Self {
-        let boot_sector: Vec<u8> = fs::read(boot_sector).expect("Can't generate a boot sector.");
-        Self::read(&boot_sector)
+    pub fn volume_label(&self) -> String {
+        let volume_label: [u8; 0xb] = match self {
+            Self::Fat12 {
+                content,
+            } => content.volume_label(),
+            Self::Fat16 {
+                content,
+            } => content.volume_label(),
+            Self::Fat32 {
+                content,
+            } => content.volume_label(),
+        };
+        let volume_label: Vec<u8> = volume_label.to_vec();
+        String::from_utf8(volume_label).expect("Can't get a volume_label.")
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&PathBuf> for BootSector {
+    fn from(boot_sector: &PathBuf) -> Self {
+        let boot_sector: &Vec<u8> = &fs::read(boot_sector).expect("Can't generate a boot sector.");
+        boot_sector.into()
+    }
+}
+
+impl From<&Vec<u8>> for BootSector {
+    fn from(bytes: &Vec<u8>) -> Self {
         let file_system_type = file_system_type::FileSystemType::identify(bytes);
         match file_system_type {
             file_system_type::FileSystemType::Exfat => panic!("Can't generate a boot sector."),
@@ -67,22 +87,6 @@ impl BootSector {
                 }
             },
         }
-    }
-
-    pub fn volume_label(&self) -> String {
-        let volume_label: [u8; 0xb] = match self {
-            Self::Fat12 {
-                content,
-            } => content.volume_label(),
-            Self::Fat16 {
-                content,
-            } => content.volume_label(),
-            Self::Fat32 {
-                content,
-            } => content.volume_label(),
-        };
-        let volume_label: Vec<u8> = volume_label.to_vec();
-        String::from_utf8(volume_label).expect("Can't get a volume_label.")
     }
 }
 
