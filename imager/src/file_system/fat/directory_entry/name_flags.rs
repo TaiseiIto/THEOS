@@ -1,4 +1,7 @@
-use std::path::PathBuf;
+use std::{
+    ffi::OsStr,
+    path::PathBuf,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct NameFlags {
@@ -17,7 +20,7 @@ impl From<&PathBuf> for NameFlags {
         let lowercase_stem: bool = stem == stem.to_lowercase();
         let extension: String = path
             .extension()
-            .expect("Can't generate name flags.")
+            .unwrap_or(OsStr::new(""))
             .to_str()
             .expect("Can't generate name flags.")
             .to_string();
