@@ -41,22 +41,26 @@ impl Fat16 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
-    pub fn new(boot_sector: &PathBuf) -> Self {
-        let boot_sector: Vec<u8> = fs::read(boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
-        Self::read(&boot_sector)
+    pub fn volume_label(&self) -> [u8; 0xb] {
+        self.volume_label
     }
+}
 
-    pub fn read(bytes: &Vec<u8>) -> Self {
+impl From<&PathBuf> for Fat16 {
+    fn from(boot_sector: &PathBuf) -> Self {
+        let boot_sector: &Vec<u8> = &fs::read(boot_sector).expect(&format!("Can't read {}!", boot_sector.display()));
+        boot_sector.into()
+    }
+}
+
+impl From<&Vec<u8>> for Fat16 {
+    fn from(bytes: &Vec<u8>) -> Self {
         const SIZE: usize = mem::size_of::<Fat16>();
         let boot_sector = &bytes[0..SIZE];
         let boot_sector: [u8; SIZE] = boot_sector.try_into().expect("Can't convert boot sector from Vec<u8> to [u8; SIZE]!");
         unsafe {
             mem::transmute::<[u8; SIZE], Self>(boot_sector)
         }
-    }
-
-    pub fn volume_label(&self) -> [u8; 0xb] {
-        self.volume_label
     }
 }
 
