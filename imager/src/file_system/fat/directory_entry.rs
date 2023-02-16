@@ -424,7 +424,11 @@ impl fmt::Display for DirectoryEntry {
                 let created_time: String = format!("created time: {}", created_time);
                 let written_time: String = format!("written time: {}", written_time);
                 let accessed_time: String = format!("accessed time: {}", accessed_time);
-                let attribute: String = format!("{}", attribute);
+                let attribute: String = format!("{}", attribute)
+                    .lines()
+                    .map(|line| format!("attribute.{}", line))
+                    .collect::<Vec<String>>()
+                    .join("\n");
                 let cluster: String = format!("cluster: {:?}", cluster.borrow());
                 let size: String = format!("size: {}", size);
                 let long_file_name: String = match long_file_name {
