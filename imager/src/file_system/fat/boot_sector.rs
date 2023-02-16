@@ -25,17 +25,17 @@ pub enum BootSector {
 }
 
 impl BootSector {
-    pub fn get_cluster_size(&self) -> usize {
+    pub fn cluster_size(&self) -> usize {
         match self {
             Self::Fat12 {
                 content,
-            } => content.get_cluster_size(),
+            } => content.cluster_size(),
             Self::Fat16 {
                 content,
-            } => content.get_cluster_size(),
+            } => content.cluster_size(),
             Self::Fat32 {
                 content,
-            } => content.get_cluster_size(),
+            } => content.cluster_size(),
         }
     }
 
@@ -67,6 +67,22 @@ impl BootSector {
                 }
             },
         }
+    }
+
+    pub fn volume_label(&self) -> String {
+        let volume_label: [u8; 0xb] = match self {
+            Self::Fat12 {
+                content,
+            } => content.volume_label(),
+            Self::Fat16 {
+                content,
+            } => content.volume_label(),
+            Self::Fat32 {
+                content,
+            } => content.volume_label(),
+        };
+        let volume_label: Vec<u8> = volume_label.to_vec();
+        String::from_utf8(volume_label).expect("Can't get a volume_label.")
     }
 }
 

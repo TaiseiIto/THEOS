@@ -25,7 +25,7 @@ pub enum Content {
 }
 
 impl Content {
-    pub fn root(source: &PathBuf) -> Self {
+    pub fn root(source: &PathBuf, volume_label: String) -> Self {
         if let Self::Directory {
             children,
             current_directory,

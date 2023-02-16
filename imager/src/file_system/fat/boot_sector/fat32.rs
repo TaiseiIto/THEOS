@@ -44,7 +44,7 @@ pub struct Fat32 {
 }
 
 impl Fat32 {
-    pub fn get_cluster_size(&self) -> usize {
+    pub fn cluster_size(&self) -> usize {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
@@ -60,6 +60,10 @@ impl Fat32 {
         unsafe {
             mem::transmute::<[u8; SIZE], Self>(boot_sector)
         }
+    }
+
+    pub fn volume_label(&self) -> [u8; 0xb] {
+        self.volume_label
     }
 }
 

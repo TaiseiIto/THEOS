@@ -26,7 +26,7 @@ impl Fat {
             .collect();
         let cluster_size: usize = boot_sector_candidates
             .iter()
-            .map(|boot_sector_candidate| boot_sector_candidate.get_cluster_size())
+            .map(|boot_sector_candidate| boot_sector_candidate.cluster_size())
             .fold((None, true), |(cluster_size, unanimous), next_cluster_size| match cluster_size {
                 Some(cluster_size) => if unanimous && cluster_size == next_cluster_size {
                     (Some(cluster_size), unanimous)
@@ -37,7 +37,20 @@ impl Fat {
             })
             .0
             .expect("Boot sector candidates are not unanimous about cluster size.");
-        let root_directory = node::Content::root(&root);
+        let volume_label: String = boot_sector_candidates
+            .iter()
+            .map(|boot_sector_candidate| boot_sector_candidate.volume_label())
+            .fold((None, true), |(volume_label, unanimous), next_volume_label| match volume_label {
+                Some(volume_label) => if unanimous && volume_label == next_volume_label {
+                    (Some(volume_label), unanimous)
+                } else {
+                    (None, false)
+                }
+                None => (Some(next_volume_label), unanimous),
+            })
+            .0
+            .expect("Boot sector candidates are not unanimous about volume label.");
+        let root_directory = node::Content::root(&root, volume_label);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,
