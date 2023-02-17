@@ -306,3 +306,10 @@ impl From<&PathBuf> for Node {
     }
 }
 
+impl Into<Vec<u8>> for &Node {
+    fn into(self) -> Vec<u8> {
+        let content: &Content = &self.content;
+        content.into()
+    }
+}
+
