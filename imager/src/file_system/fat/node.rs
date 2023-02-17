@@ -131,6 +131,21 @@ impl From<&PathBuf> for Content {
     }
 }
 
+impl Into<Vec<u8>> for &Content {
+    fn into(self) -> Vec<u8> {
+        match self {
+            Content::File {
+                bytes
+            } => bytes.clone(),
+            Content::Directory {
+                children,
+                current_directory,
+                is_root,
+            } => panic!("Unimplemented."),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Node {
     name: String,
