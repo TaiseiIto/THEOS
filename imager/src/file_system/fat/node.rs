@@ -19,7 +19,7 @@ pub enum Content {
     },
     Directory {
         children: RefCell<Vec<Rc<Node>>>,
-        current_directory: RefCell<Weak<Node>>,
+        node: RefCell<Weak<Node>>,
         is_root: bool,
     },
 }
@@ -28,17 +28,17 @@ impl Content {
     pub fn root(source: &PathBuf, volume_label: String) -> Self {
         if let Self::Directory {
             children,
-            current_directory,
+            node,
             is_root: _,
         } = source.into() {
             for child in children.borrow().iter() {
                 child.set_parent();
             }
-            let current_directory = RefCell::new(Weak::new());
+            let node = RefCell::new(Weak::new());
             let is_root: bool = true;
             Self::Directory {
                 children,
-                current_directory,
+                node,
                 is_root,
             }
         } else {
@@ -84,7 +84,7 @@ impl fmt::Display for Content {
                 .join("\n"),
             Self::Directory {
                 children,
-                current_directory: _,
+                node: _,
                 is_root: _,
             } => children
                 .borrow()
@@ -118,11 +118,11 @@ impl From<&PathBuf> for Content {
                 _ => panic!("Can't read a directory {}!", source.display()),
             };
             let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
-            let current_directory = RefCell::new(Weak::new());
+            let node = RefCell::new(Weak::new());
             let is_root: bool = false;
             Self::Directory {
                 children,
-                current_directory,
+                node,
                 is_root,
             }
         } else {
@@ -139,7 +139,7 @@ impl Into<Vec<u8>> for &Content {
             } => bytes.clone(),
             Content::Directory {
                 children,
-                current_directory,
+                node,
                 is_root,
             } => panic!("Unimplemented."),
         }
@@ -164,7 +164,7 @@ impl Node {
             } => false,
             Content::Directory {
                 children: _,
-                current_directory: _,
+                node: _,
                 is_root: _,
             } => true,
         }
@@ -189,10 +189,10 @@ impl Node {
     fn set_parent(self: &Rc<Self>) {
         if let Content::Directory {
             children,
-            current_directory,
+            node,
             is_root: _,
         } = &self.clone().content {
-            *current_directory.borrow_mut() = Rc::downgrade(self);
+            *node.borrow_mut() = Rc::downgrade(self);
             for child in children.borrow_mut().iter_mut() {
                 child.set_parent();
                 *child
