@@ -27,7 +27,7 @@ pub enum DirectoryEntry {
         created_time: time::Time,
         accessed_time: time::Time,
         written_time: time::Time,
-        cluster: RefCell<Option<u32>>,
+        cluster: Option<u32>,
         size: usize,
         long_file_name: Option<Box<Self>>,
     },
@@ -70,7 +70,7 @@ impl DirectoryEntry {
             let created_time: time::Time = *created_time;
             let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
-            let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
+            let cluster: Option<u32> = *cluster;
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
@@ -119,7 +119,7 @@ impl DirectoryEntry {
             let created_time: time::Time = *created_time;
             let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
-            let cluster: RefCell<Option<u32>> = RefCell::new(*cluster.borrow());
+            let cluster: Option<u32> = *cluster;
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
@@ -248,7 +248,7 @@ impl DirectoryEntry {
         let created_time = current_time;
         let accessed_time = current_time;
         let written_time = current_time;
-        let cluster: RefCell<Option<u32>> = RefCell::new(Some(0));
+        let cluster: Option<u32> = Some(0);
         let size: usize = 0;
         let long_file_name: Option<Box<Self>> = None;
         Self::ShortFileName {
@@ -297,7 +297,7 @@ impl fmt::Display for DirectoryEntry {
                 let created_time: String = format!("created time: {}", created_time);
                 let accessed_time: String = format!("accessed time: {}", accessed_time);
                 let written_time: String = format!("written time: {}", written_time);
-                let cluster: String = format!("cluster: {:?}", cluster.borrow());
+                let cluster: String = format!("cluster: {:?}", cluster);
                 let size: String = format!("size: {}", size);
                 let long_file_name: String = match long_file_name {
                     Some(long_file_name) => format!("{}", long_file_name.as_ref()),
@@ -568,7 +568,7 @@ impl From<&PathBuf> for DirectoryEntry {
         let created_time = time::Time::last_changed_time(path);
         let accessed_time = time::Time::last_accessed_time(path);
         let written_time = time::Time::last_modified_time(path);
-        let cluster: RefCell<Option<u32>> = RefCell::new(None);
+        let cluster: Option<u32> = None;
         let size: usize = if path.is_file() {
             fs::metadata(path)
                 .expect("Can't generate a directory entry.")

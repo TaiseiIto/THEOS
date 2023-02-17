@@ -47,7 +47,7 @@ impl From<&DirectoryEntry> for ShortFileName {
             let created_time_centi_second: u8 = created_time.fat_centi_second();
             let created_time: u32 = created_time.fat_timestamp();
             let accessed_date: u16 = (accessed_time.fat_timestamp() >> 16) as u16;
-            let cluster: u32 = match cluster.borrow().as_ref() {
+            let cluster: u32 = match cluster {
                 Some(cluster) => *cluster,
                 None => 0,
             };
