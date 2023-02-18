@@ -31,7 +31,6 @@ impl From<&DirectoryEntry> for ShortFileName {
         if let DirectoryEntry::ShortFileName {
                 stem,
                 extension,
-                irreversible: _,
                 attribute,
                 name_flags,
                 created_time,

@@ -23,7 +23,6 @@ pub enum DirectoryEntry {
     ShortFileName {
         stem: RefCell<[u8; short_file_name::STEM_LENGTH]>,
         extension: [u8; short_file_name::EXTENSION_LENGTH],
-        irreversible: bool,
         attribute: attribute::Attribute,
         name_flags: name_flags::NameFlags,
         created_time: time::Time,
@@ -47,7 +46,6 @@ impl DirectoryEntry {
         if let Self::ShortFileName {
             stem: _,
             extension: _,
-            irreversible,
             attribute,
             name_flags,
             created_time,
@@ -69,7 +67,6 @@ impl DirectoryEntry {
             let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
                 .try_into()
                 .expect("Can't generate a current directory entry.");
-            let irreversible: bool = *irreversible;
             let attribute: attribute::Attribute = *attribute;
             let name_flags: name_flags::NameFlags = *name_flags;
             let created_time: time::Time = *created_time;
@@ -81,7 +78,6 @@ impl DirectoryEntry {
             Self::ShortFileName {
                 stem,
                 extension,
-                irreversible,
                 attribute,
                 name_flags,
                 created_time,
@@ -102,7 +98,6 @@ impl DirectoryEntry {
             if let Self::ShortFileName {
                 stem,
                 extension: _,
-                irreversible: _,
                 attribute: _,
                 name_flags: _,
                 created_time: _,
@@ -121,7 +116,6 @@ impl DirectoryEntry {
         if let Self::ShortFileName {
             stem: _,
             extension: _,
-            irreversible,
             attribute,
             name_flags,
             created_time,
@@ -143,7 +137,6 @@ impl DirectoryEntry {
             let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
                 .try_into()
                 .expect("Can't generate a current directory entry.");
-            let irreversible: bool = *irreversible;
             let attribute: attribute::Attribute = *attribute;
             let name_flags: name_flags::NameFlags = *name_flags;
             let created_time: time::Time = *created_time;
@@ -155,7 +148,6 @@ impl DirectoryEntry {
             Self::ShortFileName {
                 stem,
                 extension,
-                irreversible,
                 attribute,
                 name_flags,
                 created_time,
@@ -274,7 +266,6 @@ impl DirectoryEntry {
         let extension: [u8; short_file_name::EXTENSION_LENGTH] = volume_label[short_file_name::STEM_LENGTH..]
             .try_into()
             .expect("Can't generate a volume label.");
-        let irreversible: bool = false;
         let attribute = attribute::Attribute::volume_label();
         let name_flags = name_flags::NameFlags::volume_label();
         let current_time = time::Time::current_time();
@@ -287,7 +278,6 @@ impl DirectoryEntry {
         Self::ShortFileName {
             stem,
             extension,
-            irreversible,
             attribute,
             name_flags,
             created_time,
@@ -306,7 +296,6 @@ impl fmt::Display for DirectoryEntry {
             Self::ShortFileName {
                 stem,
                 extension,
-                irreversible,
                 attribute,
                 name_flags,
                 created_time,
@@ -323,7 +312,6 @@ impl fmt::Display for DirectoryEntry {
                 name.extend(extension);
                 let name = String::from_utf8(name).expect("Can't print a directory entry.");
                 let name: String = format!("short file name: {}", name);
-                let irreversible: String = format!("irreversible: {}", irreversible);
                 let attribute: String = format!("{}", attribute)
                     .lines()
                     .map(|line| format!("attribute.{}", line))
@@ -341,7 +329,6 @@ impl fmt::Display for DirectoryEntry {
                 };
                 let elements: Vec<String> = vec![
                     name,
-                    irreversible,
                     attribute,
                     name_flags,
                     created_time,
@@ -633,7 +620,6 @@ impl From<&PathBuf> for DirectoryEntry {
         Self::ShortFileName {
             stem,
             extension,
-            irreversible,
             attribute,
             name_flags,
             created_time,
@@ -652,7 +638,6 @@ impl Into<Vec<u8>> for &DirectoryEntry {
             DirectoryEntry::ShortFileName {
                 stem,
                 extension,
-                irreversible,
                 attribute,
                 name_flags,
                 created_time,
