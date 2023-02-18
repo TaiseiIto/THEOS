@@ -6,7 +6,7 @@ mod short_file_name;
 use {
     std::{
         cell::RefCell,
-        collections::HashMap,
+        collections::HashSet,
         ffi::OsStr,
         fmt,
         fs,
@@ -93,7 +93,7 @@ impl DirectoryEntry {
     }
 
     pub fn deduplicate(directory_entries: &Vec<&Self>) {
-        let mut duplication: HashMap<[u8; short_file_name::STEM_LENGTH], usize> = HashMap::new();
+        let mut duplication: HashSet<[u8; short_file_name::STEM_LENGTH]> = HashSet::new();
         for directory_entry in directory_entries.iter() {
             if let Self::ShortFileName {
                 stem,
@@ -105,9 +105,10 @@ impl DirectoryEntry {
                 written_time: _,
                 cluster: _,
                 size: _,
-                long_file_name: _,
+                long_file_name: Some(long_file_name),
             } = directory_entry {
-                *duplication.entry(*stem.borrow()).or_insert(0) += 1;
+                let stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
+                duplication.insert(stem);
             }
         }
     }
@@ -500,10 +501,6 @@ impl From<&PathBuf> for DirectoryEntry {
         let mut stem: Vec<u8> = stem.into_bytes();
         let stem_is_irreversible: bool = stem_is_irreversible || short_file_name::STEM_LENGTH < stem.len();
         stem.resize(short_file_name::STEM_LENGTH, ' ' as u8);
-        let stem: [u8; short_file_name::STEM_LENGTH] = stem
-            .try_into()
-            .expect("Can't generate a directory entry.");
-        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
         let (extension, extension_is_irreversible): (String, bool) = path
             .extension()
             .unwrap_or(OsStr::new(""))
@@ -585,9 +582,6 @@ impl From<&PathBuf> for DirectoryEntry {
         let mut extension: Vec<u8> = extension.into_bytes();
         let extension_is_irreversible: bool = extension_is_irreversible || short_file_name::EXTENSION_LENGTH < extension.len();
         extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
-        let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
-            .try_into()
-            .expect("Can't generate a directory entry.");
         let attribute: attribute::Attribute = path.into();
         let name_flags: name_flags::NameFlags = path.into();
         let created_time = time::Time::last_changed_time(path);
@@ -605,6 +599,9 @@ impl From<&PathBuf> for DirectoryEntry {
         };
         let irreversible: bool = stem_is_irreversible || extension_is_irreversible;
         let long_file_name: Option<Box<Self>> = if irreversible {
+            let suffix: Vec<u8> = "~1".as_bytes().to_vec();
+            stem.truncate(stem.len() - suffix.len());
+            stem.extend(suffix);
             let long_file_name: Vec<u16> = path
                 .file_name()
                 .expect("Can't generate a directory entry.")
@@ -617,6 +614,13 @@ impl From<&PathBuf> for DirectoryEntry {
         } else {
             None
         };
+        let stem: [u8; short_file_name::STEM_LENGTH] = stem
+            .try_into()
+            .expect("Can't generate a directory entry.");
+        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
+        let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
+            .try_into()
+            .expect("Can't generate a directory entry.");
         Self::ShortFileName {
             stem,
             extension,
