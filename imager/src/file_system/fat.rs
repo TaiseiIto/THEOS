@@ -50,7 +50,7 @@ impl Fat {
             })
             .0
             .expect("Boot sector candidates are not unanimous about volume label.");
-        let root_directory = node::Content::root(&root, volume_label);
+        let root_directory = node::Content::root(&root, volume_label, cluster_size);
         let boot_sector: boot_sector::BootSector = boot_sector_candidates[0];
         Self {
             boot_sector,

@@ -12,7 +12,10 @@ use {
             Weak,
         },
     },
-    super::directory_entry,
+    super::{
+        cluster,
+        directory_entry,
+    },
 };
 
 #[derive(Debug)]
@@ -28,7 +31,7 @@ pub enum Content {
 }
 
 impl Content {
-    pub fn root(source: &PathBuf, volume_label: String) -> Self {
+    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize) -> Self {
         if let Self::Directory {
             children,
             node,
@@ -39,11 +42,13 @@ impl Content {
             }
             let node = RefCell::new(Weak::new());
             let is_root: bool = true;
-            Self::Directory {
+            let root = Self::Directory {
                 children,
                 node,
                 is_root,
-            }
+            };
+            let mut cluster = cluster::Clusters::new(cluster_size);
+            root
         } else {
             panic!("Can't generate a root directory.");
         }
