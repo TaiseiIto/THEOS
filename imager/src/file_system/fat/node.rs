@@ -164,6 +164,7 @@ impl Into<Vec<u8>> for &Content {
                     .map(|child| &child.directory_entry)
                     .collect();
                 directory_entries.extend(children_directory_entry);
+                directory_entry::DirectoryEntry::deduplicate(&directory_entries);
                 let directory_entries: Vec<Vec<u8>> = directory_entries
                     .into_iter()
                     .map(|directory_entry| directory_entry.into())
