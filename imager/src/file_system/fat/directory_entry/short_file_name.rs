@@ -40,15 +40,15 @@ impl From<&DirectoryEntry> for ShortFileName {
                 size,
                 long_file_name,
         } = directory_entry {
-            let stem: [u8; STEM_LENGTH] = *stem;
+            let stem: [u8; STEM_LENGTH] = *stem.borrow();
             let extension: [u8; EXTENSION_LENGTH] = *extension;
             let attribute: u8 = attribute.into();
             let name_flags: u8 = name_flags.into();
             let created_time_centi_second: u8 = created_time.fat_centi_second();
             let created_time: u32 = created_time.fat_timestamp();
             let accessed_date: u16 = (accessed_time.fat_timestamp() >> 16) as u16;
-            let cluster: u32 = match cluster {
-                Some(cluster) => *cluster,
+            let cluster: u32 = match *cluster.borrow() {
+                Some(cluster) => cluster,
                 None => 0,
             };
             let cluster_high: u16 = (cluster >> 16) as u16;

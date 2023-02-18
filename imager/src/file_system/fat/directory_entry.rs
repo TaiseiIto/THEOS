@@ -20,14 +20,14 @@ use {
 #[derive(Debug)]
 pub enum DirectoryEntry {
     ShortFileName {
-        stem: [u8; short_file_name::STEM_LENGTH],
+        stem: RefCell<[u8; short_file_name::STEM_LENGTH]>,
         extension: [u8; short_file_name::EXTENSION_LENGTH],
         attribute: attribute::Attribute,
         name_flags: name_flags::NameFlags,
         created_time: time::Time,
         accessed_time: time::Time,
         written_time: time::Time,
-        cluster: Option<u32>,
+        cluster: RefCell<Option<u32>>,
         size: usize,
         long_file_name: Option<Box<Self>>,
     },
@@ -60,6 +60,7 @@ impl DirectoryEntry {
             let stem: [u8; short_file_name::STEM_LENGTH] = stem
                 .try_into()
                 .expect("Can't generate a current directory entry.");
+            let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
             let mut extension: Vec<u8> = vec![];
             extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
             let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
@@ -70,7 +71,7 @@ impl DirectoryEntry {
             let created_time: time::Time = *created_time;
             let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
-            let cluster: Option<u32> = *cluster;
+            let cluster: RefCell<Option<u32>> = cluster.clone();
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
@@ -109,6 +110,7 @@ impl DirectoryEntry {
             let stem: [u8; short_file_name::STEM_LENGTH] = stem
                 .try_into()
                 .expect("Can't generate a current directory entry.");
+            let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
             let mut extension: Vec<u8> = vec![];
             extension.resize(short_file_name::EXTENSION_LENGTH, ' ' as u8);
             let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
@@ -119,7 +121,7 @@ impl DirectoryEntry {
             let created_time: time::Time = *created_time;
             let accessed_time: time::Time = *accessed_time;
             let written_time: time::Time = *written_time;
-            let cluster: Option<u32> = *cluster;
+            let cluster: RefCell<Option<u32>> = cluster.clone();
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
             Self::ShortFileName {
@@ -239,6 +241,7 @@ impl DirectoryEntry {
         let stem: [u8; short_file_name::STEM_LENGTH] = volume_label[..short_file_name::STEM_LENGTH]
             .try_into()
             .expect("Can't generate a volume label.");
+        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
         let extension: [u8; short_file_name::EXTENSION_LENGTH] = volume_label[short_file_name::STEM_LENGTH..]
             .try_into()
             .expect("Can't generate a volume label.");
@@ -248,7 +251,7 @@ impl DirectoryEntry {
         let created_time = current_time;
         let accessed_time = current_time;
         let written_time = current_time;
-        let cluster: Option<u32> = Some(0);
+        let cluster: RefCell<Option<u32>> = RefCell::new(Some(0));
         let size: usize = 0;
         let long_file_name: Option<Box<Self>> = None;
         Self::ShortFileName {
@@ -281,7 +284,7 @@ impl fmt::Display for DirectoryEntry {
                 size,
                 long_file_name,
             } => {
-                let stem: Vec<u8> = stem.to_vec();
+                let stem: Vec<u8> = stem.borrow().to_vec();
                 let extension: Vec<u8> = extension.to_vec();
                 let mut name: Vec<u8> = vec![];
                 name.extend(stem);
@@ -479,6 +482,7 @@ impl From<&PathBuf> for DirectoryEntry {
         let stem: [u8; short_file_name::STEM_LENGTH] = stem
             .try_into()
             .expect("Can't generate a directory entry.");
+        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
         let (extension, extension_is_irreversible): (String, bool) = path
             .extension()
             .unwrap_or(OsStr::new(""))
@@ -568,7 +572,7 @@ impl From<&PathBuf> for DirectoryEntry {
         let created_time = time::Time::last_changed_time(path);
         let accessed_time = time::Time::last_accessed_time(path);
         let written_time = time::Time::last_modified_time(path);
-        let cluster: Option<u32> = None;
+        let cluster: RefCell<Option<u32>> = RefCell::new(None);
         let size: usize = if path.is_file() {
             fs::metadata(path)
                 .expect("Can't generate a directory entry.")
