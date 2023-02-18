@@ -107,38 +107,41 @@ impl DirectoryEntry {
                 size: _,
                 long_file_name: Some(long_file_name),
             } = directory_entry {
-                let mut stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
-                while duplication.contains(&stem) {
-                    stem = {
-                        let stem = String::from_utf8(stem.to_vec()).expect("Can't deduplicate file name stems.");
-                        let mut stem: Vec<String> = stem
-                            .split('~')
-                            .map(|string| string.to_string())
-                            .collect();
-                        if let Some(suffix) = stem.pop() {
-                            let stem: String = stem.join("~");
-                            let mut stem: Vec<u8> = stem
-                                .as_bytes()
-                                .to_vec();
-                            let suffix: usize = suffix
-                                .parse()
-                                .expect("Can't deduplicate file name stems.");
-                            let suffix: usize = suffix + 1;
-                            let suffix: String = format!("~{}", suffix);
-                            let suffix: Vec<u8> = suffix
-                                .as_bytes()
-                                .to_vec();
-                            stem.truncate(short_file_name::STEM_LENGTH - suffix.len());
-                            stem.extend(suffix);
-                            stem
-                                .try_into()
-                                .expect("Can't deduplicate file name stems.")
-                        } else {
-                            panic!("Can't deduplicate file name stems.");
-                        }
-                    };
-                }
-                duplication.insert(stem);
+                *stem.borrow_mut() = {
+                    let mut stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
+                    while duplication.contains(&stem) {
+                        stem = {
+                            let stem = String::from_utf8(stem.to_vec()).expect("Can't deduplicate file name stems.");
+                            let mut stem: Vec<String> = stem
+                                .split('~')
+                                .map(|string| string.to_string())
+                                .collect();
+                            if let Some(suffix) = stem.pop() {
+                                let stem: String = stem.join("~");
+                                let mut stem: Vec<u8> = stem
+                                    .as_bytes()
+                                    .to_vec();
+                                let suffix: usize = suffix
+                                    .parse()
+                                    .expect("Can't deduplicate file name stems.");
+                                let suffix: usize = suffix + 1;
+                                let suffix: String = format!("~{}", suffix);
+                                let suffix: Vec<u8> = suffix
+                                    .as_bytes()
+                                    .to_vec();
+                                stem.truncate(short_file_name::STEM_LENGTH - suffix.len());
+                                stem.extend(suffix);
+                                stem
+                                    .try_into()
+                                    .expect("Can't deduplicate file name stems.")
+                            } else {
+                                panic!("Can't deduplicate file name stems.");
+                            }
+                        };
+                    }
+                    duplication.insert(stem);
+                    stem
+                };
             }
         }
     }
