@@ -1,6 +1,7 @@
 mod boot_sector;
 mod cluster;
 mod directory_entry;
+mod fat;
 mod node;
 
 use std::{
@@ -65,6 +66,7 @@ impl Fat {
             .expect("Boot sector candidates are not unanimous about volume label.");
         let (root_directory, clusters): (node::Content, cluster::Clusters) = node::Content::root(&root, volume_label, cluster_size, root_directory_entries);
         let boot_sector = boot_sector::BootSector::select(boot_sector_candidates, &clusters);
+        let fat = fat::Fat::new(&clusters, &boot_sector);
         Self {
             boot_sector,
             root_directory,

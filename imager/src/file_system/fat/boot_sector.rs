@@ -56,6 +56,20 @@ impl BootSector {
         }
     }
 
+    pub fn sector_size(&self) -> usize {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.sector_size(),
+            Self::Fat16 {
+                content,
+            } => content.sector_size(),
+            Self::Fat32 {
+                content,
+            } => content.sector_size(),
+        }
+    }
+
     pub fn select(boot_sectors: Vec<Self>, clusters: &cluster::Clusters) -> Self {
         const FAT16MIN: usize = 4086;
         const FAT32MIN: usize = 65526;

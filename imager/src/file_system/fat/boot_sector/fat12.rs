@@ -45,6 +45,10 @@ impl Fat12 {
         Some(self.root_directory_entries as usize)
     }
 
+    pub fn sector_size(&self) -> usize {
+        self.bytes_per_sector as usize
+    }
+
     pub fn volume_label(&self) -> [u8; 0xb] {
         self.volume_label
     }
