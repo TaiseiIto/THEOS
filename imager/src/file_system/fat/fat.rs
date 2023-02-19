@@ -11,20 +11,23 @@ use {
 
 #[derive(Debug)]
 pub struct Fat {
-    cluster_chain: HashMap<u32, Option<u32>>,
-    sector_size: usize,
     bit: Bit,
+    cluster_chain: HashMap<u32, Option<u32>>,
+    media: u8,
+    sector_size: usize,
 }
 
 impl Fat {
     pub fn new(clusters: &cluster::Clusters, boot_sector: &boot_sector::BootSector) -> Self {
-        let sector_size: usize = boot_sector.sector_size();
-        let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
         let bit: Bit = boot_sector.into();
+        let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
+        let media: u8 = boot_sector.media();
+        let sector_size: usize = boot_sector.sector_size();
         Self {
-            cluster_chain,
-            sector_size,
             bit,
+            cluster_chain,
+            media,
+            sector_size,
         }
     }
 
@@ -64,6 +67,7 @@ impl Fat {
 
 impl fmt::Display for Fat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let media: String = format!("media: {:#0x}", self.media);
         let bit: &Bit = &self.bit;
         let bit: usize = bit.into();
         let digits: usize = bit / 4;
@@ -80,11 +84,24 @@ impl fmt::Display for Fat {
                     .map(|cluster| format!("{:0digits$x}", cluster))
                     .collect::<Vec<String>>()
                     .join(",");
-                format!("cluster_chain [{}]", chain)
+                format!("cluster_chain: [{}]", chain)
             })
             .collect::<Vec<String>>()
             .join("\n");
-        write!(f, "{}", chains)
+        let fat: Vec<String> = vec![
+            media,
+            chains,
+        ];
+        let fat: String = fat
+            .into_iter()
+            .map(|element| element
+                .lines()
+                .map(|line| format!("fat.{}", line))
+                .collect::<Vec<String>>()
+                .join("\n"))
+            .collect::<Vec<String>>()
+            .join("\n");
+        write!(f, "{}", fat)
     }
 }
 

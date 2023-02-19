@@ -42,6 +42,20 @@ impl BootSector {
         }
     }
 
+    pub fn media(&self) -> u8 {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.media(),
+            Self::Fat16 {
+                content,
+            } => content.media(),
+            Self::Fat32 {
+                content,
+            } => content.media(),
+        }
+    }
+
     pub fn root_directory_entries(&self) -> Option<usize> {
         match self {
             Self::Fat12 {

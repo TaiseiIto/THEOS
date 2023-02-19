@@ -48,6 +48,10 @@ impl Fat32 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
+    pub fn media(&self) -> u8 {
+        self.media
+    }
+
     pub fn root_directory_entries(&self) -> Option<usize> {
         None
     }
