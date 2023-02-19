@@ -105,6 +105,41 @@ impl fmt::Display for Fat {
     }
 }
 
+impl Into<Vec<u8>> for &Fat {
+    fn into(self) -> Vec<u8> {
+        let fat0: u32 = 0xffffff00 + self.media as u32;
+        let fat1: u32 = 0xffffffff;
+        let max_cluster_number: u32 = *self.cluster_chain
+            .keys()
+            .max()
+            .expect("Can't find max cluster number.");
+        let cluster_chain: Vec<u32> = (0..=max_cluster_number)
+            .map(|cluster_number| match cluster_number {
+                0 => fat0,
+                1 => fat1,
+                cluster_number => match self.cluster_chain.get(&cluster_number) {
+                    Some(next_cluster_number) => match next_cluster_number {
+                        Some(next_cluster_number) => *next_cluster_number,
+                        None => 0xffffffff,
+                    },
+                    None => 0xffffffff,
+                },
+            })
+            .collect();
+        match self.bit {
+            Bit::Fat12 => vec![],
+            Bit::Fat16 => vec![],
+            Bit::Fat32 => cluster_chain
+                .into_iter()
+                .map(|cluster_number| cluster_number
+                    .to_le_bytes()
+                    .to_vec())
+                .collect::<Vec<Vec<u8>>>()
+                .concat(),
+        }
+    }
+}
+
 #[derive(Debug)]
 enum Bit {
     Fat12,
