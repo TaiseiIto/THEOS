@@ -31,7 +31,7 @@ pub enum Content {
 }
 
 impl Content {
-    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize, root_directory_entries: usize) -> Self {
+    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
         if let Self::Directory {
             children,
             node,
@@ -47,15 +47,19 @@ impl Content {
                 node,
                 is_root,
             };
-            let mut cluster = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut cluster, volume_label, root_directory_entries);
-            root
+            // Temporary clusters to determine cluster number of each node.
+            let mut clusters = cluster::Clusters::new(cluster_size);
+            root.write_root(&mut clusters, &volume_label, root_directory_entries);
+            // Correct clusters.
+            let mut clusters = cluster::Clusters::new(cluster_size);
+            root.write_root(&mut clusters, &volume_label, root_directory_entries);
+            (root, clusters)
         } else {
             panic!("Can't generate a root directory.");
         }
     }
 
-    fn root_into_bytes(&self, volume_label: String, root_directory_entries: usize) -> Vec<u8> {
+    fn root_into_bytes(&self, volume_label: &str, root_directory_entries: usize) -> Vec<u8> {
         let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = vec![];
         let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
         directory_entries.push(&volume_label);
@@ -103,7 +107,7 @@ impl Content {
         }
     }
 
-    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: String, root_directory_entries: usize) {
+    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: &str, root_directory_entries: usize) {
         let bytes: Vec<u8> = self.root_into_bytes(volume_label, root_directory_entries);
         let blank: u8 = 0x00;
         clusters.append(&bytes, blank);

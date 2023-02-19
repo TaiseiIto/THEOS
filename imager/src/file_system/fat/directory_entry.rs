@@ -240,8 +240,9 @@ impl DirectoryEntry {
         }
     }
 
-    pub fn volume_label(volume_label: String) -> Self {
+    pub fn volume_label(volume_label: &str) -> Self {
         let volume_label: String = volume_label
+            .to_string()
             .to_uppercase()
             .chars()
             .filter(|c| match c {
