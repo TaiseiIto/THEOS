@@ -8,7 +8,10 @@ use {
         fs,
         path::PathBuf,
     },
-    super::super::file_system_type,
+    super::{
+        cluster,
+        super::file_system_type,
+    },
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -51,6 +54,27 @@ impl BootSector {
                 content,
             } => content.root_directory_entries(),
         }
+    }
+
+    pub fn select(boot_sectors: Vec<Self>, clusters: &cluster::Clusters) -> Self {
+        const FAT16MIN: usize = 4086;
+        const FAT32MIN: usize = 65526;
+        let number_of_clusters: usize = clusters.number_of_clusters();
+        boot_sectors
+            .into_iter()
+            .filter(|boot_sector| match boot_sector {
+                Self::Fat12 {
+                    content: _,
+                } => number_of_clusters < FAT16MIN,
+                Self::Fat16 {
+                    content: _,
+                } => FAT16MIN <= number_of_clusters && number_of_clusters < FAT32MIN,
+                Self::Fat32 {
+                    content: _,
+                } => FAT32MIN <= number_of_clusters,
+            })
+            .next()
+            .expect("Can't find boot sector.")
     }
 
     pub fn volume_label(&self) -> String {
