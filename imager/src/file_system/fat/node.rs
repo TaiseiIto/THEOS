@@ -310,6 +310,8 @@ impl Node {
     fn write_clusters(&self, clusters: &mut cluster::Clusters) {
         let next_cluster_number: u32 = clusters.next_cluster_number();
         self.directory_entry.set_cluster(next_cluster_number);
+        self.current_directory_entry.set_cluster(next_cluster_number);
+        self.parent_directory_entry.set_cluster(next_cluster_number);
         self.content.write_clusters(clusters);
     }
 }
