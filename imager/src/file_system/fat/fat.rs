@@ -1,5 +1,8 @@
 use {
-    std::collections::HashMap,
+    std::{
+        collections::HashMap,
+        fmt,
+    },
     super::{
         boot_sector,
         cluster,
@@ -23,6 +26,61 @@ impl Fat {
             sector_size,
             bit,
         }
+    }
+
+    pub fn to_chains(&self) -> HashMap<u32, Vec<u32>> {
+        self.cluster_chain
+            .iter()
+            .fold(HashMap::<u32, Vec<u32>>::new(), |mut chains, (cluster, next)| {
+                if let Some(next) = next {
+                    let mut cluster: u32 = *cluster;
+                    let mut chain: Vec<u32> = vec![cluster, *next];
+                    let last_to_first: HashMap<u32, u32> = chains
+                        .iter()
+                        .filter_map(|(first, clusters)| {
+                            match clusters.last() {
+                                Some(last) => Some((*last, *first)),
+                                None => None,
+                            }
+                        })
+                        .collect();
+                    if let Some(first) = last_to_first.get(&cluster) {
+                        cluster = *first;
+                        chain = chains.get(&cluster).expect("Can't get cluster chains.").clone();
+                        chain.push(*next);
+                    }
+                    if let Some(continuation) = chains.get(next) {
+                        chain.append(&mut continuation[1..].to_vec());
+                        chains.remove(next);
+                    }
+                    chains.insert(cluster, chain);
+                } else {
+                    chains.insert(*cluster, vec![*cluster]);
+                }
+                chains
+            })
+    }
+}
+
+impl fmt::Display for Fat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let chains: Vec<Vec<u32>> = self
+            .to_chains()
+            .into_values()
+            .collect();
+        let chains: String = chains
+            .into_iter()
+            .map(|chain| {
+                let chain: String = chain
+                    .into_iter()
+                    .map(|cluster| format!("{}", cluster))
+                    .collect::<Vec<String>>()
+                    .join(",");
+                format!("cluster_chain [{}]", chain)
+            })
+            .collect::<Vec<String>>()
+            .join("\n");
+        write!(f, "{}", chains)
     }
 }
 

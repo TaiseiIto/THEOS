@@ -13,6 +13,7 @@ use std::{
 #[derive(Debug)]
 pub struct Fat {
     boot_sector: boot_sector::BootSector,
+    fat: fat::Fat,
     root_directory: node::Content,
 }
 
@@ -69,6 +70,7 @@ impl Fat {
         let fat = fat::Fat::new(&clusters, &boot_sector);
         Self {
             boot_sector,
+            fat,
             root_directory,
         }
     }
@@ -87,9 +89,11 @@ impl fmt::Display for Fat {
             .map(|line| format!("boot_sector.{}", line))
             .collect::<Vec<String>>()
             .join("\n");
+        let fat: String = format!("{}", self.fat);
         let root_directory: String = format!("{}", self.root_directory);
         let fat: Vec<String> = vec![
             boot_sector,
+            fat,
             root_directory,
         ];
         let fat: String = fat.join("\n");
