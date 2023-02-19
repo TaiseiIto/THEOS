@@ -308,10 +308,22 @@ impl Node {
     }
 
     fn write_clusters(&self, clusters: &mut cluster::Clusters) {
-        let next_cluster_number: u32 = clusters.next_cluster_number();
-        self.directory_entry.set_cluster(next_cluster_number);
-        self.current_directory_entry.set_cluster(next_cluster_number);
-        self.parent_directory_entry.set_cluster(next_cluster_number);
+        let cluster_number: u32 = match &self.content {
+            Content::File {
+                bytes,
+            } => match bytes.len() {
+                0 => 0,
+                _ => clusters.next_cluster_number(),
+            },
+            Content::Directory {
+                children: _,
+                node: _,
+                is_root: _,
+            } => clusters.next_cluster_number(),
+        };
+        self.directory_entry.set_cluster(cluster_number);
+        self.current_directory_entry.set_cluster(cluster_number);
+        self.parent_directory_entry.set_cluster(cluster_number);
         self.content.write_clusters(clusters);
     }
 }
