@@ -93,6 +93,7 @@ impl DirectoryEntry {
     }
 
     pub fn deduplicate(directory_entries: &Vec<&Self>) {
+        eprintln!("call deduplicate");
         let mut duplication: HashSet<[u8; short_file_name::STEM_LENGTH]> = HashSet::new();
         for directory_entry in directory_entries.iter() {
             eprintln!("duplication 0 = {:?}", duplication);

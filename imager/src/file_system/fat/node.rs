@@ -57,7 +57,8 @@ impl Content {
 
     fn root_into_bytes(&self, volume_label: String, root_directory_entries: usize) -> Vec<u8> {
         let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = vec![];
-
+        let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
+        directory_entries.push(&volume_label);
         let children: Ref<'_, Vec<Rc<Node>>> = if let Self::Directory {
             children,
             node: _,
@@ -72,8 +73,7 @@ impl Content {
                 .map(|node| &node.directory_entry)
                 .collect();
         directory_entries.extend(children);
-        let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
-        directory_entries.push(&volume_label);
+        directory_entry::DirectoryEntry::deduplicate(&directory_entries);
         let directory_entries: Vec<Vec<u8>> = directory_entries
             .into_iter()
             .map(|directory_entry| directory_entry.into())
