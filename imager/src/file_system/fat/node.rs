@@ -74,27 +74,24 @@ impl Content {
         directory_entries.extend(children);
         let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
         directory_entries.push(&volume_label);
+        let directory_entries: Vec<Vec<u8>> = directory_entries
+            .into_iter()
+            .map(|directory_entry| directory_entry.into())
+            .collect();
         let mut directory_entries: Vec<u8> = directory_entries
             .into_iter()
-            .map(|directory_entry| {
-                let directory_entry: Vec<u8> = directory_entry.into();
-                directory_entry
-            })
-            .fold(vec![], |bytes, directory_entry| {
-                let mut bytes: Vec<u8> = bytes;
-                bytes.extend(directory_entry);
-                bytes
-            });
+            .flatten()
+            .collect();
         let size: usize = root_directory_entries * directory_entry::DIRECTORY_ENTRY_SIZE;
-        let blanc: u8 = 0x00;
-        directory_entries.resize(size, blanc);
+        let blank: u8 = 0x00;
+        directory_entries.resize(size, blank);
         directory_entries
     }
 
     fn write_clusters(&self, clusters: &mut cluster::Clusters) {
         let bytes: Vec<u8> = self.into();
-        let blanc: u8 = 0x00;
-        clusters.append(&bytes, blanc);
+        let blank: u8 = 0x00;
+        clusters.append(&bytes, blank);
         if let Self::Directory {
             children,
             node,
@@ -108,8 +105,8 @@ impl Content {
 
     fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: String, root_directory_entries: usize) {
         let bytes: Vec<u8> = self.root_into_bytes(volume_label, root_directory_entries);
-        let blanc: u8 = 0x00;
-        clusters.append(&bytes, blanc);
+        let blank: u8 = 0x00;
+        clusters.append(&bytes, blank);
         if let Self::Directory {
             children,
             node,
