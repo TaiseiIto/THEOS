@@ -41,6 +41,10 @@ impl Fat16 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
+    pub fn root_directory_entries(&self) -> Option<usize> {
+        Some(self.root_directory_entries as usize)
+    }
+
     pub fn volume_label(&self) -> [u8; 0xb] {
         self.volume_label
     }

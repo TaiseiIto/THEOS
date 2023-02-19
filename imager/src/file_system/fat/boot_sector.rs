@@ -39,6 +39,20 @@ impl BootSector {
         }
     }
 
+    pub fn root_directory_entries(&self) -> Option<usize> {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.root_directory_entries(),
+            Self::Fat16 {
+                content,
+            } => content.root_directory_entries(),
+            Self::Fat32 {
+                content,
+            } => content.root_directory_entries(),
+        }
+    }
+
     pub fn volume_label(&self) -> String {
         let volume_label: [u8; 0xb] = match self {
             Self::Fat12 {

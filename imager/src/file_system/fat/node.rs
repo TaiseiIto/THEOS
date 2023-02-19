@@ -31,7 +31,7 @@ pub enum Content {
 }
 
 impl Content {
-    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize) -> Self {
+    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize, root_directory_entries: usize) -> Self {
         if let Self::Directory {
             children,
             node,
