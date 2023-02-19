@@ -48,9 +48,25 @@ impl Content {
                 is_root,
             };
             let mut cluster = cluster::Clusters::new(cluster_size);
+            root.write_clusters(&mut cluster);
             root
         } else {
             panic!("Can't generate a root directory.");
+        }
+    }
+
+    fn write_clusters(&self, clusters: &mut cluster::Clusters) {
+        let bytes: Vec<u8> = self.into();
+        let blanc: u8 = 0x00;
+        clusters.append(&bytes, blanc);
+        if let Self::Directory {
+            children,
+            node,
+            is_root,
+        } = self {
+            for child in children.borrow().iter() {
+                child.write_clusters(clusters);
+            }
         }
     }
 }
@@ -238,6 +254,12 @@ impl Node {
                     .borrow_mut() = Rc::downgrade(self);
             }
         }
+    }
+
+    fn write_clusters(&self, clusters: &mut cluster::Clusters) {
+        let next_cluster_number: u32 = clusters.next_cluster_number();
+        self.directory_entry.set_cluster(next_cluster_number);
+        self.content.write_clusters(clusters);
     }
 }
 

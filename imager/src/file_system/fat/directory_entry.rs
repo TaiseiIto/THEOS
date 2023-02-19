@@ -196,6 +196,25 @@ impl DirectoryEntry {
         }
     }
 
+    pub fn set_cluster(&self, cluster_number: u32) {
+        if let Self::ShortFileName {
+            stem,
+            extension,
+            attribute,
+            name_flags,
+            created_time,
+            accessed_time,
+            written_time,
+            cluster,
+            size,
+            long_file_name,
+        } = self {
+            *cluster.borrow_mut() = Some(cluster_number);
+        } else {
+            panic!("Can't set cluster.");
+        }
+    }
+
     fn long_file_name(name: Vec<u16>, order: usize) -> Self {
         let (name, next): ([u16; long_file_name::LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if long_file_name::LONG_FILE_NAME_LENGTH <= name.len() {
             let (name, next): (&[u16], &[u16]) = name.split_at(long_file_name::LONG_FILE_NAME_LENGTH);
