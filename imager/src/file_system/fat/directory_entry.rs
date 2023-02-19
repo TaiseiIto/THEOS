@@ -93,10 +93,8 @@ impl DirectoryEntry {
     }
 
     pub fn deduplicate(directory_entries: &Vec<&Self>) {
-        eprintln!("call deduplicate");
         let mut duplication: HashSet<[u8; short_file_name::STEM_LENGTH]> = HashSet::new();
         for directory_entry in directory_entries.iter() {
-            eprintln!("duplication 0 = {:?}", duplication);
             if let Self::ShortFileName {
                 stem,
                 extension: _,
@@ -109,8 +107,7 @@ impl DirectoryEntry {
                 size: _,
                 long_file_name: Some(long_file_name),
             } = directory_entry {
-                eprintln!("duplication 1 = {:?}", duplication);
-                let mut new_stem: [u8; short_file_name::STEM_LENGTH] = stem.borrow().clone();
+                let mut new_stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
                 while duplication.contains(&new_stem) {
                     let stem = String::from_utf8(new_stem.to_vec()).expect("Can't deduplicate file name stems.");
                     let mut stem: Vec<String> = stem
@@ -140,11 +137,8 @@ impl DirectoryEntry {
                     }
                 }
                 duplication.insert(new_stem);
-                eprintln!("duplication 2 = {:?}", duplication);
                 *stem.borrow_mut() = new_stem;
-                eprintln!("duplication 3 = {:?}", duplication);
             }
-            eprintln!("duplication 4 = {:?}", duplication);
         }
     }
 
