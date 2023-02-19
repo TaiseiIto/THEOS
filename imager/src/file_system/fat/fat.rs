@@ -64,16 +64,20 @@ impl Fat {
 
 impl fmt::Display for Fat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let chains: Vec<Vec<u32>> = self
+        let bit: &Bit = &self.bit;
+        let bit: usize = bit.into();
+        let digits: usize = bit / 4;
+        let mut chains: Vec<Vec<u32>> = self
             .to_chains()
             .into_values()
             .collect();
+        chains.sort_by_key(|chain| chain[0]);
         let chains: String = chains
             .into_iter()
             .map(|chain| {
                 let chain: String = chain
                     .into_iter()
-                    .map(|cluster| format!("{}", cluster))
+                    .map(|cluster| format!("{:0digits$x}", cluster))
                     .collect::<Vec<String>>()
                     .join(",");
                 format!("cluster_chain [{}]", chain)
@@ -103,6 +107,16 @@ impl From<&boot_sector::BootSector> for Bit {
             boot_sector::BootSector::Fat32 {
                 content,
             } => Self::Fat32,
+        }
+    }
+}
+
+impl Into<usize> for &Bit {
+    fn into(self) -> usize {
+        match self {
+            Bit::Fat12 => 12,
+            Bit::Fat16 => 16,
+            Bit::Fat32 => 32,
         }
     }
 }
