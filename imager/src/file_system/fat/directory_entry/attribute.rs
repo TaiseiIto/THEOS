@@ -31,6 +31,18 @@ impl Attribute {
         }
     }
 
+    pub fn root() -> Self {
+        Self {
+            read_only: false,
+            hidden: false,
+            system: false,
+            volume_id: false,
+            directory: true,
+            archive: false,
+            long_file_name: false,
+        }
+    }
+
     pub fn volume_label() -> Self {
         Self {
             read_only: false,

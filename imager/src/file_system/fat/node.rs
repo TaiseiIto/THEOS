@@ -221,12 +221,15 @@ impl Into<Vec<u8>> for &Content {
                     .expect("Can't convert a directory into bytes.");
                 let current_directory_entry: &directory_entry::DirectoryEntry = &node.current_directory_entry;
                 directory_entries.push(current_directory_entry);
-                let parent: Rc<Node> = node.parent
+                let parent: Option<Rc<Node>> = node
+                    .parent
                     .borrow()
-                    .upgrade()
-                    .expect("Can't convert a directory into bytes.");
-                let parent_directory_entry: &directory_entry::DirectoryEntry = &parent.current_directory_entry;
-                directory_entries.push(parent_directory_entry);
+                    .upgrade();
+                let parent_directory_entry: directory_entry::DirectoryEntry = match parent {
+                    Some(parent) => parent.current_directory_entry.clone(),
+                    None => directory_entry::DirectoryEntry::parent_root_directory_entry(),
+                };
+                directory_entries.push(&parent_directory_entry);
                 let children: Ref<'_, Vec<Rc<Node>>> = children.borrow();
                 let children_directory_entry: Vec<&directory_entry::DirectoryEntry> = children
                     .iter()

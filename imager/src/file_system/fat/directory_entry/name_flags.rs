@@ -11,6 +11,13 @@ pub struct NameFlags {
 }
 
 impl NameFlags {
+    pub fn root() -> Self {
+        Self {
+            lowercase_stem: false,
+            lowercase_extension: false,
+        }
+    }
+
     pub fn volume_label() -> Self {
         Self {
             lowercase_stem: false,

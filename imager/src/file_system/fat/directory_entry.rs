@@ -18,7 +18,7 @@ use {
     },
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum DirectoryEntry {
     ShortFileName {
         stem: RefCell<[u8; short_file_name::STEM_LENGTH]>,
@@ -194,6 +194,35 @@ impl DirectoryEntry {
         } else {
             panic!("Can't generate a current directory entry.")
         }
+    }
+
+    pub fn parent_root_directory_entry() -> Self {
+        let stem: [u8; short_file_name::STEM_LENGTH] = [0; short_file_name::STEM_LENGTH];
+        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(stem);
+        let extension: [u8; short_file_name::EXTENSION_LENGTH] = [0; short_file_name::EXTENSION_LENGTH];
+        let attribute = attribute::Attribute::root();
+        let name_flags = name_flags::NameFlags::root();
+        let created_time = time::Time::from_fat_timestamp(0, 0, 0);
+        let accessed_time = time::Time::from_fat_timestamp(0, 0, 0);
+        let written_time = time::Time::from_fat_timestamp(0, 0, 0);
+        let cluster: u32 = 0;
+        let cluster: Option<u32> = Some(cluster);
+        let cluster: RefCell<Option<u32>> = RefCell::new(cluster);
+        let size: usize = 0;
+        let long_file_name: Option<Box<Self>> = None;
+        let root_directory_entry = Self::ShortFileName {
+            stem,
+            extension,
+            attribute,
+            name_flags,
+            created_time,
+            accessed_time,
+            written_time,
+            cluster,
+            size,
+            long_file_name,
+        };
+        root_directory_entry.parent_directory_entry()
     }
 
     pub fn set_cluster(&self, cluster_number: u32) {
