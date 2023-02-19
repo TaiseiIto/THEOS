@@ -48,15 +48,66 @@ impl Content {
                 is_root,
             };
             let mut cluster = cluster::Clusters::new(cluster_size);
-            root.write_clusters(&mut cluster);
+            root.write_root(&mut cluster, volume_label, root_directory_entries);
             root
         } else {
             panic!("Can't generate a root directory.");
         }
     }
 
+    fn root_into_bytes(&self, volume_label: String, root_directory_entries: usize) -> Vec<u8> {
+        let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = vec![];
+
+        let children: Ref<'_, Vec<Rc<Node>>> = if let Self::Directory {
+            children,
+            node: _,
+            is_root: _,
+        } = self {
+            children.borrow()
+        } else {
+            panic!("Can't convert a root directory into bytes.");
+        };
+        let children: Vec<&directory_entry::DirectoryEntry> = children
+                .iter()
+                .map(|node| &node.directory_entry)
+                .collect();
+        directory_entries.extend(children);
+        let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
+        directory_entries.push(&volume_label);
+        let mut directory_entries: Vec<u8> = directory_entries
+            .into_iter()
+            .map(|directory_entry| {
+                let directory_entry: Vec<u8> = directory_entry.into();
+                directory_entry
+            })
+            .fold(vec![], |bytes, directory_entry| {
+                let mut bytes: Vec<u8> = bytes;
+                bytes.extend(directory_entry);
+                bytes
+            });
+        let size: usize = root_directory_entries * directory_entry::DIRECTORY_ENTRY_SIZE;
+        let blanc: u8 = 0x00;
+        directory_entries.resize(size, blanc);
+        directory_entries
+    }
+
     fn write_clusters(&self, clusters: &mut cluster::Clusters) {
         let bytes: Vec<u8> = self.into();
+        let blanc: u8 = 0x00;
+        clusters.append(&bytes, blanc);
+        if let Self::Directory {
+            children,
+            node,
+            is_root,
+        } = self {
+            for child in children.borrow().iter() {
+                child.write_clusters(clusters);
+            }
+        }
+    }
+
+    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: String, root_directory_entries: usize) {
+        let bytes: Vec<u8> = self.root_into_bytes(volume_label, root_directory_entries);
         let blanc: u8 = 0x00;
         clusters.append(&bytes, blanc);
         if let Self::Directory {

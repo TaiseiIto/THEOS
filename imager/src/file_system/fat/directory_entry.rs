@@ -215,37 +215,8 @@ impl DirectoryEntry {
         }
     }
 
-    fn long_file_name(name: Vec<u16>, order: usize) -> Self {
-        let (name, next): ([u16; long_file_name::LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if long_file_name::LONG_FILE_NAME_LENGTH <= name.len() {
-            let (name, next): (&[u16], &[u16]) = name.split_at(long_file_name::LONG_FILE_NAME_LENGTH);
-            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
-                .try_into()
-                .expect("Can't generate a long file name directory entry.");
-            let next: Vec<u16> = next.to_vec();
-            let next: Option<Box<Self>> = Some(Box::new(Self::long_file_name(next, order + 1)));
-            (name, next)
-        } else {
-            let mut name: Vec<u16> = name;
-            if name.len() < long_file_name::LONG_FILE_NAME_LENGTH {
-                name.push(0x0000);
-            }
-            name.resize(long_file_name::LONG_FILE_NAME_LENGTH, 0xffff);
-            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
-                .try_into()
-                .expect("Can't generate a long file name directory entry.");
-            let next: Option<Box<Self>> = None;
-            (name, next)
-        };
-        Self::LongFileName {
-            name,
-            order,
-            next,
-        }
-    }
-
-    fn volume_label(volume_label: &str) -> Self {
+    pub fn volume_label(volume_label: String) -> Self {
         let volume_label: String = volume_label
-            .to_string()
             .to_uppercase()
             .chars()
             .filter(|c| match c {
@@ -339,6 +310,34 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name,
+        }
+    }
+
+    fn long_file_name(name: Vec<u16>, order: usize) -> Self {
+        let (name, next): ([u16; long_file_name::LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if long_file_name::LONG_FILE_NAME_LENGTH <= name.len() {
+            let (name, next): (&[u16], &[u16]) = name.split_at(long_file_name::LONG_FILE_NAME_LENGTH);
+            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
+                .try_into()
+                .expect("Can't generate a long file name directory entry.");
+            let next: Vec<u16> = next.to_vec();
+            let next: Option<Box<Self>> = Some(Box::new(Self::long_file_name(next, order + 1)));
+            (name, next)
+        } else {
+            let mut name: Vec<u16> = name;
+            if name.len() < long_file_name::LONG_FILE_NAME_LENGTH {
+                name.push(0x0000);
+            }
+            name.resize(long_file_name::LONG_FILE_NAME_LENGTH, 0xffff);
+            let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = name
+                .try_into()
+                .expect("Can't generate a long file name directory entry.");
+            let next: Option<Box<Self>> = None;
+            (name, next)
+        };
+        Self::LongFileName {
+            name,
+            order,
+            next,
         }
     }
 }
