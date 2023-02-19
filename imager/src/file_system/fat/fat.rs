@@ -126,9 +126,15 @@ impl Into<Vec<u8>> for &Fat {
                 },
             })
             .collect();
-        match self.bit {
+        let mut bytes: Vec<u8> = match self.bit {
             Bit::Fat12 => vec![],
-            Bit::Fat16 => vec![],
+            Bit::Fat16 => cluster_chain
+                .into_iter()
+                .map(|cluster_number| (cluster_number as u16)
+                    .to_le_bytes()
+                    .to_vec())
+                .collect::<Vec<Vec<u8>>>()
+                .concat(),
             Bit::Fat32 => cluster_chain
                 .into_iter()
                 .map(|cluster_number| cluster_number
@@ -136,7 +142,10 @@ impl Into<Vec<u8>> for &Fat {
                     .to_vec())
                 .collect::<Vec<Vec<u8>>>()
                 .concat(),
-        }
+        };
+        let size: usize = ((bytes.len() + self.sector_size - 1) / self.sector_size) * self.sector_size;
+        bytes.resize(size, 0x00);
+        bytes
     }
 }
 
