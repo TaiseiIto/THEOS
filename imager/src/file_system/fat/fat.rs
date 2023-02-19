@@ -113,7 +113,7 @@ impl Into<Vec<u8>> for &Fat {
             .keys()
             .max()
             .expect("Can't find max cluster number.");
-        let cluster_chain: Vec<u32> = (0..=max_cluster_number)
+        let mut cluster_chain: Vec<u32> = (0..=max_cluster_number)
             .map(|cluster_number| match cluster_number {
                 0 => fat0,
                 1 => fat1,
@@ -126,8 +126,18 @@ impl Into<Vec<u8>> for &Fat {
                 },
             })
             .collect();
+        if cluster_chain.len() % 2 == 1 {
+            cluster_chain.push(0);
+        }
         let mut bytes: Vec<u8> = match self.bit {
-            Bit::Fat12 => vec![],
+            Bit::Fat12 => cluster_chain
+                .chunks(2)
+                .map(|cluster_numbers| (cluster_numbers[0] + (cluster_numbers[1] << 12))
+                    .to_le_bytes()
+                    .to_vec()[..3]
+                    .to_vec())
+                .collect::<Vec<Vec<u8>>>()
+                .concat(),
             Bit::Fat16 => cluster_chain
                 .into_iter()
                 .map(|cluster_number| (cluster_number as u16)
