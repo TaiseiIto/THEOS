@@ -131,6 +131,9 @@ impl Into<Vec<u8>> for &Fat {
         }
         let mut bytes: Vec<u8> = match self.bit {
             Bit::Fat12 => cluster_chain
+                .into_iter()
+                .map(|cluster_number| cluster_number & 0xfff)
+                .collect::<Vec<u32>>()
                 .chunks(2)
                 .map(|cluster_numbers| (cluster_numbers[0] + (cluster_numbers[1] << 12))
                     .to_le_bytes()
