@@ -109,8 +109,6 @@ impl Content {
 
     fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: &str, root_directory_entries: usize) {
         let bytes: Vec<u8> = self.root_into_bytes(volume_label, root_directory_entries);
-        let blank: u8 = 0x00;
-        clusters.append(&bytes, blank);
         if let Self::Directory {
             children,
             node,
