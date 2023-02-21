@@ -48,7 +48,7 @@ impl BootSector {
             Self::Fat12 {
                 content,
             } => Self::Fat12 {
-                content,
+                content: content.fix(fat),
             },
             Self::Fat16 {
                 content,

@@ -6,6 +6,7 @@ use {
         path::PathBuf,
         str,
     },
+    super::super::fat,
 };
 
 #[allow(dead_code)]
@@ -39,6 +40,59 @@ pub struct Fat12 {
 impl Fat12 {
     pub fn cluster_size(&self) -> usize {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
+    }
+
+    pub fn fix(self, fat: &fat::Fat) -> Self {
+        let Self {
+            jump_boot,
+            oem_name,
+            bytes_per_sector,
+            sectors_per_cluster,
+            reserved_sectors,
+            fats,
+            root_directory_entries,
+            sectors16,
+            media,
+            sectors_per_fat,
+            sectors_per_track,
+            heads,
+            hidden_sectors,
+            sectors32,
+            drive_number,
+            reserved,
+            extended_boot_signature,
+            volume_id,
+            volume_label,
+            file_system_type,
+            boot_code,
+            boot_signature,
+        } = self;
+        let fat: Vec<u8> = fat.into();
+        let sectors_per_fat: u16 = (fat.len() / bytes_per_sector as usize) as u16;
+        Self {
+            jump_boot,
+            oem_name,
+            bytes_per_sector,
+            sectors_per_cluster,
+            reserved_sectors,
+            fats,
+            root_directory_entries,
+            sectors16,
+            media,
+            sectors_per_fat,
+            sectors_per_track,
+            heads,
+            hidden_sectors,
+            sectors32,
+            drive_number,
+            reserved,
+            extended_boot_signature,
+            volume_id,
+            volume_label,
+            file_system_type,
+            boot_code,
+            boot_signature,
+        }
     }
 
     pub fn media(&self) -> u8 {
