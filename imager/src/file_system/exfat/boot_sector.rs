@@ -62,7 +62,7 @@ impl BootSector {
         self.bytes_per_sector() * self.sectors_per_cluster()
     }
 
-    pub fn correct(self, fat: &fat::Fat, root_directory: &node::Node, clusters: &cluster::Clusters) -> Self {
+    pub fn fix(self, fat: &fat::Fat, root_directory: &node::Node, clusters: &cluster::Clusters) -> Self {
         let jump_boot: [u8; 0x3] = self.jump_boot;
         let file_system_name: [u8; 0x8] = self.file_system_name;
         let must_be_zero: [u8; 0x35] = self.must_be_zero;

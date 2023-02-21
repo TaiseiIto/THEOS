@@ -50,7 +50,7 @@ impl Exfat {
         let oem_parameters = oem_parameter::OemParameters::null(boot_sector.bytes_per_sector());
         let reserved_sector = reserved_sector::ReservedSector::new(boot_sector.bytes_per_sector());
         let fat = fat::Fat::new(&clusters, boot_sector.bytes_per_sector());
-        let boot_sector: boot_sector::BootSector = boot_sector.correct(&fat, &root_directory, &clusters);
+        let boot_sector: boot_sector::BootSector = boot_sector.fix(&fat, &root_directory, &clusters);
         let boot_checksum = boot_checksum::BootChecksum::new(&boot_sector, &extended_boot_sectors, &oem_parameters, &reserved_sector, boot_sector.bytes_per_sector());
         Self {
             boot_checksum,
