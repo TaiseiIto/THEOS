@@ -152,6 +152,8 @@ impl fmt::Display for Fat12 {
         let bytes_per_sector: String = format!("bytes_per_sector: {:#06x}", bytes_per_sector);
         let sectors_per_cluster: u8 = self.sectors_per_cluster;
         let sectors_per_cluster: String = format!("sectors_per_cluster: {:#04x}", sectors_per_cluster);
+        let reserved_sectors: u16 = self.reserved_sectors;
+        let reserved_sectors: String = format!("reserved_sectors: {:#06x}", reserved_sectors);
         let fats: u8 = self.fats;
         let fats: String = format!("fats: {:#04x}", fats);
         let root_directory_entries: u16 = self.root_directory_entries;
@@ -193,6 +195,7 @@ impl fmt::Display for Fat12 {
             oem_name,
             bytes_per_sector,
             sectors_per_cluster,
+            reserved_sectors,
             fats,
             root_directory_entries,
             sectors16,
