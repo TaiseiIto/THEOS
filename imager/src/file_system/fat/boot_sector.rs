@@ -43,6 +43,20 @@ impl BootSector {
         }
     }
 
+    pub fn fats(&self) -> usize {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.fats(),
+            Self::Fat16 {
+                content,
+            } => content.fats(),
+            Self::Fat32 {
+                content,
+            } => content.fats(),
+        }
+    }
+
     pub fn fix(self, fat: &fat::Fat, clusters: &cluster::Clusters) -> Self {
         match self {
             Self::Fat12 {

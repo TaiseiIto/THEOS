@@ -47,6 +47,10 @@ impl Fat12 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
+    pub fn fats(&self) -> usize {
+        self.fats as usize
+    }
+
     pub fn fix(self, fat: &fat::Fat, clusters: &cluster::Clusters) -> Self {
         let Self {
             jump_boot,

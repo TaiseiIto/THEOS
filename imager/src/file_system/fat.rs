@@ -86,7 +86,12 @@ impl Into<Vec<u8>> for &Fat {
         let reserved_sectors: usize = self.boot_sector.reserved_sectors();
         let reserved_size: usize = reserved_sectors * sector_size;
         boot_sector.resize(reserved_size, 0x00);
-        boot_sector
+        let fat: Vec<u8> = (&self.fat).into();
+        let fat: Vec<u8> = fat.repeat(self.boot_sector.fats());
+        vec![
+            boot_sector,
+            fat,
+        ].concat().to_vec()
     }
 }
 

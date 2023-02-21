@@ -48,6 +48,10 @@ impl Fat32 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
+    pub fn fats(&self) -> usize {
+        self.fats as usize
+    }
+
     pub fn media(&self) -> u8 {
         self.media
     }
