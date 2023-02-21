@@ -77,6 +77,20 @@ impl BootSector {
         }
     }
 
+    pub fn reserved_sectors(&self) -> usize {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.reserved_sectors(),
+            Self::Fat16 {
+                content,
+            } => content.reserved_sectors(),
+            Self::Fat32 {
+                content,
+            } => content.reserved_sectors(),
+        }
+    }
+
     pub fn root_directory_entries(&self) -> Option<usize> {
         match self {
             Self::Fat12 {

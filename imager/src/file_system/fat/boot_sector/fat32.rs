@@ -52,6 +52,10 @@ impl Fat32 {
         self.media
     }
 
+    pub fn reserved_sectors(&self) -> usize {
+        self.reserved_sectors as usize
+    }
+
     pub fn root_directory_entries(&self) -> Option<usize> {
         None
     }

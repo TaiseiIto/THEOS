@@ -45,6 +45,10 @@ impl Fat16 {
         self.media
     }
 
+    pub fn reserved_sectors(&self) -> usize {
+        self.reserved_sectors as usize
+    }
+
     pub fn root_directory_entries(&self) -> Option<usize> {
         Some(self.root_directory_entries as usize)
     }

@@ -14,6 +14,7 @@ use std::{
 pub struct Fat {
     boot_sector: boot_sector::BootSector,
     fat: fat::Fat,
+    clusters: cluster::Clusters,
     root_directory: node::Content,
 }
 
@@ -72,6 +73,7 @@ impl Fat {
         Self {
             boot_sector,
             fat,
+            clusters,
             root_directory,
         }
     }
@@ -79,7 +81,12 @@ impl Fat {
 
 impl Into<Vec<u8>> for &Fat {
     fn into(self) -> Vec<u8> {
-        (&self.boot_sector).into()
+        let mut boot_sector: Vec<u8> = (&self.boot_sector).into();
+        let sector_size: usize = self.boot_sector.sector_size();
+        let reserved_sectors: usize = self.boot_sector.reserved_sectors();
+        let reserved_size: usize = reserved_sectors * sector_size;
+        boot_sector.resize(reserved_size, 0x00);
+        boot_sector
     }
 }
 
