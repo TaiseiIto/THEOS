@@ -7,6 +7,7 @@ use {
         str,
     },
     super::super::{
+        cluster,
         directory_entry,
         fat,
     },
@@ -45,7 +46,7 @@ impl Fat12 {
         self.bytes_per_sector as usize * self.sectors_per_cluster as usize
     }
 
-    pub fn fix(self, fat: &fat::Fat) -> Self {
+    pub fn fix(self, fat: &fat::Fat, clusters: &cluster::Clusters) -> Self {
         let Self {
             jump_boot,
             oem_name,
@@ -72,7 +73,7 @@ impl Fat12 {
         } = self;
         let fat: Vec<u8> = fat.into();
         let sectors_per_fat: u16 = (fat.len() / bytes_per_sector as usize) as u16;
-        let sectors: usize = (reserved_sectors as usize) + (fats as usize) * (sectors_per_fat as usize) + (root_directory_entries as usize) * directory_entry::DIRECTORY_ENTRY_SIZE / (bytes_per_sector as usize);
+        let sectors: usize = (reserved_sectors as usize) + (fats as usize) * (sectors_per_fat as usize) + (root_directory_entries as usize) * directory_entry::DIRECTORY_ENTRY_SIZE / (bytes_per_sector as usize) + clusters.number_of_clusters() * (sectors_per_cluster as usize);
         let sectors: usize = ((sectors + (sectors_per_cluster as usize) - 1) / (sectors_per_cluster as usize)) * (sectors_per_cluster as usize);
         let (sectors16, sectors32): (u16, u32) = if sectors <= 0xffff {
             (sectors as u16, 0)

@@ -43,12 +43,12 @@ impl BootSector {
         }
     }
 
-    pub fn fix(self, fat: &fat::Fat) -> Self {
+    pub fn fix(self, fat: &fat::Fat, clusters: &cluster::Clusters) -> Self {
         match self {
             Self::Fat12 {
                 content,
             } => Self::Fat12 {
-                content: content.fix(fat),
+                content: content.fix(fat, clusters),
             },
             Self::Fat16 {
                 content,
