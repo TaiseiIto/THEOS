@@ -10,6 +10,7 @@ use {
     },
     super::{
         cluster,
+        fat,
         super::file_system_type,
     },
 };
@@ -39,6 +40,26 @@ impl BootSector {
             Self::Fat32 {
                 content,
             } => content.cluster_size(),
+        }
+    }
+
+    pub fn fix(self, fat: &fat::Fat) -> Self {
+        match self {
+            Self::Fat12 {
+                content,
+            } => Self::Fat12 {
+                content,
+            },
+            Self::Fat16 {
+                content,
+            } => Self::Fat16 {
+                content,
+            },
+            Self::Fat32 {
+                content,
+            } => Self::Fat32 {
+                content,
+            },
         }
     }
 
