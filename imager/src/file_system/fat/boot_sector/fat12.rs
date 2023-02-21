@@ -6,7 +6,10 @@ use {
         path::PathBuf,
         str,
     },
-    super::super::fat,
+    super::super::{
+        directory_entry,
+        fat,
+    },
 };
 
 #[allow(dead_code)]
@@ -69,6 +72,12 @@ impl Fat12 {
         } = self;
         let fat: Vec<u8> = fat.into();
         let sectors_per_fat: u16 = (fat.len() / bytes_per_sector as usize) as u16;
+        let sectors: usize = (reserved_sectors as usize) + (fats as usize) * (sectors_per_fat as usize) + (root_directory_entries as usize) * directory_entry::DIRECTORY_ENTRY_SIZE / (bytes_per_sector as usize);
+        let (sectors16, sectors32): (u16, u32) = if sectors <= 0xffff {
+            (sectors as u16, 0)
+        } else {
+            (0, sectors as u32)
+        };
         Self {
             jump_boot,
             oem_name,
