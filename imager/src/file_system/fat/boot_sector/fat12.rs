@@ -10,6 +10,7 @@ use {
         cluster,
         directory_entry,
         fat,
+        super::super::time,
     },
 };
 
@@ -80,6 +81,7 @@ impl Fat12 {
         } else {
             (0, sectors as u32)
         };
+        let volume_id: u32 = time::Time::current_time().unix_timestamp() as u32;
         Self {
             jump_boot,
             oem_name,
