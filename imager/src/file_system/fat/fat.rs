@@ -50,10 +50,13 @@ impl Fat {
         let cluster_chain: Vec<u32> = match bit {
             Bit::Fat12 => bytes
                 .chunks(3)
-                .map(|clusters| vec![
-                    (((clusters[0] as u32)) + ((clusters[1] as u32) << 8)) & 0x00000fff,
-                    (((clusters[1] as u32) >> 4) + ((clusters[2] as u32) << 4)) & 0x00000fff,
-                ])
+                .map(|clusters| {
+                    let mut clusters: Vec<u8> = clusters.to_vec();
+                    clusters.resize(3, 0x00);
+                    vec![
+                        (((clusters[0] as u32)) + ((clusters[1] as u32) << 8)) & 0x00000fff,
+                        (((clusters[1] as u32) >> 4) + ((clusters[2] as u32) << 4)) & 0x00000fff,
+                    ]})
                 .collect::<Vec<Vec<u32>>>()
                 .concat(),
             Bit::Fat16 => bytes
@@ -68,6 +71,7 @@ impl Fat {
                     .fold(0x00000000u32, |cluster, byte| (cluster << 8) + (*byte as u32)))
                 .collect(),
         };
+        println!("cluster_chain = {:#x?}", cluster_chain);
         panic!("UNIMPLEMENTED")
     }
 
