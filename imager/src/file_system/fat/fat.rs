@@ -14,9 +14,10 @@ pub struct Fat {
     bit: Bit,
     cluster_chain: HashMap<u32, Option<u32>>,
     media: u8,
-    cluster_size: usize,
     reserved_sectors: usize,
+    fats: usize,
     sector_size: usize,
+    cluster_size: usize,
 }
 
 impl Fat {
@@ -24,16 +25,18 @@ impl Fat {
         let bit: Bit = boot_sector.into();
         let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
         let media: u8 = boot_sector.media();
-        let cluster_size: usize = boot_sector.cluster_size();
         let reserved_sectors: usize = boot_sector.reserved_sectors();
+        let fats: usize = boot_sector.fats();
         let sector_size: usize = boot_sector.sector_size();
+        let cluster_size: usize = boot_sector.cluster_size();
         Self {
             bit,
             cluster_chain,
             media,
-            cluster_size,
             reserved_sectors,
+            fats,
             sector_size,
+            cluster_size,
         }
     }
 
