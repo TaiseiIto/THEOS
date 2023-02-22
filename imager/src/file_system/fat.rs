@@ -102,6 +102,9 @@ impl fmt::Display for Fat {
 
 impl From<&Vec<u8>> for Fat {
     fn from(bytes: &Vec<u8>) -> Self {
+        let boot_sector: &Vec<u8> = &bytes[..0x200].to_vec();
+        let boot_sector: boot_sector::BootSector = boot_sector.into();
+        println!("Read boot sector = {}", boot_sector);
         panic!("From<&Vec<u8>> is not yet implemented for Fat.")
     }
 }
