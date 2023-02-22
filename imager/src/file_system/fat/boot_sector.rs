@@ -119,6 +119,20 @@ impl BootSector {
         }
     }
 
+    pub fn sectors_per_fat(&self) -> usize {
+        match self {
+            Self::Fat12 {
+                content,
+            } => content.sectors_per_fat(),
+            Self::Fat16 {
+                content,
+            } => content.sectors_per_fat(),
+            Self::Fat32 {
+                content,
+            } => content.sectors_per_fat(),
+        }
+    }
+
     pub fn sector_size(&self) -> usize {
         match self {
             Self::Fat12 {

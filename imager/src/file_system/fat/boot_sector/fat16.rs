@@ -61,6 +61,10 @@ impl Fat16 {
         self.bytes_per_sector as usize
     }
 
+    pub fn sectors_per_fat(&self) -> usize {
+        self.sectors_per_fat as usize
+    }
+
     pub fn volume_label(&self) -> [u8; 0xb] {
         self.volume_label
     }

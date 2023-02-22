@@ -68,6 +68,10 @@ impl Fat32 {
         self.bytes_per_sector as usize
     }
 
+    pub fn sectors_per_fat(&self) -> usize {
+        self.sectors_per_fat32 as usize
+    }
+
     pub fn volume_label(&self) -> [u8; 0xb] {
         self.volume_label
     }

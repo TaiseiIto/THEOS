@@ -40,6 +40,10 @@ impl Fat {
         }
     }
 
+    pub fn read(bytes: &Vec<u8>, boot_sector: &boot_sector::BootSector) -> Self {
+        panic!("UNIMPLEMENTED")
+    }
+
     pub fn to_chains(&self) -> HashMap<u32, Vec<u32>> {
         self.cluster_chain
             .iter()
