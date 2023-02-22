@@ -41,6 +41,12 @@ impl Fat {
     }
 
     pub fn read(bytes: &Vec<u8>, boot_sector: &boot_sector::BootSector) -> Self {
+        let bit: Bit = boot_sector.into();
+        let media: u8 = boot_sector.media();
+        let reserved_sectors: usize = boot_sector.reserved_sectors();
+        let fats: usize = boot_sector.fats();
+        let sector_size: usize = boot_sector.sector_size();
+        let cluster_size: usize = boot_sector.cluster_size();
         panic!("UNIMPLEMENTED")
     }
 
