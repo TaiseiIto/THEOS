@@ -59,7 +59,7 @@ impl Content {
         }
     }
 
-    fn root_into_bytes(&self, volume_label: &str, root_directory_entries: usize) -> Vec<u8> {
+    pub fn root_into_bytes(&self, volume_label: &str, root_directory_entries: usize) -> Vec<u8> {
         let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = vec![];
         let volume_label = directory_entry::DirectoryEntry::volume_label(volume_label);
         directory_entries.push(&volume_label);

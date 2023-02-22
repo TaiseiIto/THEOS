@@ -90,9 +90,14 @@ impl Into<Vec<u8>> for &Fat {
         boot_sector.resize(reserved_size, 0x00);
         let fat: Vec<u8> = (&self.fat).into();
         let fat: Vec<u8> = fat.repeat(self.boot_sector.fats());
+        let root_directory_entries: usize = self.boot_sector
+            .root_directory_entries()
+            .expect("Can't convert a FAT file system into bytes.");
+        let root_directory: Vec<u8> = self.root_directory.root_into_bytes(&self.volume_label, root_directory_entries);
         vec![
             boot_sector,
             fat,
+            root_directory,
         ].concat().to_vec()
     }
 }
