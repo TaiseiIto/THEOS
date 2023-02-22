@@ -94,10 +94,12 @@ impl Into<Vec<u8>> for &Fat {
             .root_directory_entries()
             .expect("Can't convert a FAT file system into bytes.");
         let root_directory: Vec<u8> = self.root_directory.root_into_bytes(&self.volume_label, root_directory_entries);
+        let clusters: Vec<u8> = (&self.clusters).into();
         vec![
             boot_sector,
             fat,
             root_directory,
+            clusters,
         ].concat().to_vec()
     }
 }
