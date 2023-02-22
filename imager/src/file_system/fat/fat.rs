@@ -47,6 +47,27 @@ impl Fat {
         let fats: usize = boot_sector.fats();
         let sector_size: usize = boot_sector.sector_size();
         let cluster_size: usize = boot_sector.cluster_size();
+        let cluster_chain: Vec<u32> = match bit {
+            Bit::Fat12 => bytes
+                .chunks(3)
+                .map(|clusters| vec![
+                    (((clusters[0] as u32)) + ((clusters[1] as u32) << 8)) & 0x00000fff,
+                    (((clusters[1] as u32) >> 4) + ((clusters[2] as u32) << 4)) & 0x00000fff,
+                ])
+                .collect::<Vec<Vec<u32>>>()
+                .concat(),
+            Bit::Fat16 => bytes
+                .chunks(2)
+                .map(|cluster| cluster[0] as u32 + ((cluster[1] as u32) << 8))
+                .collect(),
+            Bit::Fat32 => bytes
+                .chunks(4)
+                .map(|cluster| cluster
+                    .iter()
+                    .rev()
+                    .fold(0x00000000u32, |cluster, byte| (cluster << 8) + (*byte as u32)))
+                .collect(),
+        };
         panic!("UNIMPLEMENTED")
     }
 
