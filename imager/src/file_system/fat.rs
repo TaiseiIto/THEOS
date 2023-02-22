@@ -16,6 +16,7 @@ pub struct Fat {
     fat: fat::Fat,
     clusters: cluster::Clusters,
     root_directory: node::Content,
+    volume_label: String,
 }
 
 impl Fat {
@@ -66,7 +67,7 @@ impl Fat {
             })
             .0
             .expect("Boot sector candidates are not unanimous about volume label.");
-        let (root_directory, clusters): (node::Content, cluster::Clusters) = node::Content::root(&root, volume_label, cluster_size, root_directory_entries);
+        let (root_directory, clusters): (node::Content, cluster::Clusters) = node::Content::root(&root, &volume_label, cluster_size, root_directory_entries);
         let boot_sector = boot_sector::BootSector::select(boot_sector_candidates, &clusters);
         let fat = fat::Fat::new(&clusters, &boot_sector);
         let boot_sector = boot_sector.fix(&fat, &clusters);
@@ -75,6 +76,7 @@ impl Fat {
             fat,
             clusters,
             root_directory,
+            volume_label,
         }
     }
 }

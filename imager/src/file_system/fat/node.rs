@@ -31,7 +31,7 @@ pub enum Content {
 }
 
 impl Content {
-    pub fn root(source: &PathBuf, volume_label: String, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
+    pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
         if let Self::Directory {
             children,
             node,
@@ -49,10 +49,10 @@ impl Content {
             };
             // Temporary clusters to determine cluster number of each node.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, &volume_label, root_directory_entries);
+            root.write_root(&mut clusters, volume_label, root_directory_entries);
             // Correct clusters.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, &volume_label, root_directory_entries);
+            root.write_root(&mut clusters, volume_label, root_directory_entries);
             (root, clusters)
         } else {
             panic!("Can't generate a root directory.");
