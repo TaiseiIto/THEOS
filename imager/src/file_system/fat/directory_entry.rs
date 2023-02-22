@@ -730,7 +730,7 @@ impl Into<Vec<u8>> for &DirectoryEntry {
             } => {
                 let long_file_name: Vec<u8> = match long_file_name {
                     Some(long_file_name) => {
-                        let long_file_name: &long_file_name::LongFileName = &long_file_name.as_ref().into();
+                        let long_file_name: &DirectoryEntry = long_file_name.as_ref();
                         long_file_name.into()
                     },
                     None => vec![],
@@ -749,7 +749,7 @@ impl Into<Vec<u8>> for &DirectoryEntry {
             } => {
                 let next: Vec<u8> = match next {
                     Some(next) => {
-                        let next: &long_file_name::LongFileName = &next.as_ref().into();
+                        let next: &DirectoryEntry = next.as_ref();
                         next.into()
                     },
                     None => vec![],
