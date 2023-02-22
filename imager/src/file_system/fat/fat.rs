@@ -71,6 +71,40 @@ impl Fat {
                     .fold(0x00000000u32, |cluster, byte| (cluster << 8) + (*byte as u32)))
                 .collect(),
         };
+        let cluster_chain: HashMap<u32, Option<u32>> = cluster_chain
+            .into_iter()
+            .enumerate()
+            .filter_map(|(cluster, next_cluster)| {
+                let cluster: u32 = cluster as u32;
+                let min: u32 = 2;
+                let max: u32 = match bit {
+                    Bit::Fat12 => 0x00000ff6,
+                    Bit::Fat16 => 0x0000fff6,
+                    Bit::Fat32 => 0x0ffffff6,
+                };
+                let min_end_of_chain: u32 = match bit {
+                    Bit::Fat12 => 0x00000ff8,
+                    Bit::Fat16 => 0x0000fff8,
+                    Bit::Fat32 => 0x0ffffff8,
+                };
+                let max_end_of_chain: u32 = match bit {
+                    Bit::Fat12 => 0x00000fff,
+                    Bit::Fat16 => 0x0000ffff,
+                    Bit::Fat32 => 0x0fffffff,
+                };
+                if min <= cluster && cluster <= max {
+                    if min <= next_cluster && next_cluster <= max {
+                        Some((cluster, Some(next_cluster)))
+                    } else if min_end_of_chain <= next_cluster && next_cluster <= max_end_of_chain {
+                        Some((cluster, None))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
         println!("cluster_chain = {:#x?}", cluster_chain);
         panic!("UNIMPLEMENTED")
     }
