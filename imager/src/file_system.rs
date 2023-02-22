@@ -87,7 +87,10 @@ impl From<&Vec<u8>> for FileSystem {
             file_system_type::FileSystemType::Fat12 |
             file_system_type::FileSystemType::Fat16 |
             file_system_type::FileSystemType::Fat32 => {
-                panic!("FAT is not implemented yet.");
+                let content = fat::Fat::from(bytes);
+                Self::Fat {
+                    content,
+                }
             },
         }
     }

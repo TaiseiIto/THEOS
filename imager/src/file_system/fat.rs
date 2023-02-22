@@ -81,6 +81,31 @@ impl Fat {
     }
 }
 
+impl fmt::Display for Fat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let boot_sector: String = format!("{}", self.boot_sector)
+            .lines()
+            .map(|line| format!("boot_sector.{}", line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        let fat: String = format!("{}", self.fat);
+        let root_directory: String = format!("{}", self.root_directory);
+        let fat: Vec<String> = vec![
+            boot_sector,
+            fat,
+            root_directory,
+        ];
+        let fat: String = fat.join("\n");
+        write!(f, "{}", fat)
+    }
+}
+
+impl From<&Vec<u8>> for Fat {
+    fn from(bytes: &Vec<u8>) -> Self {
+        panic!("From<&Vec<u8>> is not yet implemented for Fat.")
+    }
+}
+
 impl Into<Vec<u8>> for &Fat {
     fn into(self) -> Vec<u8> {
         let mut boot_sector: Vec<u8> = (&self.boot_sector).into();
@@ -101,25 +126,6 @@ impl Into<Vec<u8>> for &Fat {
             root_directory,
             clusters,
         ].concat().to_vec()
-    }
-}
-
-impl fmt::Display for Fat {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let boot_sector: String = format!("{}", self.boot_sector)
-            .lines()
-            .map(|line| format!("boot_sector.{}", line))
-            .collect::<Vec<String>>()
-            .join("\n");
-        let fat: String = format!("{}", self.fat);
-        let root_directory: String = format!("{}", self.root_directory);
-        let fat: Vec<String> = vec![
-            boot_sector,
-            fat,
-            root_directory,
-        ];
-        let fat: String = fat.join("\n");
-        write!(f, "{}", fat)
     }
 }
 
