@@ -105,8 +105,15 @@ impl Fat {
                 }
             })
             .collect();
-        println!("cluster_chain = {:#x?}", cluster_chain);
-        panic!("UNIMPLEMENTED")
+        Self {
+            bit,
+            cluster_chain,
+            media,
+            reserved_sectors,
+            fats,
+            sector_size,
+            cluster_size,
+        }
     }
 
     pub fn to_chains(&self) -> HashMap<u32, Vec<u32>> {
