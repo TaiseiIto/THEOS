@@ -32,6 +32,27 @@ pub enum Content {
 impl Content {
     pub fn read_root(root_directory: &Vec<u8>, clusters: &cluster::Clusters) -> (Self, String) {
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(root_directory);
+        let volume_label: String = directory_entries
+            .iter()
+            .find(|directory_entry| if let directory_entry::DirectoryEntry::ShortFileName {
+                stem: _,
+                extension: _,
+                attribute,
+                name_flags: _,
+                created_time: _,
+                accessed_time: _,
+                written_time: _,
+                cluster: _,
+                size: _,
+                long_file_name: _,
+            } = directory_entry {
+                attribute.is_volume_id()
+            } else {
+                false
+            })
+            .expect("Can't find a volume label.")
+            .get_short_file_name();
+        println!("Volume label \"{}\"", volume_label);
         panic!("UNIMPLEMENTED")
     }
 

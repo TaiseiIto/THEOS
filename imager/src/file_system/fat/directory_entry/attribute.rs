@@ -23,6 +23,10 @@ impl Attribute {
         self.long_file_name
     }
 
+    pub fn is_volume_id(&self) -> bool {
+        self.volume_id
+    }
+
     pub fn long_file_name() -> Self {
         Self {
             read_only: false,

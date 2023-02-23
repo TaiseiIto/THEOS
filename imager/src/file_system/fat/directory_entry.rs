@@ -141,6 +141,35 @@ impl DirectoryEntry {
             }
         }
     }
+    
+    pub fn get_short_file_name(&self) -> String {
+        if let Self::ShortFileName {
+            stem,
+            extension,
+            attribute,
+            name_flags: _,
+            created_time: _,
+            accessed_time: _,
+            written_time: _,
+            cluster: _,
+            size: _,
+            long_file_name: _,
+        } = self {
+            let stem: Vec<u8> = stem.borrow().to_vec();
+            let stem = String::from_utf8(stem)
+                .expect("Can't get short file name.");
+            let extension: Vec<u8> = extension.to_vec();
+            let extension = String::from_utf8(extension)
+                .expect("Can't get short file name.");
+            if attribute.is_volume_id() {
+                format!("{}{}", stem, extension)
+            } else {
+                format!("{}.{}", stem, extension)
+            }
+        } else {
+            panic!("Can't get short file name.")
+        }
+    }
 
     pub fn parent_directory_entry(&self) -> Self {
         if let Self::ShortFileName {
