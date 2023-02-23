@@ -30,6 +30,10 @@ pub enum Content {
 }
 
 impl Content {
+    pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> (Self, Option<directory_entry::DirectoryEntry>, Option<directory_entry::DirectoryEntry>) {
+        panic!("UNIMPLEMENTED")
+    }
+
     pub fn read_root(root_directory: &Vec<u8>, clusters: &cluster::Clusters) -> (Self, String) {
         let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(root_directory);
         let volume_label: String = directory_entries
@@ -72,7 +76,17 @@ impl Content {
             })
             .map(|directory_entry| Node::read(directory_entry, clusters))
             .collect();
-        panic!("UNIMPLEMENTED")
+        let children: Vec<Rc<Node>> = children
+            .into_iter()
+            .map(|child| Rc::new(child))
+            .collect();
+        let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
+        let node: RefCell<Weak<Node>> = RefCell::new(Weak::new());
+        let root = Self::Directory {
+            children,
+            node,
+        };
+        (root, volume_label)
     }
 
     pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
@@ -315,8 +329,25 @@ impl Node {
 
     pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> Self {
         let name: String = directory_entry.get_name();
-        println!("name = \"{}\"", name);
-        panic!("UNIMPLEMENTED")
+        let (content, current_directory_entry, parent_directory_entry): (Content, Option<directory_entry::DirectoryEntry>, Option<directory_entry::DirectoryEntry>) = Content::read(directory_entry, clusters);
+        let directory_entry: directory_entry::DirectoryEntry = directory_entry.clone();
+        let current_directory_entry: directory_entry::DirectoryEntry = match current_directory_entry {
+            Some(current_directory_entry) => current_directory_entry,
+            None => directory_entry.current_directory_entry(),
+        };
+        let parent_directory_entry: directory_entry::DirectoryEntry = match parent_directory_entry {
+            Some(parent_directory_entry) => parent_directory_entry,
+            None => directory_entry.parent_directory_entry(),
+        };
+        let parent = RefCell::new(Weak::new());
+        Self {
+            name,
+            content,
+            directory_entry,
+            current_directory_entry,
+            parent_directory_entry,
+            parent,
+        }
     }
 
     fn path(&self) -> PathBuf {
