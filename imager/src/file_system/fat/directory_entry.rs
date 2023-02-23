@@ -141,40 +141,55 @@ impl DirectoryEntry {
             }
         }
     }
-    
-    pub fn get_short_file_name(&self) -> String {
-        if let Self::ShortFileName {
-            stem,
-            extension,
-            attribute,
-            name_flags: _,
-            created_time: _,
-            accessed_time: _,
-            written_time: _,
-            cluster: _,
-            size: _,
-            long_file_name: _,
-        } = self {
-            let stem: Vec<u8> = stem.borrow().to_vec();
-            let stem = String::from_utf8(stem)
-                .expect("Can't get short file name.")
-                .trim_end()
-                .to_string();
-            let extension: Vec<u8> = extension.to_vec();
-            let extension = String::from_utf8(extension)
-                .expect("Can't get short file name.")
-                .trim_end()
-                .to_string();
-            if attribute.is_volume_id() {
-                format!("{}{}", stem, extension)
-            } else {
-                format!("{}.{}", stem, extension)
-            }
-        } else {
-            panic!("Can't get short file name.")
+
+    pub fn get_name(&self) -> String {
+        match self {
+            Self::ShortFileName {
+                stem,
+                extension,
+                attribute,
+                name_flags,
+                created_time,
+                accessed_time,
+                written_time,
+                cluster,
+                size,
+                long_file_name,
+            } => match long_file_name{
+                Some(long_file_name) => long_file_name.get_name(),
+                None => {
+                    let stem: Vec<u8> = stem.borrow().to_vec();
+                    let stem = String::from_utf8(stem)
+                        .expect("Can't get short file name.")
+                        .trim_end()
+                        .to_string();
+                    let extension: Vec<u8> = extension.to_vec();
+                    let extension = String::from_utf8(extension)
+                        .expect("Can't get short file name.")
+                        .trim_end()
+                        .to_string();
+                    if attribute.is_volume_id() {
+                        format!("{}{}", stem, extension)
+                    } else {
+                        format!("{}.{}", stem, extension)
+                    }
+                },
+            },
+            Self::LongFileName {
+                name,
+                order,
+                next,
+            } => {
+                let name: String = String::from_utf16(name).expect("Can't get file name.");
+                let next: String = match next {
+                    Some(next) => next.get_name(),
+                    None => String::new(),
+                };
+                format!("{}{}", name, next)
+            },
         }
     }
-
+    
     pub fn parent_directory_entry(&self) -> Self {
         if let Self::ShortFileName {
             stem: _,

@@ -51,7 +51,7 @@ impl Content {
                 false
             })
             .expect("Can't find a volume label.")
-            .get_short_file_name();
+            .get_name();
         let children: Vec<Node> = directory_entries
             .iter()
             .filter(|directory_entry| if let directory_entry::DirectoryEntry::ShortFileName {
@@ -314,6 +314,8 @@ impl Node {
     }
 
     pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> Self {
+        let name: String = directory_entry.get_name();
+        println!("name = \"{}\"", name);
         panic!("UNIMPLEMENTED")
     }
 
