@@ -190,7 +190,14 @@ impl DirectoryEntry {
                 order,
                 next,
             } => {
-                let name: String = String::from_utf16(name).expect("Can't get file name.");
+                let name: Vec<u16> = name
+                    .iter()
+                    .filter_map(|word| match *word {
+                        0x0000 | 0xffff => None,
+                        word => Some(word),
+                    })
+                    .collect();
+                let name: String = String::from_utf16(&name).expect("Can't get file name.");
                 let next: String = match next {
                     Some(next) => next.get_name(),
                     None => String::new(),

@@ -131,6 +131,9 @@ impl Content {
             .map(|child| Rc::new(child))
             .collect();
         let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
+        for child in children.borrow().iter() {
+            child.set_parent();
+        }
         let node: RefCell<Weak<Node>> = RefCell::new(Weak::new());
         let root = Self::Directory {
             children,
