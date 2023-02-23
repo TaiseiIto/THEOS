@@ -221,6 +221,15 @@ impl DirectoryEntry {
         root_directory_entry.parent_directory_entry()
     }
 
+    pub fn read(bytes: &Vec<u8>) -> Vec<Self> {
+        let directory_entries: Vec<[u8; DIRECTORY_ENTRY_SIZE]> = bytes
+            .chunks(DIRECTORY_ENTRY_SIZE)
+            .filter_map(|directory_entry| directory_entry.try_into().ok())
+            .collect();
+        println!("directory_entries = {:?}", directory_entries);
+        panic!("UNIMPLEMENTED")
+    }
+
     pub fn set_cluster(&self, cluster_number: u32) {
         if let Self::ShortFileName {
             stem,

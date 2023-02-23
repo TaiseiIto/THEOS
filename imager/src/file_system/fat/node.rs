@@ -31,6 +31,7 @@ pub enum Content {
 
 impl Content {
     pub fn read_root(root_directory: &Vec<u8>, clusters: &cluster::Clusters) -> (Self, String) {
+        let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(root_directory);
         panic!("UNIMPLEMENTED")
     }
 
