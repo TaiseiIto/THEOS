@@ -52,7 +52,26 @@ impl Content {
             })
             .expect("Can't find a volume label.")
             .get_short_file_name();
-        println!("Volume label \"{}\"", volume_label);
+        let children: Vec<Node> = directory_entries
+            .iter()
+            .filter(|directory_entry| if let directory_entry::DirectoryEntry::ShortFileName {
+                stem: _,
+                extension: _,
+                attribute,
+                name_flags: _,
+                created_time: _,
+                accessed_time: _,
+                written_time: _,
+                cluster: _,
+                size: _,
+                long_file_name: _,
+            } = directory_entry {
+                !attribute.is_volume_id()
+            } else {
+                false
+            })
+            .map(|directory_entry| Node::read(directory_entry, clusters))
+            .collect();
         panic!("UNIMPLEMENTED")
     }
 
@@ -292,6 +311,10 @@ impl Node {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> Self {
+        panic!("UNIMPLEMENTED")
     }
 
     fn path(&self) -> PathBuf {
