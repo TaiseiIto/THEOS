@@ -157,10 +157,14 @@ impl DirectoryEntry {
         } = self {
             let stem: Vec<u8> = stem.borrow().to_vec();
             let stem = String::from_utf8(stem)
-                .expect("Can't get short file name.");
+                .expect("Can't get short file name.")
+                .trim_end()
+                .to_string();
             let extension: Vec<u8> = extension.to_vec();
             let extension = String::from_utf8(extension)
-                .expect("Can't get short file name.");
+                .expect("Can't get short file name.")
+                .trim_end()
+                .to_string();
             if attribute.is_volume_id() {
                 format!("{}{}", stem, extension)
             } else {
