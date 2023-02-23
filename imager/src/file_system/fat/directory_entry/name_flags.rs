@@ -49,6 +49,17 @@ impl From<&PathBuf> for NameFlags {
     }
 }
 
+impl From<u8> for NameFlags {
+    fn from(byte: u8) -> Self {
+        let lowercase_stem: bool = byte & 0x08 != 0;
+        let lowercase_extension: bool = byte & 0x10 != 0;
+        Self {
+            lowercase_stem,
+            lowercase_extension,
+        }
+    }
+}
+
 impl Into<u8> for &NameFlags {
     fn into(self) -> u8 {
         let lowercase_stem: u8 = if self.lowercase_stem {

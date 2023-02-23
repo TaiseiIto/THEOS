@@ -25,6 +25,23 @@ const NAME1_LENGTH: usize = 6;
 const NAME2_LENGTH: usize = 2;
 pub const LONG_FILE_NAME_LENGTH: usize = NAME0_LENGTH + NAME1_LENGTH + NAME2_LENGTH;
 
+impl LongFileName {
+    pub fn name(&self) -> [u16; LONG_FILE_NAME_LENGTH] {
+        let name0: [u16; NAME0_LENGTH] = self.name0;
+        let name1: [u16; NAME1_LENGTH] = self.name1;
+        let name2: [u16; NAME2_LENGTH] = self.name2;
+        [
+            &name0[..],
+            &name1[..],
+            &name2[..],
+        ].concat().try_into().expect("Can't get long file name.")
+    }
+
+    pub fn order(&self) -> usize {
+        self.order as usize
+    }
+}
+
 impl From<&DirectoryEntry> for LongFileName {
     fn from(directory_entry: &DirectoryEntry) -> Self {
         match directory_entry {

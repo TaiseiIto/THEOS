@@ -226,8 +226,93 @@ impl DirectoryEntry {
             .chunks(DIRECTORY_ENTRY_SIZE)
             .filter_map(|directory_entry| directory_entry.try_into().ok())
             .collect();
-        println!("directory_entries = {:?}", directory_entries);
-        panic!("UNIMPLEMENTED")
+        directory_entries
+            .into_iter()
+            .fold((vec![], None), |(mut directory_entries, previous_directory_entry), next_directory_entry| match next_directory_entry[0] {
+                0x00 | 0xe5 => (directory_entries, None),
+                _ => {
+                    let attribute: attribute::Attribute = next_directory_entry[11].into();
+                    let next_directory_entry: Self = if attribute.is_long_file_name() {
+                        let long_file_name: long_file_name::LongFileName = (&next_directory_entry).into();
+                        let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = long_file_name.name();
+                        let order: usize = long_file_name.order();
+                        let next: Option<Box<Self>> = match previous_directory_entry {
+                            Some(Self::LongFileName {
+                                name,
+                                order,
+                                next,
+                            }) => Some(Box::new(Self::LongFileName {
+                                name,
+                                order,
+                                next,
+                            })),
+                            _ => None,
+                        };
+                        Self::LongFileName {
+                            name,
+                            order,
+                            next,
+                        }
+                    } else {
+                        let short_file_name: short_file_name::ShortFileName = (&next_directory_entry).into();
+                        let stem: RefCell<[u8; short_file_name::STEM_LENGTH]> = RefCell::new(short_file_name.stem());
+                        let extension: [u8; short_file_name::EXTENSION_LENGTH] = short_file_name.extension();
+                        let attribute: attribute::Attribute = short_file_name.attribute();
+                        let name_flags: name_flags::NameFlags = short_file_name.name_flags();
+                        let created_time: time::Time = short_file_name.created_time();
+                        let accessed_time: time::Time = short_file_name.accessed_time();
+                        let written_time: time::Time = short_file_name.written_time();
+                        let cluster: RefCell<Option<u32>> = RefCell::new(Some(short_file_name.cluster()));
+                        let size: usize = short_file_name.size();
+                        let long_file_name: Option<Box<Self>> = match previous_directory_entry {
+                            Some(Self::LongFileName {
+                                name,
+                                order,
+                                next,
+                            }) => Some(Box::new(Self::LongFileName {
+                                name,
+                                order,
+                                next,
+                            })),
+                            _ => None,
+                        };
+                        Self::ShortFileName {
+                            stem,
+                            extension,
+                            attribute,
+                            name_flags,
+                            created_time,
+                            accessed_time,
+                            written_time,
+                            cluster,
+                            size,
+                            long_file_name,
+                        }
+                    };
+                    match &next_directory_entry {
+                        Self::ShortFileName {
+                            stem: _,
+                            extension: _,
+                            attribute: _,
+                            name_flags: _,
+                            created_time: _,
+                            accessed_time: _,
+                            written_time: _,
+                            cluster: _,
+                            size: _,
+                            long_file_name: _,
+                        } => {
+                            directory_entries.push(next_directory_entry);
+                            (directory_entries, None)
+                        },
+                        Self::LongFileName {
+                            name: _,
+                            order: _,
+                            next: _,
+                        } => (directory_entries, Some(next_directory_entry)),
+                    }
+                },
+            }).0
     }
 
     pub fn set_cluster(&self, cluster_number: u32) {

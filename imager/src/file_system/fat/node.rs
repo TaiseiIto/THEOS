@@ -73,9 +73,9 @@ impl Content {
             panic!("Can't convert a root directory into bytes.");
         };
         let children: Vec<&directory_entry::DirectoryEntry> = children
-                .iter()
-                .map(|node| &node.directory_entry)
-                .collect();
+            .iter()
+            .map(|node| &node.directory_entry)
+            .collect();
         directory_entries.extend(children);
         directory_entry::DirectoryEntry::deduplicate(&directory_entries);
         let directory_entries: Vec<Vec<u8>> = directory_entries

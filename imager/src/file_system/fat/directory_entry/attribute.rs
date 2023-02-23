@@ -19,6 +19,10 @@ pub struct Attribute {
 }
 
 impl Attribute {
+    pub fn is_long_file_name(&self) -> bool {
+        self.long_file_name
+    }
+
     pub fn long_file_name() -> Self {
         Self {
             read_only: false,

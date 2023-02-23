@@ -1,8 +1,11 @@
 use {
     std::mem,
     super::{
+        attribute,
         DirectoryEntry,
         DIRECTORY_ENTRY_SIZE,
+        name_flags,
+        super::super::super::time,
     },
 };
 
@@ -25,6 +28,52 @@ pub struct ShortFileName {
 pub const STEM_LENGTH: usize = 8;
 pub const EXTENSION_LENGTH: usize = 3;
 pub const BASENAME_LENGTH: usize = STEM_LENGTH + EXTENSION_LENGTH;
+
+impl ShortFileName {
+    pub fn accessed_time(&self) -> time::Time {
+        let accessed_time: u32 = (self.accessed_date as u32) << 16;
+        let t_10ms_increment: u8 = 0;
+        let utc_offset: i8 = 0;
+        time::Time::from_fat_timestamp(accessed_time, t_10ms_increment, utc_offset)
+    }
+
+    pub fn attribute(&self) -> attribute::Attribute {
+        self.attribute.into()
+    }
+
+    pub fn cluster(&self) -> u32 {
+        let cluster_high: u32 = self.cluster_high as u32;
+        let cluster_low: u32 = self.cluster_low as u32;
+        cluster_low + (cluster_high << 16)
+    }
+
+    pub fn created_time(&self) -> time::Time {
+        let utc_offset: i8 = 0;
+        time::Time::from_fat_timestamp(self.created_time, self.created_time_centi_second, utc_offset)
+    }
+
+    pub fn extension(&self) -> [u8; EXTENSION_LENGTH] {
+        self.extension
+    }
+
+    pub fn name_flags(&self) -> name_flags::NameFlags {
+        self.name_flags.into()
+    }
+
+    pub fn size(&self) -> usize {
+        self.size as usize
+    }
+
+    pub fn stem(&self) -> [u8; STEM_LENGTH] {
+        self.stem
+    }
+
+    pub fn written_time(&self) -> time::Time {
+        let t_10ms_increment: u8 = 0;
+        let utc_offset: i8 = 0;
+        time::Time::from_fat_timestamp(self.written_time, t_10ms_increment, utc_offset)
+    }
+}
 
 impl From<&DirectoryEntry> for ShortFileName {
     fn from(directory_entry: &DirectoryEntry) -> Self {
