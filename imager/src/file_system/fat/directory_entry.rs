@@ -199,6 +199,66 @@ impl DirectoryEntry {
             },
         }
     }
+
+    pub fn is_current_directory_entry(&self) -> bool {
+        if let Self::ShortFileName {
+            stem,
+            extension,
+            attribute: _,
+            name_flags: _,
+            created_time: _,
+            accessed_time: _,
+            written_time: _,
+            cluster: _,
+            size: _,
+            long_file_name: _,
+        } = self {
+            let stem: Vec<u8> = stem
+                .borrow()
+                .to_vec();
+            let stem = String::from_utf8(stem).expect("Can't determine if a directory entry is a current.");
+            let extension: Vec<u8> = extension.to_vec();
+            let extension = String::from_utf8(extension).expect("Can't determine if a directory entry is a current.");
+            let name: String = format!("{}{}", stem, extension);
+            let name: String = name
+                .chars()
+                .filter(|c| *c != ' ')
+                .collect();
+            name == "."
+        } else {
+            panic!("Can't determine if a directory entry is a current.")
+        }
+    }
+    
+    pub fn is_parent_directory_entry(&self) -> bool {
+        if let Self::ShortFileName {
+            stem,
+            extension,
+            attribute: _,
+            name_flags: _,
+            created_time: _,
+            accessed_time: _,
+            written_time: _,
+            cluster: _,
+            size: _,
+            long_file_name: _,
+        } = self {
+            let stem: Vec<u8> = stem
+                .borrow()
+                .to_vec();
+            let stem = String::from_utf8(stem).expect("Can't determine if a directory entry is a parent.");
+            let extension: Vec<u8> = extension.to_vec();
+            let extension = String::from_utf8(extension).expect("Can't determine if a directory entry is a parent.");
+            let name: String = format!("{}{}", stem, extension);
+            let name: String = name
+                .chars()
+                .filter(|c| *c != ' ')
+                .collect();
+            name == ".."
+        } else {
+            panic!("Can't determine if a directory entry is a parent.")
+        }
+    }
     
     pub fn parent_directory_entry(&self) -> Self {
         if let Self::ShortFileName {

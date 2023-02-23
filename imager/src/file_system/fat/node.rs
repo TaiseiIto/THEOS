@@ -31,7 +31,57 @@ pub enum Content {
 
 impl Content {
     pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> (Self, Option<directory_entry::DirectoryEntry>, Option<directory_entry::DirectoryEntry>) {
-        panic!("UNIMPLEMENTED")
+        if let directory_entry::DirectoryEntry::ShortFileName {
+            stem,
+            extension,
+            attribute,
+            name_flags,
+            created_time,
+            accessed_time,
+            written_time,
+            cluster,
+            size,
+            long_file_name,
+        } = directory_entry {
+            let cluster: u32 = match *cluster.borrow() {
+                Some(cluster) => cluster,
+                None => panic!("Can't read a content."),
+            };
+            let mut bytes: Vec<u8> = clusters.cluster_chain_bytes(cluster);
+            if attribute.is_directory() {
+                let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&bytes);
+                let current_directory_entry: Option<directory_entry::DirectoryEntry> = directory_entries
+                    .iter()
+                    .find(|directory_entry| directory_entry.is_current_directory_entry())
+                    .map(|current_directory_entry| current_directory_entry.clone());
+                let parent_directory_entry: Option<directory_entry::DirectoryEntry> = directory_entries
+                    .iter()
+                    .find(|directory_entry| directory_entry.is_parent_directory_entry())
+                    .map(|parent_directory_entry| parent_directory_entry.clone());
+                let children: Vec<Rc<Node>> = directory_entries
+                    .into_iter()
+                    .filter(|directory_entry| !directory_entry.is_current_directory_entry() && !directory_entry.is_parent_directory_entry())
+                    .map(|directory_entry| Rc::new(Node::read(&directory_entry, clusters)))
+                    .collect();
+                let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
+                let node: RefCell<Weak<Node>> = RefCell::new(Weak::new());
+                let content = Self::Directory {
+                    children,
+                    node,
+                };
+                (content, current_directory_entry, parent_directory_entry)
+            } else {
+                bytes.truncate(*size);
+                let content = Self::File {
+                    bytes,
+                };
+                let current_directory_entry: Option<directory_entry::DirectoryEntry> = None;
+                let parent_directory_entry: Option<directory_entry::DirectoryEntry> = None;
+                (content, current_directory_entry, parent_directory_entry)
+            }
+        } else {
+            panic!("Can't read a content.")
+        }
     }
 
     pub fn read_root(root_directory: &Vec<u8>, clusters: &cluster::Clusters) -> (Self, String) {

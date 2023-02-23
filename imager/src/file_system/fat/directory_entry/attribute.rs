@@ -19,6 +19,10 @@ pub struct Attribute {
 }
 
 impl Attribute {
+    pub fn is_directory(&self) -> bool {
+        self.directory
+    }
+
     pub fn is_long_file_name(&self) -> bool {
         self.long_file_name
     }
