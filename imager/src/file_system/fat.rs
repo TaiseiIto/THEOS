@@ -115,7 +115,14 @@ impl From<&Vec<u8>> for Fat {
         let cluster_size: usize = boot_sector.cluster_size();
         let clusters: Vec<u8> = bytes[clusters_offset..].to_vec();
         let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
-        panic!("UNIMPLEMENTED")
+        let (root_directory, volume_label): (node::Content, String) = node::Content::read_root(&root_directory, &clusters);
+        Self {
+            boot_sector,
+            fat,
+            clusters,
+            root_directory,
+            volume_label,
+        }
     }
 }
 

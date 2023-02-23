@@ -30,6 +30,10 @@ pub enum Content {
 }
 
 impl Content {
+    pub fn read_root(root_directory: &Vec<u8>, clusters: &cluster::Clusters) -> (Self, String) {
+        panic!("UNIMPLEMENTED")
+    }
+
     pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
         if let Self::Directory {
             children,
