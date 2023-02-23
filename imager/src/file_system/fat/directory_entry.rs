@@ -163,12 +163,22 @@ impl DirectoryEntry {
                         .expect("Can't get short file name.")
                         .trim_end()
                         .to_string();
+                    let stem: String = if name_flags.stem_is_lowercase() {
+                        stem.to_lowercase()
+                    } else {
+                        stem
+                    };
                     let extension: Vec<u8> = extension.to_vec();
                     let extension = String::from_utf8(extension)
                         .expect("Can't get short file name.")
                         .trim_end()
                         .to_string();
-                    if attribute.is_volume_id() {
+                    let extension: String = if name_flags.extension_is_lowercase() {
+                        extension.to_lowercase()
+                    } else {
+                        extension
+                    };
+                    if attribute.is_volume_id() || extension.len() == 0 {
                         format!("{}{}", stem, extension)
                     } else {
                         format!("{}.{}", stem, extension)

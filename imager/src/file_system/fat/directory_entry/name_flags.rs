@@ -11,6 +11,10 @@ pub struct NameFlags {
 }
 
 impl NameFlags {
+    pub fn extension_is_lowercase(&self) -> bool {
+        self.lowercase_extension
+    }
+
     pub fn root() -> Self {
         Self {
             lowercase_stem: false,
@@ -23,6 +27,10 @@ impl NameFlags {
             lowercase_stem: false,
             lowercase_extension: false,
         }
+    }
+
+    pub fn stem_is_lowercase(&self) -> bool {
+        self.lowercase_stem
     }
 }
 
