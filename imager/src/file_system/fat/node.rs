@@ -26,7 +26,6 @@ pub enum Content {
     Directory {
         children: RefCell<Vec<Rc<Node>>>,
         node: RefCell<Weak<Node>>,
-        is_root: bool,
     },
 }
 
@@ -35,17 +34,14 @@ impl Content {
         if let Self::Directory {
             children,
             node,
-            is_root: _,
         } = source.into() {
             for child in children.borrow().iter() {
                 child.set_parent();
             }
             let node = RefCell::new(Weak::new());
-            let is_root: bool = true;
             let root = Self::Directory {
                 children,
                 node,
-                is_root,
             };
             // Temporary clusters to determine cluster number of each node.
             let mut clusters = cluster::Clusters::new(cluster_size);
@@ -66,7 +62,6 @@ impl Content {
         let children: Ref<'_, Vec<Rc<Node>>> = if let Self::Directory {
             children,
             node: _,
-            is_root: _,
         } = self {
             children.borrow()
         } else {
@@ -99,7 +94,6 @@ impl Content {
         if let Self::Directory {
             children,
             node,
-            is_root,
         } = self {
             for child in children.borrow().iter() {
                 child.write_clusters(clusters);
@@ -112,7 +106,6 @@ impl Content {
         if let Self::Directory {
             children,
             node,
-            is_root,
         } = self {
             for child in children.borrow().iter() {
                 child.write_clusters(clusters);
@@ -159,7 +152,6 @@ impl fmt::Display for Content {
             Self::Directory {
                 children,
                 node: _,
-                is_root: _,
             } => children
                 .borrow()
                 .iter()
@@ -193,11 +185,9 @@ impl From<&PathBuf> for Content {
             };
             let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
             let node = RefCell::new(Weak::new());
-            let is_root: bool = false;
             Self::Directory {
                 children,
                 node,
-                is_root,
             }
         } else {
             panic!("Can't find {}!", source.display())
@@ -214,7 +204,6 @@ impl Into<Vec<u8>> for &Content {
             Content::Directory {
                 children,
                 node,
-                is_root,
             } => {
                 let mut directory_entries: Vec<&directory_entry::DirectoryEntry> = vec![];
                 let node: Rc<Node> = node
@@ -271,7 +260,6 @@ impl Node {
             Content::Directory {
                 children: _,
                 node: _,
-                is_root: _,
             } => true,
         }
     }
@@ -296,7 +284,6 @@ impl Node {
         if let Content::Directory {
             children,
             node,
-            is_root: _,
         } = &self.clone().content {
             *node.borrow_mut() = Rc::downgrade(self);
             for child in children.borrow_mut().iter_mut() {
@@ -320,7 +307,6 @@ impl Node {
             Content::Directory {
                 children: _,
                 node: _,
-                is_root: _,
             } => clusters.next_cluster_number(),
         };
         self.directory_entry.set_cluster(cluster_number);
