@@ -3,6 +3,7 @@ use {
         HashMap,
         VecDeque,
     },
+    super::fat,
 };
 
 pub const FIRST_CLUSTER_NUMBER: u32 = 2;
@@ -90,6 +91,41 @@ impl Clusters {
             .iter()
             .map(|cluster| cluster.number_of_used_clusters())
             .sum()
+    }
+
+    pub fn read(bytes: Vec<u8>, fat: &fat::Fat, cluster_size: usize) -> Self {
+        let clusters: HashMap<u32, Vec<u8>> = bytes
+            .chunks(cluster_size)
+            .enumerate()
+            .map(|(cluster, bytes)| ((cluster as u32) + FIRST_CLUSTER_NUMBER, bytes.to_vec()))
+            .collect();
+        let fat: HashMap<u32, Vec<u32>> = fat.to_chains();
+        let clusters: Vec<Vec<(u32, Vec<u8>)>> = fat
+            .into_iter()
+            .map(|(_, cluster_number_chain)| cluster_number_chain
+                .into_iter()
+                .map(|cluster_number| (cluster_number, clusters
+                    .get(&cluster_number)
+                    .expect("Can't read clusters.")
+                    .clone()
+                ))
+                .collect()
+            )
+            .collect();
+        let clusters: Vec<Cluster> = clusters
+            .into_iter()
+            .map(|clusters| Cluster::read(VecDeque::from(clusters)))
+            .collect();
+        let next_cluster_number: u32 = clusters
+            .iter()
+            .map(|cluster| cluster.cluster_number)
+            .max()
+            .expect("Can't read clusters.") + 1;
+        Self {
+            cluster_size,
+            clusters,
+            next_cluster_number,
+        }
     }
 
     pub fn used_flags(&self) -> HashMap<u32, bool> {

@@ -111,7 +111,10 @@ impl From<&Vec<u8>> for Fat {
         let root_directory_offset: usize = fat_offset + boot_sector.fats() * fat_size;
         let root_directory_size: usize = boot_sector.root_directory_entries().expect("Can't read FAT.") * directory_entry::DIRECTORY_ENTRY_SIZE;
         let root_directory: Vec<u8> = bytes[root_directory_offset..root_directory_offset + root_directory_size].to_vec();
-        println!("root_directory = {:x?}", root_directory);
+        let clusters_offset: usize = root_directory_offset + root_directory_size;
+        let cluster_size: usize = boot_sector.cluster_size();
+        let clusters: Vec<u8> = bytes[clusters_offset..].to_vec();
+        let clusters = cluster::Clusters::read(clusters, &fat, cluster_size);
         panic!("UNIMPLEMENTED")
     }
 }
