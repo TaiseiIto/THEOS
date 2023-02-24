@@ -9,5 +9,5 @@ VNC_OPTION=-vnc :0
 
 # Run THEOS on QEMU.
 run:
-	$(QEMU) -drive if=pflash,format=raw,file=$(OVMF_CODE) -drive if=pflash,format=raw,file=$(OVMF_VARS) -drive if=ide,format=raw,file=$(THEOS) $(VNC_OPTION)
+	$(QEMU) -drive file=$(THEOS),format=raw,id=theos,if=none -device ide-hd,drive=theos,bootindex=1 -drive file=$(OVMF_CODE),format=raw,if=pflash -drive file=$(OVMF_VARS),format=raw,if=pflash $(VNC_OPTION)
 
