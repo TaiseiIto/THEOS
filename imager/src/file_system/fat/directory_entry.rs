@@ -31,6 +31,7 @@ pub enum DirectoryEntry {
         cluster: RefCell<Option<u32>>,
         size: usize,
         long_file_name: Option<Box<Self>>,
+        checksum: RefCell<u8>,
     },
     LongFileName {
         name: [u16; long_file_name::LONG_FILE_NAME_LENGTH],
@@ -54,6 +55,7 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name: _,
+            checksum: _,
         } = self {
             let mut stem: Vec<u8> = "."
                 .as_bytes().to_vec();
@@ -75,6 +77,13 @@ impl DirectoryEntry {
             let cluster: RefCell<Option<u32>> = cluster.clone();
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
+            let checksum: u8 = [
+                stem.borrow().to_vec(),
+                extension.to_vec()]
+                .concat()
+                .into_iter()
+                .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+            let checksum: RefCell<u8> = RefCell::new(checksum);
             Self::ShortFileName {
                 stem,
                 extension,
@@ -86,6 +95,7 @@ impl DirectoryEntry {
                 cluster,
                 size,
                 long_file_name,
+                checksum,
             }
         } else {
             panic!("Can't generate a current directory entry.")
@@ -106,6 +116,7 @@ impl DirectoryEntry {
                 cluster: _,
                 size: _,
                 long_file_name: Some(long_file_name),
+                checksum: _,
             } = directory_entry {
                 let mut new_stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
                 while duplication.contains(&new_stem) {
@@ -155,6 +166,7 @@ impl DirectoryEntry {
                 cluster,
                 size,
                 long_file_name,
+                checksum,
             } => match long_file_name{
                 Some(long_file_name) => long_file_name.get_name(),
                 None => {
@@ -219,6 +231,7 @@ impl DirectoryEntry {
             cluster: _,
             size: _,
             long_file_name: _,
+            checksum: _,
         } = self {
             let stem: Vec<u8> = stem
                 .borrow()
@@ -249,6 +262,7 @@ impl DirectoryEntry {
             cluster: _,
             size: _,
             long_file_name: _,
+            checksum: _,
         } = self {
             let stem: Vec<u8> = stem
                 .borrow()
@@ -279,6 +293,7 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name: _,
+            checksum,
         } = self {
             let mut stem: Vec<u8> = ".."
                 .as_bytes().to_vec();
@@ -300,6 +315,7 @@ impl DirectoryEntry {
             let cluster: RefCell<Option<u32>> = cluster.clone();
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
+            let checksum: RefCell<u8> = checksum.clone();
             Self::ShortFileName {
                 stem,
                 extension,
@@ -311,6 +327,7 @@ impl DirectoryEntry {
                 cluster,
                 size,
                 long_file_name,
+                checksum,
             }
         } else {
             panic!("Can't generate a current directory entry.")
@@ -331,6 +348,8 @@ impl DirectoryEntry {
         let cluster: RefCell<Option<u32>> = RefCell::new(cluster);
         let size: usize = 0;
         let long_file_name: Option<Box<Self>> = None;
+        let checksum: u8 = 0;
+        let checksum: RefCell<u8> = RefCell::new(checksum);
         let root_directory_entry = Self::ShortFileName {
             stem,
             extension,
@@ -342,6 +361,7 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name,
+            checksum,
         };
         root_directory_entry.parent_directory_entry()
     }
@@ -401,6 +421,9 @@ impl DirectoryEntry {
                             })),
                             _ => None,
                         };
+                        // Temporary checksum.
+                        let checksum: u8 = 0;
+                        let checksum: RefCell<u8> = RefCell::new(checksum);
                         Self::ShortFileName {
                             stem,
                             extension,
@@ -412,6 +435,7 @@ impl DirectoryEntry {
                             cluster,
                             size,
                             long_file_name,
+                            checksum,
                         }
                     };
                     match &next_directory_entry {
@@ -426,6 +450,7 @@ impl DirectoryEntry {
                             cluster: _,
                             size: _,
                             long_file_name: _,
+                            checksum: _,
                         } => {
                             directory_entries.push(next_directory_entry);
                             (directory_entries, None)
@@ -442,16 +467,17 @@ impl DirectoryEntry {
 
     pub fn set_cluster(&self, cluster_number: u32) {
         if let Self::ShortFileName {
-            stem,
-            extension,
-            attribute,
-            name_flags,
-            created_time,
-            accessed_time,
-            written_time,
+            stem: _,
+            extension: _,
+            attribute: _,
+            name_flags: _,
+            created_time: _,
+            accessed_time: _,
+            written_time: _,
             cluster,
-            size,
-            long_file_name,
+            size: _,
+            long_file_name: _,
+            checksum: _,
         } = self {
             *cluster.borrow_mut() = Some(cluster_number);
         } else {
@@ -544,6 +570,16 @@ impl DirectoryEntry {
         let cluster: RefCell<Option<u32>> = RefCell::new(Some(0));
         let size: usize = 0;
         let long_file_name: Option<Box<Self>> = None;
+        let checksum: u8 = [
+            stem
+                .borrow()
+                .to_vec(),
+            extension
+                .to_vec()]
+            .concat()
+            .into_iter()
+            .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+        let checksum: RefCell<u8> = RefCell::new(checksum);
         Self::ShortFileName {
             stem,
             extension,
@@ -555,6 +591,7 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name,
+            checksum,
         }
     }
 
@@ -601,6 +638,7 @@ impl fmt::Display for DirectoryEntry {
                 cluster,
                 size,
                 long_file_name,
+                checksum,
             } => {
                 let stem: Vec<u8> = stem.borrow().to_vec();
                 let extension: Vec<u8> = extension.to_vec();
@@ -917,6 +955,13 @@ impl From<&PathBuf> for DirectoryEntry {
         let extension: [u8; short_file_name::EXTENSION_LENGTH] = extension
             .try_into()
             .expect("Can't generate a directory entry.");
+        let checksum: u8 = [
+            stem.borrow().to_vec(),
+            extension.to_vec()]
+            .concat()
+            .into_iter()
+            .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+        let checksum: RefCell<u8> = RefCell::new(checksum);
         Self::ShortFileName {
             stem,
             extension,
@@ -928,6 +973,7 @@ impl From<&PathBuf> for DirectoryEntry {
             cluster,
             size,
             long_file_name,
+            checksum,
         }
     }
 }
@@ -946,6 +992,7 @@ impl Into<Vec<u8>> for &DirectoryEntry {
                 cluster,
                 size,
                 long_file_name,
+                checksum,
             } => {
                 let long_file_name: Vec<u8> = match long_file_name {
                     Some(long_file_name) => {

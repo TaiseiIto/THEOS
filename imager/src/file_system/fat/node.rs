@@ -42,6 +42,7 @@ impl Content {
             cluster,
             size,
             long_file_name,
+            checksum,
         } = directory_entry {
             let cluster: u32 = match *cluster.borrow() {
                 Some(cluster) => cluster,
@@ -99,6 +100,7 @@ impl Content {
                 cluster: _,
                 size: _,
                 long_file_name: _,
+                checksum: _,
             } = directory_entry {
                 attribute.is_volume_id()
             } else {
@@ -119,6 +121,7 @@ impl Content {
                 cluster: _,
                 size: _,
                 long_file_name: _,
+                checksum: _,
             } = directory_entry {
                 !attribute.is_volume_id()
             } else {
