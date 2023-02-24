@@ -24,6 +24,7 @@ const NAME0_LENGTH: usize = 5;
 const NAME1_LENGTH: usize = 6;
 const NAME2_LENGTH: usize = 2;
 pub const LONG_FILE_NAME_LENGTH: usize = NAME0_LENGTH + NAME1_LENGTH + NAME2_LENGTH;
+const LAST_LONG_ENTRY: u8 = 0x40;
 
 impl LongFileName {
     pub fn name(&self) -> [u16; LONG_FILE_NAME_LENGTH] {
@@ -38,7 +39,7 @@ impl LongFileName {
     }
 
     pub fn order(&self) -> usize {
-        self.order as usize
+        (self.order & !LAST_LONG_ENTRY) as usize
     }
 }
 
@@ -50,7 +51,10 @@ impl From<&DirectoryEntry> for LongFileName {
                 order,
                 next,
             } => {
-                let order: u8 = *order as u8;
+                let order: u8 = match next {
+                    Some(next) => 0x00,
+                    None => LAST_LONG_ENTRY,
+                } | *order as u8;
                 let (name0, name): (&[u16], &[u16]) = name.split_at(NAME0_LENGTH);
                 let (name1, name2): (&[u16], &[u16]) = name.split_at(NAME1_LENGTH);
                 let name0: [u16; NAME0_LENGTH] = name0
