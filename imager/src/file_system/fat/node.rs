@@ -332,7 +332,7 @@ impl Into<Vec<u8>> for &Content {
                     .borrow()
                     .upgrade();
                 let parent_directory_entry: directory_entry::DirectoryEntry = match parent {
-                    Some(parent) => parent.current_directory_entry.clone(),
+                    Some(parent) => parent.parent_directory_entry.clone(),
                     None => directory_entry::DirectoryEntry::parent_root_directory_entry(),
                 };
                 directory_entries.push(&parent_directory_entry);
