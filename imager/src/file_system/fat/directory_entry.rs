@@ -756,6 +756,7 @@ impl fmt::Display for DirectoryEntry {
                 let elements: Vec<String> = vec![
                     name,
                     order,
+                    checksum,
                     next,
                 ];
                 elements
