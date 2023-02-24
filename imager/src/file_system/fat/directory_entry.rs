@@ -79,7 +79,8 @@ impl DirectoryEntry {
             let long_file_name: Option<Box<Self>> = None;
             let checksum: u8 = [
                 stem.borrow().to_vec(),
-                extension.to_vec()]
+                extension.to_vec(),
+            ]
                 .concat()
                 .into_iter()
                 .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
@@ -107,7 +108,7 @@ impl DirectoryEntry {
         for directory_entry in directory_entries.iter() {
             if let Self::ShortFileName {
                 stem,
-                extension: _,
+                extension,
                 attribute: _,
                 name_flags: _,
                 created_time: _,
@@ -116,7 +117,7 @@ impl DirectoryEntry {
                 cluster: _,
                 size: _,
                 long_file_name: Some(long_file_name),
-                checksum: _,
+                checksum,
             } = directory_entry {
                 let mut new_stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
                 while duplication.contains(&new_stem) {
@@ -149,6 +150,13 @@ impl DirectoryEntry {
                 }
                 duplication.insert(new_stem);
                 *stem.borrow_mut() = new_stem;
+                *checksum.borrow_mut() = [
+                    stem.borrow().to_vec(),
+                    extension.to_vec(),
+                ]
+                    .concat()
+                    .into_iter()
+                    .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
             }
         }
     }
@@ -421,8 +429,13 @@ impl DirectoryEntry {
                             })),
                             _ => None,
                         };
-                        // Temporary checksum.
-                        let checksum: u8 = 0;
+                        let checksum: u8 = [
+                            stem.borrow().to_vec(),
+                            extension.to_vec(),
+                        ]
+                            .concat()
+                            .into_iter()
+                            .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
                         let checksum: RefCell<u8> = RefCell::new(checksum);
                         Self::ShortFileName {
                             stem,
@@ -571,11 +584,9 @@ impl DirectoryEntry {
         let size: usize = 0;
         let long_file_name: Option<Box<Self>> = None;
         let checksum: u8 = [
-            stem
-                .borrow()
-                .to_vec(),
-            extension
-                .to_vec()]
+            stem.borrow().to_vec(),
+            extension.to_vec(),
+        ]
             .concat()
             .into_iter()
             .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
@@ -658,6 +669,7 @@ impl fmt::Display for DirectoryEntry {
                 let written_time: String = format!("written time: {}", written_time);
                 let cluster: String = format!("cluster: {:?}", cluster);
                 let size: String = format!("size: {}", size);
+                let checksum: String = format!("checksum: {:#04x}", *checksum.borrow());
                 let long_file_name: String = match long_file_name {
                     Some(long_file_name) => format!("{}", long_file_name.as_ref()),
                     None => String::new(),
@@ -671,6 +683,7 @@ impl fmt::Display for DirectoryEntry {
                     written_time,
                     cluster,
                     size,
+                    checksum,
                     long_file_name,
                 ];
                 elements
@@ -957,7 +970,8 @@ impl From<&PathBuf> for DirectoryEntry {
             .expect("Can't generate a directory entry.");
         let checksum: u8 = [
             stem.borrow().to_vec(),
-            extension.to_vec()]
+            extension.to_vec(),
+        ]
             .concat()
             .into_iter()
             .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
