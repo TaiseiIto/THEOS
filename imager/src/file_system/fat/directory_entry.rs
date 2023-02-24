@@ -327,7 +327,14 @@ impl DirectoryEntry {
             let cluster: RefCell<Option<u32>> = cluster.clone();
             let size: usize = *size;
             let long_file_name: Option<Box<Self>> = None;
-            let checksum: RefCell<u8> = checksum.clone();
+            let checksum: u8 = [
+                stem.borrow().to_vec(),
+                extension.to_vec(),
+            ]
+                .concat()
+                .into_iter()
+                .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+            let checksum: RefCell<u8> = RefCell::new(checksum);
             Self::ShortFileName {
                 stem,
                 extension,
