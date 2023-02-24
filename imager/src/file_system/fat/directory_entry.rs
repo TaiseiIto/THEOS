@@ -36,6 +36,7 @@ pub enum DirectoryEntry {
     LongFileName {
         name: [u16; long_file_name::LONG_FILE_NAME_LENGTH],
         order: usize,
+        checksum: RefCell<Option<u8>>,
         next: Option<Box<Self>>,
     },
 }
@@ -207,7 +208,8 @@ impl DirectoryEntry {
             },
             Self::LongFileName {
                 name,
-                order,
+                order: _,
+                checksum: _,
                 next,
             } => {
                 let name: Vec<u16> = name
@@ -389,14 +391,19 @@ impl DirectoryEntry {
                         let long_file_name: long_file_name::LongFileName = (&next_directory_entry).into();
                         let name: [u16; long_file_name::LONG_FILE_NAME_LENGTH] = long_file_name.name();
                         let order: usize = long_file_name.order();
+                        let checksum: u8 = long_file_name.checksum();
+                        let checksum: Option<u8> = Some(checksum);
+                        let checksum: RefCell<Option<u8>> = RefCell::new(checksum);
                         let next: Option<Box<Self>> = match previous_directory_entry {
                             Some(Self::LongFileName {
                                 name,
                                 order,
+                                checksum,
                                 next,
                             }) => Some(Box::new(Self::LongFileName {
                                 name,
                                 order,
+                                checksum,
                                 next,
                             })),
                             _ => None,
@@ -404,6 +411,7 @@ impl DirectoryEntry {
                         Self::LongFileName {
                             name,
                             order,
+                            checksum,
                             next,
                         }
                     } else {
@@ -421,10 +429,12 @@ impl DirectoryEntry {
                             Some(Self::LongFileName {
                                 name,
                                 order,
+                                checksum,
                                 next,
                             }) => Some(Box::new(Self::LongFileName {
                                 name,
                                 order,
+                                checksum,
                                 next,
                             })),
                             _ => None,
@@ -471,6 +481,7 @@ impl DirectoryEntry {
                         Self::LongFileName {
                             name: _,
                             order: _,
+                            checksum: _,
                             next: _,
                         } => (directory_entries, Some(next_directory_entry)),
                     }
@@ -627,9 +638,11 @@ impl DirectoryEntry {
             let next: Option<Box<Self>> = None;
             (name, next)
         };
+        let checksum: RefCell<Option<u8>> = RefCell::new(None);
         Self::LongFileName {
             name,
             order,
+            checksum,
             next,
         }
     }
@@ -695,6 +708,7 @@ impl fmt::Display for DirectoryEntry {
             Self::LongFileName {
                 name,
                 order,
+                checksum,
                 next,
             } => {
                 let (name, _): (Vec<u16>, bool) = name
@@ -716,6 +730,7 @@ impl fmt::Display for DirectoryEntry {
                 let name = String::from_utf16(&name).expect("Can't print a directory entry.");
                 let name: String = format!("long file name: {}", name);
                 let order: String = format!("order: {}", order);
+                let checksum: String = format!("checksum: {:x?}", checksum.borrow());
                 let next: String = match next {
                     Some(next) => format!("{}", next.as_ref()),
                     None => String::new(),
@@ -1023,8 +1038,9 @@ impl Into<Vec<u8>> for &DirectoryEntry {
                 bytes
             },
             DirectoryEntry::LongFileName {
-                name,
-                order,
+                name: _,
+                order: _,
+                checksum: _,
                 next,
             } => {
                 let next: Vec<u8> = match next {

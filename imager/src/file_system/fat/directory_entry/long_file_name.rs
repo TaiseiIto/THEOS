@@ -27,6 +27,10 @@ pub const LONG_FILE_NAME_LENGTH: usize = NAME0_LENGTH + NAME1_LENGTH + NAME2_LEN
 const LAST_LONG_ENTRY: u8 = 0x40;
 
 impl LongFileName {
+    pub fn checksum(&self) -> u8 {
+        self.checksum
+    }
+
     pub fn name(&self) -> [u16; LONG_FILE_NAME_LENGTH] {
         let name0: [u16; NAME0_LENGTH] = self.name0;
         let name1: [u16; NAME1_LENGTH] = self.name1;
@@ -49,6 +53,7 @@ impl From<&DirectoryEntry> for LongFileName {
             DirectoryEntry::LongFileName {
                 name,
                 order,
+                checksum,
                 next,
             } => {
                 let order: u8 = match next {
@@ -68,7 +73,10 @@ impl From<&DirectoryEntry> for LongFileName {
                     .expect("Can't generate a long file name directory entry.");
                 let attribute: u8 = (&attribute::Attribute::long_file_name()).into();
                 let reserved0: u8 = 0;
-                let checksum: u8 = 0;
+                let checksum: u8 = match *checksum.borrow() {
+                    Some(checksum) => checksum,
+                    None => panic!("Can't generate a long file name directory entry."),
+                };
                 let reserved1: u16 = 0;
                 Self {
                     order,
