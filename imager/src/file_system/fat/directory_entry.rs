@@ -624,9 +624,12 @@ impl DirectoryEntry {
             name: _,
             order: _,
             checksum,
-            next: _,
+            next,
         } = self {
             *checksum.borrow_mut() = Some(new_checksum);
+            if let Some(next) = next {
+                next.set_checksum(new_checksum);
+            }
         } else {
             panic!("Can't set checksum.")
         }
