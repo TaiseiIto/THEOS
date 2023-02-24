@@ -151,13 +151,15 @@ impl DirectoryEntry {
                 }
                 duplication.insert(new_stem);
                 *stem.borrow_mut() = new_stem;
-                *checksum.borrow_mut() = [
+                let new_checksum: u8 = [
                     stem.borrow().to_vec(),
                     extension.to_vec(),
                 ]
                     .concat()
                     .into_iter()
                     .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+                long_file_name.set_checksum(new_checksum);
+                *checksum.borrow_mut() = new_checksum;
             }
         }
     }
@@ -617,6 +619,19 @@ impl DirectoryEntry {
         }
     }
 
+    fn set_checksum(&self, new_checksum: u8) {
+        if let Self::LongFileName {
+            name: _,
+            order: _,
+            checksum,
+            next: _,
+        } = self {
+            *checksum.borrow_mut() = Some(new_checksum);
+        } else {
+            panic!("Can't set checksum.")
+        }
+    }
+
     fn long_file_name(name: Vec<u16>, order: usize) -> Self {
         let (name, next): ([u16; long_file_name::LONG_FILE_NAME_LENGTH], Option<Box<Self>>) = if long_file_name::LONG_FILE_NAME_LENGTH <= name.len() {
             let (name, next): (&[u16], &[u16]) = name.split_at(long_file_name::LONG_FILE_NAME_LENGTH);
@@ -990,6 +1005,9 @@ impl From<&PathBuf> for DirectoryEntry {
             .concat()
             .into_iter()
             .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+        if let Some(long_file_name) = &long_file_name {
+            long_file_name.set_checksum(checksum);
+        }
         let checksum: RefCell<u8> = RefCell::new(checksum);
         Self::ShortFileName {
             stem,
