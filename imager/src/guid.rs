@@ -75,18 +75,16 @@ impl Guid {
 impl fmt::Display for Guid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let clock_sequence: String = format!("clock_sequence: {:#06x}", self.clock_sequence);
-        let mac_address: String = format!("mac_address: {}\n", self.mac_address);
-        let time: String = format!("time: {}\n", self.time);
-        let version: String = format!("version: {:#04x}\n", self.version);
+        let mac_address: String = format!("mac_address: {}", self.mac_address);
+        let time: String = format!("time: {}", self.time);
+        let version: String = format!("version: {:#04x}", self.version);
         let guid: Vec<String> = vec![
             version,
             mac_address,
             time,
             clock_sequence,
         ];
-        let guid: String = guid
-            .into_iter()
-            .fold(String::new(), |guid, element| guid + &element);
+        let guid: String = guid.join("\n");
         write!(f, "{}", guid)
     }
 }

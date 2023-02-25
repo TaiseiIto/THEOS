@@ -48,6 +48,10 @@ impl Time {
         })
     }
 
+    pub fn fat_centi_second(&self) -> u8 {
+        (self.sec % 2) * 100 + ((self.nsec / 10000000) as u8)
+    }
+
     pub fn fat_timestamp(&self) -> u32 {
         let double_seconds: u32 = (self.sec as u32) / 2;
         let minute: u32 = (self.min as u32) << 5;
@@ -118,7 +122,7 @@ impl Time {
 
     pub fn get_10ms_increment(&self) -> u8 {
         let sec: u8 = 100 * (self.sec % 2);
-        let msec: u8 = (self.nsec / 10000) as u8;
+        let msec: u8 = (self.nsec / 10000000) as u8;
         sec + msec
     }
 

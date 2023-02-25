@@ -1,10 +1,26 @@
+EXFAT_BOOT_SECTOR=src/boot_sector/exFAT/boot_sector.bin
+FAT12_BOOT_SECTOR=src/boot_sector/FAT12/boot_sector.bin
+FAT16_BOOT_SECTOR=src/boot_sector/FAT16/boot_sector.bin
+FAT32_BOOT_SECTOR=src/boot_sector/FAT32/boot_sector.bin
+FAT_BOOT_SECTOR=$(FAT12_BOOT_SECTOR),$(FAT16_BOOT_SECTOR),$(FAT32_BOOT_SECTOR)
+BOOT_SECTOR=$(FAT_BOOT_SECTOR)
+BOOT_SOURCE=src/EFI/BOOT/BOOTX64.EFI
+BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
+COPY=.bash/copy.sh
+IMAGER=imager/target/release/imager
+IMAGER_LOG=imager.log
+THEOS=theos.img
+THEOS_ROOT=root
+HAS_VOLUME_GUID=false
+
 # Build THEOS
 all:
-	make -C src
 	make -C imager
-	imager/target/release/imager -b src/boot_sector/boot_sector.bin -s disk > theos.img 2> imager_output.txt
-	imager/target/release/imager -i theos.img >> imager_output.txt
-	cat imager_output.txt
+	make -C src
+	$(COPY) $(BOOT_SOURCE) $(BOOT)
+	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $(THEOS) 2> $(IMAGER_LOG)
+	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
+	cat $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
@@ -20,6 +36,11 @@ clean_docker:
 # Usage: $ make rebuild_docker
 rebuild_docker:
 	make rebuild -C .docker
+
+# Run THEOS on QEMU.
+# Usage: $ make run
+run:
+	make -C .qemu
 
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.

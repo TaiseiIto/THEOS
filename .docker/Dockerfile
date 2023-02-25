@@ -13,6 +13,21 @@ RUN apt install build-essential -y
 
 # Install data transmission system.
 RUN apt install curl -y
+RUN apt install wget -y
+
+# Install mkfs.fat
+RUN apt install dosfstools -y
+
+# Install mkfs.exfat
+RUN apt install exfat-fuse -y
+WORKDIR /root
+RUN wget http://mirrors.kernel.org/ubuntu/pool/universe/e/exfat-utils/exfat-utils_1.3.0-1_amd64.deb
+RUN apt install ./exfat-utils_1.3.0-1_amd64.deb -y
+RUN rm exfat-utils_1.3.0-1_amd64.deb
+RUN apt install exfatprogs -y
+
+# Install mtools
+RUN apt install mtools -y
 
 # Install a version control system.
 RUN apt install git -y
@@ -38,6 +53,28 @@ RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 # Install an editor.
 RUN apt install vim -y
 
+# Build EDK2
+RUN apt install acpica-tools -y
+RUN apt install nasm -y
+RUN apt install python3 -y
+RUN apt install uuid-dev -y
+WORKDIR /root
+RUN git clone --recursive https://github.com/tianocore/edk2.git
+WORKDIR /root/edk2
+RUN ./OvmfPkg/build.sh -a X64
+
+# Install qemu.
+RUN apt install libglib2.0-dev -y
+RUN apt install libpixman-1-dev -y
+RUN apt install ninja-build -y
+RUN apt install pkg-config -y
+WORKDIR /root
+RUN git clone https://gitlab.com/qemu-project/qemu.git
+WORKDIR /root/qemu
+RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN make
+RUN make install
+
 # Clone this repository.
 WORKDIR /root
 RUN git clone https://github.com/TaiseiIto/THEOS.git
@@ -51,4 +88,7 @@ RUN cat .tmux/.tmux.conf >> /root/.tmux.conf
 
 # vim settings.
 RUN cat .vim/.vimrc >> /root/.vimrc
+
+# VNC port
+EXPOSE 5900
 

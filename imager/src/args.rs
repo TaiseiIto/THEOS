@@ -1,7 +1,9 @@
-use std::{
-    collections::HashMap,
-    env,
-    path::PathBuf,
+use {
+    std::{
+        collections::HashMap,
+        env,
+        path::PathBuf,
+    },
 };
 
 #[derive(Debug)]
@@ -10,8 +12,9 @@ pub enum Args {
         image: PathBuf,
     },
     Write {
-        boot_sector: PathBuf,
-        source_directory: PathBuf,
+        boot_sector: Vec<PathBuf>,
+        root_directory: PathBuf,
+        has_volume_guid: bool,
     },
 }
 
@@ -27,18 +30,35 @@ impl Args {
             })
             .collect();
         let boot_sector: Option<&String> = args.get("-b");
-        let source_directory: Option<&String> = args.get("-s");
+        let root_directory: Option<&String> = args.get("-r");
+        let has_volume_guid: Option<&String> = args.get("-v");
         let image: Option<&String> = args.get("-i");
-        match (boot_sector, source_directory, image) {
-            (Some(boot_sector), Some(source_directory), _) => {
-                let boot_sector = PathBuf::from(boot_sector);
-                let source_directory = PathBuf::from(source_directory);
+        match (boot_sector, root_directory, has_volume_guid, image) {
+            (Some(boot_sector), Some(root_directory), Some(has_volume_guid), None) => {
+                let boot_sector: Vec<PathBuf> = boot_sector
+                    .split(',')
+                    .map(|boot_sector| PathBuf::from(boot_sector))
+                    .collect();
+                let root_directory = PathBuf::from(root_directory);
+                let has_volume_guid: char = has_volume_guid
+                    .chars()
+                    .next()
+                    .expect("Can't interpret args.")
+                    .to_uppercase()
+                    .next()
+                    .expect("Can't interpret args.");
+                let has_volume_guid: bool = match has_volume_guid {
+                    'T' => true,
+                    'F' => false,
+                    _ => panic!("Can't interpret args."),
+                };
                 Self::Write {
                     boot_sector,
-                    source_directory,
+                    root_directory,
+                    has_volume_guid,
                 }
             },
-            (_, _, Some(image)) => {
+            (None, None, None, Some(image)) => {
                 let image = PathBuf::from(image);
                 Self::Read {
                     image,
