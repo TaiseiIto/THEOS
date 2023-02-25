@@ -45,7 +45,7 @@ run: all
 # Stop THEOS on QEMU.
 # Usage: $ make stop
 stop:
-	make stop -C .qemu
+	make stop_qemu -C .tmux
 
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.
