@@ -32,17 +32,17 @@ pub enum Content {
 impl Content {
     pub fn read(directory_entry: &directory_entry::DirectoryEntry, clusters: &cluster::Clusters) -> (Self, Option<directory_entry::DirectoryEntry>, Option<directory_entry::DirectoryEntry>) {
         if let directory_entry::DirectoryEntry::ShortFileName {
-            stem,
-            extension,
+            stem: _,
+            extension: _,
             attribute,
-            name_flags,
-            created_time,
-            accessed_time,
-            written_time,
+            name_flags: _,
+            created_time: _,
+            accessed_time: _,
+            written_time: _,
             cluster,
             size,
-            long_file_name,
-            checksum,
+            long_file_name: _,
+            checksum: _,
         } = directory_entry {
             let cluster: u32 = match *cluster.borrow() {
                 Some(cluster) => cluster,
@@ -145,10 +145,10 @@ impl Content {
         (root, volume_label)
     }
 
-    pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize) -> (Self, cluster::Clusters) {
+    pub fn root(source: &PathBuf, cluster_size: usize) -> (Self, cluster::Clusters) {
         if let Self::Directory {
             children,
-            node,
+            node: _,
         } = source.into() {
             for child in children.borrow().iter() {
                 child.set_parent();

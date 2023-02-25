@@ -87,7 +87,7 @@ impl From<&DirectoryEntry> for ShortFileName {
                 written_time,
                 cluster,
                 size,
-                long_file_name,
+                long_file_name: _,
                 checksum: _,
         } = directory_entry {
             let stem: [u8; STEM_LENGTH] = *stem.borrow();

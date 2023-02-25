@@ -22,10 +22,7 @@ impl Fat {
         let bit: Bit = boot_sector.into();
         let cluster_chain: HashMap<u32, Option<u32>> = clusters.cluster_chain();
         let media: u8 = boot_sector.media();
-        let reserved_sectors: usize = boot_sector.reserved_sectors();
-        let fats: usize = boot_sector.fats();
         let sector_size: usize = boot_sector.sector_size();
-        let cluster_size: usize = boot_sector.cluster_size();
         Self {
             bit,
             cluster_chain,
@@ -37,10 +34,7 @@ impl Fat {
     pub fn read(bytes: &Vec<u8>, boot_sector: &boot_sector::BootSector) -> Self {
         let bit: Bit = boot_sector.into();
         let media: u8 = boot_sector.media();
-        let reserved_sectors: usize = boot_sector.reserved_sectors();
-        let fats: usize = boot_sector.fats();
         let sector_size: usize = boot_sector.sector_size();
-        let cluster_size: usize = boot_sector.cluster_size();
         let cluster_chain: Vec<u32> = match bit {
             Bit::Fat12 => bytes
                 .chunks(3)
@@ -249,13 +243,13 @@ impl From<&boot_sector::BootSector> for Bit {
     fn from(boot_sector: &boot_sector::BootSector) -> Self {
         match boot_sector {
             boot_sector::BootSector::Fat12 {
-                content,
+                content: _,
             } => Self::Fat12,
             boot_sector::BootSector::Fat16 {
-                content,
+                content: _,
             } => Self::Fat16,
             boot_sector::BootSector::Fat32 {
-                content,
+                content: _,
             } => Self::Fat32,
         }
     }

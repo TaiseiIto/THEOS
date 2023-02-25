@@ -12,10 +12,7 @@ use {
         fs,
         path::PathBuf,
     },
-    super::{
-        node,
-        super::super::time,
-    },
+    super::super::super::time,
 };
 
 #[derive(Clone, Debug)]
@@ -171,13 +168,13 @@ impl DirectoryEntry {
                 extension,
                 attribute,
                 name_flags,
-                created_time,
-                accessed_time,
-                written_time,
-                cluster,
-                size,
+                created_time: _,
+                accessed_time: _,
+                written_time: _,
+                cluster: _,
+                size: _,
                 long_file_name,
-                checksum,
+                checksum: _,
             } => match long_file_name{
                 Some(long_file_name) => long_file_name.get_name(),
                 None => {
@@ -305,7 +302,7 @@ impl DirectoryEntry {
             cluster,
             size,
             long_file_name: _,
-            checksum,
+            checksum: _,
         } = self {
             let mut stem: Vec<u8> = ".."
                 .as_bytes().to_vec();
@@ -1040,17 +1037,17 @@ impl Into<Vec<u8>> for &DirectoryEntry {
     fn into(self) -> Vec<u8> {
         match self {
             DirectoryEntry::ShortFileName {
-                stem,
-                extension,
-                attribute,
-                name_flags,
-                created_time,
-                accessed_time,
-                written_time,
-                cluster,
-                size,
+                stem: _,
+                extension: _,
+                attribute: _,
+                name_flags: _,
+                created_time: _,
+                accessed_time: _,
+                written_time: _,
+                cluster: _,
+                size: _,
                 long_file_name,
-                checksum,
+                checksum: _,
             } => {
                 let long_file_name: Vec<u8> = match long_file_name {
                     Some(long_file_name) => {

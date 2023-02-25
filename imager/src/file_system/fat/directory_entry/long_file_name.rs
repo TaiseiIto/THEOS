@@ -58,7 +58,7 @@ impl From<&DirectoryEntry> for LongFileName {
                 next,
             } => {
                 let order: u8 = match next {
-                    Some(next) => 0x00,
+                    Some(_) => 0x00,
                     None => LAST_LONG_ENTRY,
                 } | *order as u8;
                 let (name0, name): (&[u16], &[u16]) = name.split_at(NAME0_LENGTH);

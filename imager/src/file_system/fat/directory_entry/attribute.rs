@@ -1,10 +1,7 @@
-use {
-    std::{
-        fmt,
-        fs,
-        path::PathBuf,
-    },
-    super::super::node,
+use std::{
+    fmt,
+    fs,
+    path::PathBuf,
 };
 
 #[derive(Clone, Copy, Debug)]
