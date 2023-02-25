@@ -42,6 +42,11 @@ rebuild_docker:
 run: all
 	make run_qemu -C .tmux
 
+# Stop THEOS on QEMU.
+# Usage: $ make stop
+stop:
+	make stop -C .qemu
+
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.
 # Usage: $ make permission GITHUB=<A path of ssh key to push to github.com> GITGPG=<A path of .gnupg directory to verify git commitment> CRATESIO=<A path of API key to log in crates.io>
