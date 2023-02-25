@@ -13,5 +13,5 @@ run:
 
 # Stop THEOS on QEMU.
 stop:
-	for i in $$(ps ax | grep $(EMULATOR) | grep -v grep | awk '{print $$1}'); do kill $$i; done
+	for i in $$(ps ax | grep $(QEMU) | grep -v grep | awk '{print $$1}'); do kill $$i; done
 
