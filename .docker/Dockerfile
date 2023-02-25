@@ -11,6 +11,12 @@ RUN apt update
 # Install basic development systems.
 RUN apt install build-essential -y
 
+# Install clang
+RUN apt install clang -y
+RUN apt install lld -y
+RUN apt install lldb -y
+RUN apt install llvm -y
+
 # Install data transmission system.
 RUN apt install curl -y
 RUN apt install wget -y
