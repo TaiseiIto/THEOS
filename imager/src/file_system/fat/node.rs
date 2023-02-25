@@ -160,10 +160,10 @@ impl Content {
             };
             // Temporary clusters to determine cluster number of each node.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, volume_label);
+            root.write_root(&mut clusters);
             // Correct clusters.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, volume_label);
+            root.write_root(&mut clusters);
             (root, clusters)
         } else {
             panic!("Can't generate a root directory.");
@@ -216,7 +216,7 @@ impl Content {
         }
     }
 
-    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: &str) {
+    fn write_root(&self, clusters: &mut cluster::Clusters) {
         if let Self::Directory {
             children,
             node: _,
