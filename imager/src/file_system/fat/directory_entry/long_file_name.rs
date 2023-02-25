@@ -7,6 +7,7 @@ use {
     },
 };
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct LongFileName {

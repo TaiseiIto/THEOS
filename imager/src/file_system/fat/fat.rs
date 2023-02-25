@@ -14,10 +14,7 @@ pub struct Fat {
     bit: Bit,
     cluster_chain: HashMap<u32, Option<u32>>,
     media: u8,
-    reserved_sectors: usize,
-    fats: usize,
     sector_size: usize,
-    cluster_size: usize,
 }
 
 impl Fat {
@@ -33,10 +30,7 @@ impl Fat {
             bit,
             cluster_chain,
             media,
-            reserved_sectors,
-            fats,
             sector_size,
-            cluster_size,
         }
     }
 
@@ -109,10 +103,7 @@ impl Fat {
             bit,
             cluster_chain,
             media,
-            reserved_sectors,
-            fats,
             sector_size,
-            cluster_size,
         }
     }
 
