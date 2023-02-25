@@ -160,10 +160,10 @@ impl Content {
             };
             // Temporary clusters to determine cluster number of each node.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, volume_label, root_directory_entries);
+            root.write_root(&mut clusters, volume_label);
             // Correct clusters.
             let mut clusters = cluster::Clusters::new(cluster_size);
-            root.write_root(&mut clusters, volume_label, root_directory_entries);
+            root.write_root(&mut clusters, volume_label);
             (root, clusters)
         } else {
             panic!("Can't generate a root directory.");
@@ -216,11 +216,10 @@ impl Content {
         }
     }
 
-    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: &str, root_directory_entries: usize) {
-        let bytes: Vec<u8> = self.root_into_bytes(volume_label, root_directory_entries);
+    fn write_root(&self, clusters: &mut cluster::Clusters, volume_label: &str) {
         if let Self::Directory {
             children,
-            node,
+            node: _,
         } = self {
             for child in children.borrow().iter() {
                 child.write_clusters(clusters);
