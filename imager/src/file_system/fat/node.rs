@@ -145,7 +145,7 @@ impl Content {
         (root, volume_label)
     }
 
-    pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize, root_directory_entries: usize) -> (Self, cluster::Clusters) {
+    pub fn root(source: &PathBuf, volume_label: &str, cluster_size: usize) -> (Self, cluster::Clusters) {
         if let Self::Directory {
             children,
             node,
@@ -208,7 +208,7 @@ impl Content {
         clusters.append(&bytes, blank);
         if let Self::Directory {
             children,
-            node,
+            node: _,
         } = self {
             for child in children.borrow().iter() {
                 child.write_clusters(clusters);
