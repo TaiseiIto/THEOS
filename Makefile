@@ -39,8 +39,8 @@ rebuild_docker:
 
 # Run THEOS on QEMU.
 # Usage: $ make run
-run:
-	make -C .qemu
+run: all
+	make run_qemu -C .tmux
 
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.
