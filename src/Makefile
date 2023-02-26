@@ -1,7 +1,7 @@
 BOOT_SECTOR = boot_sector
-LOADER_PKG = LoaderPkg
+BOOT_PKG = BootPkg
 
 all:
 	make -C $(BOOT_SECTOR)
-	make -C $(LOADER_PKG)
+	make -C $(BOOT_PKG)
 
