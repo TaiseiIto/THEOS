@@ -1,4 +1,2 @@
 all:
-	source edksetup.sh
-	build
-
+	./build.sh
