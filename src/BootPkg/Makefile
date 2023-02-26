@@ -18,6 +18,7 @@ $(OUTPUT): $(EDK2_OUTPUT)
 
 $(EDK2_OUTPUT): $(EDK2_BUILD) $(EDK2_MAKEFILE) $(EDK2_PKG) $(EDK2_TARGET)
 	make -C $(EDK2)
+	rm $^
 
 $(EDK2_BUILD): $(HERE_BUILD)
 	cp $^ $@
