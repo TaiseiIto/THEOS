@@ -63,6 +63,10 @@ RUN apt install vim -y
 WORKDIR /root
 RUN git clone --recursive https://github.com/TaiseiIto/THEOS.git
 
+# Clone MikanOS for reference.
+RUN git clone https://github.com/uchan-nos/mikanos.git
+RUN git clone https://github.com/uchan-nos/mikanos-build.git
+
 # Build EDK2
 RUN apt install acpica-tools -y
 RUN apt install nasm -y
@@ -82,6 +86,7 @@ RUN make
 RUN make install
 
 # bash settings.
+WORKDIR /root/THEOS
 RUN cat .bash/.bashrc >> /root/.bashrc
 
 # tmux settings.
