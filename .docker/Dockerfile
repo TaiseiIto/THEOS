@@ -77,6 +77,7 @@ RUN apt install python3 -y
 RUN apt install uuid-dev -y
 WORKDIR /root/THEOS/qemu/roms/edk2
 RUN ./OvmfPkg/build.sh -a X64
+RUN rm Conf/target.txt
 
 # Install qemu.
 RUN apt install libglib2.0-dev -y
