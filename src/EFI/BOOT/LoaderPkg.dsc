@@ -1,10 +1,10 @@
 #@range_begin(defines)
 [Defines]
-  PLATFORM_NAME                  = MikanLoaderPkg
+  PLATFORM_NAME                  = LoaderPkg
   PLATFORM_GUID                  = d3f11f4e-71e9-11e8-a7e1-33fd4f7d5a3e
   PLATFORM_VERSION               = 0.1
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/MikanLoader$(ARCH)
+  OUTPUT_DIRECTORY               = Build/Loader$(ARCH)
   SUPPORTED_ARCHITECTURES        = X64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
 #@range_end(defines)
@@ -22,10 +22,11 @@
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
+  RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
   UefiBootServicesTableLib|MdePkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
   UefiRuntimeServicesTableLib|MdePkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
 
 #@range_begin(components)
 [Components]
-  MikanLoaderPkg/Loader.inf
+  LoaderPkg/Loader.inf
 #@range_end(components)
