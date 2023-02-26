@@ -6,7 +6,7 @@ QEMU_DIR=../.qemu
 RUN_QEMU=run_qemu.conf
 
 run_qemu:
-	$(TMUX) new-session \; source-file $(RUN_QEMU)
+	-$(TMUX) new-session \; source-file $(RUN_QEMU)
 
 stop_qemu:
 	make stop -C $(QEMU_DIR)

@@ -40,7 +40,7 @@ rebuild_docker:
 # Run THEOS on QEMU.
 # Usage: $ make run
 run: all
-	make run_qemu -C .tmux
+	-make run_qemu -C .tmux
 
 # Stop THEOS on QEMU.
 # Usage: $ make stop
