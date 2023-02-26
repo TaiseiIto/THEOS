@@ -1,7 +1,7 @@
 BOOT_SECTOR = boot_sector
-BOOT_PKG = BootPkg
+BOOTX64 = bootx64
 
 all:
 	make -C $(BOOT_SECTOR)
-	make -C $(BOOT_PKG)
+	make -C $(BOOTX64)
 
