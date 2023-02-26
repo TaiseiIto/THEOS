@@ -1,5 +1,5 @@
 [package]
-name = "loader"
+name = "bootx64"
 version = "0.1.0"
 edition = "2021"
 
