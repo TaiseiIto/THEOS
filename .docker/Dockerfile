@@ -62,14 +62,13 @@ RUN apt install vim -y
 # Clone this repository.
 WORKDIR /root
 RUN git clone --recursive https://github.com/TaiseiIto/THEOS.git
-WORKDIR THEOS
 
 # Build EDK2
 RUN apt install acpica-tools -y
 RUN apt install nasm -y
 RUN apt install python3 -y
 RUN apt install uuid-dev -y
-WORKDIR edk2
+WORKDIR /root/THEOS/qemu/roms/edk2
 RUN ./OvmfPkg/build.sh -a X64
 
 # Install qemu.
@@ -77,7 +76,7 @@ RUN apt install libglib2.0-dev -y
 RUN apt install libpixman-1-dev -y
 RUN apt install ninja-build -y
 RUN apt install pkg-config -y
-WORKDIR ../qemu
+WORKDIR /root/THEOS/qemu
 RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
 RUN make install
