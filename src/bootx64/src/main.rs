@@ -8,14 +8,14 @@ use uefi::prelude::*;
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
+    // Initialize UEFI services.
     uefi_services::init(&mut system_table).unwrap();
 
     // Print a simple sentence.
     info!("Hello, World!");
 
-    // Wait for 10 seconds.
-    system_table.boot_services().stall(10_000_000);
-
-    Status::SUCCESS
+    // Infinite loop.
+    loop {
+    }
 }
 
