@@ -2,6 +2,9 @@
 
 FROM ubuntu
 
+# A name of branch of THEOS repository.
+ARG branch
+
 # Don't ask stdin for anithing to install softwares automatically.
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -61,7 +64,7 @@ RUN apt install vim -y
 
 # Clone this repository.
 WORKDIR /root
-RUN git clone --recursive https://github.com/TaiseiIto/THEOS.git
+RUN git clone --branch $branch --recursive https://github.com/TaiseiIto/THEOS.git
 
 # Clone MikanOS for reference.
 RUN git clone https://github.com/uchan-nos/mikanos.git

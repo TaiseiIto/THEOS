@@ -21,6 +21,7 @@ IMAGE = .image
 IMAGE_NAME = $(NAME)
 NO_IMAGE = $(NO_PREFIX)$(IMAGE)
 VNC_PORT = 5900
+BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 
 # Enter development environment.
 all: $(RUN_CONTAINER)
@@ -56,7 +57,7 @@ $(CONTAINER): $(IMAGE)
 
 # Make a Docker image.
 $(IMAGE): Dockerfile
-	$(DOCKER) build --no-cache -t $(IMAGE_NAME) .
+	$(DOCKER) build --no-cache -t $(IMAGE_NAME) . --build-arg branch=$(BRANCH)
 	$(CLEAR) $(NO_IMAGE)
 	$(DONE) $@
 
