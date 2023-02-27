@@ -22,20 +22,8 @@ impl Serial {
         let interrupt_enable_register: asm::Port = serial.interrupt_enable_register();
         let disable_all_interrupts: u8 = 0;
         asm::outb(interrupt_enable_register, disable_all_interrupts);
-        // Enable DLAB.
-        let line_control_register: asm::Port = serial.line_control_register();
-        let line_control: u8 = asm::inb(line_control_register);
-        asm::outb(line_control_register, line_control | line_control_register::DLAB);
         // Set baud.
-        let baud: u16 = (FREQUENCY / baud) as u16;
-        let baud_low: u8 = baud as u8;
-        let baud_low_register: asm::Port = serial.baud_low_register();
-        asm::outb(baud_low_register, baud_low);
-        let baud_high: u8 = (baud >> 8) as u8;
-        let baud_high_register: asm::Port = serial.baud_high_register();
-        asm::outb(baud_high_register, baud_high);
-        // Disable DLAB.
-        asm::outb(line_control_register, line_control);
+        serial.set_baud(baud);
         serial
     }
 
@@ -68,6 +56,24 @@ impl Serial {
 
     fn line_status_register(&self) -> asm::Port {
         self.port + 5
+    }
+
+    fn set_baud(&self, baud: u32) {
+        // Enable DLAB.
+        let line_control_register: asm::Port = self.line_control_register();
+        let line_control: u8 = asm::inb(line_control_register);
+        asm::outb(line_control_register, line_control | line_control_register::DLAB);
+        // Set low byte.
+        let baud: u16 = (FREQUENCY / baud) as u16;
+        let baud_low: u8 = baud as u8;
+        let baud_low_register: asm::Port = self.baud_low_register();
+        // Set high byte.
+        asm::outb(baud_low_register, baud_low);
+        let baud_high: u8 = (baud >> 8) as u8;
+        let baud_high_register: asm::Port = self.baud_high_register();
+        asm::outb(baud_high_register, baud_high);
+        // Disable DLAB.
+        asm::outb(line_control_register, line_control);
     }
 }
 
