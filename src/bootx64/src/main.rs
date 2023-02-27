@@ -10,7 +10,7 @@ use core::panic::PanicInfo;
 
 #[no_mangle]
 fn efi_main(_image_handle: u64, _system_table: u64) -> u64 {
-    let com1 = serial::Serial::new(serial::COM1);
+    let com1 = serial::Serial::new(serial::COM1, serial::BAUD);
     com1.put_char('A' as u8);
     loop {
         asm::hlt();
