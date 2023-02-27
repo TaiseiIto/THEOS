@@ -5,7 +5,7 @@ pub struct Serial {
 }
 
 pub const COM1: Serial = Serial {
-    port: 0x037f,
+    port: 0x03f8,
 };
 
 impl Serial {
