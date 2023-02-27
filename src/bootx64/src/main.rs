@@ -3,19 +3,23 @@
 #![feature(abi_efiapi)]
 #![allow(stable_features)]
 
-use core::arch::asm;
-use log::info;
-use uefi::prelude::*;
+use core::{
+    arch::asm,
+    panic::PanicInfo,
+};
 
-#[entry]
-fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    // Initialize UEFI services.
-    uefi_services::init(&mut system_table).unwrap();
-
-    // Print a simple sentence.
-    info!("Hello, World!");
-
+#[no_mangle]
+fn efi_main(_image_handle: u64, _system_table: u64) -> u64 {
     // Infinite loop.
+    loop {
+        unsafe {
+            asm!("hlt");
+        }
+    }
+}
+
+#[panic_handler]
+fn panic(_panic: &PanicInfo) -> ! {
     loop {
         unsafe {
             asm!("hlt");
