@@ -1,10 +1,16 @@
 use super::asm;
 
-const COM1: asm::Port = 0x03f8;
-
-pub fn put_char(_byte: u8) {
+pub struct Serial {
+    port: asm::Port,
 }
 
-pub fn init() {
+pub const COM1: Serial = Serial {
+    port: 0x037f,
+};
+
+impl Serial {
+    pub fn put_char(&self, byte: u8) {
+        asm::outb(self.port, byte);
+    }
 }
 
