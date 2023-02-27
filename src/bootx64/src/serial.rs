@@ -7,11 +7,15 @@ pub struct Serial {
     port: asm::Port,
 }
 
-pub const COM1: Serial = Serial {
-    port: 0x03f8,
-};
+pub const COM1: asm::Port = 0x03f8;
 
 impl Serial {
+    pub fn new(port: asm::Port) -> Self {
+        Self {
+            port,
+        }
+    }
+
     pub fn put_char(&self, byte: u8) {
         while !self.can_send() {}
         asm::outb(self.port, byte);
