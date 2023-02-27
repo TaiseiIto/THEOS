@@ -3,6 +3,7 @@
 #![feature(abi_efiapi)]
 #![allow(stable_features)]
 
+use core::arch::asm;
 use log::info;
 use uefi::prelude::*;
 
@@ -16,6 +17,9 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     // Infinite loop.
     loop {
+        unsafe {
+            asm!("hlt");
+        }
     }
 }
 
