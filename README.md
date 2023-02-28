@@ -65,7 +65,18 @@ Eject the USB memory and insert into GPD MicroPC.
 ### Set BIOS and power on
 
 Power on GPD MicroPC and push ESC key repeatedly.
-Set as below.
+Set as in the example below.
+
+* Security
+	* Secure Boot
+		* Secure Boot: [Disable]
+* Boot
+	* Quiet Boot: [Disable]
+	* Fast Boot: [Disable]
+	* FIXED BOOT ORDER Priorities
+		* Boot Option #1: [USB Key:UEFI: USB DISK 2.0 PMAP]
+	* UEFI Hard Disk Drive BBS Priorities
+		* Boot Option #1: [UEFI OS (P0: BIWIN SSD)]
 
 Save and exit.
 Then, GPD MicroPC restarts and THEOS starts.
@@ -73,7 +84,18 @@ Then, GPD MicroPC restarts and THEOS starts.
 ### Power off and reset BIOS
 
 Power on GPD MicroPC and push ESC key repeatedly.
-Set as below.
+Set as in the example below.
+
+* Security
+	* Secure Boot
+		* Secure Boot: [Disable]
+* Boot
+	* Quiet Boot: [Enable]
+	* Fast Boot: [Enable]
+	* FIXED BOOT ORDER Priorities
+		* Boot Option #1: [Hard Disk:Windows Boot Manager (P0: BIWIN SSD)]
+	* UEFI Hard Disk Drive BBS Priorities
+		* Boot Option #1: [Windows Boot Manager (P0: BIWIN SSD)]
 
 Save and exit.
 Then, GPD MicroPC restarts and Windows starts.
