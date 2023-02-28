@@ -27,7 +27,7 @@ impl Serial {
         serial
     }
 
-    pub fn put_char(&self, byte: u8) {
+    pub fn put_byte(&self, byte: u8) {
         while !self.can_send() {}
         asm::outb(self.port, byte);
     }

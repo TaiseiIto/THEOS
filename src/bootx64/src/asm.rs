@@ -15,7 +15,7 @@ pub fn inb(port: Port) -> u8 {
             "in al, dx",
             in("dx") port,
             out("al") value,
-        )
+        );
     }
     value
 }
