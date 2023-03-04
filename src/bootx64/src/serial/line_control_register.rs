@@ -10,6 +10,20 @@ pub struct LineControlRegister {
 const DLAB: u8 = 0x80;
 
 impl LineControlRegister {
+    pub fn new(
+        character_length: CharacterLength,
+        stop_bit: StopBit,
+        parity: Parity,
+        dlab: bool,
+    ) -> Self {
+        Self {
+            character_length,
+            stop_bit,
+            parity,
+            dlab,
+        }
+    }
+
     pub fn enable_dlab(&mut self) {
         self.dlab = true;
     }

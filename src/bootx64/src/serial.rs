@@ -17,14 +17,31 @@ const FREQUENCY: u32 = 115200;
 
 impl Serial {
     pub fn new(port: asm::Port, baud: u32) -> Self {
+        // A new serial interface.
         let serial = Self {
             port,
         };
+
         // Disable all interrupts.
-        let interrupt_enable_register = interrupt_enable_register::InterruptEnableRegister::disable_all_interrupts();
-        serial.write_interrupt_enable_register(&interrupt_enable_register);
+        let disable_all_interrupts = interrupt_enable_register::InterruptEnableRegister::disable_all_interrupts();
+        serial.write_interrupt_enable_register(&disable_all_interrupts);
+
         // Set baud.
         serial.set_baud(baud);
+
+        // Set a line control register.
+        let character_length = line_control_register::CharacterLength::Bit8;
+        let stop_bit = line_control_register::StopBit::Bit1;
+        let parity = line_control_register::Parity::No;
+        let dlab = false;
+        let line_control_register = line_control_register::LineControlRegister::new(
+            character_length,
+            stop_bit,
+            parity,
+            dlab,
+        );
+        serial.write_line_control_register(&line_control_register);
+
         serial
     }
 
@@ -59,18 +76,19 @@ impl Serial {
     }
 
     fn set_baud(&self, baud: u32) {
-        // Enable DLAB.
         self.enable_dlab();
+
         // Set low byte.
         let baud: u16 = (FREQUENCY / baud) as u16;
         let baud_low: u8 = baud as u8;
         let baud_low_register: asm::Port = self.baud_low_register();
         asm::outb(baud_low_register, baud_low);
+
         // Set high byte.
         let baud_high: u8 = (baud >> 8) as u8;
         let baud_high_register: asm::Port = self.baud_high_register();
         asm::outb(baud_high_register, baud_high);
-        // Disable DLAB.
+
         self.disable_dlab();
     }
 
