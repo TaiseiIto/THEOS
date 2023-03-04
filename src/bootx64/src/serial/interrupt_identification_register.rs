@@ -43,3 +43,38 @@ impl Into<u8> for &Interrupt {
     }
 }
 
+pub enum Fifo {
+    No,
+    Unusable,
+    Enabled,
+}
+
+const NO_FIFO: u8 = 0x00;
+const UNUSABLE_FIFO: u8 = 0x40;
+const ENABLED_FIFO: u8 = 0xc0;
+const FIFO: u8 =
+    NO_FIFO
+    | UNUSABLE_FIFO
+    | ENABLED_FIFO;
+
+impl From<u8> for Fifo {
+    fn from(byte: u8) -> Self {
+        match byte & FIFO {
+            NO_FIFO => Self::No,
+            UNUSABLE_FIFO => Self::Unusable,
+            ENABLED_FIFO => Self::Enabled,
+            _ => panic!("Can't get serial interrupt identifier."),
+        }
+    }
+}
+
+impl Into<u8> for &Fifo {
+    fn into(self) -> u8 {
+        match self {
+            Fifo::No => NO_FIFO,
+            Fifo::Unusable => UNUSABLE_FIFO,
+            Fifo::Enabled => ENABLED_FIFO,
+        }
+    }
+}
+
