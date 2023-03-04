@@ -1,3 +1,4 @@
+use super::super::asm;
 pub struct LineStatusRegister {
     data_ready: bool,
     overrun_error: bool,
@@ -17,6 +18,13 @@ const BREAK_INDICATOR: u8 = 0x10;
 const TRANSMITTER_HOLDING_REGISTER_EMPTY: u8 = 0x20;
 const TRANSMITTER_EMPTY: u8 = 0x40;
 const IMPENDING_ERROR: u8 = 0x80;
+
+impl From<asm::Port> for LineStatusRegister {
+    fn from(port: asm::Port) -> Self {
+        let line_status_register: u8 = asm::inb(port);
+        line_status_register.into()
+    }
+}
 
 impl From<u8> for LineStatusRegister {
     fn from(byte: u8) -> Self {
