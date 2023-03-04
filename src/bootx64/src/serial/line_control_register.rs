@@ -104,10 +104,15 @@ const CHARACTER_LENGTH_BIT_5: u8 = 0x00;
 const CHARACTER_LENGTH_BIT_6: u8 = 0x01;
 const CHARACTER_LENGTH_BIT_7: u8 = 0x02;
 const CHARACTER_LENGTH_BIT_8: u8 = 0x03;
+const CHARACTER_LENGTH: u8 =
+    CHARACTER_LENGTH_BIT_5
+    | CHARACTER_LENGTH_BIT_6
+    | CHARACTER_LENGTH_BIT_7
+    | CHARACTER_LENGTH_BIT_8;
 
 impl From<u8> for CharacterLength {
     fn from(byte: u8) -> Self {
-        match byte & 0x03 {
+        match byte & CHARACTER_LENGTH {
             CHARACTER_LENGTH_BIT_5 => Self::Bit5,
             CHARACTER_LENGTH_BIT_6 => Self::Bit6,
             CHARACTER_LENGTH_BIT_7 => Self::Bit7,
@@ -135,10 +140,11 @@ pub enum StopBit {
 
 const STOP_BIT_1: u8 = 0x00;
 const STOP_BIT_2: u8 = 0x04;
+const STOP_BIT: u8 = STOP_BIT_1 | STOP_BIT_2;
 
 impl From<u8> for StopBit {
     fn from(byte: u8) -> Self {
-        match byte & 0x04 {
+        match byte & STOP_BIT {
             STOP_BIT_1 => Self::Bit1,
             STOP_BIT_2 => Self::Bit2,
             _ => panic!("Can't get serial stop bit length!"),
@@ -168,10 +174,16 @@ const ODD_PARITY: u8 = 0x08;
 const EVEN_PARITY: u8 = 0x18;
 const HIGH_PARITY: u8 = 0x28;
 const LOW_PARITY: u8 = 0x38;
+const PARITY: u8 =
+    NO_PARITY
+    | ODD_PARITY
+    | EVEN_PARITY
+    | HIGH_PARITY
+    | LOW_PARITY;
 
 impl From<u8> for Parity {
     fn from(byte: u8) -> Self {
-        match byte & 0x38 {
+        match byte & PARITY {
             NO_PARITY => Self::No,
             ODD_PARITY => Self::Odd,
             EVEN_PARITY => Self::Even,

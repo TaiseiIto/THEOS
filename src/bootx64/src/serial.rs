@@ -3,6 +3,7 @@
 // https://www.lookrs232.com/
 
 mod interrupt_enable_register;
+mod interrupt_identification_register;
 mod line_control_register;
 mod line_status_register;
 
