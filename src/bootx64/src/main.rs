@@ -6,15 +6,17 @@
 mod asm;
 mod serial;
 
-use core::{
-    fmt::Write,
-    panic::PanicInfo,
+use {
+    core::{
+        fmt::Write,
+        panic::PanicInfo,
+    },
+    serial::print_format,
 };
 
 #[no_mangle]
 fn efi_main(_image_handle: u64, _system_table: u64) -> u64 {
-    let mut com1 = serial::Serial::new(serial::COM1, serial::BAUD);
-    com1.write_str("Hello, World!\n");
+    println!("Hello, World!");
     loop {
         asm::hlt();
     }
