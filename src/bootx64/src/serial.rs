@@ -6,6 +6,7 @@ mod interrupt_enable_register;
 mod interrupt_identification_register;
 mod line_control_register;
 mod line_status_register;
+mod modem_control_register;
 
 use super::asm;
 
@@ -61,6 +62,23 @@ impl Serial {
         );
         serial.write_interrupt_identification_register(&interrupt_identification_register);
 
+        // Set modem
+        let force_data_terminal_ready = true;
+        let force_request_to_send = true;
+        let aux_output_1 = false;
+        let aux_output_2 = true;
+        let loop_back_mode = false;
+        let autoflow_control_enabled = false;
+        let modem_control_register = modem_control_register::ModemControlRegister::new(
+            force_data_terminal_ready,
+            force_request_to_send,
+            aux_output_1,
+            aux_output_2,
+            loop_back_mode,
+            autoflow_control_enabled,
+        );
+        serial.write_modem_control_register(&modem_control_register);
+
         serial
     }
 
@@ -92,6 +110,10 @@ impl Serial {
 
     fn line_control_register(&self) -> asm::Port {
         self.port + 3
+    }
+
+    fn modem_control_register(&self) -> asm::Port {
+        self.port + 4
     }
 
     fn line_status_register(&self) -> asm::Port {
@@ -143,6 +165,12 @@ impl Serial {
         let port = self.line_control_register();
         let line_control_register: u8 = line_control_register.into();
         asm::outb(port, line_control_register);
+    }
+
+    fn write_modem_control_register(&self, modem_control_register: &modem_control_register::ModemControlRegister) {
+        let port = self.modem_control_register();
+        let modem_control_register: u8 = modem_control_register.into();
+        asm::outb(port, modem_control_register);
     }
 }
 
