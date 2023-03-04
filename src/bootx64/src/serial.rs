@@ -46,6 +46,21 @@ impl Serial {
         );
         serial.write_line_control_register(&line_control_register);
 
+        // Enable FIFO
+        let no_pending = true;
+        let interrupt = interrupt_identification_register::Interrupt::ReceiverLineStatus;
+        let timeout = false;
+        let enabled_64_byte_fifo = false;
+        let fifo = interrupt_identification_register::Fifo::Enabled;
+        let interrupt_identification_register = interrupt_identification_register::InterruptIdentificationRegister::new(
+            no_pending,
+            interrupt,
+            timeout,
+            enabled_64_byte_fifo,
+            fifo,
+        );
+        serial.write_interrupt_identification_register(&interrupt_identification_register);
+
         serial
     }
 
@@ -69,6 +84,10 @@ impl Serial {
 
     fn interrupt_enable_register(&self) -> asm::Port {
         self.port + 1
+    }
+
+    fn interrupt_identification_register(&self) -> asm::Port {
+        self.port + 2
     }
 
     fn line_control_register(&self) -> asm::Port {
@@ -112,6 +131,12 @@ impl Serial {
         let port = self.interrupt_enable_register();
         let interrupt_enable_register: u8 = interrupt_enable_register.into();
         asm::outb(port, interrupt_enable_register);
+    }
+
+    fn write_interrupt_identification_register(&self, interrupt_identification_register: &interrupt_identification_register::InterruptIdentificationRegister) {
+        let port = self.interrupt_identification_register();
+        let interrupt_identification_register: u8 = interrupt_identification_register.into();
+        asm::outb(port, interrupt_identification_register);
     }
 
     fn write_line_control_register(&self, line_control_register: &line_control_register::LineControlRegister) {

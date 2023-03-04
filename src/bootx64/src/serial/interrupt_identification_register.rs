@@ -16,7 +16,7 @@ const TIMEOUT: u8 = 0x08;
 const ENABLED_64_BYTE_FIFO: u8 = 0x20;
 
 impl InterruptIdentificationRegister {
-    fn new(
+    pub fn new(
         no_pending: bool,
         interrupt: Interrupt,
         timeout: bool,
