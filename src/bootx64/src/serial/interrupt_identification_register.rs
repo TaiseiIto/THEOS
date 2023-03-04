@@ -4,7 +4,7 @@
 use super::super::asm;
 
 pub struct InterruptIdentificationRegister {
-    pending: bool,
+    no_pending: bool,
     interrupt: Interrupt,
     timeout: bool,
     enabled_64_byte_fifo: bool,
@@ -17,14 +17,14 @@ const ENABLED_64_BYTE_FIFO: u8 = 0x20;
 
 impl InterruptIdentificationRegister {
     fn new(
-        pending: bool,
+        no_pending: bool,
         interrupt: Interrupt,
         timeout: bool,
         enabled_64_byte_fifo: bool,
         fifo: Fifo,
     ) -> Self {
         Self {
-            pending,
+            no_pending,
             interrupt,
             timeout,
             enabled_64_byte_fifo,
@@ -42,13 +42,13 @@ impl From<asm::Port> for InterruptIdentificationRegister {
 
 impl From<u8> for InterruptIdentificationRegister {
     fn from(byte: u8) -> Self {
-        let pending: bool = byte & PENDING != 0;
+        let no_pending: bool = byte & PENDING != 0;
         let interrupt: Interrupt = byte.into();
         let timeout: bool = byte & TIMEOUT != 0;
         let enabled_64_byte_fifo: bool = byte & ENABLED_64_BYTE_FIFO != 0;
         let fifo: Fifo = byte.into();
         Self {
-            pending,
+            no_pending,
             interrupt,
             timeout,
             enabled_64_byte_fifo,
@@ -59,7 +59,7 @@ impl From<u8> for InterruptIdentificationRegister {
 
 impl Into<u8> for &InterruptIdentificationRegister {
     fn into(self) -> u8 {
-        let pending: u8 = match self.pending {
+        let no_pending: u8 = match self.no_pending {
             true => PENDING,
             false => 0x00,
         };
@@ -73,7 +73,7 @@ impl Into<u8> for &InterruptIdentificationRegister {
             false => 0x00,
         };
         let fifo: u8 = (&self.fifo).into();
-        pending
+        no_pending
         | interrupt
         | timeout
         | enabled_64_byte_fifo
