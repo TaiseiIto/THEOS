@@ -1,6 +1,7 @@
 // References
 // https://wiki.osdev.org/Serial_Ports
 
+mod interrupt_enable_register;
 mod line_control_register;
 mod line_status_register;
 
@@ -20,9 +21,8 @@ impl Serial {
             port,
         };
         // Disable all interrupts.
-        let interrupt_enable_register: asm::Port = serial.interrupt_enable_register();
-        let disable_all_interrupts: u8 = 0;
-        asm::outb(interrupt_enable_register, disable_all_interrupts);
+        let interrupt_enable_register = interrupt_enable_register::InterruptEnableRegister::disable_all_interrupts();
+        serial.write_interrupt_enable_register(&interrupt_enable_register);
         // Set baud.
         serial.set_baud(baud);
         serial
@@ -84,6 +84,12 @@ impl Serial {
         let mut line_control_register: line_control_register::LineControlRegister = self.into();
         line_control_register.disable_dlab();
         self.write_line_control_register(&line_control_register);
+    }
+
+    fn write_interrupt_enable_register(&self, interrupt_enable_register: &interrupt_enable_register::InterruptEnableRegister) {
+        let port = self.interrupt_enable_register();
+        let interrupt_enable_register: u8 = interrupt_enable_register.into();
+        asm::outb(port, interrupt_enable_register);
     }
 
     fn write_line_control_register(&self, line_control_register: &line_control_register::LineControlRegister) {
