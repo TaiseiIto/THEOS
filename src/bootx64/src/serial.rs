@@ -2,6 +2,7 @@
 // https://wiki.osdev.org/Serial_Ports
 
 mod line_control_register;
+mod line_status_register;
 
 use super::asm;
 
@@ -66,8 +67,8 @@ impl Serial {
         let baud: u16 = (FREQUENCY / baud) as u16;
         let baud_low: u8 = baud as u8;
         let baud_low_register: asm::Port = self.baud_low_register();
-        // Set high byte.
         asm::outb(baud_low_register, baud_low);
+        // Set high byte.
         let baud_high: u8 = (baud >> 8) as u8;
         let baud_high_register: asm::Port = self.baud_high_register();
         asm::outb(baud_high_register, baud_high);

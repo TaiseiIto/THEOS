@@ -62,7 +62,10 @@ impl Into<u8> for &LineControlRegister {
             false => 0x00,
             true => DLAB,
         };
-        character_length | stop_bit | parity | dlab
+        character_length
+        | stop_bit
+        | parity
+        | dlab
     }
 }
 
