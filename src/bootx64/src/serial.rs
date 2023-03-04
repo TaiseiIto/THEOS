@@ -34,9 +34,8 @@ impl Serial {
     }
 
     fn can_send(&self) -> bool {
-        let line_status_register: asm::Port = self.line_status_register();
-        let line_status: u8 = asm::inb(line_status_register);
-        line_status & 0x20 != 0
+        let line_status_register: line_status_register::LineStatusRegister = self.into();
+        line_status_register.transmitter_holding_register_empty()
     }
 
     fn baud_low_register(&self) -> asm::Port {
@@ -97,6 +96,13 @@ impl Serial {
 impl Into<line_control_register::LineControlRegister> for &Serial {
     fn into(self) -> line_control_register::LineControlRegister {
         let port: asm::Port = self.line_control_register();
+        port.into()
+    }
+}
+
+impl Into<line_status_register::LineStatusRegister> for &Serial {
+    fn into(self) -> line_status_register::LineStatusRegister {
+        let port: asm::Port = self.line_status_register();
         port.into()
     }
 }

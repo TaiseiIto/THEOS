@@ -19,6 +19,12 @@ const TRANSMITTER_HOLDING_REGISTER_EMPTY: u8 = 0x20;
 const TRANSMITTER_EMPTY: u8 = 0x40;
 const IMPENDING_ERROR: u8 = 0x80;
 
+impl LineStatusRegister {
+    pub fn transmitter_holding_register_empty(&self) -> bool {
+        self.transmitter_holding_register_empty
+    }
+}
+
 impl From<asm::Port> for LineStatusRegister {
     fn from(port: asm::Port) -> Self {
         let line_status_register: u8 = asm::inb(port);
