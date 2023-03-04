@@ -7,11 +7,8 @@ mod asm;
 mod serial;
 
 use {
-    core::{
-        fmt::Write,
-        panic::PanicInfo,
-    },
-    serial::print_format,
+    core::panic::PanicInfo,
+    serial::print,
 };
 
 #[no_mangle]

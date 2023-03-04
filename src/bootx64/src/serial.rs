@@ -18,7 +18,7 @@ use {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::print_format(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
@@ -27,13 +27,13 @@ macro_rules! println {
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-pub fn print_format(args: fmt::Arguments) {
+pub fn print(args: fmt::Arguments) {
     unsafe {
         match &mut COM1 {
             Some(ref mut com1) => com1.write_fmt(args).expect("Can't print with COM1."),
             None => {
                 COM1 = Some(Serial::new(COM1PORT, BAUD));
-                print_format(args);
+                print(args);
             },
         }
     }
