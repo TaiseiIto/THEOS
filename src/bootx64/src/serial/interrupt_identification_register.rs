@@ -3,6 +3,66 @@
 
 use super::super::asm;
 
+pub struct InterruptIdentificationRegister {
+    pending: bool,
+    interrupt: Interrupt,
+    timeout: bool,
+    enabled_64_byte_fifo: bool,
+    fifo: Fifo,
+}
+
+const PENDING: u8 = 0x01;
+const TIMEOUT: u8 = 0x08;
+const ENABLED_64_BYTE_FIFO: u8 = 0x20;
+
+impl From<asm::Port> for InterruptIdentificationRegister {
+    fn from(port: asm::Port) -> Self {
+        let interrupt_identification_register: u8 = asm::inb(port);
+        interrupt_identification_register.into()
+    }
+}
+
+impl From<u8> for InterruptIdentificationRegister {
+    fn from(byte: u8) -> Self {
+        let pending: bool = byte & PENDING != 0;
+        let interrupt: Interrupt = byte.into();
+        let timeout: bool = byte & TIMEOUT != 0;
+        let enabled_64_byte_fifo: bool = byte & ENABLED_64_BYTE_FIFO != 0;
+        let fifo: Fifo = byte.into();
+        Self {
+            pending,
+            interrupt,
+            timeout,
+            enabled_64_byte_fifo,
+            fifo,
+        }
+    }
+}
+
+impl Into<u8> for &InterruptIdentificationRegister {
+    fn into(self) -> u8 {
+        let pending: u8 = match self.pending {
+            true => PENDING,
+            false => 0x00,
+        };
+        let interrupt: u8 = (&self.interrupt).into();
+        let timeout: u8 = match self.timeout {
+            true => TIMEOUT,
+            false => 0x00,
+        };
+        let enabled_64_byte_fifo: u8 = match self.enabled_64_byte_fifo {
+            true => ENABLED_64_BYTE_FIFO,
+            false => 0x00,
+        };
+        let fifo: u8 = (&self.fifo).into();
+        pending
+        | interrupt
+        | timeout
+        | enabled_64_byte_fifo
+        | fifo
+    }
+}
+
 pub enum Interrupt {
     ModemStatus,
     TransmitterHoldingRegisterEmpty,
