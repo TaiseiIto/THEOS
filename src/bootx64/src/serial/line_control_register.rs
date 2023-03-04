@@ -1,23 +1,5 @@
 use super::super::asm;
 
-pub fn disable_dlab(port: asm::Port) {
-    let mut line_control_register: LineControlRegister = port.into();
-    if line_control_register.dlab {
-        line_control_register.dlab = false;
-        let line_control_register: u8 = (&line_control_register).into();
-        asm::outb(port, line_control_register);
-    }
-}
-
-pub fn enable_dlab(port: asm::Port) {
-    let mut line_control_register: LineControlRegister = port.into();
-    if !line_control_register.dlab {
-        line_control_register.dlab = true;
-        let line_control_register: u8 = (&line_control_register).into();
-        asm::outb(port, line_control_register);
-    }
-}
-
 pub struct LineControlRegister {
     character_length: CharacterLength,
     stop_bit: StopBit,
@@ -26,6 +8,16 @@ pub struct LineControlRegister {
 }
 
 const DLAB: u8 = 0x80;
+
+impl LineControlRegister {
+    pub fn enable_dlab(&mut self) {
+        self.dlab = true;
+    }
+
+    pub fn disable_dlab(&mut self) {
+        self.dlab = false;
+    }
+}
 
 impl From<asm::Port> for LineControlRegister {
     fn from(port: asm::Port) -> Self {

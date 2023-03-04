@@ -76,13 +76,28 @@ impl Serial {
     }
 
     fn enable_dlab(&self) {
-        let line_control_register: asm::Port = self.line_control_register();
-        line_control_register::enable_dlab(line_control_register);
+        let mut line_control_register: line_control_register::LineControlRegister = self.into();
+        line_control_register.enable_dlab();
+        self.write_line_control_register(&line_control_register);
     }
 
     fn disable_dlab(&self) {
-        let line_control_register: asm::Port = self.line_control_register();
-        line_control_register::disable_dlab(line_control_register);
+        let mut line_control_register: line_control_register::LineControlRegister = self.into();
+        line_control_register.disable_dlab();
+        self.write_line_control_register(&line_control_register);
+    }
+
+    fn write_line_control_register(&self, line_control_register: &line_control_register::LineControlRegister) {
+        let port = self.line_control_register();
+        let line_control_register: u8 = line_control_register.into();
+        asm::outb(port, line_control_register);
+    }
+}
+
+impl Into<line_control_register::LineControlRegister> for &Serial {
+    fn into(self) -> line_control_register::LineControlRegister {
+        let port: asm::Port = self.line_control_register();
+        port.into()
     }
 }
 
