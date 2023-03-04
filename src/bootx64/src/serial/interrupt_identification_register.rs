@@ -15,6 +15,24 @@ const PENDING: u8 = 0x01;
 const TIMEOUT: u8 = 0x08;
 const ENABLED_64_BYTE_FIFO: u8 = 0x20;
 
+impl InterruptIdentificationRegister {
+    fn new(
+        pending: bool,
+        interrupt: Interrupt,
+        timeout: bool,
+        enabled_64_byte_fifo: bool,
+        fifo: Fifo,
+    ) -> Self {
+        Self {
+            pending,
+            interrupt,
+            timeout,
+            enabled_64_byte_fifo,
+            fifo,
+        }
+    }
+}
+
 impl From<asm::Port> for InterruptIdentificationRegister {
     fn from(port: asm::Port) -> Self {
         let interrupt_identification_register: u8 = asm::inb(port);
