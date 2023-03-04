@@ -8,12 +8,13 @@ OVMF_VARS = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
 OVMF_VARS_OPTION = -drive file=$(OVMF_VARS),format=raw,if=pflash
 THEOS = ../theos.img
 THEOS_OPTION = -drive file=$(THEOS),format=raw,id=theos,if=none -device ide-hd,drive=theos,bootindex=1
+SERIAL_LOG = ../serial.log
 SERIAL_OPTION = -serial stdio
 VNC_OPTION = -vnc :0
 
 # Run THEOS on QEMU.
 run:
-	$(QEMU) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(SERIAL_OPTION) $(VNC_OPTION)
+	$(QEMU) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(SERIAL_OPTION) $(VNC_OPTION) | tee $(SERIAL_LOG)
 
 # Stop THEOS on QEMU.
 stop:
