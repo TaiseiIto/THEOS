@@ -1,5 +1,6 @@
 // References
 // https://wiki.osdev.org/Serial_Ports
+// https://www.lookrs232.com/
 
 mod interrupt_enable_register;
 mod line_control_register;
@@ -52,7 +53,7 @@ impl Serial {
 
     fn can_send(&self) -> bool {
         let line_status_register: line_status_register::LineStatusRegister = self.into();
-        line_status_register.transmitter_holding_register_empty()
+        line_status_register.empty_transmitter_holding_register()
     }
 
     fn baud_low_register(&self) -> asm::Port {

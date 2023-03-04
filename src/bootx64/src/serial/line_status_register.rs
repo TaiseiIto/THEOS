@@ -1,13 +1,17 @@
+// References
+// https://www.lookrs232.com/rs232/lsr.htm
+
 use super::super::asm;
+
 pub struct LineStatusRegister {
     data_ready: bool,
     overrun_error: bool,
     parity_error: bool,
     framing_error: bool,
-    break_indicator: bool,
-    transmitter_holding_register_empty: bool,
-    transmitter_empty: bool,
-    impending_error: bool,
+    break_interrupt: bool,
+    empty_transmitter_holding_register: bool,
+    empty_data_holging_registers: bool,
+    error_in_received_fifo: bool,
 }
 
 const DATA_READY: u8 = 0x01;
@@ -20,8 +24,8 @@ const TRANSMITTER_EMPTY: u8 = 0x40;
 const IMPENDING_ERROR: u8 = 0x80;
 
 impl LineStatusRegister {
-    pub fn transmitter_holding_register_empty(&self) -> bool {
-        self.transmitter_holding_register_empty
+    pub fn empty_transmitter_holding_register(&self) -> bool {
+        self.empty_transmitter_holding_register
     }
 }
 
@@ -38,19 +42,19 @@ impl From<u8> for LineStatusRegister {
         let overrun_error: bool = byte & OVERRUN_ERROR != 0;
         let parity_error: bool = byte & PARITY_ERROR != 0;
         let framing_error: bool = byte & FRAMING_ERROR != 0;
-        let break_indicator: bool = byte & BREAK_INDICATOR != 0;
-        let transmitter_holding_register_empty: bool = byte & TRANSMITTER_HOLDING_REGISTER_EMPTY != 0;
-        let transmitter_empty: bool = byte & TRANSMITTER_EMPTY != 0;
-        let impending_error: bool = byte & IMPENDING_ERROR != 0;
+        let break_interrupt: bool = byte & BREAK_INDICATOR != 0;
+        let empty_transmitter_holding_register: bool = byte & TRANSMITTER_HOLDING_REGISTER_EMPTY != 0;
+        let empty_data_holging_registers: bool = byte & TRANSMITTER_EMPTY != 0;
+        let error_in_received_fifo: bool = byte & IMPENDING_ERROR != 0;
         Self {
             data_ready,
             overrun_error,
             parity_error,
             framing_error,
-            break_indicator,
-            transmitter_holding_register_empty,
-            transmitter_empty,
-            impending_error,
+            break_interrupt,
+            empty_transmitter_holding_register,
+            empty_data_holging_registers,
+            error_in_received_fifo,
         }
     }
 }
@@ -73,19 +77,19 @@ impl Into<u8> for &LineStatusRegister {
             true => FRAMING_ERROR,
             false => 0x00,
         };
-        let break_indicator: u8 = match self.break_indicator {
+        let break_interrupt: u8 = match self.break_interrupt {
             true => BREAK_INDICATOR,
             false => 0x00,
         };
-        let transmitter_holding_register_empty: u8 = match self.transmitter_holding_register_empty {
+        let empty_transmitter_holding_register: u8 = match self.empty_transmitter_holding_register {
             true => TRANSMITTER_HOLDING_REGISTER_EMPTY,
             false => 0x00,
         };
-        let transmitter_empty: u8 = match self.transmitter_empty {
+        let empty_data_holging_registers: u8 = match self.empty_data_holging_registers {
             true => TRANSMITTER_EMPTY,
             false => 0x00,
         };
-        let impending_error: u8 = match self.impending_error {
+        let error_in_received_fifo: u8 = match self.error_in_received_fifo {
             true => IMPENDING_ERROR,
             false => 0x00,
         };
@@ -93,10 +97,10 @@ impl Into<u8> for &LineStatusRegister {
         | overrun_error
         | parity_error
         | framing_error
-        | break_indicator
-        | transmitter_holding_register_empty
-        | transmitter_empty
-        | impending_error
+        | break_interrupt
+        | empty_transmitter_holding_register
+        | empty_data_holging_registers
+        | error_in_received_fifo
     }
 }
 
