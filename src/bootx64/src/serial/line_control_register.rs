@@ -1,10 +1,13 @@
+// References
+// https://www.lookrs232.com/rs232/lcr.htm
+
 use super::super::asm;
 
 pub struct LineControlRegister {
     character_length: CharacterLength,
     stop_bit: StopBit,
     parity: Parity,
-    dlab: bool,
+    divisor_latch_access_bit: bool,
 }
 
 const DLAB: u8 = 0x80;
@@ -14,22 +17,22 @@ impl LineControlRegister {
         character_length: CharacterLength,
         stop_bit: StopBit,
         parity: Parity,
-        dlab: bool,
+        divisor_latch_access_bit: bool,
     ) -> Self {
         Self {
             character_length,
             stop_bit,
             parity,
-            dlab,
+            divisor_latch_access_bit,
         }
     }
 
-    pub fn enable_dlab(&mut self) {
-        self.dlab = true;
+    pub fn enable_divisor_latch_access_bit(&mut self) {
+        self.divisor_latch_access_bit = true;
     }
 
-    pub fn disable_dlab(&mut self) {
-        self.dlab = false;
+    pub fn disable_divisor_latch_access_bit(&mut self) {
+        self.divisor_latch_access_bit = false;
     }
 }
 
@@ -45,7 +48,7 @@ impl From<u8> for LineControlRegister {
         let character_length: CharacterLength = byte.into();
         let stop_bit: StopBit = byte.into();
         let parity: Parity = byte.into();
-        let dlab: bool = match byte & 0x80 {
+        let divisor_latch_access_bit: bool = match byte & 0x80 {
             0x00 => false,
             DLAB => true,
             _ => panic!("Can't get serial line control register!"),
@@ -54,7 +57,7 @@ impl From<u8> for LineControlRegister {
             character_length,
             stop_bit,
             parity,
-            dlab,
+            divisor_latch_access_bit,
         }
     }
 }
@@ -64,14 +67,14 @@ impl Into<u8> for &LineControlRegister {
         let character_length: u8 = (&self.character_length).into();
         let stop_bit: u8 = (&self.stop_bit).into();
         let parity: u8 = (&self.parity).into();
-        let dlab: u8 = match self.dlab {
+        let divisor_latch_access_bit: u8 = match self.divisor_latch_access_bit {
             false => 0x00,
             true => DLAB,
         };
         character_length
         | stop_bit
         | parity
-        | dlab
+        | divisor_latch_access_bit
     }
 }
 
@@ -141,15 +144,15 @@ pub enum Parity {
     No,
     Odd,
     Even,
-    Mark,
-    Space,
+    High,
+    Low,
 }
 
 const NO_PARITY: u8 = 0x00;
 const ODD_PARITY: u8 = 0x08;
 const EVEN_PARITY: u8 = 0x18;
-const MARK_PARITY: u8 = 0x28;
-const SPACE_PARITY: u8 = 0x38;
+const HIGH_PARITY: u8 = 0x28;
+const LOW_PARITY: u8 = 0x38;
 
 impl From<u8> for Parity {
     fn from(byte: u8) -> Self {
@@ -157,8 +160,8 @@ impl From<u8> for Parity {
             NO_PARITY => Self::No,
             ODD_PARITY => Self::Odd,
             EVEN_PARITY => Self::Even,
-            MARK_PARITY => Self::Mark,
-            SPACE_PARITY => Self::Space,
+            HIGH_PARITY => Self::High,
+            LOW_PARITY => Self::Low,
             _ => panic!("Can't get serial parity type!"),
         }
     }
@@ -170,8 +173,8 @@ impl Into<u8> for &Parity {
             Parity::No => NO_PARITY,
             Parity::Odd => ODD_PARITY,
             Parity::Even => EVEN_PARITY,
-            Parity::Mark => MARK_PARITY,
-            Parity::Space => SPACE_PARITY,
+            Parity::High => HIGH_PARITY,
+            Parity::Low => LOW_PARITY,
         }
     }
 }

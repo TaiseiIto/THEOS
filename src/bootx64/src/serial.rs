@@ -34,12 +34,12 @@ impl Serial {
         let character_length = line_control_register::CharacterLength::Bit8;
         let stop_bit = line_control_register::StopBit::Bit1;
         let parity = line_control_register::Parity::No;
-        let dlab = false;
+        let divisor_latch_access_bit = false;
         let line_control_register = line_control_register::LineControlRegister::new(
             character_length,
             stop_bit,
             parity,
-            dlab,
+            divisor_latch_access_bit,
         );
         serial.write_line_control_register(&line_control_register);
 
@@ -77,7 +77,7 @@ impl Serial {
     }
 
     fn set_baud(&self, baud: u32) {
-        self.enable_dlab();
+        self.enable_divisor_latch_access_bit();
 
         // Set low byte.
         let baud: u16 = (FREQUENCY / baud) as u16;
@@ -90,18 +90,18 @@ impl Serial {
         let baud_high_register: asm::Port = self.baud_high_register();
         asm::outb(baud_high_register, baud_high);
 
-        self.disable_dlab();
+        self.disable_divisor_latch_access_bit();
     }
 
-    fn enable_dlab(&self) {
+    fn enable_divisor_latch_access_bit(&self) {
         let mut line_control_register: line_control_register::LineControlRegister = self.into();
-        line_control_register.enable_dlab();
+        line_control_register.enable_divisor_latch_access_bit();
         self.write_line_control_register(&line_control_register);
     }
 
-    fn disable_dlab(&self) {
+    fn disable_divisor_latch_access_bit(&self) {
         let mut line_control_register: line_control_register::LineControlRegister = self.into();
-        line_control_register.disable_dlab();
+        line_control_register.disable_divisor_latch_access_bit();
         self.write_line_control_register(&line_control_register);
     }
 
