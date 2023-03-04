@@ -61,8 +61,7 @@ impl Serial {
     fn set_baud(&self, baud: u32) {
         // Enable DLAB.
         let line_control_register: asm::Port = self.line_control_register();
-        let line_control: u8 = asm::inb(line_control_register);
-        asm::outb(line_control_register, line_control | line_control_register::DLAB);
+        line_control_register::enable_dlab(line_control_register);
         // Set low byte.
         let baud: u16 = (FREQUENCY / baud) as u16;
         let baud_low: u8 = baud as u8;
@@ -73,7 +72,7 @@ impl Serial {
         let baud_high_register: asm::Port = self.baud_high_register();
         asm::outb(baud_high_register, baud_high);
         // Disable DLAB.
-        asm::outb(line_control_register, line_control);
+        line_control_register::disable_dlab(line_control_register);
     }
 }
 
