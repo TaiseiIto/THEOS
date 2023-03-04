@@ -7,22 +7,26 @@ pub struct LineControlRegister {
     character_length: CharacterLength,
     stop_bit: StopBit,
     parity: Parity,
+    set_break_enable: bool,
     divisor_latch_access_bit: bool,
 }
 
-const DLAB: u8 = 0x80;
+const DIVISOR_LATCH_ACCESS_BIT: u8 = 0x80;
+const SET_BREAK_ENABLE: u8 = 0x40;
 
 impl LineControlRegister {
     pub fn new(
         character_length: CharacterLength,
         stop_bit: StopBit,
         parity: Parity,
+        set_break_enable: bool,
         divisor_latch_access_bit: bool,
     ) -> Self {
         Self {
             character_length,
             stop_bit,
             parity,
+            set_break_enable,
             divisor_latch_access_bit,
         }
     }
@@ -48,15 +52,21 @@ impl From<u8> for LineControlRegister {
         let character_length: CharacterLength = byte.into();
         let stop_bit: StopBit = byte.into();
         let parity: Parity = byte.into();
-        let divisor_latch_access_bit: bool = match byte & 0x80 {
+        let set_break_enable: bool = match byte & SET_BREAK_ENABLE {
             0x00 => false,
-            DLAB => true,
+            SET_BREAK_ENABLE => true,
+            _ => panic!("Can't get serial line control register!"),
+        };
+        let divisor_latch_access_bit: bool = match byte & DIVISOR_LATCH_ACCESS_BIT {
+            0x00 => false,
+            DIVISOR_LATCH_ACCESS_BIT => true,
             _ => panic!("Can't get serial line control register!"),
         };
         Self {
             character_length,
             stop_bit,
             parity,
+            set_break_enable,
             divisor_latch_access_bit,
         }
     }
@@ -67,13 +77,18 @@ impl Into<u8> for &LineControlRegister {
         let character_length: u8 = (&self.character_length).into();
         let stop_bit: u8 = (&self.stop_bit).into();
         let parity: u8 = (&self.parity).into();
+        let set_break_enable: u8 = match self.set_break_enable {
+            false => 0x00,
+            true => SET_BREAK_ENABLE,
+        };
         let divisor_latch_access_bit: u8 = match self.divisor_latch_access_bit {
             false => 0x00,
-            true => DLAB,
+            true => DIVISOR_LATCH_ACCESS_BIT,
         };
         character_length
         | stop_bit
         | parity
+        | set_break_enable
         | divisor_latch_access_bit
     }
 }

@@ -34,11 +34,13 @@ impl Serial {
         let character_length = line_control_register::CharacterLength::Bit8;
         let stop_bit = line_control_register::StopBit::Bit1;
         let parity = line_control_register::Parity::No;
+        let set_break_enable = false;
         let divisor_latch_access_bit = false;
         let line_control_register = line_control_register::LineControlRegister::new(
             character_length,
             stop_bit,
             parity,
+            set_break_enable,
             divisor_latch_access_bit,
         );
         serial.write_line_control_register(&line_control_register);
