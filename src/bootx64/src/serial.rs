@@ -8,7 +8,10 @@ mod line_control_register;
 mod line_status_register;
 mod modem_control_register;
 
-use super::asm;
+use {
+    core::fmt,
+    super::asm,
+};
 
 pub struct Serial {
     port: asm::Port,
@@ -82,11 +85,6 @@ impl Serial {
         serial
     }
 
-    pub fn put_byte(&self, byte: u8) {
-        while !self.can_send() {}
-        asm::outb(self.port, byte);
-    }
-
     fn can_send(&self) -> bool {
         let line_status_register: line_status_register::LineStatusRegister = self.into();
         line_status_register.empty_transmitter_holding_register()
@@ -149,6 +147,11 @@ impl Serial {
         self.write_line_control_register(&line_control_register);
     }
 
+    fn write_byte(&self, byte: u8) {
+        while !self.can_send() {}
+        asm::outb(self.port, byte);
+    }
+
     fn write_interrupt_enable_register(&self, interrupt_enable_register: &interrupt_enable_register::InterruptEnableRegister) {
         let port = self.interrupt_enable_register();
         let interrupt_enable_register: u8 = interrupt_enable_register.into();
@@ -185,6 +188,15 @@ impl Into<line_status_register::LineStatusRegister> for &Serial {
     fn into(self) -> line_status_register::LineStatusRegister {
         let port: asm::Port = self.line_status_register();
         port.into()
+    }
+}
+
+impl fmt::Write for Serial {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        for byte in s.bytes() {
+            self.write_byte(byte);
+        }
+        Ok(())
     }
 }
 
