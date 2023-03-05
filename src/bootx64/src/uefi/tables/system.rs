@@ -1,7 +1,10 @@
 use super::{
     header,
     super::{
-        protocols::simple_text_input,
+        protocols::{
+            simple_text_input,
+            simple_text_output,
+        },
         types::{
             char16,
             handle,
@@ -20,5 +23,7 @@ pub struct System<'a> {
     firmware_revision: u32,
     console_in_handle: handle::Handle<'a>,
     con_in: &'a simple_text_input::SimpleTextInput<'a>,
+    console_out_handle: handle::Handle<'a>,
+    con_out: &'a simple_text_output::SimpleTextOutput,
 }
 

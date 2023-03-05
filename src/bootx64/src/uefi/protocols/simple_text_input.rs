@@ -1,6 +1,6 @@
 use {
     core::fmt,
-    super::super::types:: {
+    super::super::types::{
         event,
         status,
     },
