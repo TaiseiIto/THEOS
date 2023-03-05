@@ -8,6 +8,7 @@ use core::{
 // 2.3.1 Data Types
 // CHAR16 *
 #[derive(Clone)]
+#[repr(C)]
 pub struct String {
     character: *const u16,
 }

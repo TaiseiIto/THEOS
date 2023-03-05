@@ -9,6 +9,7 @@ use {
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 12.3 Simple Text Input Protocol
+#[repr(C)]
 pub struct SimpleTextInput<'a> {
     reset: InputReset,
     read_key_stroke: InputReadKey,
@@ -30,6 +31,7 @@ impl fmt::Debug for SimpleTextInput<'_> {
 type InputReset = fn(&SimpleTextInput, bool) -> status::Status;
 type InputReadKey = fn(&SimpleTextInput, &mut InputKey) -> status::Status;
 
+#[repr(C)]
 struct InputKey {
     scan_code: u16,
     unicode_char: u16,
