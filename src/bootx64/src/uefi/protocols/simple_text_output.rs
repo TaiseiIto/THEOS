@@ -30,11 +30,14 @@ impl SimpleTextOutput<'_> {
     }
 
     pub fn output_string(&self, string: &str) -> status::Status {
-        let mut status = 0;
+        let mut status: status::Status = status::SUCCESS;
         for character in string.encode_utf16() {
             let buffer: [u16; 2] = [character, 0x0000];
             let string = char16::String::new(&buffer[0]);
             status = self.output_string.call(self, string);
+            if status != status::SUCCESS {
+                break;
+            }
         }
         status
     }

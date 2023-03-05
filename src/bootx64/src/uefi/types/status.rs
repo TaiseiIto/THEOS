@@ -5,3 +5,5 @@
 // EFI_STATUS
 pub type Status = u64;
 
+pub const SUCCESS: Status = 0;
+
