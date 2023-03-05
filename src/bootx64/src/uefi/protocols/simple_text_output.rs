@@ -10,7 +10,7 @@ use {
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 12.4 Simple Text Output Protocol
 #[repr(C)]
-pub struct SimpleTextOutput {
+pub struct SimpleTextOutput<'a> {
     reset: TextReset,
     output_string: TextString,
     test_string: TextTestString,
@@ -20,9 +20,10 @@ pub struct SimpleTextOutput {
     clear_screen: TextClearScreen,
     set_cursor_position: TextSetCursorPosition,
     enable_cursor: TextEnableCursor,
+    mode: &'a SimpleTextOutputMode,
 }
 
-impl fmt::Debug for SimpleTextOutput {
+impl fmt::Debug for SimpleTextOutput<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let reset: usize = self.reset as usize;
         let output_string: usize = self.output_string as usize;
@@ -43,6 +44,7 @@ impl fmt::Debug for SimpleTextOutput {
         write!(f, "    clear_screen: {:#x},\n", clear_screen).expect("Can't print a simple text output protocol!");
         write!(f, "    set_cursor_position: {:#x},\n", set_cursor_position).expect("Can't print a simple text output protocol!");
         write!(f, "    enable_cursor: {:#x},\n", enable_cursor).expect("Can't print a simple text output protocol!");
+        write!(f, "    mode: {:#?}, \n", self.mode).expect("Can't print a simple text output protocol!");
         write!(f, "}}")
     }
 }
@@ -56,4 +58,15 @@ type TextSetAttribute = extern "efiapi" fn(&SimpleTextOutput, u64) -> status::St
 type TextClearScreen = extern "efiapi" fn(&SimpleTextOutput) -> status::Status;
 type TextSetCursorPosition = extern "efiapi" fn(&SimpleTextOutput, u64, u64) -> status::Status;
 type TextEnableCursor = extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status;
+
+#[derive(Debug)]
+#[repr(C)]
+struct SimpleTextOutputMode {
+    max_mode: i32,
+    mode: i32,
+    attribute: i32,
+    cursor_column: i32,
+    cursor_row: i32,
+    cursor_visible: bool,
+}
 

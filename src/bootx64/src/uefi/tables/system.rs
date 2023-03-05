@@ -24,6 +24,6 @@ pub struct System<'a> {
     console_in_handle: handle::Handle<'a>,
     con_in: &'a simple_text_input::SimpleTextInput<'a>,
     console_out_handle: handle::Handle<'a>,
-    con_out: &'a simple_text_output::SimpleTextOutput,
+    con_out: &'a simple_text_output::SimpleTextOutput<'a>,
 }
 
