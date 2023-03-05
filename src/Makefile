@@ -1,7 +1,7 @@
-BOOT_SECTOR_DIRECTORY = boot_sector
-EFI_DIRECTORY = EFI
+BOOT_SECTOR = boot_sector
+BOOTX64 = bootx64
 
 all:
-	make -C $(BOOT_SECTOR_DIRECTORY)
-	make -C $(EFI_DIRECTORY)
+	make -C $(BOOT_SECTOR)
+	make -C $(BOOTX64)
 
