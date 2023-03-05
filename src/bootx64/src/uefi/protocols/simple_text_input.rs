@@ -13,8 +13,8 @@ pub struct SimpleTextInput {
 impl fmt::Debug for SimpleTextInput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let reset: usize = self.reset as usize;
-        write!(f, "SimpleTextInput {{\n");
-        write!(f, "    reset: {:#x}\n", reset);
+        write!(f, "SimpleTextInput {{\n").expect("Can't print a simple text input protocol!");
+        write!(f, "    reset: {:#x}\n", reset).expect("Can't print a simple text input protocol!");
         write!(f, "}}")
     }
 }
