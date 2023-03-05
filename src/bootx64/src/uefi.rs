@@ -5,5 +5,6 @@ pub mod char16;
 pub mod handle;
 pub mod protocol;
 pub mod system_table;
+pub mod status;
 pub mod table_header;
 
