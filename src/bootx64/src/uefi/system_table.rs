@@ -1,5 +1,6 @@
 use super::{
     char16,
+    handle,
     table_header,
 };
 
@@ -12,5 +13,6 @@ pub struct SystemTable {
     header: table_header::TableHeader,
     firmware_vendor: char16::String,
     firmware_revision: u32,
+    console_in_handle: handle::Handle,
 }
 

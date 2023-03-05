@@ -1,8 +1,7 @@
+use core::ffi::c_void;
+
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
-
-pub mod handle;
-pub mod system_table;
-mod char16;
-mod table_header;
+// 2.3.1 Data Types
+pub type Handle = *const c_void;
 
