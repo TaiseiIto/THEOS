@@ -1,6 +1,7 @@
 use super::{
     char16,
     handle,
+    protocol::simple_text_input,
     table_header,
 };
 
@@ -14,5 +15,6 @@ pub struct SystemTable {
     firmware_vendor: char16::String,
     firmware_revision: u32,
     console_in_handle: handle::Handle,
+    con_in: *const simple_text_input::SimpleTextInput,
 }
 
