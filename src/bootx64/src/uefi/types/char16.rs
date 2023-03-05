@@ -6,6 +6,7 @@ use core::{
 // Reference
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 2.3.1 Data Types
+// CHAR16 *
 #[derive(Clone)]
 pub struct String {
     character: *const u16,
