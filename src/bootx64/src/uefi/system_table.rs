@@ -1,6 +1,6 @@
 use super::{
-    char16::Char16,
-    table_header::TableHeader,
+    char16,
+    table_header,
 };
 
 // References
@@ -9,7 +9,8 @@ use super::{
 #[derive(Debug)]
 #[repr(C)]
 pub struct SystemTable {
-    header: TableHeader,
-    firmware_vendor: Char16,
+    header: table_header::TableHeader,
+    firmware_vendor: char16::String,
+    firmware_revision: u32,
 }
 
