@@ -1,8 +1,10 @@
 use super::{
-    char16,
-    handle,
     protocol::simple_text_input,
     table_header,
+    types::{
+        char16,
+        handle,
+    },
 };
 
 // References

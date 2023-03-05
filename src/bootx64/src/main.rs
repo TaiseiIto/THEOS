@@ -11,8 +11,10 @@ use {
     core::panic::PanicInfo,
     serial::print,
     uefi::{
-        handle,
-        status,
+        types::{
+            handle,
+            status,
+        },
         system_table,
     },
 };
