@@ -9,19 +9,17 @@ use core::{
 // CHAR16 *
 #[derive(Clone)]
 #[repr(C)]
-pub struct String {
-    character: *const u16,
-}
+pub struct String(*const u16);
 
 impl Iterator for String {
     type Item = u16;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.character = unsafe {
-            self.character.add(1)
+        self.0 = unsafe {
+            self.0.add(1)
         };
         let character: u16 = unsafe {
-            *self.character
+            *self.0
         };
         match character {
             0x0000 => None,
