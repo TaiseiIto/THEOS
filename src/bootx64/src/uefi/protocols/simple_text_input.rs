@@ -28,8 +28,8 @@ impl fmt::Debug for SimpleTextInput<'_> {
     }
 }
 
-type InputReset = fn(&SimpleTextInput, bool) -> status::Status;
-type InputReadKey = fn(&SimpleTextInput, &mut InputKey) -> status::Status;
+type InputReset = extern "efiapi" fn(&SimpleTextInput, bool) -> status::Status;
+type InputReadKey = extern "efiapi" fn(&SimpleTextInput, &mut InputKey) -> status::Status;
 
 #[repr(C)]
 struct InputKey {
