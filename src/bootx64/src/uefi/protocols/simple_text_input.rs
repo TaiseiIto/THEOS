@@ -20,9 +20,9 @@ impl fmt::Debug for SimpleTextInput<'_> {
         let reset: usize = self.reset as usize;
         let read_key_stroke: usize = self.read_key_stroke as usize;
         write!(f, "SimpleTextInput {{\n").expect("Can't print a simple text input protocol!");
-        write!(f, "    reset: {:#x}\n", reset).expect("Can't print a simple text input protocol!");
-        write!(f, "    read_key_stroke: {:#x}\n", read_key_stroke).expect("Can't print a simple text input protocol!");
-        write!(f, "    wait_for_key: {:?}\n", self.wait_for_key).expect("Can't print a simple text input protocol!");
+        write!(f, "    reset: {:#x},\n", reset).expect("Can't print a simple text input protocol!");
+        write!(f, "    read_key_stroke: {:#x},\n", read_key_stroke).expect("Can't print a simple text input protocol!");
+        write!(f, "    wait_for_key: {:?},\n", self.wait_for_key).expect("Can't print a simple text input protocol!");
         write!(f, "}}")
     }
 }
