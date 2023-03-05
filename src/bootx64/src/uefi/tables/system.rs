@@ -14,11 +14,11 @@ use super::{
 // 4.3 System Table
 #[derive(Debug)]
 #[repr(C)]
-pub struct System {
+pub struct System<'a> {
     header: header::Header,
     firmware_vendor: char16::String,
     firmware_revision: u32,
     console_in_handle: handle::Handle,
-    con_in: *const simple_text_input::SimpleTextInput,
+    con_in: &'a simple_text_input::SimpleTextInput,
 }
 

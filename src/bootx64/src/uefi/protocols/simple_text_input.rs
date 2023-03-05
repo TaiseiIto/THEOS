@@ -1,4 +1,7 @@
-use super::super::types::status;
+use {
+    core::fmt,
+    super::super::types::status,
+};
 
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
@@ -7,5 +10,14 @@ pub struct SimpleTextInput {
     reset: InputReset,
 }
 
-type InputReset = fn(*const SimpleTextInput, bool) -> status::Status;
+impl fmt::Debug for SimpleTextInput {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let reset: usize = self.reset as usize;
+        write!(f, "SimpleTextInput {{\n");
+        write!(f, "    reset: {:#x}\n", reset);
+        write!(f, "}}")
+    }
+}
+
+type InputReset = fn(&SimpleTextInput, bool) -> status::Status;
 
