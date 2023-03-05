@@ -1,5 +1,5 @@
 use super::{
-    protocol::simple_text_input,
+    protocols::simple_text_input,
     table_header,
     types::{
         char16,
