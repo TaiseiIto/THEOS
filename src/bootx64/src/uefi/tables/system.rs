@@ -8,6 +8,7 @@ use super::{
         types::{
             char16,
             handle,
+            status,
         },
     },
 };
@@ -25,5 +26,11 @@ pub struct System<'a> {
     con_in: &'a simple_text_input::SimpleTextInput<'a>,
     console_out_handle: handle::Handle<'a>,
     con_out: &'a simple_text_output::SimpleTextOutput<'a>,
+}
+
+impl System<'_> {
+    pub fn con_out_reset(&self, extended_verification: bool) -> status::Status {
+        self.con_out.reset(extended_verification)
+    }
 }
 

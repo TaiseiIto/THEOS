@@ -24,7 +24,19 @@ pub struct SimpleTextOutput<'a> {
     mode: &'a SimpleTextOutputMode,
 }
 
+impl SimpleTextOutput<'_> {
+    pub fn reset(&self, extended_verification: bool) -> status::Status {
+        self.reset.call(self, extended_verification)
+    }
+}
+
 struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
+
+impl TextReset {
+    fn call(&self, this: &SimpleTextOutput, extended_verification: bool) -> status::Status {
+        (self.0)(this, extended_verification)
+    }
+}
 
 impl fmt::Debug for TextReset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
