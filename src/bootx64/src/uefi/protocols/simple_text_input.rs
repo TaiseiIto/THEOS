@@ -22,8 +22,8 @@ struct InputReset(extern "efiapi" fn(&SimpleTextInput, bool) -> status::Status);
 
 impl fmt::Debug for InputReset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let reset = self.0 as usize;
-        write!(f, "{:#x}", reset)
+        let function = self.0 as usize;
+        write!(f, "{:#x}", function)
     }
 }
 
@@ -32,8 +32,8 @@ struct InputReadKey(extern "efiapi" fn(&SimpleTextInput, &mut InputKey) -> statu
 
 impl fmt::Debug for InputReadKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let reset = self.0 as usize;
-        write!(f, "{:#x}", reset)
+        let function = self.0 as usize;
+        write!(f, "{:#x}", function)
     }
 }
 
