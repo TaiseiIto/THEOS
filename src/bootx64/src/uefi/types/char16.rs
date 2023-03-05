@@ -9,26 +9,29 @@ use core::{
 // CHAR16 *
 #[derive(Clone)]
 #[repr(C)]
-pub struct String(*const u16);
+pub struct String<'a>(&'a u16);
 
-impl Iterator for String {
+impl Iterator for String<'_> {
     type Item = u16;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0 = unsafe {
-            self.0.add(1)
+        let character: &u16 = self.0;
+        let character = character as *const u16;
+        let character = unsafe {
+            character.add(1)
         };
-        let character: u16 = unsafe {
-            *self.0
+        let character: &u16 = unsafe {
+            &*character
         };
-        match character {
+        self.0 = character;
+        match *self.0 {
             0x0000 => None,
-            _ => Some(character),
+            _ => Some(*character),
         }
     }
 }
 
-impl fmt::Debug for String {
+impl fmt::Debug for String<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let char16 = self.clone();
         write!(f, "\"").expect("Can't print an UTF16 string!");

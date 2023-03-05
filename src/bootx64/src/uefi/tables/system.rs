@@ -19,7 +19,7 @@ use super::{
 #[repr(C)]
 pub struct System<'a> {
     header: header::Header,
-    firmware_vendor: char16::String,
+    firmware_vendor: char16::String<'a>,
     firmware_revision: u32,
     console_in_handle: handle::Handle<'a>,
     con_in: &'a simple_text_input::SimpleTextInput<'a>,
