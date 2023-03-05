@@ -13,9 +13,9 @@ use {
 
 #[no_mangle]
 fn efi_main(image_handle: u64, system_table: u64) -> u64 {
-    println!("Hello, World!");
-    println!("image_handle = {:#018x}", image_handle);
-    println!("system_table = {:#018x}", system_table);
+    serial_println!("Hello, World!");
+    serial_println!("image_handle = {:#018x}", image_handle);
+    serial_println!("system_table = {:#018x}", system_table);
     loop {
         asm::hlt();
     }
@@ -23,7 +23,7 @@ fn efi_main(image_handle: u64, system_table: u64) -> u64 {
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
-    println!("{}", panic);
+    serial_println!("{}", panic);
     loop {
         asm::hlt();
     }

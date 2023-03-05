@@ -17,14 +17,14 @@ use {
 };
 
 #[macro_export]
-macro_rules! print {
+macro_rules! serial_print {
     ($($arg:tt)*) => ($crate::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
-macro_rules! println {
-    ($fmt:expr) => (print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+macro_rules! serial_println {
+    ($fmt:expr) => (serial_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (serial_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
 pub fn print(args: fmt::Arguments) {
