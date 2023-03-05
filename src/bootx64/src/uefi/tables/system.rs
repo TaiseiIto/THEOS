@@ -1,9 +1,11 @@
 use super::{
-    protocols::simple_text_input,
-    table_header,
-    types::{
-        char16,
-        handle,
+    header,
+    super::{
+        protocols::simple_text_input,
+        types::{
+            char16,
+            handle,
+        },
     },
 };
 
@@ -12,8 +14,8 @@ use super::{
 // 4.3 System Table
 #[derive(Debug)]
 #[repr(C)]
-pub struct SystemTable {
-    header: table_header::TableHeader,
+pub struct System {
+    header: header::Header,
     firmware_vendor: char16::String,
     firmware_revision: u32,
     console_in_handle: handle::Handle,

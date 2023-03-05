@@ -15,12 +15,12 @@ use {
             handle,
             status,
         },
-        system_table,
+        tables::system,
     },
 };
 
 #[no_mangle]
-fn efi_main(image_handle: handle::Handle, system_table: &system_table::SystemTable) -> status::Status {
+fn efi_main(image_handle: handle::Handle, system_table: &system::System) -> status::Status {
     serial_println!("Hello, World!");
     serial_println!("image_handle = {:#x?}", image_handle);
     serial_println!("system_table = {:#x?}", system_table);

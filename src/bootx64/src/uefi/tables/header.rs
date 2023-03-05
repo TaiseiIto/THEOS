@@ -3,7 +3,7 @@
 // 4.2 EFI Table Header
 #[derive(Debug)]
 #[repr(C)]
-pub struct TableHeader {
+pub struct Header {
     signature: u64,
     revision: u32,
     header_size: u32,
