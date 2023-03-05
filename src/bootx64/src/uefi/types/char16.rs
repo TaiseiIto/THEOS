@@ -11,6 +11,12 @@ use core::{
 #[repr(C)]
 pub struct String<'a>(&'a u16);
 
+impl<'a> String<'a> {
+    pub fn new(string: &'a u16) -> Self {
+        Self(string)
+    }
+}
+
 impl Iterator for String<'_> {
     type Item = u16;
 

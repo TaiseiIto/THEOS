@@ -25,6 +25,7 @@ fn efi_main(image_handle: handle::Handle, system_table: &system::System) -> stat
     serial_println!("image_handle = {:#x?}", image_handle);
     serial_println!("system_table = {:#x?}", system_table);
     system_table.con_out_reset(false);
+    system_table.con_out_output_string("Hello, World!\n");
     loop {
         asm::hlt();
     }

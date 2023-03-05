@@ -32,5 +32,9 @@ impl System<'_> {
     pub fn con_out_reset(&self, extended_verification: bool) -> status::Status {
         self.con_out.reset(extended_verification)
     }
+
+    pub fn con_out_output_string(&self, string: &str) -> status::Status {
+        self.con_out.output_string(string)
+    }
 }
 

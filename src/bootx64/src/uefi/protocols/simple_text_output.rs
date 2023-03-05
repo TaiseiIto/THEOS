@@ -28,13 +28,23 @@ impl SimpleTextOutput<'_> {
     pub fn reset(&self, extended_verification: bool) -> status::Status {
         self.reset.call(self, extended_verification)
     }
+
+    pub fn output_string(&self, string: &str) -> status::Status {
+        let mut status = 0;
+        for character in string.encode_utf16() {
+            let buffer: [u16; 2] = [character, 0x0000];
+            let string = char16::String::new(&buffer[0]);
+            status = self.output_string.call(self, string);
+        }
+        status
+    }
 }
 
 struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
 impl TextReset {
     fn call(&self, this: &SimpleTextOutput, extended_verification: bool) -> status::Status {
-        (self.0)(this, extended_verification)
+        self.0(this, extended_verification)
     }
 }
 
@@ -46,6 +56,12 @@ impl fmt::Debug for TextReset {
 }
 
 struct TextString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
+
+impl TextString {
+    fn call(&self, this: &SimpleTextOutput, string: char16::String) -> status::Status {
+        self.0(this, string)
+    }
+}
 
 impl fmt::Debug for TextString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
