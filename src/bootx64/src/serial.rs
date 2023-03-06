@@ -18,35 +18,26 @@ use {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($($arg:tt)*) => ($crate::print(format_args!($($arg)*)));
+    ($serial:expr, $($arg:tt)*) => ($crate::serial::print($serial, format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! serial_println {
-    ($fmt:expr) => (serial_print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (serial_print!(concat!($fmt, "\n"), $($arg)*));
+    ($serial:expr, $fmt:expr) => (serial_print!($serial, concat!($fmt, "\n")));
+    ($serial:expr, $fmt:expr, $($arg:tt)*) => (serial_print!($serial, concat!($fmt, "\n"), $($arg)*));
 }
 
-pub fn print(args: fmt::Arguments) {
-    unsafe {
-        match &mut COM1 {
-            Some(ref mut com1) => com1.write_fmt(args).expect("Can't print with COM1."),
-            None => {
-                COM1 = Some(Serial::new(COM1PORT, BAUD));
-                print(args);
-            },
-        }
-    }
+pub fn print(serial: &mut Serial, args: fmt::Arguments) {
+    serial.write_fmt(args).expect("Can't output to serial port!");
 }
 
 pub struct Serial {
     port: asm::Port,
 }
 
-const COM1PORT: asm::Port = 0x03f8;
-const BAUD: u32 = 9600;
+pub const COM1PORT: asm::Port = 0x03f8;
+pub const BAUD: u32 = 9600;
 const FREQUENCY: u32 = 115200;
-static mut COM1: Option<Serial> = None;
 
 impl Serial {
     pub fn new(port: asm::Port, baud: u32) -> Self {

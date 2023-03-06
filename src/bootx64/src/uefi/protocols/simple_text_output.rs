@@ -29,17 +29,27 @@ impl SimpleTextOutput<'_> {
         self.reset.call(self, extended_verification)
     }
 
-    pub fn output_string(&self, string: &str) -> status::Status {
-        let mut status: status::Status = status::SUCCESS;
-        for character in string.encode_utf16() {
-            let buffer: [u16; 2] = [character, 0x0000];
-            let string = char16::String::new(&buffer[0]);
-            status = self.output_string.call(self, string);
-            if status != status::SUCCESS {
-                break;
+    pub fn print(&self, string: &str) -> status::Status {
+        for character in string.chars() {
+            match self.put_char(character) {
+                status::SUCCESS => (),
+                error => return error,
             }
         }
-        status
+        status::SUCCESS
+    }
+
+    fn put_char(&self, character: char) -> status::Status {
+        if character == '\n' {
+            match self.put_char('\r') {
+                status::SUCCESS => (),
+                error => return error,
+            }
+        }
+        let mut buffer: [u16; 3] = [0x0000; 3];
+        character.clone().encode_utf16(&mut buffer[..]);
+        let string = char16::String::new(&buffer[0]);
+        self.output_string.call(self, string)
     }
 }
 
