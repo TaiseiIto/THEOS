@@ -1,6 +1,9 @@
 use super::{
     header,
-    super::services::runtime::time,
+    super::services::runtime::{
+        time,
+        virtual_memory,
+    },
 };
 
 // References
@@ -14,5 +17,6 @@ pub struct RuntimeServices {
     set_time: time::SetTime,
     get_wakeup_time: time::GetWakeupTime,
     set_wakeup_time: time::SetWakeupTime,
+    set_virtual_address_map: virtual_memory::SetVirtualAddressMap,
 }
 
