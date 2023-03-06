@@ -36,6 +36,8 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
+    let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
+    serial_println!(&mut com1, "{}", panic);
     loop {
         asm::hlt();
     }
