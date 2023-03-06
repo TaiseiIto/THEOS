@@ -47,6 +47,8 @@ pub struct System<'a> {
     con_in: &'a simple_text_input::SimpleTextInput<'a>,
     console_out_handle: handle::Handle<'a>,
     pub con_out: &'a simple_text_output::SimpleTextOutput<'a>,
+    standard_error_handle: handle::Handle<'a>,
+    std_err: &'a simple_text_output::SimpleTextOutput<'a>,
 }
 
 impl Write for System<'_> {
