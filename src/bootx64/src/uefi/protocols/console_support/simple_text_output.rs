@@ -53,6 +53,7 @@ impl SimpleTextOutput<'_> {
     }
 }
 
+#[repr(C)]
 struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
 impl TextReset {
@@ -67,6 +68,7 @@ impl fmt::Debug for TextReset {
     }
 }
 
+#[repr(C)]
 struct TextString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
 impl TextString {
@@ -81,6 +83,7 @@ impl fmt::Debug for TextString {
     }
 }
 
+#[repr(C)]
 struct TextTestString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
 impl fmt::Debug for TextTestString {
@@ -89,6 +92,7 @@ impl fmt::Debug for TextTestString {
     }
 }
 
+#[repr(C)]
 struct TextQueryMode(extern "efiapi" fn(&SimpleTextOutput, u64, &mut u64, &mut u64) -> status::Status);
 
 impl fmt::Debug for TextQueryMode {
@@ -97,6 +101,7 @@ impl fmt::Debug for TextQueryMode {
     }
 }
 
+#[repr(C)]
 struct TextSetMode(extern "efiapi" fn(&SimpleTextOutput, u64) -> status::Status);
 
 impl fmt::Debug for TextSetMode {
@@ -105,6 +110,7 @@ impl fmt::Debug for TextSetMode {
     }
 }
 
+#[repr(C)]
 struct TextSetAttribute(extern "efiapi" fn(&SimpleTextOutput, u64) -> status::Status);
 
 impl fmt::Debug for TextSetAttribute {
@@ -113,6 +119,7 @@ impl fmt::Debug for TextSetAttribute {
     }
 }
 
+#[repr(C)]
 struct TextClearScreen(extern "efiapi" fn(&SimpleTextOutput) -> status::Status);
 
 impl fmt::Debug for TextClearScreen {
@@ -121,6 +128,7 @@ impl fmt::Debug for TextClearScreen {
     }
 }
 
+#[repr(C)]
 struct TextSetCursorPosition(extern "efiapi" fn(&SimpleTextOutput, u64, u64) -> status::Status);
 
 impl fmt::Debug for TextSetCursorPosition {
@@ -129,6 +137,7 @@ impl fmt::Debug for TextSetCursorPosition {
     }
 }
 
+#[repr(C)]
 struct TextEnableCursor(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
 impl fmt::Debug for TextEnableCursor {

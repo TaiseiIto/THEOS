@@ -7,6 +7,7 @@ use {
     super::super::super::types::status,
 };
 
+#[repr(C)]
 pub struct GetTime(extern "efiapi" fn(&Time, &TimeCapabilities) -> status::Status);
 
 impl fmt::Debug for GetTime {
@@ -15,6 +16,7 @@ impl fmt::Debug for GetTime {
     }
 }
 
+#[repr(C)]
 pub struct SetTime(extern "efiapi" fn(&Time) -> status::Status);
 
 impl fmt::Debug for SetTime {
@@ -23,6 +25,7 @@ impl fmt::Debug for SetTime {
     }
 }
 
+#[repr(C)]
 pub struct GetWakeupTime(extern "efiapi" fn(&bool, &bool, &Time) -> status::Status);
 
 impl fmt::Debug for GetWakeupTime {
@@ -31,6 +34,7 @@ impl fmt::Debug for GetWakeupTime {
     }
 }
 
+#[repr(C)]
 pub struct SetWakeupTime(extern "efiapi" fn(bool, &Time) -> status::Status);
 
 impl fmt::Debug for SetWakeupTime {

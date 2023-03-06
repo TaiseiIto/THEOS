@@ -10,6 +10,7 @@ use {
     },
 };
 
+#[repr(C)]
 pub struct SetVirtualAddressMap(extern "efiapi" fn(usize, usize, u32, &memory_allocation::MemoryDescriptor) -> status::Status);
 
 impl fmt::Debug for SetVirtualAddressMap {
