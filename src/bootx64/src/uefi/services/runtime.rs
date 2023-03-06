@@ -3,5 +3,6 @@
 // 8 Runtime Services
 
 pub mod time;
+pub mod variable;
 pub mod virtual_memory;
 

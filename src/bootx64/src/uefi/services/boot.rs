@@ -3,4 +3,5 @@
 // 7 Boot Services
 
 pub mod memory_allocation;
+pub mod protocol_handler;
 
