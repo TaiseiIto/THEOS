@@ -37,7 +37,7 @@ pub fn print(system: &mut System<'_>, args: fmt::Arguments) {
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 4.3 System Table
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct System<'a> {
     header: header::Header,

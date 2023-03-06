@@ -28,6 +28,7 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     serial_println!(&mut com1, "status = {}", status);
     uefi_println!(system_table, "Hello, World!");
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
+    uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
     loop {
         asm::hlt();
     }
