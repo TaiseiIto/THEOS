@@ -3,6 +3,7 @@ use std::{
     fmt,
     os::raw,
     path::PathBuf,
+    time,
 };
 
 #[repr(C)]
@@ -13,7 +14,6 @@ struct TimeSpec {
 
 #[link(name="time", kind="static")]
 extern "C" {
-    fn current_time() -> TimeSpec;
     fn last_accessed_time(path: *const raw::c_char) -> TimeSpec;
     fn last_changed_time(path: *const raw::c_char) -> TimeSpec;
     fn last_modified_time(path: *const raw::c_char) -> TimeSpec;
@@ -43,9 +43,11 @@ pub struct Time {
 
 impl Time {
     pub fn current_time() -> Self {
-        Self::from_time_spec(unsafe {
-            current_time()
-        })
+        let now = time::SystemTime::now()
+            .duration_since(time::UNIX_EPOCH)
+            .expect("Can't get time!")
+            .as_nanos();
+        Self::from_unix_nsec(now)
     }
 
     pub fn fat_centi_second(&self) -> u8 {
@@ -257,6 +259,35 @@ impl Time {
 
     fn add_sec(self, sec: i128) -> Self {
         Self::from_sec(self.to_sec() + sec)
+    }
+
+    fn from_unix_nsec(nsec: u128) -> Self {
+        let sec = (nsec / 1000000000) as u64;
+        let nsec = (nsec % 1000000000) as u32;
+        let (sec, min): (u8, u64) = ((sec % (SECONDS_PER_MINUTE as u64)) as u8, sec / (SECONDS_PER_MINUTE as u64));
+        let (min, hour): (u8, u64) = ((min % (MINUTES_PER_HOUR as u64)) as u8, min / (MINUTES_PER_HOUR as u64));
+        let (hour, day): (u8, u64) = ((hour % (HOURS_PER_DAY as u64)) as u8, hour / (HOURS_PER_DAY as u64));
+        let mut year = UNIX_YEAR;
+        let mut month = 1;
+        let mut day = day + 1;
+        while (month_length(year, month) as u64) < day {
+            day -= month_length(year, month) as u64;
+            (year, month) = next_month(year, month);
+        }
+        let month: u8 = month as u8;
+        let day: u8 = day as u8;
+        let hour: u8 = hour as u8;
+        let min: u8 = min as u8;
+        let sec: u8 = sec as u8;
+        Self {
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+            nsec,
+        }
     }
 
     fn from_time_spec(time: TimeSpec) -> Self {
