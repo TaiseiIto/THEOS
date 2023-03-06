@@ -11,5 +11,6 @@ use super::{
 pub struct RuntimeServices {
     header: header::Header,
     get_time: time::GetTime,
+    set_time: time::SetTime,
 }
 

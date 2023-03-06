@@ -15,6 +15,14 @@ impl fmt::Debug for GetTime {
     }
 }
 
+pub struct SetTime(extern "efiapi" fn(&Time) -> status::Status);
+
+impl fmt::Debug for SetTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
 #[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Time {
