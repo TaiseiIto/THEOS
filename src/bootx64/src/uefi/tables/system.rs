@@ -7,7 +7,7 @@ use {
         header,
         runtime_services,
         super::{
-            protocols::{
+            protocols::console_support::{
                 simple_text_input,
                 simple_text_output,
             },
