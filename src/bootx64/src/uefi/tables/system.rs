@@ -51,7 +51,7 @@ pub struct System<'a> {
 
 impl Write for System<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        match self.con_out.output_string(s) {
+        match self.con_out.print(s) {
             status::SUCCESS => Ok(()),
             _ => Err(fmt::Error),
         }
