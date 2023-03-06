@@ -8,8 +8,10 @@ mod serial;
 mod uefi;
 
 use {
-    core::panic::PanicInfo,
-    serial::print,
+    core::{
+        fmt::Write,
+        panic::PanicInfo,
+    },
     uefi::{
         types::{
             handle,
@@ -21,13 +23,14 @@ use {
 
 #[no_mangle]
 fn efi_main(image_handle: handle::Handle, system_table: &system::System) -> status::Status {
-    serial_println!("Hello, World!");
-    serial_println!("image_handle = {:#x?}", image_handle);
-    serial_println!("system_table = {:#x?}", system_table);
+    let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
+    serial_println!(com1, "Hello, World!");
+    serial_println!(com1, "image_handle = {:#x?}", image_handle);
+    serial_println!(com1, "system_table = {:#x?}", system_table);
     let status: status::Status = system_table.con_out.reset(false);
-    serial_println!("status = {}", status);
+    serial_println!(com1, "status = {}", status);
     let status: status::Status = system_table.con_out.output_string("Hello, World!\n");
-    serial_println!("status = {}", status);
+    serial_println!(com1, "status = {}", status);
     loop {
         asm::hlt();
     }
@@ -35,7 +38,6 @@ fn efi_main(image_handle: handle::Handle, system_table: &system::System) -> stat
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
-    serial_println!("{}", panic);
     loop {
         asm::hlt();
     }
