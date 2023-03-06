@@ -18,5 +18,6 @@ pub struct RuntimeServices {
     get_wakeup_time: time::GetWakeupTime,
     set_wakeup_time: time::SetWakeupTime,
     set_virtual_address_map: virtual_memory::SetVirtualAddressMap,
+    convert_pointer: virtual_memory::ConvertPointer,
 }
 
