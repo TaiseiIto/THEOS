@@ -63,8 +63,7 @@ impl TextReset {
 
 impl fmt::Debug for TextReset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -78,8 +77,7 @@ impl TextString {
 
 impl fmt::Debug for TextString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -87,8 +85,7 @@ struct TextTestString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> s
 
 impl fmt::Debug for TextTestString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -96,8 +93,7 @@ struct TextQueryMode(extern "efiapi" fn(&SimpleTextOutput, u64, &mut u64, &mut u
 
 impl fmt::Debug for TextQueryMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -105,8 +101,7 @@ struct TextSetMode(extern "efiapi" fn(&SimpleTextOutput, u64) -> status::Status)
 
 impl fmt::Debug for TextSetMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -114,8 +109,7 @@ struct TextSetAttribute(extern "efiapi" fn(&SimpleTextOutput, u64) -> status::St
 
 impl fmt::Debug for TextSetAttribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -123,8 +117,7 @@ struct TextClearScreen(extern "efiapi" fn(&SimpleTextOutput) -> status::Status);
 
 impl fmt::Debug for TextClearScreen {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -132,8 +125,7 @@ struct TextSetCursorPosition(extern "efiapi" fn(&SimpleTextOutput, u64, u64) -> 
 
 impl fmt::Debug for TextSetCursorPosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
@@ -141,8 +133,7 @@ struct TextEnableCursor(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::S
 
 impl fmt::Debug for TextEnableCursor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function = self.0 as usize;
-        write!(f, "{:#x}", function)
+        write!(f, "{:#x}", self.0 as usize)
     }
 }
 
