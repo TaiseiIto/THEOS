@@ -23,6 +23,22 @@ impl fmt::Debug for SetTime {
     }
 }
 
+pub struct GetWakeupTime(extern "efiapi" fn(&bool, &bool, &Time) -> status::Status);
+
+impl fmt::Debug for GetWakeupTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+pub struct SetWakeupTime(extern "efiapi" fn(bool, &Time) -> status::Status);
+
+impl fmt::Debug for SetWakeupTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
 #[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Time {

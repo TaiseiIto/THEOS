@@ -12,5 +12,7 @@ pub struct RuntimeServices {
     header: header::Header,
     get_time: time::GetTime,
     set_time: time::SetTime,
+    get_wakeup_time: time::GetWakeupTime,
+    set_wakeup_time: time::SetWakeupTime,
 }
 
