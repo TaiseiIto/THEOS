@@ -1,23 +1,9 @@
 use std::{
-    ffi,
     fmt,
-    os::raw,
+    fs,
     path::PathBuf,
     time,
 };
-
-#[repr(C)]
-struct TimeSpec {
-    tv_sec: u64,
-    tv_nsec: u32,
-}
-
-#[link(name="time", kind="static")]
-extern "C" {
-    fn last_accessed_time(path: *const raw::c_char) -> TimeSpec;
-    fn last_changed_time(path: *const raw::c_char) -> TimeSpec;
-    fn last_modified_time(path: *const raw::c_char) -> TimeSpec;
-}
 
 const FAT_YEAR: i128 = 1980;
 const GREGORIAN_DAY: u8 = 15;
@@ -43,11 +29,7 @@ pub struct Time {
 
 impl Time {
     pub fn current_time() -> Self {
-        let now = time::SystemTime::now()
-            .duration_since(time::UNIX_EPOCH)
-            .expect("Can't get time!")
-            .as_nanos();
-        Self::from_unix_nsec(now)
+        Self::from_system_time(time::SystemTime::now())
     }
 
     pub fn fat_centi_second(&self) -> u8 {
@@ -171,39 +153,27 @@ impl Time {
     }
 
     pub fn last_accessed_time(path: &PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_accessed_time(path))
-        }
+        let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an accessed time");
+        let accessed_time: time::SystemTime = metadata
+            .accessed()
+            .expect("Can't get an accessed time");
+        Self::from_system_time(accessed_time)
     }
 
     pub fn last_changed_time(path: &PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_changed_time(path))
-        }
+        let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an changed time");
+        let changed_time: time::SystemTime = metadata
+            .created()
+            .expect("Can't get an changed time");
+        Self::from_system_time(changed_time)
     }
 
     pub fn last_modified_time(path: &PathBuf) -> Self {
-        if !path.exists() {
-            panic!("\"{}\" is not found.", path.display());
-        }
-        let path: &str = path.to_str().expect("Can't convert PathBuf to &str");
-        let path = ffi::CString::new(path).expect("Can't create CString.");
-        let path: *const raw::c_char = path.as_ptr();
-        unsafe {
-            Self::from_time_spec(last_modified_time(path))
-        }
+        let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an accessed time");
+        let modified_time: time::SystemTime = metadata
+            .modified()
+            .expect("Can't get an accessed time");
+        Self::from_system_time(modified_time)
     }
 
     pub fn new(year: i128, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
@@ -261,38 +231,17 @@ impl Time {
         Self::from_sec(self.to_sec() + sec)
     }
 
+    fn from_system_time(time: time::SystemTime) -> Self {
+        let nsec: u128 = time
+            .duration_since(time::UNIX_EPOCH)
+            .expect("Can't get time!")
+            .as_nanos();
+        Self::from_unix_nsec(nsec)
+    }
+
     fn from_unix_nsec(nsec: u128) -> Self {
         let sec = (nsec / 1000000000) as u64;
         let nsec = (nsec % 1000000000) as u32;
-        let (sec, min): (u8, u64) = ((sec % (SECONDS_PER_MINUTE as u64)) as u8, sec / (SECONDS_PER_MINUTE as u64));
-        let (min, hour): (u8, u64) = ((min % (MINUTES_PER_HOUR as u64)) as u8, min / (MINUTES_PER_HOUR as u64));
-        let (hour, day): (u8, u64) = ((hour % (HOURS_PER_DAY as u64)) as u8, hour / (HOURS_PER_DAY as u64));
-        let mut year = UNIX_YEAR;
-        let mut month = 1;
-        let mut day = day + 1;
-        while (month_length(year, month) as u64) < day {
-            day -= month_length(year, month) as u64;
-            (year, month) = next_month(year, month);
-        }
-        let month: u8 = month as u8;
-        let day: u8 = day as u8;
-        let hour: u8 = hour as u8;
-        let min: u8 = min as u8;
-        let sec: u8 = sec as u8;
-        Self {
-            year,
-            month,
-            day,
-            hour,
-            min,
-            sec,
-            nsec,
-        }
-    }
-
-    fn from_time_spec(time: TimeSpec) -> Self {
-        let sec = time.tv_sec;
-        let nsec = time.tv_nsec;
         let (sec, min): (u8, u64) = ((sec % (SECONDS_PER_MINUTE as u64)) as u8, sec / (SECONDS_PER_MINUTE as u64));
         let (min, hour): (u8, u64) = ((min % (MINUTES_PER_HOUR as u64)) as u8, min / (MINUTES_PER_HOUR as u64));
         let (hour, day): (u8, u64) = ((hour % (HOURS_PER_DAY as u64)) as u8, hour / (HOURS_PER_DAY as u64));
