@@ -3,7 +3,7 @@
 // 2.3.1 Data Types
 // Appendix D
 // EFI_STATUS
-pub type Status = u64;
+pub type Status = usize;
 
 pub const SUCCESS: Status = 0;
 
