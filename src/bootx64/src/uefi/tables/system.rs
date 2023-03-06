@@ -5,6 +5,7 @@ use {
     },
     super::{
         header,
+        runtime_services,
         super::{
             protocols::{
                 simple_text_input,
@@ -49,6 +50,7 @@ pub struct System<'a> {
     pub con_out: &'a simple_text_output::SimpleTextOutput<'a>,
     standard_error_handle: handle::Handle<'a>,
     std_err: &'a simple_text_output::SimpleTextOutput<'a>,
+    runtime_services: &'a runtime_services::RuntimeServices,
 }
 
 impl Write for System<'_> {
