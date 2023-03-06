@@ -18,13 +18,17 @@ use {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($serial:expr, $($arg:tt)*) => (($serial).write_fmt(format_args!($($arg)*)).expect("Can't output to serial port!"));
+    ($serial:expr, $($arg:tt)*) => ($crate::serial::print($serial, format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! serial_println {
     ($serial:expr, $fmt:expr) => (serial_print!($serial, concat!($fmt, "\n")));
     ($serial:expr, $fmt:expr, $($arg:tt)*) => (serial_print!($serial, concat!($fmt, "\n"), $($arg)*));
+}
+
+pub fn print(serial: &mut Serial, args: fmt::Arguments) {
+    serial.write_fmt(args).expect("Can't output to serial port!");
 }
 
 pub struct Serial {
