@@ -13,6 +13,7 @@ use {
             types::{
                 char16,
                 handle,
+                status,
             },
         },
     },
@@ -50,8 +51,10 @@ pub struct System<'a> {
 
 impl Write for System<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.con_out.output_string(s);
-        Ok(())
+        match self.con_out.output_string(s) {
+            status::SUCCESS => Ok(()),
+            _ => Err(fmt::Error),
+        }
     }
 }
 
