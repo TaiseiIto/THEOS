@@ -3,6 +3,7 @@ use super::{
     super::services::boot::{
         event,
         memory_allocation,
+        protocol_handler,
     },
 };
 
@@ -26,5 +27,6 @@ pub struct BootServices {
     signal_event: event::SignalEvent,
     clone_event: event::CloseEvent,
     check_event: event::CheckEvent,
+    install_protocol_interface: protocol_handler::InstallProtocolInterface,
 }
 

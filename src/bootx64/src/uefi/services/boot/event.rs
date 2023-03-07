@@ -1,3 +1,7 @@
+// References
+// https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
+// 7.1 Event, Timer and Task Priority Services
+
 use {
     core::fmt,
     super::super::super::types::{
@@ -5,10 +9,6 @@ use {
         void,
     },
 };
-
-// References
-// https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
-// 7.1 Event, Timer and Task Priority Services
 
 #[repr(C)]
 pub struct CreateEvent(extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &mut Event) -> status::Status);
