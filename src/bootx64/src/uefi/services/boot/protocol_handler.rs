@@ -163,3 +163,12 @@ impl fmt::Debug for ProtocolsPerHandle {
     }
 }
 
+#[repr(C)]
+pub struct LocateHandleBuffer(extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut &handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for LocateHandleBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
