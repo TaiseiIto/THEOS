@@ -1,6 +1,7 @@
 use super::{
     header,
     super::services::runtime::{
+        self,
         time,
         variable,
         virtual_memory,
@@ -23,5 +24,6 @@ pub struct RuntimeServices {
     get_variable: variable::GetVariable,
     get_next_variable_name: variable::GetNextVariableName,
     set_variable: variable::SetVariable,
+    get_next_high_monotonic_count: runtime::GetNextHighMonotonicCount,
 }
 
