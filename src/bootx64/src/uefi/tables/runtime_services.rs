@@ -26,5 +26,6 @@ pub struct RuntimeServices {
     set_variable: variable::SetVariable,
     get_next_high_monotonic_count: runtime::GetNextHighMonotonicCount,
     reset_system: runtime::ResetSystem,
+    update_capsule: runtime::UpdateCapsule,
 }
 

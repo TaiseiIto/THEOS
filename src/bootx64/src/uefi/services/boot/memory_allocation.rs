@@ -12,6 +12,6 @@ pub struct MemoryDescriptor {
     attribute: u64,
 }
 
-type PhysicalAddress = u64;
-type VirtualAddress = u64;
+pub type PhysicalAddress = u64;
+pub type VirtualAddress = u64;
 
