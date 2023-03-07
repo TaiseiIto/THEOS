@@ -51,5 +51,6 @@ pub struct BootServices<'a> {
     set_watchdoc_timer: boot::SetWatchdogTimer,
     connect_controller: protocol_handler::ConnectController,
     disconnect_controller: protocol_handler::DisconnectController,
+    open_protocol: protocol_handler::OpenProtocol,
 }
 

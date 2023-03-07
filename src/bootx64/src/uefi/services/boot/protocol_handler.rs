@@ -102,6 +102,15 @@ impl fmt::Debug for LocateDevicePath {
 }
 
 #[repr(C)]
+pub struct OpenProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void, handle::Handle<'_>, handle::Handle<'_>, u32) -> status::Status);
+
+impl fmt::Debug for OpenProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct ConnectController(extern "efiapi" fn(handle::Handle<'_>, &handle::Handle<'_>, &device_path::DevicePathProtocol, bool) -> status::Status);
 
 impl fmt::Debug for ConnectController {
