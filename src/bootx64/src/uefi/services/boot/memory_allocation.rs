@@ -58,6 +58,15 @@ impl fmt::Debug for FreePages {
     }
 }
 
+#[repr(C)]
+pub struct GetMemoryMap(extern "efiapi" fn(&mut usize, &mut MemoryDescriptor, &mut usize, &mut usize, &mut u32) -> status::Status);
+
+impl fmt::Debug for GetMemoryMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
 #[derive(Debug)]
 #[repr(C)]
 pub struct MemoryDescriptor {
