@@ -73,3 +73,12 @@ pub struct CapsuleHeader {
     capsule_image_size: u32,
 }
 
+#[repr(C)]
+pub struct QueryCapsuleCapabilities(extern "efiapi" fn(&&CapsuleHeader, usize, &mut u64, &mut ResetType) -> status::Status);
+
+impl fmt::Debug for QueryCapsuleCapabilities {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
