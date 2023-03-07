@@ -64,6 +64,23 @@ impl fmt::Debug for RegisterProtocolNotify {
 }
 
 #[repr(C)]
+pub struct LocateHandle(extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for LocateHandle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[allow(dead_code)]
+#[repr(C)]
+pub enum LocateSearchType {
+    AllHandles,
+    ByRegisterNotify,
+    ByProtocol,
+}
+
+#[repr(C)]
 pub struct HandleProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void) -> status::Status);
 
 impl fmt::Debug for HandleProtocol {
