@@ -48,6 +48,7 @@ impl fmt::Debug for String<'_> {
     }
 }
 
+#[repr(C)]
 pub struct MutString<'a>(&'a mut u16);
 
 impl<'a> Into<String<'a>> for MutString<'a> {

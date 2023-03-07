@@ -24,9 +24,18 @@ impl fmt::Debug for GetVariable {
 }
 
 #[repr(C)]
-pub struct GetNextVariableName(extern "efiapi" fn (&mut usize, char16::MutString, &mut protocol_handler::Guid));
+pub struct GetNextVariableName(extern "efiapi" fn(&mut usize, char16::MutString, &mut protocol_handler::Guid));
 
 impl fmt::Debug for GetNextVariableName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
+pub struct SetVariable(extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void));
+
+impl fmt::Debug for SetVariable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#x}", self.0 as usize)
     }

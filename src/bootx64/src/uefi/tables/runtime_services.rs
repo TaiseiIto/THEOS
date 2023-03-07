@@ -22,5 +22,6 @@ pub struct RuntimeServices {
     convert_pointer: virtual_memory::ConvertPointer,
     get_variable: variable::GetVariable,
     get_next_variable_name: variable::GetNextVariableName,
+    set_variable: variable::SetVariable,
 }
 

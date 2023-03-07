@@ -8,7 +8,7 @@ use {
 };
 
 #[repr(C)]
-pub struct GetTime(extern "efiapi" fn(&Time, &TimeCapabilities) -> status::Status);
+pub struct GetTime(extern "efiapi" fn(&mut Time, &mut TimeCapabilities) -> status::Status);
 
 impl fmt::Debug for GetTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -26,7 +26,7 @@ impl fmt::Debug for SetTime {
 }
 
 #[repr(C)]
-pub struct GetWakeupTime(extern "efiapi" fn(&bool, &bool, &Time) -> status::Status);
+pub struct GetWakeupTime(extern "efiapi" fn(&mut bool, &mut bool, &mut Time) -> status::Status);
 
 impl fmt::Debug for GetWakeupTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
