@@ -20,5 +20,6 @@ pub struct BootServices {
     get_memory_map: memory_allocation::GetMemoryMap,
     allocate_pool: memory_allocation::AllocatePool,
     free_pool: memory_allocation::FreePool,
+    create_event: event::CreateEvent,
 }
 
