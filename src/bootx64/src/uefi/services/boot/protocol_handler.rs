@@ -154,3 +154,12 @@ impl fmt::Debug for DisconnectController {
     }
 }
 
+#[repr(C)]
+pub struct ProtocolsPerHandle(extern "efiapi" fn(handle::Handle<'_>, &mut &&Guid, &mut usize) -> status::Status);
+
+impl fmt::Debug for ProtocolsPerHandle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
