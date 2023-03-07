@@ -56,3 +56,12 @@ impl fmt::Debug for InstallConfigurationTable {
     }
 }
 
+#[repr(C)]
+pub struct CalculateCrc32(extern "efiapi" fn(&void::Void, usize, &mut u32) -> status::Status);
+
+impl fmt::Debug for CalculateCrc32 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
