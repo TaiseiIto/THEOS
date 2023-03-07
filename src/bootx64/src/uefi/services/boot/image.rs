@@ -34,6 +34,15 @@ impl fmt::Debug for StartImage {
 }
 
 #[repr(C)]
+pub struct UnloadImage(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for UnloadImage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct Exit(extern "efiapi" fn(handle::Handle<'_>, status::Status, usize, char16::String) -> status::Status);
 
 impl fmt::Debug for Exit {
