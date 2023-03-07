@@ -29,5 +29,6 @@ pub struct BootServices {
     check_event: event::CheckEvent,
     install_protocol_interface: protocol_handler::InstallProtocolInterface,
     reinstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
+    uninstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
 }
 

@@ -36,6 +36,15 @@ pub enum InterfaceType {
 }
 
 #[repr(C)]
+pub struct UninstallProtocolInterface(extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void) -> status::Status);
+
+impl fmt::Debug for UninstallProtocolInterface {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct ReinstallProtocolInterface(extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void, &void::Void) -> status::Status);
 
 impl fmt::Debug for ReinstallProtocolInterface {
