@@ -91,3 +91,12 @@ impl fmt::Debug for AllocatePool {
     }
 }
 
+#[repr(C)]
+pub struct FreePool(extern "efiapi" fn(&void::Void) -> status::Status);
+
+impl fmt::Debug for FreePool {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+

@@ -19,5 +19,6 @@ pub struct BootServices {
     free_pages: memory_allocation::FreePages,
     get_memory_map: memory_allocation::GetMemoryMap,
     allocate_pool: memory_allocation::AllocatePool,
+    free_pool: memory_allocation::FreePool,
 }
 
