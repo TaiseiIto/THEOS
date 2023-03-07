@@ -22,5 +22,6 @@ pub struct BootServices {
     free_pool: memory_allocation::FreePool,
     create_event: event::CreateEvent,
     set_timer: event::SetTimer,
+    wait_for_event: event::WaitForEvent,
 }
 
