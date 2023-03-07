@@ -5,6 +5,7 @@
 use {
     core::fmt,
     super::super::types::{
+        char16,
         status,
         void,
     },
@@ -18,6 +19,15 @@ pub mod protocol_handler;
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 7.5 Miscellaneous Boot Services
+
+#[repr(C)]
+pub struct SetWatchdogTimer(extern "efiapi" fn(usize, u64, usize, char16::String) -> status::Status);
+
+impl fmt::Debug for SetWatchdogTimer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
 
 #[repr(C)]
 pub struct Stall(extern "efiapi" fn(usize) -> status::Status);

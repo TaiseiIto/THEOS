@@ -48,5 +48,6 @@ pub struct BootServices<'a> {
     exit_boot_services: image::ExitBootServices,
     get_next_monotonic_count: boot::GetNextMonotonicCount,
     stall: boot::Stall,
+    set_watchdoc_timer: boot::SetWatchdogTimer,
 }
 
