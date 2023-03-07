@@ -1,4 +1,7 @@
-use super::header;
+use super::{
+    header,
+    super::services::boot::event,
+};
 
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
@@ -7,5 +10,6 @@ use super::header;
 #[repr(C)]
 pub struct BootServices {
     header: header::Header,
+    raise_tpl: event::RaiseTpl,
 }
 
