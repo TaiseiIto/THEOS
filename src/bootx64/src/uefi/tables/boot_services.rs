@@ -56,5 +56,6 @@ pub struct BootServices<'a> {
     open_protocol_information: protocol_handler::OpenProtocolInformation,
     protocols_per_handle: protocol_handler::ProtocolsPerHandle,
     locate_handle_buffer: protocol_handler::LocateHandleBuffer,
+    locate_protocol: protocol_handler::LocateProtocol,
 }
 
