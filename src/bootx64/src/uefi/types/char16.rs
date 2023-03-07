@@ -48,3 +48,11 @@ impl fmt::Debug for String<'_> {
     }
 }
 
+pub struct MutString<'a>(&'a mut u16);
+
+impl<'a> Into<String<'a>> for MutString<'a> {
+    fn into(self) -> String<'a> {
+        String::<'a>(self.0)
+    }
+}
+
