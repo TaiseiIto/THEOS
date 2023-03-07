@@ -111,6 +111,15 @@ impl fmt::Debug for OpenProtocol {
 }
 
 #[repr(C)]
+pub struct CloseProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for CloseProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct ConnectController(extern "efiapi" fn(handle::Handle<'_>, &handle::Handle<'_>, &device_path::DevicePathProtocol, bool) -> status::Status);
 
 impl fmt::Debug for ConnectController {
