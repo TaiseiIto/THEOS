@@ -50,5 +50,6 @@ pub struct BootServices<'a> {
     stall: boot::Stall,
     set_watchdoc_timer: boot::SetWatchdogTimer,
     connect_controller: protocol_handler::ConnectController,
+    disconnect_controller: protocol_handler::DisconnectController,
 }
 

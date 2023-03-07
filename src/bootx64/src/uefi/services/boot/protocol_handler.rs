@@ -110,3 +110,12 @@ impl fmt::Debug for ConnectController {
     }
 }
 
+#[repr(C)]
+pub struct DisconnectController(extern "efiapi" fn(handle::Handle<'_>, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for DisconnectController {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
