@@ -47,5 +47,6 @@ pub struct BootServices<'a> {
     unload_image: image::UnloadImage,
     exit_boot_services: image::ExitBootServices,
     get_next_monotonic_count: boot::GetNextMonotonicCount,
+    stall: boot::Stall,
 }
 

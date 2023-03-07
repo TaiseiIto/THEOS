@@ -20,6 +20,15 @@ pub mod protocol_handler;
 // 7.5 Miscellaneous Boot Services
 
 #[repr(C)]
+pub struct Stall(extern "efiapi" fn(usize) -> status::Status);
+
+impl fmt::Debug for Stall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct GetNextMonotonicCount(extern "efiapi" fn(&mut u64) -> status::Status);
 
 impl fmt::Debug for GetNextMonotonicCount {
