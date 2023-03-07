@@ -53,3 +53,12 @@ impl fmt::Debug for ReinstallProtocolInterface {
     }
 }
 
+#[repr(C)]
+pub struct HandleProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void) -> status::Status);
+
+impl fmt::Debug for HandleProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+

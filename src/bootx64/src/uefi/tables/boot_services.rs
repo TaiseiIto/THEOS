@@ -30,5 +30,6 @@ pub struct BootServices {
     install_protocol_interface: protocol_handler::InstallProtocolInterface,
     reinstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
     uninstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
+    handle_protocol: protocol_handler::HandleProtocol,
 }
 
