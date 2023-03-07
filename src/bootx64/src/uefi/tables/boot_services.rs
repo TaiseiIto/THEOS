@@ -25,5 +25,6 @@ pub struct BootServices {
     wait_for_event: event::WaitForEvent,
     signal_event: event::SignalEvent,
     clone_event: event::CloseEvent,
+    check_event: event::CheckEvent,
 }
 

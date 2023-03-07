@@ -50,6 +50,15 @@ impl fmt::Debug for WaitForEvent {
 }
 
 #[repr(C)]
+pub struct CheckEvent(extern "efiapi" fn(Event) -> status::Status);
+
+impl fmt::Debug for CheckEvent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct SetTimer(extern "efiapi" fn(Event, TimerDelay, u64) -> status::Status);
 
 impl fmt::Debug for SetTimer {
