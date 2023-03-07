@@ -181,11 +181,19 @@ impl fmt::Debug for LocateProtocol {
     }
 }
 
-
 #[repr(C)]
 pub struct InstallMultipleProtocolInterfaces(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
 
 impl fmt::Debug for InstallMultipleProtocolInterfaces {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
+pub struct UninstallMultipleProtocolInterfaces(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for UninstallMultipleProtocolInterfaces {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#x}", self.0 as usize)
     }
