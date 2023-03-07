@@ -47,6 +47,15 @@ impl fmt::Debug for CopyMem {
     }
 }
 
+pub struct SetMem(extern "efiapi" fn(&void::Void, usize, u8));
+
+impl fmt::Debug for SetMem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 #[repr(C)]
 pub struct GetNextMonotonicCount(extern "efiapi" fn(&mut u64) -> status::Status);
 

@@ -61,5 +61,6 @@ pub struct BootServices<'a> {
     uninstall_multiple_protocol_interfaces: protocol_handler::UninstallMultipleProtocolInterfaces,
     calculate_crc32: boot::CalculateCrc32,
     copy_mem: boot::CopyMem,
+    set_mem: boot::SetMem,
 }
 
