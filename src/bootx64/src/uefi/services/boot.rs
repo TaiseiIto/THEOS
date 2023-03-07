@@ -39,6 +39,15 @@ impl fmt::Debug for Stall {
 }
 
 #[repr(C)]
+pub struct CopyMem(extern "efiapi" fn(&void::Void, &void::Void, usize));
+
+impl fmt::Debug for CopyMem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct GetNextMonotonicCount(extern "efiapi" fn(&mut u64) -> status::Status);
 
 impl fmt::Debug for GetNextMonotonicCount {
