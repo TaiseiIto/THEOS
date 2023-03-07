@@ -53,5 +53,6 @@ pub struct BootServices<'a> {
     disconnect_controller: protocol_handler::DisconnectController,
     open_protocol: protocol_handler::OpenProtocol,
     close_protocol: protocol_handler::CloseProtocol,
+    open_protocol_information: protocol_handler::OpenProtocolInformation,
 }
 
