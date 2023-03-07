@@ -28,5 +28,6 @@ pub struct RuntimeServices {
     reset_system: runtime::ResetSystem,
     update_capsule: runtime::UpdateCapsule,
     query_capsule_capabilities: runtime::QueryCapsuleCapabilities,
+    query_variable_info: variable::QueryVariableInfo,
 }
 
