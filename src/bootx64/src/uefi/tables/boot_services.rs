@@ -1,9 +1,12 @@
 use super::{
     header,
-    super::services::boot::{
-        event,
-        memory_allocation,
-        protocol_handler,
+    super::{
+        services::boot::{
+            event,
+            memory_allocation,
+            protocol_handler,
+        },
+        types::void,
     },
 };
 
@@ -12,7 +15,7 @@ use super::{
 // 4.4 Boot Services Table
 #[derive(Debug)]
 #[repr(C)]
-pub struct BootServices {
+pub struct BootServices<'a> {
     header: header::Header,
     raise_tpl: event::RaiseTpl,
     restore_tpl: event::RestoreTpl,
@@ -31,5 +34,7 @@ pub struct BootServices {
     reinstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
     uninstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
     handle_protocol: protocol_handler::HandleProtocol,
+    reserved: &'a void::Void,
+    register_protocol_notify: protocol_handler::RegisterProtocolNotify,
 }
 

@@ -5,6 +5,7 @@
 use {
     core::fmt,
     super::super::super::types::{
+        event,
         handle,
         status,
         void,
@@ -48,6 +49,15 @@ impl fmt::Debug for UninstallProtocolInterface {
 pub struct ReinstallProtocolInterface(extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void, &void::Void) -> status::Status);
 
 impl fmt::Debug for ReinstallProtocolInterface {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
+pub struct RegisterProtocolNotify(extern "efiapi" fn(&Guid, event::Event<'_>, &mut &void::Void) -> status::Status);
+
+impl fmt::Debug for RegisterProtocolNotify {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#x}", self.0 as usize)
     }
