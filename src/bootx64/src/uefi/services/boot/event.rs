@@ -13,5 +13,14 @@ impl fmt::Debug for RaiseTpl {
     }
 }
 
+#[repr(C)]
+pub struct RestoreTpl(extern "efiapi" fn(Tpl));
+
+impl fmt::Debug for RestoreTpl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
 pub type Tpl = usize;
 

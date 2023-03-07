@@ -11,5 +11,6 @@ use super::{
 pub struct BootServices {
     header: header::Header,
     raise_tpl: event::RaiseTpl,
+    restore_tpl: event::RestoreTpl,
 }
 
