@@ -2,10 +2,13 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 7.2 Memory Allocation Services
 
-use core::fmt;
+use {
+    core::fmt,
+    super::super::super::types::status,
+};
 
 #[repr(C)]
-pub struct AllocatePages(extern "efiapi" fn(AllocateType, MemoryType, usize, &mut PhysicalAddress));
+pub struct AllocatePages(extern "efiapi" fn(AllocateType, MemoryType, usize, &mut PhysicalAddress) -> status::Status);
 
 impl fmt::Debug for AllocatePages {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -44,6 +47,17 @@ pub enum MemoryType {
     MaxMemoryType,
 }
 
+pub type PhysicalAddress = u64;
+
+#[repr(C)]
+pub struct FreePages(extern "efiapi" fn(PhysicalAddress, usize) -> status::Status);
+
+impl fmt::Debug for FreePages {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
 #[derive(Debug)]
 #[repr(C)]
 pub struct MemoryDescriptor {
@@ -54,6 +68,5 @@ pub struct MemoryDescriptor {
     attribute: u64,
 }
 
-pub type PhysicalAddress = u64;
 pub type VirtualAddress = u64;
 

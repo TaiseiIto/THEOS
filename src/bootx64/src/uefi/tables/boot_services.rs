@@ -16,5 +16,6 @@ pub struct BootServices {
     raise_tpl: event::RaiseTpl,
     restore_tpl: event::RestoreTpl,
     allocate_pages: memory_allocation::AllocatePages,
+    free_pages: memory_allocation::FreePages,
 }
 
