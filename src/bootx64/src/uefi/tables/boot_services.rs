@@ -49,5 +49,6 @@ pub struct BootServices<'a> {
     get_next_monotonic_count: boot::GetNextMonotonicCount,
     stall: boot::Stall,
     set_watchdoc_timer: boot::SetWatchdogTimer,
+    connect_controller: protocol_handler::ConnectController,
 }
 
