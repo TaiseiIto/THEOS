@@ -3,6 +3,7 @@ use super::{
     super::{
         services::boot::{
             event,
+            image,
             memory_allocation,
             protocol_handler,
             self,
@@ -40,5 +41,6 @@ pub struct BootServices<'a> {
     locate_handle: protocol_handler::LocateHandle,
     locate_device_path: protocol_handler::LocateDevicePath,
     install_configuration_table: boot::InstallConfigurationTable,
+    load_image: image::LoadImage,
 }
 

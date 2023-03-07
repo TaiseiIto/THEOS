@@ -11,6 +11,7 @@ use {
 };
 
 pub mod event;
+pub mod image;
 pub mod memory_allocation;
 pub mod protocol_handler;
 
