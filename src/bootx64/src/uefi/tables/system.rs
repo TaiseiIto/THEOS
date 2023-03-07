@@ -53,6 +53,7 @@ pub struct System<'a> {
     std_err: &'a simple_text_output::SimpleTextOutput<'a>,
     runtime_services: &'a runtime_services::RuntimeServices,
     boot_services: &'a boot_services::BootServices<'a>,
+    number_of_table_entries: usize,
 }
 
 impl Write for System<'_> {
