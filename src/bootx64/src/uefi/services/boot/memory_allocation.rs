@@ -4,7 +4,10 @@
 
 use {
     core::fmt,
-    super::super::super::types::status,
+    super::super::super::types::{
+        status,
+        void,
+    },
 };
 
 #[repr(C)]
@@ -78,4 +81,13 @@ pub struct MemoryDescriptor {
 }
 
 pub type VirtualAddress = u64;
+
+#[repr(C)]
+pub struct AllocatePool(extern "efiapi" fn(MemoryType, usize, &mut &void::Void) -> status::Status);
+
+impl fmt::Debug for AllocatePool {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
 
