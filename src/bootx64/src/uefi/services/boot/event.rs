@@ -23,6 +23,23 @@ pub type Event<'a> = &'a void::Void;
 pub type EventNotify = extern "efiapi" fn(Event, &void::Void);
 
 #[repr(C)]
+pub struct SetTimer(extern "efiapi" fn(Event, TimerDelay, u64) -> status::Status);
+
+impl fmt::Debug for SetTimer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[allow(dead_code)]
+#[repr(C)]
+pub enum TimerDelay {
+    Cancel,
+    Periodic,
+    Relative,
+}
+
+#[repr(C)]
 pub struct RaiseTpl(extern "efiapi" fn(Tpl) -> Tpl);
 
 impl fmt::Debug for RaiseTpl {
