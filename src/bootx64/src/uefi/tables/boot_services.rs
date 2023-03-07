@@ -43,5 +43,6 @@ pub struct BootServices<'a> {
     install_configuration_table: boot::InstallConfigurationTable,
     load_image: image::LoadImage,
     start_image: image::StartImage,
+    exit: image::Exit,
 }
 
