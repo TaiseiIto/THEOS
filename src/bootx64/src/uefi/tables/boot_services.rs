@@ -45,5 +45,6 @@ pub struct BootServices<'a> {
     start_image: image::StartImage,
     exit: image::Exit,
     unload_image: image::UnloadImage,
+    exit_boot_services: image::ExitBootServices,
 }
 

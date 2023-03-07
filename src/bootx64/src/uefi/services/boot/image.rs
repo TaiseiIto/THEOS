@@ -51,3 +51,12 @@ impl fmt::Debug for Exit {
     }
 }
 
+#[repr(C)]
+pub struct ExitBootServices(extern "efiapi" fn(handle::Handle<'_>, usize) -> status::Status);
+
+impl fmt::Debug for ExitBootServices {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
