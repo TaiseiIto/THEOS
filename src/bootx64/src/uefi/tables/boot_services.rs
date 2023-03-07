@@ -62,5 +62,6 @@ pub struct BootServices<'a> {
     calculate_crc32: boot::CalculateCrc32,
     copy_mem: boot::CopyMem,
     set_mem: boot::SetMem,
+    create_event_ex: event::CreateEventEx,
 }
 

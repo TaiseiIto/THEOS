@@ -4,9 +4,12 @@
 
 use {
     core::fmt,
-    super::super::super::types::{
-        status,
-        void,
+    super::{
+        protocol_handler,
+        super::super::types::{
+            status,
+            void,
+        },
     },
 };
 
@@ -21,6 +24,15 @@ impl fmt::Debug for CreateEvent {
 
 pub type Event<'a> = &'a void::Void;
 pub type EventNotify = extern "efiapi" fn(Event, &void::Void);
+
+#[repr(C)]
+pub struct CreateEventEx(extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &protocol_handler::Guid, &mut Event) -> status::Status);
+
+impl fmt::Debug for CreateEventEx {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
 
 #[repr(C)]
 pub struct CloseEvent(extern "efiapi" fn(Event) -> status::Status);
