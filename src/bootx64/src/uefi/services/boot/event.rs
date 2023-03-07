@@ -23,6 +23,15 @@ pub type Event<'a> = &'a void::Void;
 pub type EventNotify = extern "efiapi" fn(Event, &void::Void);
 
 #[repr(C)]
+pub struct SignalEvent(extern "efiapi" fn(Event) -> status::Status);
+
+impl fmt::Debug for SignalEvent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
 pub struct WaitForEvent(extern "efiapi" fn(usize, &Event, &mut usize) -> status::Status);
 
 impl fmt::Debug for WaitForEvent {

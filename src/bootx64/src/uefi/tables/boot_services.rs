@@ -23,5 +23,6 @@ pub struct BootServices {
     create_event: event::CreateEvent,
     set_timer: event::SetTimer,
     wait_for_event: event::WaitForEvent,
+    signal_event: event::SignalEvent,
 }
 
