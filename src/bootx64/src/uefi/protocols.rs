@@ -14,4 +14,5 @@
 // 21 String Services
 
 pub mod console_support;
+pub mod device_path;
 

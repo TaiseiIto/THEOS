@@ -37,5 +37,6 @@ pub struct BootServices<'a> {
     reserved: &'a void::Void,
     register_protocol_notify: protocol_handler::RegisterProtocolNotify,
     locate_handle: protocol_handler::LocateHandle,
+    locate_device_path: protocol_handler::LocateDevicePath,
 }
 

@@ -4,11 +4,14 @@
 
 use {
     core::fmt,
-    super::super::super::types::{
-        event,
-        handle,
-        status,
-        void,
+    super::super::super::{
+        protocols::device_path,
+        types::{
+            event,
+            handle,
+            status,
+            void,
+        },
     },
 };
 
@@ -84,6 +87,15 @@ pub enum LocateSearchType {
 pub struct HandleProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void) -> status::Status);
 
 impl fmt::Debug for HandleProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
+pub struct LocateDevicePath(extern "efiapi" fn(&Guid, &mut &device_path::DevicePathProtocol, &mut handle::Handle<'_>) -> status::Status);
+
+impl fmt::Debug for LocateDevicePath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#x}", self.0 as usize)
     }
