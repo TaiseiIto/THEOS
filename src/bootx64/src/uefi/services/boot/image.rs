@@ -7,6 +7,7 @@ use {
     super::super::super::{
         protocols::device_path,
         types::{
+            char16,
             handle,
             status,
             void,
@@ -18,6 +19,15 @@ use {
 pub struct LoadImage(extern "efiapi" fn(bool, handle::Handle<'_>, &device_path::DevicePathProtocol, &void::Void, usize, &mut handle::Handle<'_>) -> status::Status);
 
 impl fmt::Debug for LoadImage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#x}", self.0 as usize)
+    }
+}
+
+#[repr(C)]
+pub struct StartImage(extern "efiapi" fn(handle::Handle<'_>, &mut usize, &mut char16::String) -> status::Status);
+
+impl fmt::Debug for StartImage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#x}", self.0 as usize)
     }

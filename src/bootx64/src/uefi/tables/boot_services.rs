@@ -34,7 +34,7 @@ pub struct BootServices<'a> {
     check_event: event::CheckEvent,
     install_protocol_interface: protocol_handler::InstallProtocolInterface,
     reinstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
-    uninstall_protocol_interface: protocol_handler::ReinstallProtocolInterface,
+    uninstall_protocol_interface: protocol_handler::UninstallProtocolInterface,
     handle_protocol: protocol_handler::HandleProtocol,
     reserved: &'a void::Void,
     register_protocol_notify: protocol_handler::RegisterProtocolNotify,
@@ -42,5 +42,6 @@ pub struct BootServices<'a> {
     locate_device_path: protocol_handler::LocateDevicePath,
     install_configuration_table: boot::InstallConfigurationTable,
     load_image: image::LoadImage,
+    start_image: image::StartImage,
 }
 
