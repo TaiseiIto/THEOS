@@ -40,7 +40,7 @@ pub fn print(system: &mut System<'_>, args: fmt::Arguments) {
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 4.3 System Table
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct System<'a> {
     header: header::Header,
@@ -56,6 +56,27 @@ pub struct System<'a> {
     boot_services: &'a boot_services::BootServices<'a>,
     number_of_table_entries: usize,
     configuration_table: &'a configuration::Configuration<'a>,
+}
+
+impl fmt::Debug for System<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("System")
+            .field("header", &self.header)
+            .field("firmware_vendor", &self.firmware_vendor)
+            .field("firmware_revision", &self.firmware_revision)
+            .field("console_in_handle", &self.console_in_handle)
+            .field("con_in", &self.con_in)
+            .field("console_out_handle", &self.console_out_handle)
+            .field("con_out", &self.con_out)
+            .field("standard_error_handle", &self.standard_error_handle)
+            .field("std_err", &self.std_err)
+            .field("runtime_services", &self.runtime_services)
+            .field("boot_services", &self.boot_services)
+            .field("number_of_table_entries", &self.number_of_table_entries)
+            .field("configuration_table", &self.configuration_table)
+            .finish()
+    }
 }
 
 impl Write for System<'_> {
