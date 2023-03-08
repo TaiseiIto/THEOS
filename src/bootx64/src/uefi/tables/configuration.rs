@@ -29,3 +29,26 @@ impl<'a> Configurations<'a> {
     }
 }
 
+impl<'a> Iterator for Configurations<'a> {
+    type Item = &'a Configuration<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.number_of_tables {
+            0 => None,
+            _ => {
+                let configurations: &'a Configuration<'a> = self.configurations;
+                let configurations = configurations as *const Configuration<'a>;
+                let configurations = unsafe {
+                    configurations.add(1)
+                };
+                let configurations: &'a Configuration<'a> = unsafe {
+                    &*configurations
+                };
+                self.configurations = configurations;
+                self.number_of_tables -= 1;
+                Some(configurations)
+            },
+        }
+    }
+}
+

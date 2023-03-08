@@ -74,9 +74,10 @@ impl fmt::Debug for System<'_> {
             .field("runtime_services", &self.runtime_services)
             .field("boot_services", &self.boot_services);
         let configuration_tables: configuration::Configurations = self.into();
-        debugger
-            .field("configuration_tables", &configuration_tables)
-            .finish()
+        for configuration_table in configuration_tables.into_iter() {
+            debugger.field("configuration_tables", &configuration_table);
+        }
+        debugger.finish()
     }
 }
 
