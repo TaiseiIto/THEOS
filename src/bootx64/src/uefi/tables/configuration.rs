@@ -2,9 +2,12 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 4.6 EFI Configuration Table & Propaties Table
 
-use super::super::{
-    services::boot::protocol_handler,
-    types::void,
+use {
+    core::fmt,
+    super::super::{
+        services::boot::protocol_handler,
+        types::void,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -14,7 +17,7 @@ pub struct Configuration<'a> {
     vendor_table: &'a void::Void,
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct Configurations<'a> {
     configurations: &'a Configuration<'a>,
     number_of_tables: usize,
@@ -26,6 +29,15 @@ impl<'a> Configurations<'a> {
             configurations,
             number_of_tables,
         }
+    }
+}
+
+impl<'a> fmt::Debug for Configurations<'a> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_list()
+            .entries(self.clone().into_iter())
+            .finish()
     }
 }
 
