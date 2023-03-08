@@ -60,8 +60,8 @@ pub struct System<'a> {
 
 impl fmt::Debug for System<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter
-            .debug_struct("System")
+        let mut debugger: fmt::DebugStruct = formatter.debug_struct("System");
+        debugger
             .field("header", &self.header)
             .field("firmware_vendor", &self.firmware_vendor)
             .field("firmware_revision", &self.firmware_revision)
@@ -72,10 +72,17 @@ impl fmt::Debug for System<'_> {
             .field("standard_error_handle", &self.standard_error_handle)
             .field("std_err", &self.std_err)
             .field("runtime_services", &self.runtime_services)
-            .field("boot_services", &self.boot_services)
-            .field("number_of_table_entries", &self.number_of_table_entries)
-            .field("configuration_table", &self.configuration_table)
+            .field("boot_services", &self.boot_services);
+        let configuration_tables: configuration::Configurations = self.into();
+        debugger
+            .field("configuration_tables", &configuration_tables)
             .finish()
+    }
+}
+
+impl<'a> Into<configuration::Configurations<'a>> for &System<'a> {
+    fn into(self) -> configuration::Configurations<'a> {
+        configuration::Configurations::<'a>::new(self.configuration_table, self.number_of_table_entries)
     }
 }
 

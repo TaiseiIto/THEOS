@@ -14,3 +14,18 @@ pub struct Configuration<'a> {
     vendor_table: &'a void::Void,
 }
 
+#[derive(Debug)]
+pub struct Configurations<'a> {
+    configurations: &'a Configuration<'a>,
+    number_of_tables: usize,
+}
+
+impl<'a> Configurations<'a> {
+    pub fn new(configurations: &'a Configuration<'a>, number_of_tables: usize) -> Self {
+        Self {
+            configurations,
+            number_of_tables,
+        }
+    }
+}
+
