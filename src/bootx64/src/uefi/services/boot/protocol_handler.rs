@@ -24,7 +24,7 @@ impl fmt::Debug for InstallProtocolInterface {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Guid {
     data1: u32,

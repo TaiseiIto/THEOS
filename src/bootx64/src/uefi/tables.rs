@@ -3,6 +3,7 @@
 // 4 EFI System Table
 
 pub mod boot_services;
+pub mod configuration;
 pub mod header;
 pub mod runtime_services;
 pub mod system;

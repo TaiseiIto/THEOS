@@ -5,6 +5,7 @@ use {
     },
     super::{
         boot_services,
+        configuration,
         header,
         runtime_services,
         super::{
@@ -54,6 +55,7 @@ pub struct System<'a> {
     runtime_services: &'a runtime_services::RuntimeServices,
     boot_services: &'a boot_services::BootServices<'a>,
     number_of_table_entries: usize,
+    configuration_table: &'a configuration::Configuration<'a>,
 }
 
 impl Write for System<'_> {
