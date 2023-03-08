@@ -1,9 +1,9 @@
 use {
-    core::fmt,
     super::super::super::types::{
         event,
         status,
     },
+    wrapped_function::WrappedFunction,
 };
 
 // References
@@ -17,23 +17,13 @@ pub struct SimpleTextInput<'a> {
     wait_for_key: event::Event<'a>,
 }
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct InputReset(extern "efiapi" fn(&SimpleTextInput, bool) -> status::Status);
 
-impl fmt::Debug for InputReset {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct InputReadKey(extern "efiapi" fn(&SimpleTextInput, &mut InputKey) -> status::Status);
-
-impl fmt::Debug for InputReadKey {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 
 #[repr(C)]
 struct InputKey {

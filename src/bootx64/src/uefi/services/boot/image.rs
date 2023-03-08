@@ -3,7 +3,6 @@
 // 7.4 Image Services
 
 use {
-    core::fmt,
     super::super::super::{
         protocols::device_path,
         types::{
@@ -13,50 +12,26 @@ use {
             void,
         },
     },
+    wrapped_function::WrappedFunction,
 };
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct LoadImage(extern "efiapi" fn(bool, handle::Handle<'_>, &device_path::DevicePathProtocol, &void::Void, usize, &mut handle::Handle<'_>) -> status::Status);
 
-impl fmt::Debug for LoadImage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct StartImage(extern "efiapi" fn(handle::Handle<'_>, &mut usize, &mut char16::String) -> status::Status);
 
-impl fmt::Debug for StartImage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct UnloadImage(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
 
-impl fmt::Debug for UnloadImage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct Exit(extern "efiapi" fn(handle::Handle<'_>, status::Status, usize, char16::String) -> status::Status);
 
-impl fmt::Debug for Exit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct ExitBootServices(extern "efiapi" fn(handle::Handle<'_>, usize) -> status::Status);
-
-impl fmt::Debug for ExitBootServices {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 

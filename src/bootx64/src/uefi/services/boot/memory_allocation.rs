@@ -3,21 +3,16 @@
 // 7.2 Memory Allocation Services
 
 use {
-    core::fmt,
     super::super::super::types::{
         status,
         void,
     },
+    wrapped_function::WrappedFunction,
 };
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct AllocatePages(extern "efiapi" fn(AllocateType, MemoryType, usize, &mut PhysicalAddress) -> status::Status);
-
-impl fmt::Debug for AllocatePages {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -52,23 +47,13 @@ pub enum MemoryType {
 
 pub type PhysicalAddress = u64;
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct FreePages(extern "efiapi" fn(PhysicalAddress, usize) -> status::Status);
 
-impl fmt::Debug for FreePages {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct GetMemoryMap(extern "efiapi" fn(&mut usize, &mut MemoryDescriptor, &mut usize, &mut usize, &mut u32) -> status::Status);
-
-impl fmt::Debug for GetMemoryMap {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 
 #[derive(Debug)]
 #[repr(C)]
@@ -82,21 +67,11 @@ pub struct MemoryDescriptor {
 
 pub type VirtualAddress = u64;
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct AllocatePool(extern "efiapi" fn(MemoryType, usize, &mut &void::Void) -> status::Status);
 
-impl fmt::Debug for AllocatePool {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct FreePool(extern "efiapi" fn(&void::Void) -> status::Status);
-
-impl fmt::Debug for FreePool {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 

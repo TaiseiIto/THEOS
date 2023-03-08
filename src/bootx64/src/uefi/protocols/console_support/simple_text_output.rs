@@ -1,9 +1,9 @@
 use {
-    core::fmt,
     super::super::super::types::{
         char16,
         status,
     },
+    wrapped_function::WrappedFunction,
 };
 
 // References
@@ -53,6 +53,7 @@ impl SimpleTextOutput<'_> {
     }
 }
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
@@ -62,12 +63,7 @@ impl TextReset {
     }
 }
 
-impl fmt::Debug for TextReset {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
@@ -77,74 +73,33 @@ impl TextString {
     }
 }
 
-impl fmt::Debug for TextString {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextTestString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
-impl fmt::Debug for TextTestString {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextQueryMode(extern "efiapi" fn(&SimpleTextOutput, usize, &mut usize, &mut usize) -> status::Status);
 
-impl fmt::Debug for TextQueryMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextSetMode(extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
 
-impl fmt::Debug for TextSetMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextSetAttribute(extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
 
-impl fmt::Debug for TextSetAttribute {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextClearScreen(extern "efiapi" fn(&SimpleTextOutput) -> status::Status);
 
-impl fmt::Debug for TextClearScreen {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextSetCursorPosition(extern "efiapi" fn(&SimpleTextOutput, usize, usize) -> status::Status);
 
-impl fmt::Debug for TextSetCursorPosition {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 struct TextEnableCursor(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
-
-impl fmt::Debug for TextEnableCursor {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 
 #[derive(Debug)]
 #[repr(C)]
