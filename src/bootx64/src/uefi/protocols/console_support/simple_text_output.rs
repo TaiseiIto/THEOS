@@ -26,7 +26,7 @@ pub struct SimpleTextOutput<'a> {
 
 impl SimpleTextOutput<'_> {
     pub fn reset(&self, extended_verification: bool) -> status::Status {
-        self.reset.call(self, extended_verification)
+        self.reset.0(self, extended_verification)
     }
 
     pub fn print(&self, string: &str) -> status::Status {
@@ -49,7 +49,7 @@ impl SimpleTextOutput<'_> {
         let mut buffer: [u16; 3] = [0x0000; 3];
         character.clone().encode_utf16(&mut buffer[..]);
         let string = char16::String::new(&buffer[0]);
-        self.output_string.call(self, string)
+        self.output_string.0(self, string)
     }
 }
 
@@ -57,21 +57,9 @@ impl SimpleTextOutput<'_> {
 #[repr(C)]
 struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
-impl TextReset {
-    fn call(&self, this: &SimpleTextOutput, extended_verification: bool) -> status::Status {
-        self.0(this, extended_verification)
-    }
-}
-
 #[derive(WrappedFunction)]
 #[repr(C)]
 struct TextString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
-
-impl TextString {
-    fn call(&self, this: &SimpleTextOutput, string: char16::String) -> status::Status {
-        self.0(this, string)
-    }
-}
 
 #[derive(WrappedFunction)]
 #[repr(C)]
