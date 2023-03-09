@@ -25,7 +25,7 @@ use {
 // 8.5.1 Reset System
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct ResetSystem(extern "efiapi" fn(ResetType, status::Status, usize, &void::Void));
+pub struct ResetSystem(pub extern "efiapi" fn(ResetType, status::Status, usize, &void::Void));
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -41,14 +41,14 @@ pub enum ResetType {
 // 8.5.2 Get Next High Monotonic Count
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct GetNextHighMonotonicCount(extern "efiapi" fn(&mut u32) -> status::Status);
+pub struct GetNextHighMonotonicCount(pub extern "efiapi" fn(&mut u32) -> status::Status);
 
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 8.5.3 Update Capsule
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct UpdateCapsule(extern "efiapi" fn(&&CapsuleHeader, usize, memory_allocation::PhysicalAddress) -> status::Status);
+pub struct UpdateCapsule(pub extern "efiapi" fn(&&CapsuleHeader, usize, memory_allocation::PhysicalAddress) -> status::Status);
 
 #[repr(C)]
 pub struct CapsuleHeader {
@@ -60,5 +60,5 @@ pub struct CapsuleHeader {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct QueryCapsuleCapabilities(extern "efiapi" fn(&&CapsuleHeader, usize, &mut u64, &mut ResetType) -> status::Status);
+pub struct QueryCapsuleCapabilities(pub extern "efiapi" fn(&&CapsuleHeader, usize, &mut u64, &mut ResetType) -> status::Status);
 

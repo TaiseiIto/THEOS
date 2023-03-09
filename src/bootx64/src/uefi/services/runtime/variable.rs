@@ -15,7 +15,7 @@ use {
 };
 
 #[repr(C)]
-pub struct GetVariable(extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
+pub struct GetVariable(pub extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
 
 impl fmt::Debug for GetVariable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -24,7 +24,7 @@ impl fmt::Debug for GetVariable {
 }
 
 #[repr(C)]
-pub struct GetNextVariableName(extern "efiapi" fn(&mut usize, char16::MutString, &mut protocol_handler::Guid) -> status::Status);
+pub struct GetNextVariableName(pub extern "efiapi" fn(&mut usize, char16::MutString, &mut protocol_handler::Guid) -> status::Status);
 
 impl fmt::Debug for GetNextVariableName {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -33,7 +33,7 @@ impl fmt::Debug for GetNextVariableName {
 }
 
 #[repr(C)]
-pub struct SetVariable(extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
+pub struct SetVariable(pub extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
 
 impl fmt::Debug for SetVariable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -42,7 +42,7 @@ impl fmt::Debug for SetVariable {
 }
 
 #[repr(C)]
-pub struct QueryVariableInfo(extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -> status::Status);
+pub struct QueryVariableInfo(pub extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -> status::Status);
 
 impl fmt::Debug for QueryVariableInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

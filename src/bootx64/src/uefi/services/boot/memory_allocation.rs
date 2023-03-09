@@ -12,7 +12,7 @@ use {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct AllocatePages(extern "efiapi" fn(AllocateType, MemoryType, usize, &mut PhysicalAddress) -> status::Status);
+pub struct AllocatePages(pub extern "efiapi" fn(AllocateType, MemoryType, usize, &mut PhysicalAddress) -> status::Status);
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -49,11 +49,11 @@ pub type PhysicalAddress = u64;
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct FreePages(extern "efiapi" fn(PhysicalAddress, usize) -> status::Status);
+pub struct FreePages(pub extern "efiapi" fn(PhysicalAddress, usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct GetMemoryMap(extern "efiapi" fn(&mut usize, &mut MemoryDescriptor, &mut usize, &mut usize, &mut u32) -> status::Status);
+pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut MemoryDescriptor, &mut usize, &mut usize, &mut u32) -> status::Status);
 
 #[derive(Debug)]
 #[repr(C)]
@@ -69,9 +69,9 @@ pub type VirtualAddress = u64;
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct AllocatePool(extern "efiapi" fn(MemoryType, usize, &mut &void::Void) -> status::Status);
+pub struct AllocatePool(pub extern "efiapi" fn(MemoryType, usize, &mut &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct FreePool(extern "efiapi" fn(&void::Void) -> status::Status);
+pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
 

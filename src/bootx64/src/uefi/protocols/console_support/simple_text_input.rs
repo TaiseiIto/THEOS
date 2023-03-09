@@ -19,11 +19,11 @@ pub struct SimpleTextInput<'a> {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct InputReset(extern "efiapi" fn(&SimpleTextInput, bool) -> status::Status);
+struct InputReset(pub extern "efiapi" fn(&SimpleTextInput, bool) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct InputReadKey(extern "efiapi" fn(&SimpleTextInput, &mut InputKey) -> status::Status);
+struct InputReadKey(pub extern "efiapi" fn(&SimpleTextInput, &mut InputKey) -> status::Status);
 
 #[repr(C)]
 struct InputKey {

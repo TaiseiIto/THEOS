@@ -15,34 +15,34 @@ use {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CreateEvent(extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &mut Event) -> status::Status);
+pub struct CreateEvent(pub extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &mut Event) -> status::Status);
 
 pub type Event<'a> = &'a void::Void;
 pub type EventNotify = extern "efiapi" fn(Event, &void::Void);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CreateEventEx(extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &protocol_handler::Guid, &mut Event) -> status::Status);
+pub struct CreateEventEx(pub extern "efiapi" fn(u32, Tpl, EventNotify, &void::Void, &protocol_handler::Guid, &mut Event) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CloseEvent(extern "efiapi" fn(Event) -> status::Status);
+pub struct CloseEvent(pub extern "efiapi" fn(Event) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct SignalEvent(extern "efiapi" fn(Event) -> status::Status);
+pub struct SignalEvent(pub extern "efiapi" fn(Event) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct WaitForEvent(extern "efiapi" fn(usize, &Event, &mut usize) -> status::Status);
+pub struct WaitForEvent(pub extern "efiapi" fn(usize, &Event, &mut usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CheckEvent(extern "efiapi" fn(Event) -> status::Status);
+pub struct CheckEvent(pub extern "efiapi" fn(Event) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct SetTimer(extern "efiapi" fn(Event, TimerDelay, u64) -> status::Status);
+pub struct SetTimer(pub extern "efiapi" fn(Event, TimerDelay, u64) -> status::Status);
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -54,11 +54,11 @@ pub enum TimerDelay {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct RaiseTpl(extern "efiapi" fn(Tpl) -> Tpl);
+pub struct RaiseTpl(pub extern "efiapi" fn(Tpl) -> Tpl);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct RestoreTpl(extern "efiapi" fn(Tpl));
+pub struct RestoreTpl(pub extern "efiapi" fn(Tpl));
 
 pub type Tpl = usize;
 

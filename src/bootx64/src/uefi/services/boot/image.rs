@@ -17,21 +17,21 @@ use {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct LoadImage(extern "efiapi" fn(bool, handle::Handle<'_>, &device_path::DevicePathProtocol, &void::Void, usize, &mut handle::Handle<'_>) -> status::Status);
+pub struct LoadImage(pub extern "efiapi" fn(bool, handle::Handle<'_>, &device_path::DevicePathProtocol, &void::Void, usize, &mut handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct StartImage(extern "efiapi" fn(handle::Handle<'_>, &mut usize, &mut char16::String) -> status::Status);
+pub struct StartImage(pub extern "efiapi" fn(handle::Handle<'_>, &mut usize, &mut char16::String) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct UnloadImage(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
+pub struct UnloadImage(pub extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct Exit(extern "efiapi" fn(handle::Handle<'_>, status::Status, usize, char16::String) -> status::Status);
+pub struct Exit(pub extern "efiapi" fn(handle::Handle<'_>, status::Status, usize, char16::String) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct ExitBootServices(extern "efiapi" fn(handle::Handle<'_>, usize) -> status::Status);
+pub struct ExitBootServices(pub extern "efiapi" fn(handle::Handle<'_>, usize) -> status::Status);
 

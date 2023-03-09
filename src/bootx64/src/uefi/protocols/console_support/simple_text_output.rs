@@ -55,39 +55,39 @@ impl SimpleTextOutput<'_> {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextReset(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
+struct TextReset(pub extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
+struct TextString(pub extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextTestString(extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
+struct TextTestString(pub extern "efiapi" fn(&SimpleTextOutput, char16::String) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextQueryMode(extern "efiapi" fn(&SimpleTextOutput, usize, &mut usize, &mut usize) -> status::Status);
+struct TextQueryMode(pub extern "efiapi" fn(&SimpleTextOutput, usize, &mut usize, &mut usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextSetMode(extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
+struct TextSetMode(pub extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextSetAttribute(extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
+struct TextSetAttribute(pub extern "efiapi" fn(&SimpleTextOutput, usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextClearScreen(extern "efiapi" fn(&SimpleTextOutput) -> status::Status);
+struct TextClearScreen(pub extern "efiapi" fn(&SimpleTextOutput) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextSetCursorPosition(extern "efiapi" fn(&SimpleTextOutput, usize, usize) -> status::Status);
+struct TextSetCursorPosition(pub extern "efiapi" fn(&SimpleTextOutput, usize, usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct TextEnableCursor(extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
+struct TextEnableCursor(pub extern "efiapi" fn(&SimpleTextOutput, bool) -> status::Status);
 
 #[derive(Debug)]
 #[repr(C)]

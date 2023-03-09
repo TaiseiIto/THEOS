@@ -22,29 +22,29 @@ pub mod protocol_handler;
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct SetWatchdogTimer(extern "efiapi" fn(usize, u64, usize, char16::String) -> status::Status);
+pub struct SetWatchdogTimer(pub extern "efiapi" fn(usize, u64, usize, char16::String) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct Stall(extern "efiapi" fn(usize) -> status::Status);
+pub struct Stall(pub extern "efiapi" fn(usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CopyMem(extern "efiapi" fn(&void::Void, &void::Void, usize));
+pub struct CopyMem(pub extern "efiapi" fn(&void::Void, &void::Void, usize));
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct SetMem(extern "efiapi" fn(&void::Void, usize, u8));
+pub struct SetMem(pub extern "efiapi" fn(&void::Void, usize, u8));
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct GetNextMonotonicCount(extern "efiapi" fn(&mut u64) -> status::Status);
+pub struct GetNextMonotonicCount(pub extern "efiapi" fn(&mut u64) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct InstallConfigurationTable(extern "efiapi" fn(&protocol_handler::Guid, &void::Void) -> status::Status);
+pub struct InstallConfigurationTable(pub extern "efiapi" fn(&protocol_handler::Guid, &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CalculateCrc32(extern "efiapi" fn(&void::Void, usize, &mut u32) -> status::Status);
+pub struct CalculateCrc32(pub extern "efiapi" fn(&void::Void, usize, &mut u32) -> status::Status);
 

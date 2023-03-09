@@ -17,7 +17,7 @@ use {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct InstallProtocolInterface(extern "efiapi" fn(&mut handle::Handle<'_>, &Guid, InterfaceType, &void::Void) -> status::Status);
+pub struct InstallProtocolInterface(pub extern "efiapi" fn(&mut handle::Handle<'_>, &Guid, InterfaceType, &void::Void) -> status::Status);
 
 #[derive(Clone, Debug)]
 #[repr(C)]
@@ -36,19 +36,19 @@ pub enum InterfaceType {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct UninstallProtocolInterface(extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void) -> status::Status);
+pub struct UninstallProtocolInterface(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct ReinstallProtocolInterface(extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void, &void::Void) -> status::Status);
+pub struct ReinstallProtocolInterface(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &void::Void, &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct RegisterProtocolNotify(extern "efiapi" fn(&Guid, event::Event<'_>, &mut &void::Void) -> status::Status);
+pub struct RegisterProtocolNotify(pub extern "efiapi" fn(&Guid, event::Event<'_>, &mut &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct LocateHandle(extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut handle::Handle<'_>) -> status::Status);
+pub struct LocateHandle(pub extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut handle::Handle<'_>) -> status::Status);
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -60,23 +60,23 @@ pub enum LocateSearchType {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct HandleProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void) -> status::Status);
+pub struct HandleProtocol(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct LocateDevicePath(extern "efiapi" fn(&Guid, &mut &device_path::DevicePathProtocol, &mut handle::Handle<'_>) -> status::Status);
+pub struct LocateDevicePath(pub extern "efiapi" fn(&Guid, &mut &device_path::DevicePathProtocol, &mut handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct OpenProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void, handle::Handle<'_>, handle::Handle<'_>, u32) -> status::Status);
+pub struct OpenProtocol(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void, handle::Handle<'_>, handle::Handle<'_>, u32) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct CloseProtocol(extern "efiapi" fn(handle::Handle<'_>, &Guid, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
+pub struct CloseProtocol(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct OpenProtocolInformation(extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &OpenProtocolInformationEntry<'_>, usize) -> status::Status);
+pub struct OpenProtocolInformation(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &OpenProtocolInformationEntry<'_>, usize) -> status::Status);
 
 #[repr(C)]
 pub struct OpenProtocolInformationEntry<'a> {
@@ -88,29 +88,29 @@ pub struct OpenProtocolInformationEntry<'a> {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct ConnectController(extern "efiapi" fn(handle::Handle<'_>, &handle::Handle<'_>, &device_path::DevicePathProtocol, bool) -> status::Status);
+pub struct ConnectController(pub extern "efiapi" fn(handle::Handle<'_>, &handle::Handle<'_>, &device_path::DevicePathProtocol, bool) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct DisconnectController(extern "efiapi" fn(handle::Handle<'_>, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
+pub struct DisconnectController(pub extern "efiapi" fn(handle::Handle<'_>, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct ProtocolsPerHandle(extern "efiapi" fn(handle::Handle<'_>, &mut &&Guid, &mut usize) -> status::Status);
+pub struct ProtocolsPerHandle(pub extern "efiapi" fn(handle::Handle<'_>, &mut &&Guid, &mut usize) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct LocateHandleBuffer(extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut &handle::Handle<'_>) -> status::Status);
+pub struct LocateHandleBuffer(pub extern "efiapi" fn(LocateSearchType, &Guid, &void::Void, &mut usize, &mut &handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct LocateProtocol(extern "efiapi" fn(&Guid, &void::Void, &mut &void::Void) -> status::Status);
+pub struct LocateProtocol(pub extern "efiapi" fn(&Guid, &void::Void, &mut &void::Void) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct InstallMultipleProtocolInterfaces(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
+pub struct InstallMultipleProtocolInterfaces(pub extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct UninstallMultipleProtocolInterfaces(extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
+pub struct UninstallMultipleProtocolInterfaces(pub extern "efiapi" fn(handle::Handle<'_>) -> status::Status);
 

@@ -8,7 +8,10 @@ use super::{
             protocol_handler,
             self,
         },
-        types::void,
+        types::{
+            status,
+            void,
+        },
     },
 };
 
@@ -63,5 +66,24 @@ pub struct BootServices<'a> {
     copy_mem: boot::CopyMem,
     set_mem: boot::SetMem,
     create_event_ex: event::CreateEventEx,
+}
+
+impl BootServices<'_> {
+    pub fn get_memory_map(
+        &self,
+        memory_map_size: &mut usize,
+        memory_map: &mut memory_allocation::MemoryDescriptor,
+        map_key: &mut usize,
+        descriptor_size: &mut usize,
+        descriptor_version: &mut u32,
+    ) -> status::Status {
+        self.get_memory_map.0(
+            memory_map_size,
+            memory_map,
+            map_key,
+            descriptor_size,
+            descriptor_version,
+        )
+    }
 }
 
