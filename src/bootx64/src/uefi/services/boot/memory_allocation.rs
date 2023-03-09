@@ -53,7 +53,7 @@ pub struct FreePages(pub extern "efiapi" fn(PhysicalAddress, usize) -> status::S
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut MemoryDescriptor, &mut usize, &mut usize, &mut u32) -> status::Status);
+pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut u8, &mut usize, &mut usize, &mut u32) -> status::Status);
 
 #[derive(Debug)]
 #[repr(C)]

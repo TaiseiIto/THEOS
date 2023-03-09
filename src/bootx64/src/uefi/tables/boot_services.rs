@@ -72,7 +72,7 @@ impl BootServices<'_> {
     pub fn get_memory_map(
         &self,
         memory_map_size: &mut usize,
-        memory_map: &mut memory_allocation::MemoryDescriptor,
+        memory_map: &mut u8,
         map_key: &mut usize,
         descriptor_size: &mut usize,
         descriptor_version: &mut u32,
