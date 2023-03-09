@@ -3,7 +3,10 @@
 // 7.2 Memory Allocation Services
 
 use {
-    core::mem,
+    core::{
+        fmt,
+        mem,
+    },
     super::super::super::types::{
         status,
         void,
@@ -25,6 +28,7 @@ pub enum AllocateType {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 #[repr(C)]
 pub enum MemoryType {
     ReservedMemoryType,
@@ -46,6 +50,37 @@ pub enum MemoryType {
     MaxMemoryType,
 }
 
+impl From<u8> for MemoryType {
+    fn from(byte: u8) -> MemoryType {
+        match byte {
+            0x0 => Self::ReservedMemoryType,
+            0x1 => Self::LoaderCode,
+            0x2 => Self::LoaderData,
+            0x3 => Self::BootServicesCode,
+            0x4 => Self::BootServicesData,
+            0x5 => Self::RuntimeServicesCode,
+            0x6 => Self::RuntimeServicesData,
+            0x7 => Self::ConventionalMemory,
+            0x8 => Self::UnusableMemory,
+            0x9 => Self::ACPIReclaimMemory,
+            0xa => Self::ACPIMemoryNVS,
+            0xb => Self::MemoryMappedIO,
+            0xc => Self::MemoryMappedIOPortSpace,
+            0xd => Self::PalCode,
+            0xe => Self::PersistentMemory,
+            0xf => Self::UnacceptedMemoryType,
+            0x10 => Self::MaxMemoryType,
+            _ => panic!("Unknown memory type!"),
+        }
+    }
+}
+
+impl From<u32> for MemoryType {
+    fn from(double_word: u32) -> MemoryType {
+        (double_word as u8).into()
+    }
+}
+
 pub type PhysicalAddress = u64;
 
 #[derive(WrappedFunction)]
@@ -56,7 +91,6 @@ pub struct FreePages(pub extern "efiapi" fn(PhysicalAddress, usize) -> status::S
 #[repr(C)]
 pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut u8, &mut usize, &mut usize, &mut u32) -> status::Status);
 
-#[derive(Debug)]
 #[repr(C)]
 pub struct MemoryDescriptor {
     memory_type: u32,
@@ -64,6 +98,20 @@ pub struct MemoryDescriptor {
     virtual_start: VirtualAddress,
     number_of_pages: u64,
     attribute: u64,
+}
+
+impl fmt::Debug for MemoryDescriptor {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let memory_type: MemoryType = self.memory_type.into();
+        formatter
+            .debug_struct("MemoryDescriptor")
+            .field("memory_type", &memory_type)
+            .field("physical_start", &self.physical_start)
+            .field("virtual_start", &self.virtual_start)
+            .field("number_of_pages", &self.number_of_pages)
+            .field("attribute", &self.attribute)
+            .finish()
+    }
 }
 
 impl From<[u8; MEMORY_DESCRIPTOR_SIZE]> for MemoryDescriptor {
