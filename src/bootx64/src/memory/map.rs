@@ -1,9 +1,12 @@
-use super::super::uefi::{
-    services::boot::memory_allocation,
-    tables::system,
+use {
+    core::fmt,
+    super::super::uefi::{
+        services::boot::memory_allocation,
+        tables::system,
+    },
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Buffer<'a> {
     buffer: &'a [u8],
     key: usize,
@@ -29,6 +32,19 @@ impl<'a> Buffer<'a> {
     }
 }
 
+impl fmt::Debug for Buffer<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        formatter
+            .debug_struct("Buffer")
+            .field("key", &self.key)
+            .field("descriptor_size", &self.descriptor_size)
+            .field("descriptor_version", &self.descriptor_version)
+            .field("descriptors", &memory_descriptors)
+            .finish()
+    }
+}
+
 impl<'a> Into<MemoryDescriptors<'a>> for &Buffer<'a> {
     fn into(self) -> MemoryDescriptors<'a> {
         let buffer: &[u8] = self.buffer;
@@ -40,9 +56,19 @@ impl<'a> Into<MemoryDescriptors<'a>> for &Buffer<'a> {
     }
 }
 
+#[derive(Clone)]
 pub struct MemoryDescriptors<'a> {
     buffer: &'a [u8],
     descriptor_size: usize,
+}
+
+impl fmt::Debug for MemoryDescriptors<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_list()
+            .entries(self.clone())
+            .finish()
+    }
 }
 
 impl Iterator for MemoryDescriptors<'_> {
