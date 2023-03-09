@@ -4,6 +4,7 @@
 #![allow(stable_features)]
 
 mod asm;
+mod memory;
 mod serial;
 mod uefi;
 
@@ -27,6 +28,10 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "Hello, World!");
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
+    const MEMORY_MAP_BUFFER_SIZE: usize = 0x10000;
+    let mut memory_map_buffer: [u8; MEMORY_MAP_BUFFER_SIZE] = [0; MEMORY_MAP_BUFFER_SIZE];
+    let memory_map_buffer = memory::map::Buffer::new(&mut memory_map_buffer[0], MEMORY_MAP_BUFFER_SIZE, system_table);
+    uefi_println!(system_table, "memory_map_buffer = {:#x?}", memory_map_buffer);
     loop {
         asm::hlt();
     }
