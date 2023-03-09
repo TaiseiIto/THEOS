@@ -27,7 +27,6 @@ pub enum AllocateType {
     MaxAllocateType,
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum MemoryType {
@@ -51,8 +50,8 @@ pub enum MemoryType {
 }
 
 impl From<u8> for MemoryType {
-    fn from(byte: u8) -> MemoryType {
-        match byte {
+    fn from(memory_type: u8) -> MemoryType {
+        match memory_type {
             0x0 => Self::ReservedMemoryType,
             0x1 => Self::LoaderCode,
             0x2 => Self::LoaderData,
@@ -76,8 +75,8 @@ impl From<u8> for MemoryType {
 }
 
 impl From<u32> for MemoryType {
-    fn from(double_word: u32) -> MemoryType {
-        (double_word as u8).into()
+    fn from(memory_type: u32) -> MemoryType {
+        (memory_type as u8).into()
     }
 }
 
@@ -103,13 +102,14 @@ pub struct MemoryDescriptor {
 impl fmt::Debug for MemoryDescriptor {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         let memory_type: MemoryType = self.memory_type.into();
+        let attribute: MemoryAttribute = self.attribute.into();
         formatter
             .debug_struct("MemoryDescriptor")
             .field("memory_type", &memory_type)
             .field("physical_start", &self.physical_start)
             .field("virtual_start", &self.virtual_start)
             .field("number_of_pages", &self.number_of_pages)
-            .field("attribute", &self.attribute)
+            .field("attribute", &attribute)
             .finish()
     }
 }
@@ -118,6 +118,60 @@ impl From<[u8; MEMORY_DESCRIPTOR_SIZE]> for MemoryDescriptor {
     fn from(bytes: [u8; MEMORY_DESCRIPTOR_SIZE]) -> Self {
         unsafe {
             mem::transmute::<[u8; MEMORY_DESCRIPTOR_SIZE], Self>(bytes)
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct MemoryAttribute {
+    uc: bool,
+    wc: bool,
+    wt: bool,
+    wb: bool,
+    uce: bool,
+    wp: bool,
+    rp: bool,
+    xp: bool,
+    nv: bool,
+    more_reliable: bool,
+    ro: bool,
+    sp: bool,
+    cpu_crypto: bool,
+    runtime: bool,
+}
+
+impl From<u64> for MemoryAttribute {
+    fn from(memory_attribute: u64) -> Self {
+        let uc: bool = memory_attribute & 0x0000000000000001 != 0;
+        let wc: bool = memory_attribute & 0x0000000000000002 != 0;
+        let wt: bool = memory_attribute & 0x0000000000000004 != 0;
+        let wb: bool = memory_attribute & 0x0000000000000008 != 0;
+        let uce: bool = memory_attribute & 0x0000000000000010 != 0;
+        let wp: bool = memory_attribute & 0x0000000000001000 != 0;
+        let rp: bool = memory_attribute & 0x0000000000002000 != 0;
+        let xp: bool = memory_attribute & 0x0000000000004000 != 0;
+        let nv: bool = memory_attribute & 0x0000000000008000 != 0;
+        let more_reliable: bool = memory_attribute & 0x0000000000010000 != 0;
+        let ro: bool = memory_attribute & 0x0000000000020000 != 0;
+        let sp: bool = memory_attribute & 0x0000000000040000 != 0;
+        let cpu_crypto: bool = memory_attribute & 0x0000000000080000 != 0;
+        let runtime: bool = memory_attribute & 0x8000000000000000 != 0;
+        Self {
+            uc,
+            wc,
+            wt,
+            wb,
+            uce,
+            wp,
+            rp,
+            xp,
+            nv,
+            more_reliable,
+            ro,
+            sp,
+            cpu_crypto,
+            runtime,
         }
     }
 }
