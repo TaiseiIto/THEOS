@@ -30,7 +30,9 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
     let mut memory_map_buffer: [u8; 0x10000] = [0; 0x10000];
     let memory_map_buffer = memory::map::Buffer::new(&mut memory_map_buffer, system_table);
-    uefi_println!(system_table, "memory_map_buffer = {:#x?}", memory_map_buffer);
+    for memory_descriptor in memory_map_buffer.into_iter() {
+        uefi_println!(system_table, "memory_descriptor = {:#x?}", memory_descriptor);
+    }
     loop {
         asm::hlt();
     }

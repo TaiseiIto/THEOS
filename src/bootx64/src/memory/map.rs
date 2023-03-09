@@ -3,10 +3,9 @@ use super::super::uefi::{
     tables::system,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Buffer<'a> {
     buffer: &'a [u8],
-    buffer_size: usize,
     key: usize,
     descriptor_size: usize,
     descriptor_version: u32,
@@ -20,12 +19,31 @@ impl<'a> Buffer<'a> {
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
         system.boot_services.get_memory_map(&mut buffer_size, buffer_address, &mut key, &mut descriptor_size, &mut descriptor_version);
+        let buffer: &[u8] = &buffer[..buffer_size];
         Self {
             buffer,
-            buffer_size,
             key,
             descriptor_size,
             descriptor_version,
+        }
+    }
+}
+
+impl Iterator for Buffer<'_> {
+    type Item = memory_allocation::MemoryDescriptor;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.buffer.len() {
+            0 => None,
+            _ => {
+                let mut memory_descriptor: [u8; memory_allocation::MEMORY_DESCRIPTOR_SIZE] = [0; memory_allocation::MEMORY_DESCRIPTOR_SIZE];
+                for (i, byte) in self.buffer[..memory_allocation::MEMORY_DESCRIPTOR_SIZE].iter().enumerate() {
+                    memory_descriptor[i] = *byte;
+                }
+                let memory_descriptor: memory_allocation::MemoryDescriptor = memory_descriptor.into();
+                self.buffer = &self.buffer[self.descriptor_size..];
+                Some(memory_descriptor)
+            },
         }
     }
 }

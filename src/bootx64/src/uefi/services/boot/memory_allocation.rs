@@ -3,6 +3,7 @@
 // 7.2 Memory Allocation Services
 
 use {
+    core::mem,
     super::super::super::types::{
         status,
         void,
@@ -64,6 +65,16 @@ pub struct MemoryDescriptor {
     number_of_pages: u64,
     attribute: u64,
 }
+
+impl From<[u8; MEMORY_DESCRIPTOR_SIZE]> for MemoryDescriptor {
+    fn from(bytes: [u8; MEMORY_DESCRIPTOR_SIZE]) -> Self {
+        unsafe {
+            mem::transmute::<[u8; MEMORY_DESCRIPTOR_SIZE], Self>(bytes)
+        }
+    }
+}
+
+pub const MEMORY_DESCRIPTOR_SIZE: usize = mem::size_of::<MemoryDescriptor>();
 
 pub type VirtualAddress = u64;
 
