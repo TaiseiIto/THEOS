@@ -29,7 +29,23 @@ impl<'a> Buffer<'a> {
     }
 }
 
-impl Iterator for Buffer<'_> {
+impl<'a> Into<MemoryDescriptors<'a>> for &Buffer<'a> {
+    fn into(self) -> MemoryDescriptors<'a> {
+        let buffer: &[u8] = self.buffer;
+        let descriptor_size: usize = self.descriptor_size;
+        MemoryDescriptors {
+            buffer,
+            descriptor_size,
+        }
+    }
+}
+
+pub struct MemoryDescriptors<'a> {
+    buffer: &'a [u8],
+    descriptor_size: usize,
+}
+
+impl Iterator for MemoryDescriptors<'_> {
     type Item = memory_allocation::MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
