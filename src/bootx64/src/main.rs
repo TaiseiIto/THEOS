@@ -4,13 +4,13 @@
 #![allow(stable_features)]
 
 mod asm;
-mod memory;
 mod serial;
 mod uefi;
 
 use {
     core::panic::PanicInfo,
     uefi::{
+        services::boot::memory_allocation,
         types::{
             handle,
             status,
@@ -28,9 +28,9 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "Hello, World!");
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
-    let mut memory_map_buffer: [u8; 0x10000] = [0; 0x10000];
-    let memory_map_buffer = memory::map::Buffer::new(&mut memory_map_buffer, system_table);
-    uefi_println!(system_table, "memory_map_buffer = {:#x?}", memory_map_buffer);
+    let mut memory_map: [u8; 0x10000] = [0; 0x10000];
+    let memory_map = memory_allocation::Map::new(&mut memory_map, system_table);
+    uefi_println!(system_table, "memory_map = {:#x?}", memory_map);
     loop {
         asm::hlt();
     }

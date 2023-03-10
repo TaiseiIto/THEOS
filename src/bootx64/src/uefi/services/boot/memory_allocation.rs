@@ -7,9 +7,12 @@ use {
         fmt,
         mem,
     },
-    super::super::super::types::{
-        status,
-        void,
+    super::super::super::{
+        tables::system,
+        types::{
+            status,
+            void,
+        },
     },
     wrapped_function::WrappedFunction,
 };
@@ -187,4 +190,88 @@ pub struct AllocatePool(pub extern "efiapi" fn(MemoryType, usize, &mut &void::Vo
 #[derive(WrappedFunction)]
 #[repr(C)]
 pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
+
+#[derive(Clone)]
+pub struct Map<'a> {
+    buffer: &'a [u8],
+    key: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
+impl<'a> Map<'a> {
+    pub fn new(buffer: &'a mut [u8], system: &system::System<'_>) -> Self {
+        let mut buffer_size: usize = buffer.len();
+        let buffer_address: &mut u8 = &mut buffer[0];
+        let mut key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        system.boot_services.get_memory_map(&mut buffer_size, buffer_address, &mut key, &mut descriptor_size, &mut descriptor_version);
+        let buffer: &[u8] = &buffer[..buffer_size];
+        Self {
+            buffer,
+            key,
+            descriptor_size,
+            descriptor_version,
+        }
+    }
+}
+
+impl fmt::Debug for Map<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        formatter
+            .debug_struct("Map")
+            .field("key", &self.key)
+            .field("descriptor_size", &self.descriptor_size)
+            .field("descriptor_version", &self.descriptor_version)
+            .field("descriptors", &memory_descriptors)
+            .finish()
+    }
+}
+
+impl<'a> Into<MemoryDescriptors<'a>> for &Map<'a> {
+    fn into(self) -> MemoryDescriptors<'a> {
+        let buffer: &[u8] = self.buffer;
+        let descriptor_size: usize = self.descriptor_size;
+        MemoryDescriptors {
+            buffer,
+            descriptor_size,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct MemoryDescriptors<'a> {
+    buffer: &'a [u8],
+    descriptor_size: usize,
+}
+
+impl fmt::Debug for MemoryDescriptors<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_list()
+            .entries(self.clone())
+            .finish()
+    }
+}
+
+impl Iterator for MemoryDescriptors<'_> {
+    type Item = MemoryDescriptor;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.buffer.len() {
+            0 => None,
+            _ => {
+                let mut memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = [0; MEMORY_DESCRIPTOR_SIZE];
+                for (i, byte) in self.buffer[..MEMORY_DESCRIPTOR_SIZE].iter().enumerate() {
+                    memory_descriptor[i] = *byte;
+                }
+                let memory_descriptor: MemoryDescriptor = memory_descriptor.into();
+                self.buffer = &self.buffer[self.descriptor_size..];
+                Some(memory_descriptor)
+            },
+        }
+    }
+}
 
