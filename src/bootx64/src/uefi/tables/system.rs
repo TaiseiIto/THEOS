@@ -4,9 +4,12 @@ use {
         Write,
     },
     super::{
+        boot_services,
+        configuration,
         header,
+        runtime_services,
         super::{
-            protocols::{
+            protocols::console_support::{
                 simple_text_input,
                 simple_text_output,
             },
@@ -37,16 +40,49 @@ pub fn print(system: &mut System<'_>, args: fmt::Arguments) {
 // References
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 4.3 System Table
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct System<'a> {
     header: header::Header,
     firmware_vendor: char16::String<'a>,
     firmware_revision: u32,
     console_in_handle: handle::Handle<'a>,
-    con_in: &'a simple_text_input::SimpleTextInput<'a>,
+    pub con_in: &'a simple_text_input::SimpleTextInput<'a>,
     console_out_handle: handle::Handle<'a>,
     pub con_out: &'a simple_text_output::SimpleTextOutput<'a>,
+    standard_error_handle: handle::Handle<'a>,
+    pub std_err: &'a simple_text_output::SimpleTextOutput<'a>,
+    pub runtime_services: &'a runtime_services::RuntimeServices,
+    pub boot_services: &'a boot_services::BootServices<'a>,
+    number_of_table_entries: usize,
+    configuration_table: &'a configuration::Configuration<'a>,
+}
+
+impl fmt::Debug for System<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let configuration_tables: configuration::Configurations = self.into();
+        formatter
+            .debug_struct("System")
+            .field("header", &self.header)
+            .field("firmware_vendor", &self.firmware_vendor)
+            .field("firmware_revision", &self.firmware_revision)
+            .field("console_in_handle", &self.console_in_handle)
+            .field("con_in", &self.con_in)
+            .field("console_out_handle", &self.console_out_handle)
+            .field("con_out", &self.con_out)
+            .field("standard_error_handle", &self.standard_error_handle)
+            .field("std_err", &self.std_err)
+            .field("runtime_services", &self.runtime_services)
+            .field("boot_services", &self.boot_services)
+            .field("configuration_tables", &configuration_tables)
+            .finish()
+    }
+}
+
+impl<'a> Into<configuration::Configurations<'a>> for &System<'a> {
+    fn into(self) -> configuration::Configurations<'a> {
+        configuration::Configurations::<'a>::new(self.configuration_table, self.number_of_table_entries)
+    }
 }
 
 impl Write for System<'_> {
