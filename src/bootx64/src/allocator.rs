@@ -2,7 +2,10 @@ extern crate alloc;
 
 use {
     alloc::alloc::Layout,
-    core::alloc::GlobalAlloc,
+    core::{
+        alloc::GlobalAlloc,
+        cell,
+    },
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -16,10 +19,12 @@ use {
 #[global_allocator]
 static mut ALLOCATOR: Allocator = Allocator {
     system: None,
+    address_map: cell::UnsafeCell::new(INITIAL_ADDRESS_MAP),
 };
 
 pub struct Allocator {
-    system: Option<system::System<'static>>
+    system: Option<system::System<'static>>,
+    address_map: cell::UnsafeCell<AddressMap>,
 }
 
 impl Allocator {
@@ -51,12 +56,70 @@ unsafe impl GlobalAlloc for Allocator {
         }.expect("Can't allocate memory!");
         let allocated = allocated as *const void::Void;
         let allocated = allocated as usize;
-        let allocated = ((allocated + align - 1) / align) * align;
-        let allocated = allocated as *mut u8;
-        allocated
+        let provided = ((allocated + align - 1) / align) * align;
+        self.address_map
+            .get()
+            .as_mut()
+            .expect("Can't allocate memory!")
+            .insert(allocated, provided);
+        let provided = provided as *mut u8;
+        provided
     }
 
-    unsafe fn dealloc(&self, _: *mut u8, _: Layout) {
+    unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
+        let provided = pointer as usize;
+        let allocated: usize = self.address_map
+            .get()
+            .as_ref()
+            .expect("Can't free memory!")
+            .find(provided)
+            .expect("Can't free memory!");
+        let allocated = allocated as *const void::Void;
+        let allocated = &*allocated;
+        match &self.system {
+            Some(system) => match system.boot_services.free_pool(allocated) {
+                status::SUCCESS => Ok(()),
+                _ => Err(()),
+            }
+            None => Err(()),
+        }.expect("Can't free memory!");
+    }
+}
+
+struct AddressMap {
+    pairs: [Option<AddressPair>; ADDRESS_PAIRS],
+}
+
+const ADDRESS_PAIRS: usize = 0x400;
+const INITIAL_ADDRESS_MAP: AddressMap = AddressMap {
+    pairs: [None; ADDRESS_PAIRS],
+};
+
+impl AddressMap {
+    fn insert(&mut self, allocated: usize, provided: usize) {
+        *self.pairs
+            .iter_mut()
+            .find(|pair| pair.is_none())
+            .expect("Can't insert an address pair to an address map!")
+            = Some(AddressPair::new(allocated, provided));
+    }
+
+    fn find(&self, provided: usize) -> Option<usize> {
+        let key: usize = provided;
+        self.pairs
+            .iter()
+            .filter_map(|pair| *pair)
+            .find_map(|pair| {
+                let AddressPair {
+                    allocated,
+                    provided,
+                } = pair;
+                if key == provided {
+                    Some(allocated)
+                } else {
+                    None
+                }
+            })
     }
 }
 
@@ -72,43 +135,6 @@ impl AddressPair {
             allocated,
             provided,
         }
-    }
-}
-
-struct AddressMap {
-    pairs: [Option<AddressPair>; ADDRESS_PAIRS],
-}
-
-const ADDRESS_PAIRS: usize = 0x400;
-
-impl AddressMap {
-    fn new() -> Self {
-        let pairs: [Option<AddressPair>; ADDRESS_PAIRS] = [None; ADDRESS_PAIRS];
-        Self {
-            pairs,
-        }
-    }
-
-    fn insert(&mut self, allocated: usize, provided: usize) {
-        *self.pairs
-            .iter_mut()
-            .find(|pair| pair.is_none())
-            .expect("Can't insert an address pair to an address map!")
-            = Some(AddressPair::new(allocated, provided));
-    }
-
-    fn find(&self, provided: usize) -> Option<usize> {
-        self.pairs
-            .iter()
-            .filter_map(|pair| *pair)
-            .find_map(|pair| if let AddressPair {
-                allocated,
-                provided,
-            } = pair {
-                Some(allocated)
-            } else {
-                None
-            })
     }
 }
 
