@@ -3,6 +3,7 @@
 #![feature(abi_efiapi)]
 #![allow(stable_features)]
 
+mod allocator;
 mod asm;
 mod serial;
 mod uefi;
@@ -21,7 +22,8 @@ use {
 };
 
 #[no_mangle]
-fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> status::Status {
+fn efi_main(image_handle: handle::Handle, system_table: &'static mut system::System<'static>) -> status::Status {
+    allocator::Allocator::set_system(system_table.clone());
     let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
     serial_println!(&mut com1, "Hello, World!");
     let status: status::Status = system_table.con_out.reset(false);
