@@ -50,11 +50,15 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
 
     let memory_type = memory_allocation::MemoryType::LoaderData;
     let memory_map = void::Void::new();
+    let mut memory_map = &memory_map;
     let status: status::Status = system_table.boot_services.allocate_pool(
         memory_type,
         memory_map_size,
-        &mut &memory_map,
+        &mut memory_map,
     );
+    uefi_println!(system_table, "status = {:#x}", status);
+
+    let status: status::Status = system_table.boot_services.free_pool(memory_map);
     uefi_println!(system_table, "status = {:#x}", status);
 
     loop {

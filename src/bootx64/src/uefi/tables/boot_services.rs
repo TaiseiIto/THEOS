@@ -108,6 +108,13 @@ impl BootServices<'_> {
         )
     }
 
+    pub fn free_pool(
+        &self,
+        buffer: &void::Void,
+    ) -> status::Status {
+        self.free_pool.0(buffer)
+    }
+
     pub fn get_memory_map(
         &self,
         memory_map_size: &mut usize,
