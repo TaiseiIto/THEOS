@@ -3,19 +3,24 @@
 #![feature(abi_efiapi)]
 #![allow(stable_features)]
 
+extern crate alloc;
+
 mod allocator;
 mod asm;
 mod serial;
 mod uefi;
 
 use {
+    alloc::{
+        vec,
+        vec::Vec,
+    },
     core::panic::PanicInfo,
     uefi::{
         services::boot::memory_allocation,
         types::{
             handle,
             status,
-            void,
         },
         tables::system,
     },
@@ -31,23 +36,14 @@ fn efi_main(image_handle: handle::Handle, system_table: &'static mut system::Sys
     uefi_println!(system_table, "Hello, World!");
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
-
     let memory_map_size: usize = memory_allocation::Map::get_size(system_table);
     uefi_println!(system_table, "memory_map_size = {:#x}", memory_map_size);
-
-    let memory_type = memory_allocation::MemoryType::LoaderData;
-    let memory_map = void::Void::new();
-    let mut memory_map = &memory_map;
-    let status: status::Status = system_table.boot_services.allocate_pool(
-        memory_type,
-        memory_map_size,
-        &mut memory_map,
-    );
-    uefi_println!(system_table, "status = {:#x}", status);
-
-    let status: status::Status = system_table.boot_services.free_pool(memory_map);
-    uefi_println!(system_table, "status = {:#x}", status);
-
+    uefi_println!(system_table, "vec![1, 2, 3] = {:#x?}", vec![1, 2, 3]);
+    let mut vec = Vec::new();
+    vec.push(4);
+    vec.push(5);
+    vec.push(6);
+    uefi_println!(system_table, "vec = {:#x?}", vec);
     loop {
         asm::hlt();
     }
