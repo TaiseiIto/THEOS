@@ -30,23 +30,8 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
 
-    let mut memory_map_size: usize = 0;
-    let mut memory_map: u8 = 0;
-    let mut map_key: usize = 0;
-    let mut descriptor_size: usize = 0;
-    let mut descriptor_version: u32 = 0;
-    let status: status::Status = system_table.boot_services.get_memory_map(
-        &mut memory_map_size,
-        &mut memory_map,
-        &mut map_key,
-        &mut descriptor_size,
-        &mut descriptor_version,
-    );
+    let memory_map_size: usize = memory_allocation::Map::get_size(system_table);
     uefi_println!(system_table, "memory_map_size = {:#x}", memory_map_size);
-    uefi_println!(system_table, "map_key = {:#x}", map_key);
-    uefi_println!(system_table, "descriptor_size = {:#x}", descriptor_size);
-    uefi_println!(system_table, "descriptor_version = {:#x}", descriptor_version);
-    uefi_println!(system_table, "status = {:#x}", status);
 
     let memory_type = memory_allocation::MemoryType::LoaderData;
     let memory_map = void::Void::new();

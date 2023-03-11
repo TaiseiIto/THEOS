@@ -200,6 +200,22 @@ pub struct Map<'a> {
 }
 
 impl<'a> Map<'a> {
+    pub fn get_size(system: &system::System<'_>) -> usize {
+        let mut size: usize = 0;
+        let mut buffer: u8 = 0;
+        let mut map_key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        system.boot_services.get_memory_map(
+            &mut size,
+            &mut buffer,
+            &mut map_key,
+            &mut descriptor_size,
+            &mut descriptor_version,
+        );
+        size
+    }
+
     pub fn new(buffer: &'a mut [u8], system: &system::System<'_>) -> Self {
         let mut buffer_size: usize = buffer.len();
         let buffer_address: &mut u8 = &mut buffer[0];
