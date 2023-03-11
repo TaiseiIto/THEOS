@@ -69,6 +69,21 @@ pub struct BootServices<'a> {
 }
 
 impl BootServices<'_> {
+    pub fn allocate_pages(
+        &self,
+        allocate_type: memory_allocation::AllocateType,
+        memory_type: memory_allocation::MemoryType,
+        pages: usize,
+        memory: &mut memory_allocation::PhysicalAddress,
+    ) -> status::Status {
+        self.allocate_pages.0(
+            allocate_type,
+            memory_type,
+            pages,
+            memory,
+        )
+    }
+
     pub fn get_memory_map(
         &self,
         memory_map_size: &mut usize,

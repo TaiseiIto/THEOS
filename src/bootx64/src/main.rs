@@ -28,9 +28,18 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "Hello, World!");
     uefi_println!(system_table, "image_handle = {:#x?}", image_handle);
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
-    let mut memory_map: [u8; 0x10000] = [0; 0x10000];
-    let memory_map = memory_allocation::Map::new(&mut memory_map, system_table);
-    uefi_println!(system_table, "memory_map = {:#x?}", memory_map);
+    let allocate_type = memory_allocation::AllocateType::AllocateAnyPages;
+    let memory_type = memory_allocation::MemoryType::LoaderData;
+    let pages: usize = 1;
+    let mut memory: memory_allocation::PhysicalAddress = 0;
+    let status: status::Status = system_table.boot_services.allocate_pages(
+        allocate_type,
+        memory_type,
+        pages,
+        &mut memory,
+    );
+    uefi_println!(system_table, "memory = {:#x}", memory);
+    uefi_println!(system_table, "status = {:#x}", status);
     loop {
         asm::hlt();
     }
