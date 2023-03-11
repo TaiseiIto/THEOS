@@ -8,6 +8,13 @@ use core::fmt;
 pub struct Void {
 }
 
+impl Void {
+    pub fn new() -> Self {
+        Self {
+        }
+    }
+}
+
 impl fmt::Debug for Void {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let void = self as *const Void;

@@ -14,6 +14,7 @@ use {
         types::{
             handle,
             status,
+            void,
         },
         tables::system,
     },
@@ -30,16 +31,13 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "system_table = {:#x?}", system_table.clone());
 
     let mut memory_map_size: usize = 0;
-    let memory_map: *mut u8 = 0 as *mut u8;
-    let memory_map: &mut u8 = unsafe {
-        &mut *memory_map
-    };
+    let mut memory_map: u8 = 0;
     let mut map_key: usize = 0;
     let mut descriptor_size: usize = 0;
     let mut descriptor_version: u32 = 0;
     let status: status::Status = system_table.boot_services.get_memory_map(
         &mut memory_map_size,
-        memory_map,
+        &mut memory_map,
         &mut map_key,
         &mut descriptor_size,
         &mut descriptor_version,
@@ -50,20 +48,13 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     uefi_println!(system_table, "descriptor_version = {:#x}", descriptor_version);
     uefi_println!(system_table, "status = {:#x}", status);
 
-    let allocate_type = memory_allocation::AllocateType::AllocateAnyPages;
     let memory_type = memory_allocation::MemoryType::LoaderData;
-    let pages: usize = 1;
-    let mut memory: memory_allocation::PhysicalAddress = 0;
-    let status: status::Status = system_table.boot_services.allocate_pages(
-        allocate_type,
+    let memory_map = void::Void::new();
+    let status: status::Status = system_table.boot_services.allocate_pool(
         memory_type,
-        pages,
-        &mut memory,
+        memory_map_size,
+        &mut &memory_map,
     );
-    uefi_println!(system_table, "memory = {:#x}", memory);
-    uefi_println!(system_table, "status = {:#x}", status);
-
-    let status: status::Status = system_table.boot_services.free_pages(memory, pages);
     uefi_println!(system_table, "status = {:#x}", status);
 
     loop {

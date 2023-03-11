@@ -84,6 +84,19 @@ impl BootServices<'_> {
         )
     }
 
+    pub fn allocate_pool(
+        &self,
+        memory_type: memory_allocation::MemoryType,
+        size: usize,
+        buffer: &mut &void::Void,
+    ) -> status::Status {
+        self.allocate_pool.0(
+            memory_type,
+            size,
+            buffer,
+        )
+    }
+
     pub fn free_pages(
         &self,
         memory: memory_allocation::PhysicalAddress,
