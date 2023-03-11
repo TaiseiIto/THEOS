@@ -84,6 +84,17 @@ impl BootServices<'_> {
         )
     }
 
+    pub fn free_pages(
+        &self,
+        memory: memory_allocation::PhysicalAddress,
+        pages: usize,
+    ) -> status::Status {
+        self.free_pages.0(
+            memory,
+            pages,
+        )
+    }
+
     pub fn get_memory_map(
         &self,
         memory_map_size: &mut usize,

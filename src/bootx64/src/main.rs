@@ -40,6 +40,8 @@ fn efi_main(image_handle: handle::Handle, system_table: &mut system::System) -> 
     );
     uefi_println!(system_table, "memory = {:#x}", memory);
     uefi_println!(system_table, "status = {:#x}", status);
+    let status: status::Status = system_table.boot_services.free_pages(memory, pages);
+    uefi_println!(system_table, "status = {:#x}", status);
     loop {
         asm::hlt();
     }
