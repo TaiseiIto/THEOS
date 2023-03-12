@@ -195,6 +195,7 @@ pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
 pub struct Map<'a> {
     buffer: allocator::Allocated<'a>,
     key: usize,
+    descriptors: usize,
     descriptor_size: usize,
     descriptor_version: u32,
 }
@@ -238,9 +239,11 @@ impl<'a> Map<'a> {
             status::SUCCESS => (),
             _ => panic!("Can't get memory map!"),
         }
+        let descriptors: usize = buffer_size / descriptor_size;
         Self {
             buffer,
             key,
+            descriptors,
             descriptor_size,
             descriptor_version,
         }
@@ -263,9 +266,11 @@ impl fmt::Debug for Map<'_> {
 impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
     fn into(self) -> MemoryDescriptors<'a> {
         let buffer: &[u8] = self.buffer.copy_slice();
+        let descriptors: usize = self.descriptors;
         let descriptor_size: usize = self.descriptor_size;
         MemoryDescriptors {
             buffer,
+            descriptors,
             descriptor_size,
         }
     }
@@ -274,6 +279,7 @@ impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
 #[derive(Clone)]
 pub struct MemoryDescriptors<'a> {
     buffer: &'a [u8],
+    descriptors: usize,
     descriptor_size: usize,
 }
 
@@ -290,7 +296,7 @@ impl Iterator for MemoryDescriptors<'_> {
     type Item = MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.buffer.len() {
+        match self.descriptors {
             0 => None,
             _ => {
                 let mut memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = [0; MEMORY_DESCRIPTOR_SIZE];
@@ -299,6 +305,7 @@ impl Iterator for MemoryDescriptors<'_> {
                 }
                 let memory_descriptor: MemoryDescriptor = memory_descriptor.into();
                 self.buffer = &self.buffer[self.descriptor_size..];
+                self.descriptors -= 1;
                 Some(memory_descriptor)
             },
         }
