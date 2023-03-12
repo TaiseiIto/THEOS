@@ -220,12 +220,13 @@ impl<'a> Map<'a> {
 
     pub fn new() -> Self {
         let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_size();
+        buffer_size *= 2;
         let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
         let mut key: usize = 0;
         let mut descriptor_version: u32 = 0;
         let buffer_slice: &mut [u8] = buffer.get();
         let buffer_address: &mut u8 = &mut buffer_slice[0];
-        system::system()
+        match system::system()
             .boot_services
             .get_memory_map(
                 &mut buffer_size,
@@ -233,7 +234,10 @@ impl<'a> Map<'a> {
                 &mut key,
                 &mut descriptor_size,
                 &mut descriptor_version
-            );
+            ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't get memory map!"),
+        }
         Self {
             buffer,
             key,

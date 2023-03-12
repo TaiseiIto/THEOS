@@ -30,9 +30,8 @@ fn efi_main(image_handle: handle::Handle, system_table: &'static mut system::Sys
     uefi_println!("Hello, World!");
     uefi_println!("image_handle = {:#x?}", image_handle);
     uefi_println!("system_table = {:#x?}", system::system());
-    let (memory_map_size, memory_descriptor_size): (usize, usize) = memory_allocation::Map::get_size();
-    uefi_println!("memory_map_size = {:#x}", memory_map_size);
-    uefi_println!("memory_descriptor_size = {:#x}", memory_descriptor_size);
+    let memory_map = memory_allocation::Map::new();
+    uefi_println!("memory_map = {:#x?}", memory_map);
     loop {
         asm::hlt();
     }
