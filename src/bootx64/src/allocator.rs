@@ -1,10 +1,15 @@
 extern crate alloc;
 
+
 use {
     alloc::alloc::Layout,
     core::{
         alloc::GlobalAlloc,
         cell,
+    },
+    crate::{
+        uefi_print,
+        uefi_println,
     },
     super::uefi::{
         services::boot::memory_allocation,
@@ -28,9 +33,12 @@ pub struct Allocator {
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let requested_size: usize = layout.size();
+        uefi_println!("alloc.requested_size = {:#x}", requested_size);
         let align: usize = layout.align();
+        uefi_println!("alloc.align = {:#x}", align);
         let memory_type = memory_allocation::MemoryType::LoaderData;
         let allocated_size: usize = align + requested_size - 1;
+        uefi_println!("alloc.allocated_size = {:#x}", allocated_size);
         let allocated = void::Void::new();
         let mut allocated = &allocated;
         match system::system()
@@ -45,7 +53,9 @@ unsafe impl GlobalAlloc for Allocator {
         }
         let allocated = allocated as *const void::Void;
         let allocated = allocated as usize;
+        uefi_println!("alloc.allocated = {:#x}", allocated);
         let provided = ((allocated + align - 1) / align) * align;
+        uefi_println!("alloc.provided = {:#x}", provided);
         self.address_map
             .get()
             .as_mut()
@@ -57,12 +67,14 @@ unsafe impl GlobalAlloc for Allocator {
 
     unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
         let provided = pointer as usize;
+        uefi_println!("dealloc.provided = {:#x}", provided);
         let allocated: usize = self.address_map
             .get()
             .as_ref()
             .expect("Can't free memory!")
             .find(provided)
             .expect("Can't free memory!");
+        uefi_println!("dealloc.allocated = {:#x}", allocated);
         let allocated = allocated as *const void::Void;
         let allocated = &*allocated;
         match system::system()
