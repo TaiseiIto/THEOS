@@ -25,9 +25,9 @@ use {
 
 #[no_mangle]
 fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut system::System<'static>) -> status::Status {
-    system::init_system(image_handle, system_table);
     let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
     serial_println!(&mut com1, "Hello, World!");
+    system::init_system(image_handle, system_table);
     uefi_println!("Hello, World!");
     uefi_println!("image_handle = {:#x?}", system::image());
     uefi_println!("system_table = {:#x?}", system::system());
