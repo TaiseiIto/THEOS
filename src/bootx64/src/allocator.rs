@@ -30,6 +30,18 @@ pub struct Allocator {
     address_map: cell::UnsafeCell<AddressMap>,
 }
 
+impl Allocator {
+    fn remaining_pairs(&self) -> usize {
+        unsafe {
+            self.address_map
+                .get()
+                .as_ref()
+                .expect("Can't get a number of remaining pairs!")
+                .remaining_pairs()
+        }
+    }
+}
+
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let requested_size: usize = layout.size();
@@ -61,6 +73,7 @@ unsafe impl GlobalAlloc for Allocator {
             .as_mut()
             .expect("Can't allocate memory!")
             .insert(allocated, provided);
+        uefi_println!("alloc.remaining_pairs = {:#x}", self.remaining_pairs());
         let provided = provided as *mut u8;
         provided
     }
@@ -83,6 +96,12 @@ unsafe impl GlobalAlloc for Allocator {
             status::SUCCESS => (),
             _ => panic!("Can't free memory!"),
         }
+        self.address_map
+            .get()
+            .as_mut()
+            .expect("Can't free memory!")
+            .delete(provided);
+        uefi_println!("dealloc.remaining_pairs = {:#x}", self.remaining_pairs());
     }
 }
 
@@ -120,6 +139,27 @@ impl AddressMap {
                     None
                 }
             })
+    }
+
+    fn delete(&mut self, provided: usize) {
+        let key: usize = provided;
+        for pair in self.pairs.iter_mut() {
+            if let Some(AddressPair {
+                allocated: _,
+                provided,
+            }) = pair {
+                if *provided == key {
+                    *pair = None;
+                }
+            }
+        }
+    }
+
+    fn remaining_pairs(&self) -> usize {
+        self.pairs
+            .iter()
+            .filter(|pair| pair.is_none())
+            .count()
     }
 }
 
