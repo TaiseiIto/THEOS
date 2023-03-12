@@ -18,21 +18,11 @@ use {
 
 #[global_allocator]
 static mut ALLOCATOR: Allocator = Allocator {
-    system: None,
     address_map: cell::UnsafeCell::new(INITIAL_ADDRESS_MAP),
 };
 
 pub struct Allocator {
-    system: Option<system::System<'static>>,
     address_map: cell::UnsafeCell<AddressMap>,
-}
-
-impl Allocator {
-    pub fn set_system(system: system::System<'static>) {
-        unsafe {
-            ALLOCATOR.system = Some(system);
-        }
-    }
 }
 
 unsafe impl GlobalAlloc for Allocator {
@@ -43,17 +33,16 @@ unsafe impl GlobalAlloc for Allocator {
         let allocated_size: usize = align + requested_size - 1;
         let allocated = void::Void::new();
         let mut allocated = &allocated;
-        match &self.system {
-            Some(system) => match system.boot_services.allocate_pool(
+        match system::system()
+            .boot_services
+            .allocate_pool(
                 memory_type,
                 allocated_size,
                 &mut allocated,
             ) {
-                status::SUCCESS => Ok(()),
-                _ => Err(()),
-            },
-            None => Err(()),
-        }.expect("Can't allocate memory!");
+                status::SUCCESS => (),
+                _ => panic!("Can't allocate memory!"),
+        }
         let allocated = allocated as *const void::Void;
         let allocated = allocated as usize;
         let provided = ((allocated + align - 1) / align) * align;
@@ -76,13 +65,12 @@ unsafe impl GlobalAlloc for Allocator {
             .expect("Can't free memory!");
         let allocated = allocated as *const void::Void;
         let allocated = &*allocated;
-        match &self.system {
-            Some(system) => match system.boot_services.free_pool(allocated) {
-                status::SUCCESS => Ok(()),
-                _ => Err(()),
-            }
-            None => Err(()),
-        }.expect("Can't free memory!");
+        match system::system()
+            .boot_services
+            .free_pool(allocated) {
+            status::SUCCESS => (),
+            _ => panic!("Can't free memory!"),
+        }
     }
 }
 

@@ -200,19 +200,21 @@ pub struct Map<'a> {
 }
 
 impl<'a> Map<'a> {
-    pub fn get_size(system: &system::System<'_>) -> usize {
+    pub fn get_size() -> usize {
         let mut size: usize = 0;
         let mut buffer: u8 = 0;
         let mut map_key: usize = 0;
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
-        system.boot_services.get_memory_map(
-            &mut size,
-            &mut buffer,
-            &mut map_key,
-            &mut descriptor_size,
-            &mut descriptor_version,
-        );
+        system::system()
+            .boot_services
+            .get_memory_map(
+                &mut size,
+                &mut buffer,
+                &mut map_key,
+                &mut descriptor_size,
+                &mut descriptor_version,
+            );
         size
     }
 

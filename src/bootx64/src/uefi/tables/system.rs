@@ -24,17 +24,40 @@ use {
 
 #[macro_export]
 macro_rules! uefi_print {
-    ($system:expr, $($arg:tt)*) => ($crate::uefi::tables::system::print($system, format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::uefi::tables::system::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! uefi_println {
-    ($system:expr, $fmt:expr) => (uefi_print!($system, concat!($fmt, "\n")));
-    ($system:expr, $fmt:expr, $($arg:tt)*) => (uefi_print!($system, concat!($fmt, "\n"), $($arg)*));
+    ($fmt:expr) => (uefi_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (uefi_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-pub fn print(system: &mut System<'_>, args: fmt::Arguments) {
-    system.write_fmt(args).expect("Can't output to the screen!");
+pub fn print(args: fmt::Arguments) {
+    system()
+        .write_fmt(args)
+        .expect("Can't output to the screen!");
+}
+
+static mut SYSTEM: Option<&'static mut System<'static>> = None;
+
+pub fn system() -> &'static mut System<'static> {
+    unsafe {
+        match &mut SYSTEM {
+            Some(system) => *system,
+            None => panic!("Can't get a system table!"),
+        }
+    }
+}
+
+pub fn init_system(system: &'static mut System<'static>) {
+    match system.con_out.reset(false) {
+        status::SUCCESS => (),
+        _ => panic!("Can't initialize a system table!"),
+    }
+    unsafe {
+        SYSTEM = Some(system);
+    }
 }
 
 // References
