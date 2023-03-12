@@ -11,6 +11,7 @@ mod serial;
 mod uefi;
 
 use {
+    alloc::vec::Vec,
     core::panic::PanicInfo,
     uefi::{
         services::boot::memory_allocation,
@@ -31,6 +32,7 @@ fn efi_main(image_handle: handle::Handle, system_table: &'static mut system::Sys
     uefi_println!("image_handle = {:#x?}", image_handle);
     uefi_println!("system_table = {:#x?}", system::system());
     let memory_map = memory_allocation::Map::new();
+    let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
     uefi_println!("memory_map = {:#x?}", memory_map);
     loop {
         asm::hlt();

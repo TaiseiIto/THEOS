@@ -3,6 +3,7 @@
 // 7.2 Memory Allocation Services
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
@@ -273,6 +274,13 @@ impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
             descriptors,
             descriptor_size,
         }
+    }
+}
+
+impl Into<Vec<MemoryDescriptor>> for &Map<'_> {
+    fn into(self) -> Vec<MemoryDescriptor> {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        memory_descriptors.collect()
     }
 }
 
