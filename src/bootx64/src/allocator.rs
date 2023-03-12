@@ -5,6 +5,7 @@ use {
     core::{
         alloc::GlobalAlloc,
         cell,
+        slice,
     },
     crate::{
         uefi_print,
@@ -26,8 +27,8 @@ pub struct Allocated<'a> {
 }
 
 impl<'a> Allocated<'a> {
-    fn new(size: usize, align: usize) -> Self {
-        let layout = Layout::from_size_align(size, align).expect("Can't allocate memory!");
+    pub fn new(size: usize, align: usize) -> Self {
+        let layout = Layout::from_size_align(size, Self::align(align)).expect("Can't allocate memory!");
         let reference: &'a mut u8 = unsafe {
             ALLOCATOR
                 .alloc(layout)
@@ -40,8 +41,20 @@ impl<'a> Allocated<'a> {
         }
     }
 
-    fn get_mut(&mut self) -> &mut u8 {
-        self.reference
+    pub fn get(&mut self) -> &mut [u8] {
+        let pointer = self.reference as *mut u8;
+        let size: usize = self.layout.size();
+        unsafe {
+            slice::from_raw_parts_mut(pointer, size)
+        }
+    }
+
+    fn align(align: usize) -> usize {
+        let mut fixed_align = 1;
+        while fixed_align < align {
+            fixed_align *= 2;
+        }
+        fixed_align
     }
 }
 
