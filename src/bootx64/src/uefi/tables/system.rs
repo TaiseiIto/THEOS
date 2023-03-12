@@ -13,6 +13,7 @@ use {
                 simple_text_input,
                 simple_text_output,
             },
+            services::boot::memory_allocation,
             types::{
                 char16,
                 handle,
@@ -39,7 +40,21 @@ pub fn print(args: fmt::Arguments) {
         .expect("Can't output to the screen!");
 }
 
+pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
+        let memory_map = memory_allocation::Map::new();
+        let memory_map_key: usize = memory_map.key();
+        let image: handle::Handle = image();
+        match system()
+            .boot_services
+            .exit_boot_services(image, memory_map_key) {
+            status::SUCCESS => (),
+            _ => panic!("Can't exit boot services!"),
+        }
+        memory_map
+}
+
 static mut SYSTEM: Option<&'static mut System<'static>> = None;
+static mut IMAGE: Option<handle::Handle<'static>> = None;
 
 pub fn system() -> &'static mut System<'static> {
     unsafe {
@@ -50,13 +65,23 @@ pub fn system() -> &'static mut System<'static> {
     }
 }
 
-pub fn init_system(system: &'static mut System<'static>) {
+pub fn image() -> handle::Handle<'static> {
+    unsafe {
+        match &mut IMAGE {
+            Some(image) => *image,
+            None => panic!("Can't get a image handle!"),
+        }
+    }
+}
+
+pub fn init_system(image: handle::Handle<'static>, system: &'static mut System<'static>) {
     match system.con_out.reset(false) {
         status::SUCCESS => (),
         _ => panic!("Can't initialize a system table!"),
     }
     unsafe {
         SYSTEM = Some(system);
+        IMAGE = Some(image);
     }
 }
 

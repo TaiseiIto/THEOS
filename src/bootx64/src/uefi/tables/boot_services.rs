@@ -9,6 +9,7 @@ use super::{
             self,
         },
         types::{
+            handle,
             status,
             void,
         },
@@ -99,15 +100,13 @@ impl BootServices<'_> {
 
     pub fn exit_boot_services(
         &self,
-        image_handle: &void::Void,
-    ) -> memory_allocation::Map {
-        let memory_map = memory_allocation::Map::new();
-        let memory_map_key: usize = memory_map.key();
-        match self.exit_boot_services.0(image_handle, memory_map_key) {
-            status::SUCCESS => (),
-            _ => panic!("Can't exit boot services!"),
-        }
-        memory_map
+        image_handle: handle::Handle,
+        map_key: usize,
+    ) -> status::Status {
+        self.exit_boot_services.0(
+            image_handle,
+            map_key,
+        )
     }
 
     pub fn free_pages(
