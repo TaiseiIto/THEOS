@@ -38,6 +38,10 @@ impl<'a> Allocated<'a> {
         }
     }
 
+    pub fn copy_slice(&self) -> &[u8] {
+        self.slice.as_ref()
+    }
+
     pub fn get(&mut self) -> &mut [u8] {
         self.slice
     }

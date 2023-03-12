@@ -8,6 +8,7 @@ use {
         mem,
     },
     super::super::super::{
+        super::allocator,
         tables::system,
         types::{
             status,
@@ -191,9 +192,8 @@ pub struct AllocatePool(pub extern "efiapi" fn(MemoryType, usize, &mut &void::Vo
 #[repr(C)]
 pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
 
-#[derive(Clone)]
 pub struct Map<'a> {
-    buffer: &'a [u8],
+    buffer: allocator::Allocated<'a>,
     key: usize,
     descriptor_size: usize,
     descriptor_version: u32,
@@ -218,14 +218,22 @@ impl<'a> Map<'a> {
         (size, descriptor_size)
     }
 
-    pub fn new(buffer: &'a mut [u8], system: &system::System<'_>) -> Self {
-        let mut buffer_size: usize = buffer.len();
-        let buffer_address: &mut u8 = &mut buffer[0];
+    pub fn new() -> Self {
+        let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_size();
+        let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
         let mut key: usize = 0;
-        let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
-        system.boot_services.get_memory_map(&mut buffer_size, buffer_address, &mut key, &mut descriptor_size, &mut descriptor_version);
-        let buffer: &[u8] = &buffer[..buffer_size];
+        let buffer_slice: &mut [u8] = buffer.get();
+        let buffer_address: &mut u8 = &mut buffer_slice[0];
+        system::system()
+            .boot_services
+            .get_memory_map(
+                &mut buffer_size,
+                buffer_address,
+                &mut key,
+                &mut descriptor_size,
+                &mut descriptor_version
+            );
         Self {
             buffer,
             key,
@@ -248,9 +256,9 @@ impl fmt::Debug for Map<'_> {
     }
 }
 
-impl<'a> Into<MemoryDescriptors<'a>> for &Map<'a> {
+impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
     fn into(self) -> MemoryDescriptors<'a> {
-        let buffer: &[u8] = self.buffer;
+        let buffer: &[u8] = self.buffer.copy_slice();
         let descriptor_size: usize = self.descriptor_size;
         MemoryDescriptors {
             buffer,
