@@ -22,31 +22,24 @@ use {
 };
 
 pub struct Allocated<'a> {
-    reference: &'a mut u8,
+    slice: &'a mut [u8],
     layout: Layout,
 }
 
 impl<'a> Allocated<'a> {
     pub fn new(size: usize, align: usize) -> Self {
         let layout = Layout::from_size_align(size, Self::align(align)).expect("Can't allocate memory!");
-        let reference: &'a mut u8 = unsafe {
-            ALLOCATOR
-                .alloc(layout)
-                .as_mut()
-                .expect("Can't allocate memory!")
+        let slice: &'a mut [u8] = unsafe {
+            slice::from_raw_parts_mut(ALLOCATOR.alloc(layout), size)
         };
         Self {
-            reference,
+            slice,
             layout,
         }
     }
 
     pub fn get(&mut self) -> &mut [u8] {
-        let pointer = self.reference as *mut u8;
-        let size: usize = self.layout.size();
-        unsafe {
-            slice::from_raw_parts_mut(pointer, size)
-        }
+        self.slice
     }
 
     fn align(align: usize) -> usize {
@@ -61,7 +54,9 @@ impl<'a> Allocated<'a> {
 impl<'a> Drop for Allocated<'a> {
     fn drop(&mut self) {
         let layout: Layout = self.layout;
-        let pointer = self.reference as *mut u8;
+        let slice: &mut [u8] = self.slice;
+        let reference: &mut u8 = &mut slice[0];
+        let pointer = reference as *mut u8;
         unsafe {
             ALLOCATOR.dealloc(pointer, layout)
         }
