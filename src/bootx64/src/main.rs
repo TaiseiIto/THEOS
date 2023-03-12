@@ -33,6 +33,7 @@ fn efi_main(image_handle: handle::Handle, system_table: &'static mut system::Sys
     serial_println!(&mut com1, "Hello, World!");
     uefi_println!("Hello, World!");
     uefi_println!("image_handle = {:#x?}", image_handle);
+    uefi_println!("system_table = {:#x?}", system::system());
     let memory_map_size: usize = memory_allocation::Map::get_size();
     uefi_println!("memory_map_size = {:#x}", memory_map_size);
     uefi_println!("vec![1, 2, 3] = {:#x?}", vec![1, 2, 3]);
