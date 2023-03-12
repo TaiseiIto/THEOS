@@ -200,7 +200,7 @@ pub struct Map<'a> {
 }
 
 impl<'a> Map<'a> {
-    pub fn get_size() -> usize {
+    pub fn get_size() -> (usize, usize) {
         let mut size: usize = 0;
         let mut buffer: u8 = 0;
         let mut map_key: usize = 0;
@@ -215,7 +215,7 @@ impl<'a> Map<'a> {
                 &mut descriptor_size,
                 &mut descriptor_version,
             );
-        size
+        (size, descriptor_size)
     }
 
     pub fn new(buffer: &'a mut [u8], system: &system::System<'_>) -> Self {
