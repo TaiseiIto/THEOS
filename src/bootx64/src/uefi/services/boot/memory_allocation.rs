@@ -208,7 +208,7 @@ impl<'a> Map<'a> {
         let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
         let mut key: usize = 0;
         let mut descriptor_version: u32 = 0;
-        let buffer_slice: &mut [u8] = buffer.get();
+        let buffer_slice: &mut [u8] = buffer.get_mut();
         let buffer_address: &mut u8 = &mut buffer_slice[0];
         match system::system()
             .boot_services
@@ -270,7 +270,7 @@ impl fmt::Debug for Map<'_> {
 
 impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
     fn into(self) -> MemoryDescriptors<'a> {
-        let buffer: &[u8] = self.buffer.copy_slice();
+        let buffer: &[u8] = self.buffer.get_ref();
         let descriptors: usize = self.descriptors;
         let descriptor_size: usize = self.descriptor_size;
         MemoryDescriptors {
