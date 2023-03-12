@@ -1,6 +1,5 @@
 extern crate alloc;
 
-
 use {
     alloc::alloc::Layout,
     core::{
@@ -20,6 +19,41 @@ use {
         },
     },
 };
+
+pub struct Allocated<'a> {
+    reference: &'a mut u8,
+    layout: Layout,
+}
+
+impl<'a> Allocated<'a> {
+    fn new(size: usize, align: usize) -> Self {
+        let layout = Layout::from_size_align(size, align).expect("Can't allocate memory!");
+        let reference: &'a mut u8 = unsafe {
+            ALLOCATOR
+                .alloc(layout)
+                .as_mut()
+                .expect("Can't allocate memory!")
+        };
+        Self {
+            reference,
+            layout,
+        }
+    }
+
+    fn get_mut(&mut self) -> &mut u8 {
+        self.reference
+    }
+}
+
+impl<'a> Drop for Allocated<'a> {
+    fn drop(&mut self) {
+        let layout: Layout = self.layout;
+        let pointer = self.reference as *mut u8;
+        unsafe {
+            ALLOCATOR.dealloc(pointer, layout)
+        }
+    }
+}
 
 #[global_allocator]
 static mut ALLOCATOR: Allocator = Allocator {
