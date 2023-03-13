@@ -156,7 +156,7 @@ impl Time {
         let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an accessed time");
         let accessed_time: time::SystemTime = metadata
             .accessed()
-            .expect("Can't get an accessed time");
+            .expect("Can't get an accessed time!");
         Self::from_system_time(accessed_time)
     }
 
@@ -164,7 +164,10 @@ impl Time {
         let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an changed time");
         let changed_time: time::SystemTime = metadata
             .created()
-            .expect("Can't get an changed time");
+            .unwrap_or(metadata
+                .modified()
+                .expect("Can't get a changed time!")
+            );
         Self::from_system_time(changed_time)
     }
 
@@ -172,7 +175,7 @@ impl Time {
         let metadata: fs::Metadata = fs::metadata(path).expect("Can't get an accessed time");
         let modified_time: time::SystemTime = metadata
             .modified()
-            .expect("Can't get an accessed time");
+            .expect("Can't get a modified time!");
         Self::from_system_time(modified_time)
     }
 
