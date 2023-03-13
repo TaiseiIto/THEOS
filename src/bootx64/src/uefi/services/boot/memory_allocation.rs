@@ -104,6 +104,14 @@ pub struct MemoryDescriptor {
     attribute: u64,
 }
 
+const PAGE_SIZE: usize = 0x1000;
+
+impl MemoryDescriptor {
+    pub fn physical_end(&self) -> PhysicalAddress {
+        self.physical_start + (self.number_of_pages as PhysicalAddress) * (PAGE_SIZE as PhysicalAddress)
+    }
+}
+
 impl fmt::Debug for MemoryDescriptor {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         let memory_type: MemoryType = self.memory_type.into();
@@ -203,7 +211,7 @@ pub struct Map<'a> {
 
 impl<'a> Map<'a> {
     pub fn new() -> Self {
-        let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_size();
+        let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_map_buffer_size();
         buffer_size *= 2;
         let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
         let mut key: usize = 0;
@@ -234,7 +242,15 @@ impl<'a> Map<'a> {
         self.key
     }
 
-    fn get_size() -> (usize, usize) {
+    pub fn get_memory_size(&self) -> PhysicalAddress {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        memory_descriptors
+            .map(|memory_descriptor| memory_descriptor.physical_end())
+            .max()
+            .expect("Can't get memory size!")
+    }
+
+    fn get_map_buffer_size() -> (usize, usize) {
         let mut size: usize = 0;
         let mut buffer: u8 = 0;
         let mut map_key: usize = 0;

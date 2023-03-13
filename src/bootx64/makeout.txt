@@ -1,0 +1,160 @@
+cargo build --target x86_64-unknown-uefi
+   Compiling bootx64 v0.1.0 (/root/THEOS/src/bootx64)
+error: expected type, found keyword `struct`
+   --> src/uefi/services/boot/memory_allocation.rs:109:6
+    |
+109 | impl struct MemoryDescriptor {
+    |      ^^^^^^ expected type
+
+error[E0433]: failed to resolve: could not find `MemoryType` in `memory_allocation`
+  --> src/allocator.rs:94:46
+   |
+94 |         let memory_type = memory_allocation::MemoryType::LoaderData;
+   |                                              ^^^^^^^^^^ could not find `MemoryType` in `memory_allocation`
+
+error[E0412]: cannot find type `MemoryDescriptor` in module `memory_allocation`
+  --> src/uefi/services/runtime/virtual_memory.rs:17:95
+   |
+17 | pub struct SetVirtualAddressMap(pub extern "efiapi" fn(usize, usize, u32, &memory_allocation::MemoryDescriptor) -> status::Status);
+   |                                                                                               ^^^^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `PhysicalAddress` in module `memory_allocation`
+  --> src/uefi/services/runtime.rs:51:92
+   |
+51 | pub struct UpdateCapsule(pub extern "efiapi" fn(&&CapsuleHeader, usize, memory_allocation::PhysicalAddress) -> status::Status);
+   |                                                                                            ^^^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `AllocatePages` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:28:40
+   |
+28 |     allocate_pages: memory_allocation::AllocatePages,
+   |                                        ^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `FreePages` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:29:36
+   |
+29 |     free_pages: memory_allocation::FreePages,
+   |                                    ^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `GetMemoryMap` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:30:40
+   |
+30 |     get_memory_map: memory_allocation::GetMemoryMap,
+   |                                        ^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `AllocatePool` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:31:39
+   |
+31 |     allocate_pool: memory_allocation::AllocatePool,
+   |                                       ^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `FreePool` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:32:35
+   |
+32 |     free_pool: memory_allocation::FreePool,
+   |                                   ^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `AllocateType` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:75:43
+   |
+75 |         allocate_type: memory_allocation::AllocateType,
+   |                                           ^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `MemoryType` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:76:41
+   |
+76 |         memory_type: memory_allocation::MemoryType,
+   |                                         ^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `PhysicalAddress` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:78:41
+   |
+78 |         memory: &mut memory_allocation::PhysicalAddress,
+   |                                         ^^^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `MemoryType` in module `memory_allocation`
+  --> src/uefi/tables/boot_services.rs:93:41
+   |
+93 |         memory_type: memory_allocation::MemoryType,
+   |                                         ^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `PhysicalAddress` in module `memory_allocation`
+   --> src/uefi/tables/boot_services.rs:123:36
+    |
+123 |         memory: memory_allocation::PhysicalAddress,
+    |                                    ^^^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `Map` in module `memory_allocation`
+  --> src/uefi/tables/system.rs:42:55
+   |
+42 | pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
+   |                                                       ^^^ not found in `memory_allocation`
+   |
+help: consider importing this struct
+   |
+1  | use core::iter::Map;
+   |
+help: if you import `Map`, refer to it directly
+   |
+42 - pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
+42 + pub fn exit_boot_services<'a>() -> Map<'a> {
+   |
+
+error[E0433]: failed to resolve: could not find `Map` in `memory_allocation`
+  --> src/uefi/tables/system.rs:43:45
+   |
+43 |         let memory_map = memory_allocation::Map::new();
+   |                                             ^^^ could not find `Map` in `memory_allocation`
+   |
+help: consider importing this struct
+   |
+1  | use core::iter::Map;
+   |
+help: if you import `Map`, refer to it directly
+   |
+43 -         let memory_map = memory_allocation::Map::new();
+43 +         let memory_map = Map::new();
+   |
+
+error[E0433]: failed to resolve: could not find `Map` in `memory_allocation`
+  --> src/main.rs:34:41
+   |
+34 |     let memory_map = memory_allocation::Map::new();
+   |                                         ^^^ could not find `Map` in `memory_allocation`
+   |
+help: consider importing this struct
+   |
+13 | use core::iter::Map;
+   |
+help: if you import `Map`, refer to it directly
+   |
+34 -     let memory_map = memory_allocation::Map::new();
+34 +     let memory_map = Map::new();
+   |
+
+error[E0412]: cannot find type `MemoryDescriptor` in module `memory_allocation`
+  --> src/main.rs:35:44
+   |
+35 |     let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
+   |                                            ^^^^^^^^^^^^^^^^ not found in `memory_allocation`
+
+error[E0412]: cannot find type `Map` in module `memory_allocation`
+  --> src/main.rs:37:41
+   |
+37 |     let _memory_map: memory_allocation::Map = system::exit_boot_services();
+   |                                         ^^^ not found in `memory_allocation`
+   |
+help: consider importing this struct
+   |
+13 | use core::iter::Map;
+   |
+help: if you import `Map`, refer to it directly
+   |
+37 -     let _memory_map: memory_allocation::Map = system::exit_boot_services();
+37 +     let _memory_map: Map = system::exit_boot_services();
+   |
+
+Some errors have detailed explanations: E0412, E0433.
+For more information about an error, try `rustc --explain E0412`.
+error: could not compile `bootx64` due to 19 previous errors
+make: *** [Makefile:7: target/x86_64-unknown-uefi/debug/bootx64.efi] Error 101
