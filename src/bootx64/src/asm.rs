@@ -44,6 +44,10 @@ impl Rflags {
     const VIF: u64 = 1 << 19;
     const VIP: u64 = 1 << 20;
     const ID: u64 = 1 << 21;
+
+    pub fn get() -> Self {
+        get_rflags().into()
+    }
 }
 
 impl From<u64> for Rflags {
@@ -84,6 +88,80 @@ impl From<u64> for Rflags {
             vip,
             id,
         }
+    }
+}
+
+impl Into<u64> for &Rflags {
+    fn into(self) -> u64 {
+        let cf: u64 = match self.cf {
+            true => Rflags::CF,
+            false => 0,
+        };
+        let pf: u64 = match self.pf {
+            true => Rflags::PF,
+            false => 0,
+        };
+        let af: u64 = match self.af {
+            true => Rflags::AF,
+            false => 0,
+        };
+        let zf: u64 = match self.zf {
+            true => Rflags::ZF,
+            false => 0,
+        };
+        let sf: u64 = match self.sf {
+            true => Rflags::SF,
+            false => 0,
+        };
+        let tf: u64 = match self.tf {
+            true => Rflags::TF,
+            false => 0,
+        };
+        let interrupt_enable: u64 = match self.interrupt_enable {
+            true => Rflags::IF,
+            false => 0,
+        };
+        let df: u64 = match self.df {
+            true => Rflags::DF,
+            false => 0,
+        };
+        let of: u64 = match self.of {
+            true => Rflags::OF,
+            false => 0,
+        };
+        let iopl: u64 = match self.iopl {
+            true => Rflags::IOPL,
+            false => 0,
+        };
+        let nt: u64 = match self.nt {
+            true => Rflags::NT,
+            false => 0,
+        };
+        let rf: u64 = match self.rf {
+            true => Rflags::RF,
+            false => 0,
+        };
+        let vm: u64 = match self.vm {
+            true => Rflags::VM,
+            false => 0,
+        };
+        let ac: u64 = match self.ac {
+            true => Rflags::AC,
+            false => 0,
+        };
+        let vif: u64 = match self.vif {
+            true => Rflags::VIF,
+            false => 0,
+        };
+        let vip: u64 = match self.vip {
+            true => Rflags::VIP,
+            false => 0,
+        };
+        let id: u64 = match self.id {
+            true => Rflags::ID,
+            false => 0,
+        };
+        cf + pf + af + zf + sf + tf + interrupt_enable + df + of + iopl + nt + rf + vm + ac + vif + vip + id
     }
 }
 
