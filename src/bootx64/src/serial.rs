@@ -18,13 +18,13 @@ use {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($serial:expr, $($arg:tt)*) => ($crate::serial::print($serial, format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::serial::print($crate::serial::Serial::com1(), format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! serial_println {
-    ($serial:expr, $fmt:expr) => (serial_print!($serial, concat!($fmt, "\n")));
-    ($serial:expr, $fmt:expr, $($arg:tt)*) => (serial_print!($serial, concat!($fmt, "\n"), $($arg)*));
+    ($fmt:expr) => (serial_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (serial_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
 pub fn print(serial: &mut Serial, args: fmt::Arguments) {
@@ -35,11 +35,27 @@ pub struct Serial {
     port: asm::Port,
 }
 
-pub const COM1PORT: asm::Port = 0x03f8;
-pub const BAUD: u32 = 9600;
+static mut COM1: Option<Serial> = None;
+const COM1PORT: asm::Port = 0x03f8;
+const BAUD: u32 = 9600;
 const FREQUENCY: u32 = 115200;
 
 impl Serial {
+    pub fn com1<'a>() -> &'a mut Self {
+        unsafe {
+            match COM1 {
+                Some(ref mut com1) => com1,
+                None => panic!("Can't get a serial port COM1!"),
+            }
+        }
+    }
+
+    pub fn init_com1() {
+        unsafe {
+            COM1 = Some(Self::new(COM1PORT, BAUD));
+        }
+    }
+
     pub fn new(port: asm::Port, baud: u32) -> Self {
         // A new serial interface.
         let serial = Self {

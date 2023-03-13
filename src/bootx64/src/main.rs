@@ -25,8 +25,8 @@ use {
 
 #[no_mangle]
 fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut system::System<'static>) -> status::Status {
-    let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
-    serial_println!(&mut com1, "Hello, World!");
+    serial::Serial::init_com1();
+    serial_println!("Hello, World!");
     system::init_system(image_handle, system_table);
     uefi_println!("Hello, World!");
     uefi_println!("image_handle = {:#x?}", system::image());
@@ -35,7 +35,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
     uefi_println!("memory_map = {:#x?}", memory_map);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
-    serial_println!(&mut com1, "Succeeded in exiting boot services.");
+    serial_println!("Succeeded in exiting boot services.");
     loop {
         asm::hlt();
     }
@@ -43,8 +43,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
-    let mut com1 = serial::Serial::new(serial::COM1PORT, serial::BAUD);
-    serial_println!(&mut com1, "{}", panic);
+    serial_println!("{}", panic);
     loop {
         asm::hlt();
     }
