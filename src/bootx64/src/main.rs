@@ -12,7 +12,10 @@ mod uefi;
 
 use {
     alloc::vec::Vec,
-    asm::rflags,
+    asm::{
+        cpuid,
+        rflags,
+    },
     core::panic::PanicInfo,
     uefi::{
         services::boot::memory_allocation,
@@ -39,6 +42,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     uefi_println!("memory_size = {:#x}", memory_size);
     let cpuid_is_supported = rflags::Rflags::cpuid_is_supported();
     uefi_println!("cpuid_is_supported = {:#x?}", cpuid_is_supported);
+    let cpuid = cpuid::CpuidOutRegisters::cpuid(0);
+    uefi_println!("cpuid = {:#x?}", cpuid);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {

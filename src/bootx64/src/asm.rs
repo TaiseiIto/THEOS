@@ -1,3 +1,4 @@
+pub mod cpuid;
 pub mod rflags;
 
 use core::arch::asm;
