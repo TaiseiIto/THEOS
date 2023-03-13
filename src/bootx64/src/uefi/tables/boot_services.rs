@@ -76,13 +76,16 @@ impl BootServices<'_> {
         memory_type: memory_allocation::MemoryType,
         pages: usize,
         memory: &mut memory_allocation::PhysicalAddress,
-    ) -> status::Status {
-        self.allocate_pages.0(
+    ) -> Result<(), status::Status> {
+        match self.allocate_pages.0(
             allocate_type,
             memory_type,
             pages,
             memory,
-        )
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 
     pub fn allocate_pool(
@@ -90,41 +93,53 @@ impl BootServices<'_> {
         memory_type: memory_allocation::MemoryType,
         size: usize,
         buffer: &mut &void::Void,
-    ) -> status::Status {
-        self.allocate_pool.0(
+    ) -> Result<(), status::Status> {
+        match self.allocate_pool.0(
             memory_type,
             size,
             buffer,
-        )
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 
     pub fn exit_boot_services(
         &self,
         image_handle: handle::Handle,
         map_key: usize,
-    ) -> status::Status {
-        self.exit_boot_services.0(
+    ) -> Result<(), status::Status> {
+        match self.exit_boot_services.0(
             image_handle,
             map_key,
-        )
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 
     pub fn free_pages(
         &self,
         memory: memory_allocation::PhysicalAddress,
         pages: usize,
-    ) -> status::Status {
-        self.free_pages.0(
+    ) -> Result<(), status::Status> {
+        match self.free_pages.0(
             memory,
             pages,
-        )
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 
     pub fn free_pool(
         &self,
         buffer: &void::Void,
-    ) -> status::Status {
-        self.free_pool.0(buffer)
+    ) -> Result<(), status::Status> {
+        match self.free_pool.0(buffer) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 
     pub fn get_memory_map(
@@ -134,14 +149,17 @@ impl BootServices<'_> {
         map_key: &mut usize,
         descriptor_size: &mut usize,
         descriptor_version: &mut u32,
-    ) -> status::Status {
-        self.get_memory_map.0(
+    ) -> Result<(), status::Status> {
+        match self.get_memory_map.0(
             memory_map_size,
             memory_map,
             map_key,
             descriptor_size,
             descriptor_version,
-        )
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 }
 

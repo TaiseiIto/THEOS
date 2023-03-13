@@ -14,10 +14,7 @@ use {
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
-        types::{
-            status,
-            void,
-        },
+        types::void,
     },
 };
 
@@ -99,16 +96,14 @@ unsafe impl GlobalAlloc for Allocator {
         uefi_println!("alloc.allocated_size = {:#x}", allocated_size);
         let allocated = void::Void::new();
         let mut allocated = &allocated;
-        match system::system()
+        system::system()
             .boot_services
             .allocate_pool(
                 memory_type,
                 allocated_size,
                 &mut allocated,
-            ) {
-                status::SUCCESS => (),
-                _ => panic!("Can't allocate memory!"),
-        }
+            )
+            .expect("Can't allocate memory!");
         let allocated = allocated as *const void::Void;
         let allocated = allocated as usize;
         uefi_println!("alloc.allocated = {:#x}", allocated);
@@ -136,12 +131,10 @@ unsafe impl GlobalAlloc for Allocator {
         uefi_println!("dealloc.allocated = {:#x}", allocated);
         let allocated = allocated as *const void::Void;
         let allocated = &*allocated;
-        match system::system()
+        system::system()
             .boot_services
-            .free_pool(allocated) {
-            status::SUCCESS => (),
-            _ => panic!("Can't free memory!"),
-        }
+            .free_pool(allocated)
+            .expect("Can't free memory!");
         self.address_map
             .get()
             .as_mut()

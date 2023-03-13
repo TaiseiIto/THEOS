@@ -210,7 +210,7 @@ impl<'a> Map<'a> {
         let mut descriptor_version: u32 = 0;
         let buffer_slice: &mut [u8] = buffer.get_mut();
         let buffer_address: &mut u8 = &mut buffer_slice[0];
-        match system::system()
+        system::system()
             .boot_services
             .get_memory_map(
                 &mut buffer_size,
@@ -218,10 +218,8 @@ impl<'a> Map<'a> {
                 &mut key,
                 &mut descriptor_size,
                 &mut descriptor_version
-            ) {
-            status::SUCCESS => (),
-            _ => panic!("Can't get memory map!"),
-        }
+            )
+            .expect("Can't get memory map!");
         let descriptors: usize = buffer_size / descriptor_size;
         Self {
             buffer,
@@ -242,7 +240,7 @@ impl<'a> Map<'a> {
         let mut map_key: usize = 0;
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
-        system::system()
+        match system::system()
             .boot_services
             .get_memory_map(
                 &mut size,
@@ -250,7 +248,9 @@ impl<'a> Map<'a> {
                 &mut map_key,
                 &mut descriptor_size,
                 &mut descriptor_version,
-            );
+            ) {
+            _ => (),
+        }
         (size, descriptor_size)
     }
 }

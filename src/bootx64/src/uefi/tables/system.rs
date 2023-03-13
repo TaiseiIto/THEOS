@@ -17,7 +17,6 @@ use {
             types::{
                 char16,
                 handle,
-                status,
             },
         },
     },
@@ -44,12 +43,10 @@ pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
         let memory_map = memory_allocation::Map::new();
         let memory_map_key: usize = memory_map.key();
         let image: handle::Handle = image();
-        match system()
+        system()
             .boot_services
-            .exit_boot_services(image, memory_map_key) {
-            status::SUCCESS => (),
-            _ => panic!("Can't exit boot services!"),
-        }
+            .exit_boot_services(image, memory_map_key)
+            .expect("Can't exit boot services!");
         memory_map
 }
 
