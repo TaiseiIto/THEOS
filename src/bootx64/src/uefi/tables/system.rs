@@ -132,10 +132,7 @@ impl<'a> Into<configuration::Configurations<'a>> for &System<'a> {
 
 impl Write for System<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        match self.con_out.print(s) {
-            Ok(()) => Ok(()),
-            Err(_) => Err(fmt::Error),
-        }
+        self.con_out.print(s).map_err(|_| fmt::Error)
     }
 }
 
