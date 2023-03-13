@@ -25,31 +25,31 @@ pub struct SimpleTextOutput<'a> {
 }
 
 impl SimpleTextOutput<'_> {
-    pub fn reset(&self, extended_verification: bool) -> status::Status {
-        self.reset.0(self, extended_verification)
-    }
-
-    pub fn print(&self, string: &str) -> status::Status {
-        for character in string.chars() {
-            match self.put_char(character) {
-                status::SUCCESS => (),
-                error => return error,
-            }
+    pub fn reset(&self, extended_verification: bool) -> Result<(), status::Status> {
+        match self.reset.0(self, extended_verification) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
         }
-        status::SUCCESS
     }
 
-    fn put_char(&self, character: char) -> status::Status {
+    pub fn print(&self, string: &str) -> Result<(), status::Status> {
+        for character in string.chars() {
+            self.put_char(character)?;
+        }
+        Ok(())
+    }
+
+    fn put_char(&self, character: char) -> Result<(), status::Status> {
         if character == '\n' {
-            match self.put_char('\r') {
-                status::SUCCESS => (),
-                error => return error,
-            }
+            self.put_char('\r')?;
         }
         let mut buffer: [u16; 3] = [0x0000; 3];
         character.clone().encode_utf16(&mut buffer[..]);
         let string = char16::String::new(&buffer[0]);
-        self.output_string.0(self, string)
+        match self.output_string.0(self, string) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
     }
 }
 

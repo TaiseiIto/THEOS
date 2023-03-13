@@ -75,10 +75,7 @@ pub fn image() -> handle::Handle<'static> {
 }
 
 pub fn init_system(image: handle::Handle<'static>, system: &'static mut System<'static>) {
-    match system.con_out.reset(false) {
-        status::SUCCESS => (),
-        _ => panic!("Can't initialize a system table!"),
-    }
+    system.con_out.reset(false).expect("Can't initialize a system table!");
     unsafe {
         SYSTEM = Some(system);
         IMAGE = Some(image);
@@ -136,8 +133,8 @@ impl<'a> Into<configuration::Configurations<'a>> for &System<'a> {
 impl Write for System<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         match self.con_out.print(s) {
-            status::SUCCESS => Ok(()),
-            _ => Err(fmt::Error),
+            Ok(()) => Ok(()),
+            Err(_) => Err(fmt::Error),
         }
     }
 }
