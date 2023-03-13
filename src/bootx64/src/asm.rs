@@ -48,6 +48,29 @@ impl Rflags {
     pub fn get() -> Self {
         get_rflags().into()
     }
+
+    pub fn set(&self) {
+        set_rflags(self.into());
+    }
+
+    pub fn cpuid_is_supported() -> bool {
+        let mut rflags = Self::get();
+        rflags.id = true;
+        Self::set(&rflags);
+        let mut rflags = Self::get();
+        match rflags.id {
+            true => {
+                rflags.id = false;
+                Self::set(&rflags);
+                let rflags = Self::get();
+                match rflags.id {
+                    true => false,
+                    false => true,
+                }
+            },
+            false => false,
+        }
+    }
 }
 
 impl From<u64> for Rflags {
@@ -165,7 +188,7 @@ impl Into<u64> for &Rflags {
     }
 }
 
-pub fn get_rflags() -> u64 {
+fn get_rflags() -> u64 {
     let mut rflags: u64;
     unsafe {
         asm!(
@@ -175,6 +198,16 @@ pub fn get_rflags() -> u64 {
         );
     }
     rflags
+}
+
+fn set_rflags(rflags: u64) {
+    unsafe {
+        asm!(
+            "push rax",
+            "popfq",
+            in("rax") rflags,
+        );
+    }
 }
 
 pub fn hlt() {

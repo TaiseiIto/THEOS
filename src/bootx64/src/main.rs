@@ -36,7 +36,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
     uefi_println!("memory_map = {:#x?}", memory_map);
     uefi_println!("memory_size = {:#x}", memory_size);
-    uefi_println!("asm::get_rflags = {:#x}", asm::get_rflags());
+    let cpuid_is_supported = asm::Rflags::cpuid_is_supported();
+    uefi_println!("cpuid_is_supported = {:#x?}", cpuid_is_supported);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
