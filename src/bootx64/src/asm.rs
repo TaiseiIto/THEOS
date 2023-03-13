@@ -2,6 +2,18 @@ use core::arch::asm;
 
 pub type Port = u16;
 
+pub fn get_rflags() -> u64 {
+    let mut rflags: u64;
+    unsafe {
+        asm!(
+            "pushfq",
+            "pop rax",
+            out("rax") rflags,
+        );
+    }
+    rflags
+}
+
 pub fn hlt() {
     unsafe {
         asm!("hlt");
