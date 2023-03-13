@@ -243,8 +243,8 @@ impl<'a> Map<'a> {
     }
 
     pub fn get_memory_size(&self) -> PhysicalAddress {
-        let memory_descriptors: MemoryDescriptors = self.into();
-        memory_descriptors
+        self
+            .iter()
             .map(|memory_descriptor| memory_descriptor.physical_end())
             .max()
             .expect("Can't get memory size!")
@@ -269,17 +269,20 @@ impl<'a> Map<'a> {
         }
         (size, descriptor_size)
     }
+
+    fn iter(&self) -> MemoryDescriptors {
+        self.into()
+    }
 }
 
 impl fmt::Debug for Map<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        let memory_descriptors: MemoryDescriptors = self.into();
         formatter
             .debug_struct("Map")
             .field("key", &self.key)
             .field("descriptor_size", &self.descriptor_size)
             .field("descriptor_version", &self.descriptor_version)
-            .field("descriptors", &memory_descriptors)
+            .field("descriptors", &self.iter())
             .finish()
     }
 }
