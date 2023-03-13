@@ -42,8 +42,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     uefi_println!("memory_size = {:#x}", memory_size);
     let cpuid_is_supported = rflags::Rflags::cpuid_is_supported();
     uefi_println!("cpuid_is_supported = {:#x?}", cpuid_is_supported);
-    let cpuid = cpuid::CpuidOutRegisters::cpuid(0);
-    uefi_println!("cpuid = {:#x?}", cpuid);
+    let cpuid_eax_0x00000000 = cpuid::CpuidEax0x00000000::new();
+    uefi_println!("cpuid_eax_0x00000000 = {:#x?}", cpuid_eax_0x00000000);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
