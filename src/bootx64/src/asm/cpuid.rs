@@ -1,3 +1,5 @@
+pub mod eax0x00000000;
+
 use {
     alloc::{
         string::String,
@@ -7,32 +9,15 @@ use {
 };
 
 #[derive(Debug)]
-pub struct CpuidEax0x00000000 {
-    max_eax: u32,
-    vendor: String,
+pub struct Cpuid {
+    eax0x00000000: eax0x00000000::Eax0x00000000,
 }
 
-impl CpuidEax0x00000000 {
+impl Cpuid {
     pub fn new() -> Self {
-        let CpuidOutRegisters {
-            eax,
-            ebx,
-            edx,
-            ecx,
-        } = CpuidOutRegisters::cpuid(0);
-        let max_eax: u32 = eax;
-        let vendor: [u32; 3] = [ebx, edx, ecx];
-        let vendor: Vec<u8> = vendor
-            .into_iter()
-            .map(|dword| dword
-                .to_le_bytes()
-                .into_iter())
-            .flatten()
-            .collect();
-        let vendor = String::from_utf8(vendor).expect("Can't get CPUID(EAX=0x00000000)!");
+        let eax0x00000000 = eax0x00000000::Eax0x00000000::new();
         Self {
-            max_eax,
-            vendor,
+            eax0x00000000,
         }
     }
 }
