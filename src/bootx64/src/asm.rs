@@ -16,7 +16,7 @@ pub struct Rflags {
     interrupt_enable: bool,
     df: bool,
     of: bool,
-    iopl: bool,
+    iopl: u8,
     nt: bool,
     rf: bool,
     vm: bool,
@@ -27,23 +27,41 @@ pub struct Rflags {
 }
 
 impl Rflags {
-    const CF: u64 = 1 << 0;
-    const PF: u64 = 1 << 2;
-    const AF: u64 = 1 << 4;
-    const ZF: u64 = 1 << 6;
-    const SF: u64 = 1 << 7;
-    const TF: u64 = 1 << 8;
-    const IF: u64 = 1 << 9;
-    const DF: u64 = 1 << 10;
-    const OF: u64 = 1 << 11;
-    const IOPL: u64 = (1 << 12) | (1 << 13);
-    const NT: u64 = 1 << 14;
-    const RF: u64 = 1 << 16;
-    const VM: u64 = 1 << 17;
-    const AC: u64 = 1 << 18;
-    const VIF: u64 = 1 << 19;
-    const VIP: u64 = 1 << 20;
-    const ID: u64 = 1 << 21;
+    const CF_SHIFT: u8 = 0;
+    const PF_SHIFT: u8 = 2;
+    const AF_SHIFT: u8 = 4;
+    const ZF_SHIFT: u8 = 6;
+    const SF_SHIFT: u8 = 7;
+    const TF_SHIFT: u8 = 8;
+    const IF_SHIFT: u8 = 9;
+    const DF_SHIFT: u8 = 10;
+    const OF_SHIFT: u8 = 11;
+    const IOPL_SHIFT: u8 = 12;
+    const NT_SHIFT: u8 = 14;
+    const RF_SHIFT: u8 = 16;
+    const VM_SHIFT: u8 = 17;
+    const AC_SHIFT: u8 = 18;
+    const VIF_SHIFT: u8 = 19;
+    const VIP_SHIFT: u8 = 20;
+    const ID_SHIFT: u8 = 21;
+
+    const CF: u64 = 1 << Self::CF_SHIFT;
+    const PF: u64 = 1 << Self::PF_SHIFT;
+    const AF: u64 = 1 << Self::AF_SHIFT;
+    const ZF: u64 = 1 << Self::ZF_SHIFT;
+    const SF: u64 = 1 << Self::SF_SHIFT;
+    const TF: u64 = 1 << Self::TF_SHIFT;
+    const IF: u64 = 1 << Self::IF_SHIFT;
+    const DF: u64 = 1 << Self::DF_SHIFT;
+    const OF: u64 = 1 << Self::OF_SHIFT;
+    const IOPL: u64 = 3 << Self::IOPL_SHIFT;
+    const NT: u64 = 1 << Self::NT_SHIFT;
+    const RF: u64 = 1 << Self::RF_SHIFT;
+    const VM: u64 = 1 << Self::VM_SHIFT;
+    const AC: u64 = 1 << Self::AC_SHIFT;
+    const VIF: u64 = 1 << Self::VIF_SHIFT;
+    const VIP: u64 = 1 << Self::VIP_SHIFT;
+    const ID: u64 = 1 << Self::ID_SHIFT;
 
     pub fn get() -> Self {
         get_rflags().into()
@@ -84,7 +102,7 @@ impl From<u64> for Rflags {
         let interrupt_enable: bool = value & Self::IF != 0;
         let df: bool = value & Self::DF != 0;
         let of: bool = value & Self::OF != 0;
-        let iopl: bool = value & Self::IOPL != 0;
+        let iopl: u8 = ((value & Self::IOPL) >> Self::IOPL_SHIFT) as u8;
         let nt: bool = value & Self::NT != 0;
         let rf: bool = value & Self::RF != 0;
         let vm: bool = value & Self::VM != 0;
@@ -152,10 +170,7 @@ impl Into<u64> for &Rflags {
             true => Rflags::OF,
             false => 0,
         };
-        let iopl: u64 = match self.iopl {
-            true => Rflags::IOPL,
-            false => 0,
-        };
+        let iopl: u64 = (self.iopl as u64) << Rflags::IOPL_SHIFT;
         let nt: u64 = match self.nt {
             true => Rflags::NT,
             false => 0,
