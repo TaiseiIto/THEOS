@@ -143,35 +143,35 @@ impl From<u32> for Ebx {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Edx {
-    floating_point_unit: bool,
-    virtual_8086_mode_enhancements: bool,
-    debugging_extensions: bool,
-    page_size_extension: bool,
-    time_stamp_counter: bool,
-    model_specific_registers: bool,
-    physical_address_extension: bool,
-    machine_check_exception: bool,
-    cmpxchg8b_instruction: bool,
+    fpu: bool,
+    vme: bool,
+    de: bool,
+    pse: bool,
+    tsc: bool,
+    msr: bool,
+    pae: bool,
+    mce: bool,
+    cx8: bool,
     apic: bool,
-    sysenter_and_sysexit_instructions: bool,
-    memory_type_range_registers: bool,
-    page_global_bit: bool,
-    machine_check_architecture: bool,
-    conditional_move_instructions: bool,
-    page_attribute_table: bool,
-    page_size_extension_36bit: bool,
-    processor_serial_number: bool,
-    clflush_instruction: bool,
-    debug_store: bool,
-    thermal_monitor_and_software_controlled_clock_facilities: bool,
-    intel_mmx_technology: bool,
-    fxsave_and_fxrstore_instructions: bool,
+    sep: bool,
+    mtrr: bool,
+    pge: bool,
+    mca: bool,
+    cmov: bool,
+    pat: bool,
+    pse36: bool,
+    psn: bool,
+    clfsh: bool,
+    ds: bool,
+    acpi: bool,
+    mmx: bool,
+    fxsr: bool,
     sse: bool,
     sse2: bool,
-    self_snoop: bool,
-    max_apic_ids_reserved_field_is_valid: bool,
-    thermal_monitor: bool,
-    pending_break_enable: bool,
+    ss: bool,
+    htt: bool,
+    tm: bool,
+    pbe: bool,
 }
 
 impl Edx {
@@ -239,65 +239,65 @@ impl Edx {
 
 impl From<u32> for Edx {
     fn from(edx: u32) -> Self {
-        let floating_point_unit: bool = edx & Self::FLOATING_POINT_UNIT_MASK != 0;
-        let virtual_8086_mode_enhancements: bool = edx & Self::VIRTUAL_8086_MODE_ENHANCEMENTS_MASK != 0;
-        let debugging_extensions: bool = edx & Self::DEBUGGING_EXTENSIONS_MASK != 0;
-        let page_size_extension: bool = edx & Self::PAGE_SIZE_EXTENSION_MASK != 0;
-        let time_stamp_counter: bool = edx & Self::TIME_STAMP_COUNTER_MASK != 0;
-        let model_specific_registers: bool = edx & Self::MODEL_SPECIFIC_REGISTERS_MASK != 0;
-        let physical_address_extension: bool = edx & Self::PHYSICAL_ADDRESS_EXTENSION_MASK != 0;
-        let machine_check_exception: bool = edx & Self::MACHINE_CHECK_EXCEPTION_MASK != 0;
-        let cmpxchg8b_instruction: bool = edx & Self::CMPXCHG8B_INSTRUCTION_MASK != 0;
+        let fpu: bool = edx & Self::FLOATING_POINT_UNIT_MASK != 0;
+        let vme: bool = edx & Self::VIRTUAL_8086_MODE_ENHANCEMENTS_MASK != 0;
+        let de: bool = edx & Self::DEBUGGING_EXTENSIONS_MASK != 0;
+        let pse: bool = edx & Self::PAGE_SIZE_EXTENSION_MASK != 0;
+        let tsc: bool = edx & Self::TIME_STAMP_COUNTER_MASK != 0;
+        let msr: bool = edx & Self::MODEL_SPECIFIC_REGISTERS_MASK != 0;
+        let pae: bool = edx & Self::PHYSICAL_ADDRESS_EXTENSION_MASK != 0;
+        let mce: bool = edx & Self::MACHINE_CHECK_EXCEPTION_MASK != 0;
+        let cx8: bool = edx & Self::CMPXCHG8B_INSTRUCTION_MASK != 0;
         let apic: bool = edx & Self::APIC_MASK != 0;
-        let sysenter_and_sysexit_instructions: bool = edx & Self::SYSENTER_AND_SYSEXIT_INSTRUCTIONS_MASK != 0;
-        let memory_type_range_registers: bool = edx & Self::MEMORY_TYPE_RANGE_REGISTERS_MASK != 0;
-        let page_global_bit: bool = edx & Self::PAGE_GLOBAL_BIT_MASK != 0;
-        let machine_check_architecture: bool = edx & Self::MACHINE_CHECK_ARCHITECTURE_MASK != 0;
-        let conditional_move_instructions: bool = edx & Self::CONDITIONAL_MOVE_INSTRUCTIONS_MASK != 0;
-        let page_attribute_table: bool = edx & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
-        let page_size_extension_36bit: bool = edx & Self::PAGE_SIZE_EXTENSION_36BIT_MASK != 0;
-        let processor_serial_number: bool = edx & Self::PROCESSOR_SERIAL_NUMBER_MASK != 0;
-        let clflush_instruction: bool = edx & Self::CLFLUSH_INSTRUCTION_MASK != 0;
-        let debug_store: bool = edx & Self::DEBUG_STORE_MASK != 0;
-        let thermal_monitor_and_software_controlled_clock_facilities: bool = edx & Self::THERMAL_MONITOR_AND_SOFTWARE_CONTROLLED_CLOCK_FACILITIES_MASK != 0;
-        let intel_mmx_technology: bool = edx & Self::INTEL_MMX_TECHNOLOGY_MASK != 0;
-        let fxsave_and_fxrstore_instructions: bool = edx & Self::FXSAVE_AND_FXRSTORE_INSTRUCTIONS_MASK != 0;
+        let sep: bool = edx & Self::SYSENTER_AND_SYSEXIT_INSTRUCTIONS_MASK != 0;
+        let mtrr: bool = edx & Self::MEMORY_TYPE_RANGE_REGISTERS_MASK != 0;
+        let pge: bool = edx & Self::PAGE_GLOBAL_BIT_MASK != 0;
+        let mca: bool = edx & Self::MACHINE_CHECK_ARCHITECTURE_MASK != 0;
+        let cmov: bool = edx & Self::CONDITIONAL_MOVE_INSTRUCTIONS_MASK != 0;
+        let pat: bool = edx & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
+        let pse36: bool = edx & Self::PAGE_SIZE_EXTENSION_36BIT_MASK != 0;
+        let psn: bool = edx & Self::PROCESSOR_SERIAL_NUMBER_MASK != 0;
+        let clfsh: bool = edx & Self::CLFLUSH_INSTRUCTION_MASK != 0;
+        let ds: bool = edx & Self::DEBUG_STORE_MASK != 0;
+        let acpi: bool = edx & Self::THERMAL_MONITOR_AND_SOFTWARE_CONTROLLED_CLOCK_FACILITIES_MASK != 0;
+        let mmx: bool = edx & Self::INTEL_MMX_TECHNOLOGY_MASK != 0;
+        let fxsr: bool = edx & Self::FXSAVE_AND_FXRSTORE_INSTRUCTIONS_MASK != 0;
         let sse: bool = edx & Self::SSE_MASK != 0;
         let sse2: bool = edx & Self::SSE2_MASK != 0;
-        let self_snoop: bool = edx & Self::SELF_SNOOP_MASK != 0;
-        let max_apic_ids_reserved_field_is_valid: bool = edx & Self::MAX_APIC_IDS_RESERVED_FIELD_IS_VALID_MASK != 0;
-        let thermal_monitor: bool = edx & Self::THERMAL_MONITOR_MASK != 0;
-        let pending_break_enable: bool = edx & Self::PENDING_BREAK_ENABLE_MASK != 0;
+        let ss: bool = edx & Self::SELF_SNOOP_MASK != 0;
+        let htt: bool = edx & Self::MAX_APIC_IDS_RESERVED_FIELD_IS_VALID_MASK != 0;
+        let tm: bool = edx & Self::THERMAL_MONITOR_MASK != 0;
+        let pbe: bool = edx & Self::PENDING_BREAK_ENABLE_MASK != 0;
         Self {
-            floating_point_unit,
-            virtual_8086_mode_enhancements,
-            debugging_extensions,
-            page_size_extension,
-            time_stamp_counter,
-            model_specific_registers,
-            physical_address_extension,
-            machine_check_exception,
-            cmpxchg8b_instruction,
+            fpu,
+            vme,
+            de,
+            pse,
+            tsc,
+            msr,
+            pae,
+            mce,
+            cx8,
             apic,
-            sysenter_and_sysexit_instructions,
-            memory_type_range_registers,
-            page_global_bit,
-            machine_check_architecture,
-            conditional_move_instructions,
-            page_attribute_table,
-            page_size_extension_36bit,
-            processor_serial_number,
-            clflush_instruction,
-            debug_store,
-            thermal_monitor_and_software_controlled_clock_facilities,
-            intel_mmx_technology,
-            fxsave_and_fxrstore_instructions,
+            sep,
+            mtrr,
+            pge,
+            mca,
+            cmov,
+            pat,
+            pse36,
+            psn,
+            clfsh,
+            ds,
+            acpi,
+            mmx,
+            fxsr,
             sse,
             sse2,
-            self_snoop,
-            max_apic_ids_reserved_field_is_valid,
-            thermal_monitor,
-            pending_break_enable,
+            ss,
+            htt,
+            tm,
+            pbe,
         }
     }
 }
