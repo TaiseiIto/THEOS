@@ -6,6 +6,7 @@ use {
     super::CpuidOutRegisters,
 };
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Eax0x00000000 {
     max_eax: u32,
@@ -34,6 +35,10 @@ impl Eax0x00000000 {
             max_eax,
             vendor,
         }
+    }
+
+    pub fn max_eax(&self) -> u32 {
+        self.max_eax
     }
 }
 

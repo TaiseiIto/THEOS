@@ -1,24 +1,19 @@
 pub mod eax0x00000000;
 pub mod eax0x00000001;
 
-use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
-    core::arch::asm,
-};
+use core::arch::asm;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Cpuid {
     eax0x00000000: eax0x00000000::Eax0x00000000,
-    eax0x00000001: eax0x00000001::Eax0x00000001,
+    eax0x00000001: Option<eax0x00000001::Eax0x00000001>,
 }
 
 impl Cpuid {
     pub fn new() -> Self {
         let eax0x00000000 = eax0x00000000::Eax0x00000000::new();
-        let eax0x00000001 = eax0x00000001::Eax0x00000001::new();
+        let eax0x00000001 = eax0x00000001::Eax0x00000001::new(&eax0x00000000);
         Self {
             eax0x00000000,
             eax0x00000001,

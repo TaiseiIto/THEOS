@@ -1,5 +1,9 @@
-use super::CpuidOutRegisters;
+use super::{
+    CpuidOutRegisters,
+    eax0x00000000::Eax0x00000000,
+};
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Eax0x00000001 {
     eax: Eax,
@@ -7,22 +11,27 @@ pub struct Eax0x00000001 {
 }
 
 impl Eax0x00000001 {
-    pub fn new() -> Self {
-        let CpuidOutRegisters {
-            eax,
-            ebx,
-            edx: _,
-            ecx: _,
-        } = CpuidOutRegisters::cpuid(1);
-        let eax: Eax = eax.into();
-        let ebx: Ebx = ebx.into();
-        Self {
-            eax,
-            ebx,
+    pub fn new(eax0x00000000: &Eax0x00000000) -> Option<Self> {
+        if 1 <= eax0x00000000.max_eax() {
+            let CpuidOutRegisters {
+                eax,
+                ebx,
+                edx: _,
+                ecx: _,
+            } = CpuidOutRegisters::cpuid(1);
+            let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
+            Some(Self {
+                eax,
+                ebx,
+            })
+        } else {
+            None
         }
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Eax {
     stepping_id: u8,
@@ -82,6 +91,7 @@ impl From<u32> for Eax {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Ebx {
     brand_index: u8,
