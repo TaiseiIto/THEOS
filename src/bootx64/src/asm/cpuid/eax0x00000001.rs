@@ -3,19 +3,22 @@ use super::CpuidOutRegisters;
 #[derive(Debug)]
 pub struct Eax0x00000001 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x00000001 {
     pub fn new() -> Self {
         let CpuidOutRegisters {
             eax,
-            ebx: _,
+            ebx,
             edx: _,
             ecx: _,
         } = CpuidOutRegisters::cpuid(1);
         let eax: Eax = eax.into();
+        let ebx: Ebx = ebx.into();
         Self {
             eax,
+            ebx,
         }
     }
 }
@@ -75,6 +78,51 @@ impl From<u32> for Eax {
             processor_type,
             extended_model_id,
             extended_family_id,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Ebx {
+    brand_index: u8,
+    clflush_line_size: u8,
+    max_num_of_ids: u8,
+    initial_apic_id: u8,
+}
+
+impl Ebx {
+    const BRAND_INDEX_SHIFT: usize = 0;
+    const CLFLUSH_LINE_SIZE_SHIFT: usize = 8;
+    const MAX_NUM_OF_IDS_SHIFT: usize = 16;
+    const INITIAL_APIC_ID_SHIFT: usize = 24;
+
+    const BRAND_INDEX_SHIFT_END: usize = 7;
+    const CLFLUSH_LINE_SIZE_SHIFT_END: usize = 15;
+    const MAX_NUM_OF_IDS_SHIFT_END: usize = 23;
+    const INITIAL_APIC_ID_SHIFT_END: usize = 31;
+
+    const BRAND_INDEX_LENGTH: usize = Self::BRAND_INDEX_SHIFT_END - Self::BRAND_INDEX_SHIFT + 1;
+    const CLFLUSH_LINE_SIZE_LENGTH: usize = Self::CLFLUSH_LINE_SIZE_SHIFT_END - Self::CLFLUSH_LINE_SIZE_SHIFT + 1;
+    const MAX_NUM_OF_IDS_LENGTH: usize = Self::MAX_NUM_OF_IDS_SHIFT_END - Self::MAX_NUM_OF_IDS_SHIFT + 1;
+    const INITIAL_APIC_ID_LENGTH: usize = Self::INITIAL_APIC_ID_SHIFT_END - Self::INITIAL_APIC_ID_SHIFT + 1;
+
+    const BRAND_INDEX_MASK: u32 = (((1 << Self::BRAND_INDEX_LENGTH) - 1) << Self::BRAND_INDEX_SHIFT) as u32;
+    const CLFLUSH_LINE_SIZE_MASK: u32 = (((1 << Self::CLFLUSH_LINE_SIZE_LENGTH) - 1) << Self::CLFLUSH_LINE_SIZE_SHIFT) as u32;
+    const MAX_NUM_OF_IDS_MASK: u32 = (((1 << Self::MAX_NUM_OF_IDS_LENGTH) - 1) << Self::MAX_NUM_OF_IDS_SHIFT) as u32;
+    const INITIAL_APIC_ID_MASK: u32 = (((1 << Self::INITIAL_APIC_ID_LENGTH) - 1) << Self::INITIAL_APIC_ID_SHIFT) as u32;
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let brand_index = ((ebx & Self::BRAND_INDEX_MASK) >> Self::BRAND_INDEX_SHIFT) as u8;
+        let clflush_line_size = ((ebx & Self::CLFLUSH_LINE_SIZE_MASK) >> Self::CLFLUSH_LINE_SIZE_SHIFT) as u8;
+        let max_num_of_ids = ((ebx & Self::MAX_NUM_OF_IDS_MASK) >> Self::MAX_NUM_OF_IDS_SHIFT) as u8;
+        let initial_apic_id = ((ebx & Self::INITIAL_APIC_ID_MASK) >> Self::INITIAL_APIC_ID_SHIFT) as u8;
+        Self {
+            brand_index,
+            clflush_line_size,
+            max_num_of_ids,
+            initial_apic_id,
         }
     }
 }
