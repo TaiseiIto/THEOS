@@ -9,6 +9,7 @@ pub struct Eax0x00000001 {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x00000001 {
@@ -18,15 +19,17 @@ impl Eax0x00000001 {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(1);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -298,6 +301,172 @@ impl From<u32> for Edx {
             htt,
             tm,
             pbe,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    sse3: bool,
+    pclmulqdq: bool,
+    dtes64: bool,
+    monitor: bool,
+    ds_cpl: bool,
+    vmx: bool,
+    smx: bool,
+    eist: bool,
+    tm2: bool,
+    ssse3: bool,
+    cnxt_id: bool,
+    sdbg: bool,
+    fma: bool,
+    cmpxchg16b: bool,
+    xtpr_update_control: bool,
+    pdcm: bool,
+    pcid: bool,
+    dca: bool,
+    sse4_1: bool,
+    sse4_2: bool,
+    x2apic: bool,
+    movbe: bool,
+    popcnt: bool,
+    tsc_deadline: bool,
+    aesni: bool,
+    xsave: bool,
+    osxsave: bool,
+    avx: bool,
+    f16c: bool,
+    rdrand: bool,
+}
+
+impl Ecx {
+    const SSE3_SHIFT: usize = 0;
+    const PCLMULQDQ_SHIFT: usize = 1;
+    const DTES64_SHIFT: usize = 2;
+    const MONITOR_SHIFT: usize = 3;
+    const DS_CPL_SHIFT: usize = 4;
+    const VMX_SHIFT: usize = 5;
+    const SMX_SHIFT: usize = 6;
+    const EIST_SHIFT: usize = 7;
+    const TM2_SHIFT: usize = 8;
+    const SSSE3_SHIFT: usize = 9;
+    const CNXT_ID_SHIFT: usize = 10;
+    const SDBG_SHIFT: usize = 11;
+    const FMA_SHIFT: usize = 12;
+    const CMPXCHG16B_SHIFT: usize = 13;
+    const XTPR_UPDATE_CONTROL_SHIFT: usize = 14;
+    const PDCM_SHIFT: usize = 15;
+    const PCID_SHIFT: usize = 17;
+    const DCA_SHIFT: usize = 18;
+    const SSE4_1_SHIFT: usize = 19;
+    const SSE4_2_SHIFT: usize = 20;
+    const X2APIC_SHIFT: usize = 21;
+    const MOVBE_SHIFT: usize = 22;
+    const POPCNT_SHIFT: usize = 23;
+    const TSC_DEADLINE_SHIFT: usize = 24;
+    const AESNI_SHIFT: usize = 25;
+    const XSAVE_SHIFT: usize = 26;
+    const OSXSAVE_SHIFT: usize = 27;
+    const AVX_SHIFT: usize = 28;
+    const F16C_SHIFT: usize = 29;
+    const RDRAND_SHIFT: usize = 30;
+
+    const SSE3_MASK: u32 = (1 << Self::SSE3_SHIFT) as u32;
+    const PCLMULQDQ_MASK: u32 = (1 << Self::PCLMULQDQ_SHIFT) as u32;
+    const DTES64_MASK: u32 = (1 << Self::DTES64_SHIFT) as u32;
+    const MONITOR_MASK: u32 = (1 << Self::MONITOR_SHIFT) as u32;
+    const DS_CPL_MASK: u32 = (1 << Self::DS_CPL_SHIFT) as u32;
+    const VMX_MASK: u32 = (1 << Self::VMX_SHIFT) as u32;
+    const SMX_MASK: u32 = (1 << Self::SMX_SHIFT) as u32;
+    const EIST_MASK: u32 = (1 << Self::EIST_SHIFT) as u32;
+    const TM2_MASK: u32 = (1 << Self::TM2_SHIFT) as u32;
+    const SSSE3_MASK: u32 = (1 << Self::SSSE3_SHIFT) as u32;
+    const CNXT_ID_MASK: u32 = (1 << Self::CNXT_ID_SHIFT) as u32;
+    const SDBG_MASK: u32 = (1 << Self::SDBG_SHIFT) as u32;
+    const FMA_MASK: u32 = (1 << Self::FMA_SHIFT) as u32;
+    const CMPXCHG16B_MASK: u32 = (1 << Self::CMPXCHG16B_SHIFT) as u32;
+    const XTPR_UPDATE_CONTROL_MASK: u32 = (1 << Self::XTPR_UPDATE_CONTROL_SHIFT) as u32;
+    const PDCM_MASK: u32 = (1 << Self::PDCM_SHIFT) as u32;
+    const PCID_MASK: u32 = (1 << Self::PCID_SHIFT) as u32;
+    const DCA_MASK: u32 = (1 << Self::DCA_SHIFT) as u32;
+    const SSE4_1_MASK: u32 = (1 << Self::SSE4_1_SHIFT) as u32;
+    const SSE4_2_MASK: u32 = (1 << Self::SSE4_2_SHIFT) as u32;
+    const X2APIC_MASK: u32 = (1 << Self::X2APIC_SHIFT) as u32;
+    const MOVBE_MASK: u32 = (1 << Self::MOVBE_SHIFT) as u32;
+    const POPCNT_MASK: u32 = (1 << Self::POPCNT_SHIFT) as u32;
+    const TSC_DEADLINE_MASK: u32 = (1 << Self::TSC_DEADLINE_SHIFT) as u32;
+    const AESNI_MASK: u32 = (1 << Self::AESNI_SHIFT) as u32;
+    const XSAVE_MASK: u32 = (1 << Self::XSAVE_SHIFT) as u32;
+    const OSXSAVE_MASK: u32 = (1 << Self::OSXSAVE_SHIFT) as u32;
+    const AVX_MASK: u32 = (1 << Self::AVX_SHIFT) as u32;
+    const F16C_MASK: u32 = (1 << Self::F16C_SHIFT) as u32;
+    const RDRAND_MASK: u32 = (1 << Self::RDRAND_SHIFT) as u32;
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let sse3: bool = ecx & Self::SSE3_MASK != 0;
+        let pclmulqdq: bool = ecx & Self::PCLMULQDQ_MASK != 0;
+        let dtes64: bool = ecx & Self::DTES64_MASK != 0;
+        let monitor: bool = ecx & Self::MONITOR_MASK != 0;
+        let ds_cpl: bool = ecx & Self::DS_CPL_MASK != 0;
+        let vmx: bool = ecx & Self::VMX_MASK != 0;
+        let smx: bool = ecx & Self::SMX_MASK != 0;
+        let eist: bool = ecx & Self::EIST_MASK != 0;
+        let tm2: bool = ecx & Self::TM2_MASK != 0;
+        let ssse3: bool = ecx & Self::SSSE3_MASK != 0;
+        let cnxt_id: bool = ecx & Self::CNXT_ID_MASK != 0;
+        let sdbg: bool = ecx & Self::SDBG_MASK != 0;
+        let fma: bool = ecx & Self::FMA_MASK != 0;
+        let cmpxchg16b: bool = ecx & Self::CMPXCHG16B_MASK != 0;
+        let xtpr_update_control: bool = ecx & Self::XTPR_UPDATE_CONTROL_MASK != 0;
+        let pdcm: bool = ecx & Self::PDCM_MASK != 0;
+        let pcid: bool = ecx & Self::PCID_MASK != 0;
+        let dca: bool = ecx & Self::DCA_MASK != 0;
+        let sse4_1: bool = ecx & Self::SSE4_1_MASK != 0;
+        let sse4_2: bool = ecx & Self::SSE4_2_MASK != 0;
+        let x2apic: bool = ecx & Self::X2APIC_MASK != 0;
+        let movbe: bool = ecx & Self::MOVBE_MASK != 0;
+        let popcnt: bool = ecx & Self::POPCNT_MASK != 0;
+        let tsc_deadline: bool = ecx & Self::TSC_DEADLINE_MASK != 0;
+        let aesni: bool = ecx & Self::AESNI_MASK != 0;
+        let xsave: bool = ecx & Self::XSAVE_MASK != 0;
+        let osxsave: bool = ecx & Self::OSXSAVE_MASK != 0;
+        let avx: bool = ecx & Self::AVX_MASK != 0;
+        let f16c: bool = ecx & Self::F16C_MASK != 0;
+        let rdrand: bool = ecx & Self::RDRAND_MASK != 0;
+        Self {
+            sse3,
+            pclmulqdq,
+            dtes64,
+            monitor,
+            ds_cpl,
+            vmx,
+            smx,
+            eist,
+            tm2,
+            ssse3,
+            cnxt_id,
+            sdbg,
+            fma,
+            cmpxchg16b,
+            xtpr_update_control,
+            pdcm,
+            pcid,
+            dca,
+            sse4_1,
+            sse4_2,
+            x2apic,
+            movbe,
+            popcnt,
+            tsc_deadline,
+            aesni,
+            xsave,
+            osxsave,
+            avx,
+            f16c,
+            rdrand,
         }
     }
 }
