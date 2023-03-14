@@ -2,7 +2,10 @@ pub mod eax0x00000000;
 pub mod eax0x00000001;
 pub mod eax0x00000002;
 
-use core::arch::asm;
+use {
+    core::arch::asm,
+    super::rflags,
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -13,14 +16,18 @@ pub struct Cpuid {
 }
 
 impl Cpuid {
-    pub fn new() -> Self {
-        let eax0x00000000 = eax0x00000000::Eax0x00000000::new();
-        let eax0x00000001 = eax0x00000001::Eax0x00000001::new(&eax0x00000000);
-        let eax0x00000002 = eax0x00000002::Eax0x00000002::new(&eax0x00000000);
-        Self {
-            eax0x00000000,
-            eax0x00000001,
-            eax0x00000002,
+    pub fn new() -> Option<Self> {
+        if rflags::Rflags::cpuid_is_supported() {
+            let eax0x00000000 = eax0x00000000::Eax0x00000000::new();
+            let eax0x00000001 = eax0x00000001::Eax0x00000001::new(&eax0x00000000);
+            let eax0x00000002 = eax0x00000002::Eax0x00000002::new(&eax0x00000000);
+            Some(Self {
+                eax0x00000000,
+                eax0x00000001,
+                eax0x00000002,
+            })
+        } else {
+            None
         }
     }
 }
