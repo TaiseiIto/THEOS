@@ -7,6 +7,7 @@ use super::{
 #[derive(Debug)]
 pub struct Eax0x00000005 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x00000005 {
@@ -14,13 +15,15 @@ impl Eax0x00000005 {
         if 5 <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
-                ebx: _,
+                ebx,
                 edx: _,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(5);
             let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
             Some(Self {
                 eax,
+                ebx,
             })
         } else {
             None
@@ -39,6 +42,21 @@ impl From<u32> for Eax {
         let smallest_monitor_line_size: u16 = eax as u16;
         Self {
             smallest_monitor_line_size,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    largest_monitor_line_size: u16,
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let largest_monitor_line_size: u16 = ebx as u16;
+        Self {
+            largest_monitor_line_size,
         }
     }
 }
