@@ -14,13 +14,14 @@ pub struct Eax0x00000004 {
 
 impl Eax0x00000004 {
     pub fn new(eax0x00000000: &Eax0x00000000) -> Option<Self> {
-        if 4 <= eax0x00000000.max_eax() {
+        let eax: u32 = 4;
+        if eax <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
                 ebx,
                 edx,
                 ecx,
-            } = CpuidOutRegisters::cpuid(4);
+            } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
