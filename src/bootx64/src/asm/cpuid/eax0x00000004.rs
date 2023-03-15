@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x00000004 {
     eax: Eax,
     ebx: Ebx,
+    edx: Edx,
 }
 
 impl Eax0x00000004 {
@@ -16,14 +17,16 @@ impl Eax0x00000004 {
             let CpuidOutRegisters {
                 eax,
                 ebx,
-                edx: _,
+                edx,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(4);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
+            let edx: Edx = edx.into();
             Some(Self {
                 eax,
                 ebx,
+                edx,
             })
         } else {
             None
@@ -126,6 +129,37 @@ impl From<u32> for Ebx {
             system_coherency_line_size,
             physical_line_partitions,
             ways_of_associativity,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Edx {
+    write_back_invalidate: bool,
+    cache_inclusiveness: bool,
+    complex_cache_indexing: bool,
+}
+
+impl Edx {
+    const WRITE_BACK_INVALIDATE_SHIFT: usize = 0;
+    const CACHE_INCLUSIVENESS_SHIFT: usize = 1;
+    const COMPLEX_CACHE_INDEXING_SHIFT: usize = 2;
+
+    const WRITE_BACK_INVALIDATE_MASK: u32 = (1 << Self::WRITE_BACK_INVALIDATE_SHIFT) as u32;
+    const CACHE_INCLUSIVENESS_MASK: u32 = (1 << Self::CACHE_INCLUSIVENESS_SHIFT) as u32;
+    const COMPLEX_CACHE_INDEXING_MASK: u32 = (1 << Self::COMPLEX_CACHE_INDEXING_SHIFT) as u32;
+}
+
+impl From<u32> for Edx {
+    fn from(edx: u32) -> Self {
+        let write_back_invalidate = edx & Self::WRITE_BACK_INVALIDATE_MASK != 0;
+        let cache_inclusiveness = edx & Self::CACHE_INCLUSIVENESS_MASK != 0;
+        let complex_cache_indexing = edx & Self::COMPLEX_CACHE_INDEXING_MASK != 0;
+        Self {
+            write_back_invalidate,
+            cache_inclusiveness,
+            complex_cache_indexing,
         }
     }
 }
