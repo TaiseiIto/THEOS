@@ -7,6 +7,7 @@ use super::{
 #[derive(Debug)]
 pub struct Eax0x00000004 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x00000004 {
@@ -14,13 +15,15 @@ impl Eax0x00000004 {
         if 4 <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
-                ebx: _,
+                ebx,
                 edx: _,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(4);
             let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
             Some(Self {
                 eax,
+                ebx,
             })
         } else {
             None
@@ -84,6 +87,45 @@ impl From<u32> for Eax {
             fully_associative_cache,
             maximum_number_of_addressable_ids_for_logical_processors_sharing_this_cache,
             maximum_number_of_addressable_ids_for_processor_cores_in_the_physical_package,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    system_coherency_line_size: u16,
+    physical_line_partitions: u16,
+    ways_of_associativity: u16,
+}
+
+impl Ebx {
+    const SYSTEM_COHERENCY_LINE_SIZE_SHIFT: usize = 0;
+    const PHYSICAL_LINE_PARTITIONS_SHIFT: usize = 12;
+    const WAYS_OF_ASSOCIATIVITY_SHIFT: usize = 22;
+
+    const SYSTEM_COHERENCY_LINE_SIZE_SHIFT_END: usize = 11;
+    const PHYSICAL_LINE_PARTITIONS_SHIFT_END: usize = 21;
+    const WAYS_OF_ASSOCIATIVITY_SHIFT_END: usize = 31;
+
+    const SYSTEM_COHERENCY_LINE_SIZE_LENGTH: usize = Self::SYSTEM_COHERENCY_LINE_SIZE_SHIFT_END - Self::SYSTEM_COHERENCY_LINE_SIZE_SHIFT + 1;
+    const PHYSICAL_LINE_PARTITIONS_LENGTH: usize = Self::PHYSICAL_LINE_PARTITIONS_SHIFT_END - Self::PHYSICAL_LINE_PARTITIONS_SHIFT + 1;
+    const WAYS_OF_ASSOCIATIVITY_LENGTH: usize = Self::WAYS_OF_ASSOCIATIVITY_SHIFT_END - Self::WAYS_OF_ASSOCIATIVITY_SHIFT + 1;
+
+    const SYSTEM_COHERENCY_LINE_SIZE_MASK: u32 = (((1 << Self::SYSTEM_COHERENCY_LINE_SIZE_LENGTH) - 1) << Self::SYSTEM_COHERENCY_LINE_SIZE_SHIFT) as u32;
+    const PHYSICAL_LINE_PARTITIONS_MASK: u32 = (((1 << Self::PHYSICAL_LINE_PARTITIONS_LENGTH) - 1) << Self::PHYSICAL_LINE_PARTITIONS_SHIFT) as u32;
+    const WAYS_OF_ASSOCIATIVITY_MASK: u32 = (((1 << Self::WAYS_OF_ASSOCIATIVITY_LENGTH) - 1) << Self::WAYS_OF_ASSOCIATIVITY_SHIFT) as u32;
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let system_coherency_line_size = ((ebx & Self::SYSTEM_COHERENCY_LINE_SIZE_MASK) >> Self::SYSTEM_COHERENCY_LINE_SIZE_SHIFT) as u16;
+        let physical_line_partitions = ((ebx & Self::PHYSICAL_LINE_PARTITIONS_MASK) >> Self::PHYSICAL_LINE_PARTITIONS_SHIFT) as u16;
+        let ways_of_associativity = ((ebx & Self::WAYS_OF_ASSOCIATIVITY_MASK) >> Self::WAYS_OF_ASSOCIATIVITY_SHIFT) as u16;
+        Self {
+            system_coherency_line_size,
+            physical_line_partitions,
+            ways_of_associativity,
         }
     }
 }
