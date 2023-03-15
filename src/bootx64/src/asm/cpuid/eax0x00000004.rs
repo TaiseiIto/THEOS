@@ -9,6 +9,7 @@ pub struct Eax0x00000004 {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x00000004 {
@@ -18,15 +19,17 @@ impl Eax0x00000004 {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(4);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -160,6 +163,21 @@ impl From<u32> for Edx {
             write_back_invalidate,
             cache_inclusiveness,
             complex_cache_indexing,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    number_of_sets: u32,
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let number_of_sets = ecx;
+        Self {
+            number_of_sets,
         }
     }
 }
