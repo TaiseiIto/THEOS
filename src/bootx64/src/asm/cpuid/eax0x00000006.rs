@@ -9,6 +9,7 @@ pub struct Eax0x00000006 {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x00000006 {
@@ -19,15 +20,17 @@ impl Eax0x00000006 {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -194,13 +197,52 @@ impl Edx {
 
 impl From<u32> for Edx {
     fn from(edx: u32) -> Self {
-        let bitmap = (edx & Self::BITMAP_MASK) as u8;
-        let enumerates = (edx & Self::ENUMERATES_MASK) as u8;
-        let index = (edx & Self::INDEX_MASK) as u16;
+        let bitmap = ((edx & Self::BITMAP_MASK) >> Self::BITMAP_SHIFT) as u8;
+        let enumerates = ((edx & Self::ENUMERATES_MASK) >> Self::ENUMERATES_SHIFT) as u8;
+        let index = ((edx & Self::INDEX_MASK) >> Self::INDEX_SHIFT) as u16;
         Self {
             bitmap,
             enumerates,
             index,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    hardware_coordination_feedback_capability: bool,
+    performance_energy_bias_preference: bool,
+    intel_thread_director_classes: u8,
+}
+
+impl Ecx {
+    const HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_SHIFT: usize = 0;
+    const PERFORMANCE_ENERGY_BIAS_PREFERENCE_SHIFT: usize = 3;
+    const INTEL_THREAD_DIRECTOR_CLASSES_SHIFT: usize = 8;
+
+    const HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_SHIFT_END: usize = 0;
+    const PERFORMANCE_ENERGY_BIAS_PREFERENCE_SHIFT_END: usize = 3;
+    const INTEL_THREAD_DIRECTOR_CLASSES_SHIFT_END: usize = 15;
+
+    const HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_LENGTH: usize = Self::HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_SHIFT_END - Self::HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_SHIFT + 1;
+    const PERFORMANCE_ENERGY_BIAS_PREFERENCE_LENGTH: usize = Self::PERFORMANCE_ENERGY_BIAS_PREFERENCE_SHIFT_END - Self::PERFORMANCE_ENERGY_BIAS_PREFERENCE_SHIFT + 1;
+    const INTEL_THREAD_DIRECTOR_CLASSES_LENGTH: usize = Self::INTEL_THREAD_DIRECTOR_CLASSES_SHIFT_END - Self::INTEL_THREAD_DIRECTOR_CLASSES_SHIFT + 1;
+
+    const HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_MASK: u32 = (((1 << Self::HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_LENGTH) - 1) << Self::HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_SHIFT) as u32;
+    const PERFORMANCE_ENERGY_BIAS_PREFERENCE_MASK: u32 = (((1 << Self::PERFORMANCE_ENERGY_BIAS_PREFERENCE_LENGTH) - 1) << Self::PERFORMANCE_ENERGY_BIAS_PREFERENCE_SHIFT) as u32;
+    const INTEL_THREAD_DIRECTOR_CLASSES_MASK: u32 = (((1 << Self::INTEL_THREAD_DIRECTOR_CLASSES_LENGTH) - 1) << Self::INTEL_THREAD_DIRECTOR_CLASSES_SHIFT) as u32;
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let hardware_coordination_feedback_capability = ecx & Self::HARDWARE_COORDINATION_FEEDBACK_CAPABILITY_MASK != 0;
+        let performance_energy_bias_preference = ecx & Self::PERFORMANCE_ENERGY_BIAS_PREFERENCE_MASK != 0;
+        let intel_thread_director_classes = ((ecx & Self::INTEL_THREAD_DIRECTOR_CLASSES_MASK) >> Self::INTEL_THREAD_DIRECTOR_CLASSES_SHIFT) as u8;
+        Self {
+            hardware_coordination_feedback_capability,
+            performance_energy_bias_preference,
+            intel_thread_director_classes,
         }
     }
 }
