@@ -9,6 +9,7 @@ pub struct Eax0x0000000a {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x0000000a {
@@ -20,15 +21,17 @@ impl Eax0x0000000a {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -153,6 +156,21 @@ impl From<u32> for Edx {
             number_of_contiguous_fixed_function_performance_counters,
             bit_width_of_fixed_function_performance_counters,
             anythread_deprecation,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    supported_fixed_counters_bit_mask: u32,
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let supported_fixed_counters_bit_mask = ecx;
+        Self {
+            supported_fixed_counters_bit_mask,
         }
     }
 }
