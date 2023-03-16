@@ -7,6 +7,7 @@ pub mod eax0x00000006;
 pub mod eax0x00000007;
 pub mod eax0x00000009;
 pub mod eax0x0000000a;
+pub mod eax0x0000000b;
 
 use {
     core::arch::asm,
@@ -29,6 +30,7 @@ pub struct Cpuid {
     eax0x00000007: Option<eax0x00000007::Eax0x00000007>,
     eax0x00000009: Option<eax0x00000009::Eax0x00000009>,
     eax0x0000000a: Option<eax0x0000000a::Eax0x0000000a>,
+    eax0x0000000b: Option<eax0x0000000b::Eax0x0000000b>,
 }
 
 impl Cpuid {
@@ -43,6 +45,7 @@ impl Cpuid {
             let eax0x00000007 = eax0x00000007::Eax0x00000007::new(&eax0x00000000);
             let eax0x00000009 = eax0x00000009::Eax0x00000009::new(&eax0x00000000);
             let eax0x0000000a = eax0x0000000a::Eax0x0000000a::new(&eax0x00000000);
+            let eax0x0000000b = eax0x0000000b::Eax0x0000000b::new(&eax0x00000000);
             Some(Self {
                 eax0x00000000,
                 eax0x00000001,
@@ -53,6 +56,7 @@ impl Cpuid {
                 eax0x00000007,
                 eax0x00000009,
                 eax0x0000000a,
+                eax0x0000000b,
             })
         } else {
             None
