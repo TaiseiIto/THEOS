@@ -20,5 +20,9 @@ impl Eax0x00000007 {
             None
         }
     }
+
+    pub fn supports_5_level_paging(&self) -> bool {
+        self.ecx0x00000000.supports_5_level_paging()
+    }
 }
 

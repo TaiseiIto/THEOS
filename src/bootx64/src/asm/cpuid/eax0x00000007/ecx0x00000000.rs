@@ -30,6 +30,10 @@ impl Ecx0x00000000 {
             ecx,
         }
     }
+
+    pub fn supports_5_level_paging(&self) -> bool {
+        self.ecx.supports_5_level_paging()
+    }
 }
 
 #[allow(dead_code)]
@@ -391,6 +395,10 @@ impl Ecx {
     const MOVDIR64B_MASK: u32 = (1 << Self::MOVDIR64B_SHIFT) as u32;
     const SGX_LC_MASK: u32 = (1 << Self::SGX_LC_SHIFT) as u32;
     const PKS_MASK: u32 = (1 << Self::PKS_SHIFT) as u32;
+
+    pub fn supports_5_level_paging(&self) -> bool {
+        self.la57
+    }
 }
 
 impl From<u32> for Ecx {

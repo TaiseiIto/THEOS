@@ -39,6 +39,11 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     uefi_println!("memory_size = {:#x}", memory_size);
     let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
     uefi_println!("cpuid = {:#x?}", cpuid);
+    let supports_5_level_paging: bool = match cpuid {
+        Some(cpuid) => cpuid.supports_5_level_paging(),
+        None => false,
+    };
+    uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {

@@ -50,6 +50,13 @@ impl Cpuid {
             None
         }
     }
+
+    pub fn supports_5_level_paging(&self) -> bool {
+        match &self.eax0x00000007 {
+            Some(eax0x00000007) => eax0x00000007.supports_5_level_paging(),
+            None => false,
+        }
+    }
 }
 
 #[derive(Debug)]
