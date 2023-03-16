@@ -5,6 +5,8 @@ use super::super::CpuidOutRegisters;
 pub struct Ecx0x00000001 {
     eax: Eax,
     ebx: Ebx,
+    edx: u32,
+    ecx: u32,
 }
 
 impl Ecx0x00000001 {
@@ -14,14 +16,16 @@ impl Ecx0x00000001 {
         let CpuidOutRegisters {
             eax,
             ebx,
-            edx: _,
-            ecx: _,
+            edx,
+            ecx,
         } = CpuidOutRegisters::cpuid(eax, ecx);
         let eax: Eax = eax.into();
         let ebx: Ebx = ebx.into();
         Self {
             eax,
             ebx,
+            edx,
+            ecx,
         }
     }
 }
