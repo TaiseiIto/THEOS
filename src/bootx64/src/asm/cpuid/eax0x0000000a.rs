@@ -7,6 +7,7 @@ use super::{
 #[derive(Debug)]
 pub struct Eax0x0000000a {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x0000000a {
@@ -16,13 +17,15 @@ impl Eax0x0000000a {
         if eax <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
-                ebx: _,
+                ebx,
                 edx: _,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
             Some(Self {
                 eax,
+                ebx,
             })
         } else {
             None
@@ -52,6 +55,62 @@ impl From<u32> for Eax {
             general_purpose_performance_monitoring_counter,
             bit_width_of_general_purpose_performance_monitoring_counter,
             length_of_ebx_bit_vector,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    core_cycle_event_not_available: bool,
+    instruction_retired_event_not_available: bool,
+    reference_cycles_event_not_available: bool,
+    last_level_cache_reference_event_not_available: bool,
+    last_level_cache_misses_event_not_available: bool,
+    branch_instruction_retired_event_not_available: bool,
+    branch_mispredict_retired_event_not_available: bool,
+    top_down_slots_event_not_available: bool,
+}
+
+impl Ebx {
+    const CORE_CYCLE_EVENT_NOT_AVAILABLE_SHIFT: usize = 0;
+    const INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_SHIFT: usize = 1;
+    const REFERENCE_CYCLES_EVENT_NOT_AVAILABLE_SHIFT: usize = 2;
+    const LAST_LEVEL_CACHE_REFERENCE_EVENT_NOT_AVAILABLE_SHIFT: usize = 3;
+    const LAST_LEVEL_CACHE_MISSES_EVENT_NOT_AVAILABLE_SHIFT: usize = 4;
+    const BRANCH_INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_SHIFT: usize = 5;
+    const BRANCH_MISPREDICT_RETIRED_EVENT_NOT_AVAILABLE_SHIFT: usize = 6;
+    const TOP_DOWN_SLOTS_EVENT_NOT_AVAILABLE_SHIFT: usize = 7;
+
+    const CORE_CYCLE_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::CORE_CYCLE_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const REFERENCE_CYCLES_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::REFERENCE_CYCLES_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const LAST_LEVEL_CACHE_REFERENCE_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::LAST_LEVEL_CACHE_REFERENCE_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const LAST_LEVEL_CACHE_MISSES_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::LAST_LEVEL_CACHE_MISSES_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const BRANCH_INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::BRANCH_INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const BRANCH_MISPREDICT_RETIRED_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::BRANCH_MISPREDICT_RETIRED_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+    const TOP_DOWN_SLOTS_EVENT_NOT_AVAILABLE_MASK: u32 = (1 << Self::TOP_DOWN_SLOTS_EVENT_NOT_AVAILABLE_SHIFT) as u32;
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let core_cycle_event_not_available = ebx & Self::CORE_CYCLE_EVENT_NOT_AVAILABLE_MASK != 0;
+        let instruction_retired_event_not_available = ebx & Self::INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_MASK != 0;
+        let reference_cycles_event_not_available = ebx & Self::REFERENCE_CYCLES_EVENT_NOT_AVAILABLE_MASK != 0;
+        let last_level_cache_reference_event_not_available = ebx & Self::LAST_LEVEL_CACHE_REFERENCE_EVENT_NOT_AVAILABLE_MASK != 0;
+        let last_level_cache_misses_event_not_available = ebx & Self::LAST_LEVEL_CACHE_MISSES_EVENT_NOT_AVAILABLE_MASK != 0;
+        let branch_instruction_retired_event_not_available = ebx & Self::BRANCH_INSTRUCTION_RETIRED_EVENT_NOT_AVAILABLE_MASK != 0;
+        let branch_mispredict_retired_event_not_available = ebx & Self::BRANCH_MISPREDICT_RETIRED_EVENT_NOT_AVAILABLE_MASK != 0;
+        let top_down_slots_event_not_available = ebx & Self::TOP_DOWN_SLOTS_EVENT_NOT_AVAILABLE_MASK != 0;
+        Self {
+            core_cycle_event_not_available,
+            instruction_retired_event_not_available,
+            reference_cycles_event_not_available,
+            last_level_cache_reference_event_not_available,
+            last_level_cache_misses_event_not_available,
+            branch_instruction_retired_event_not_available,
+            branch_mispredict_retired_event_not_available,
+            top_down_slots_event_not_available,
         }
     }
 }
