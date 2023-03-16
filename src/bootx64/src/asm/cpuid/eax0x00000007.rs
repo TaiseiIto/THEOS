@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x00000007 {
     eax: Eax,
     ebx: Ebx,
+    edx: Edx,
 }
 
 impl Eax0x00000007 {
@@ -17,14 +18,16 @@ impl Eax0x00000007 {
             let CpuidOutRegisters {
                 eax,
                 ebx,
-                edx: _,
+                edx,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
+            let edx: Edx = edx.into();
             Some(Self {
                 eax,
                 ebx,
+                edx,
             })
         } else {
             None
@@ -214,6 +217,97 @@ impl From<u32> for Ebx {
             sha,
             avx512bw,
             avx512vl,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Edx {
+    avx512_4vnniw: bool,
+    avx512_4fmaps: bool,
+    fast_short_rep_mov: bool,
+    avx512_vp2intersect: bool,
+    md_clear: bool,
+    serialize: bool,
+    hybrid: bool,
+    pconfig: bool,
+    cet_ibt: bool,
+    ibrs_and_ibpb: bool,
+    stibp: bool,
+    l1d_flush: bool,
+    ia32_arch_capabilities_msr: bool,
+    ia32_core_capabilities_msr: bool,
+    ssbd: bool,
+}
+
+impl Edx {
+    const AVX512_4VNNIW_SHIFT: usize = 2;
+    const AVX512_4FMAPS_SHIFT: usize = 3;
+    const FAST_SHORT_REP_MOV_SHIFT: usize = 4;
+    const AVX512_VP2INTERSECT_SHIFT: usize = 8;
+    const MD_CLEAR_SHIFT: usize = 10;
+    const SERIALIZE_SHIFT: usize = 14;
+    const HYBRID_SHIFT: usize = 15;
+    const PCONFIG_SHIFT: usize = 18;
+    const CET_IBT_SHIFT: usize = 20;
+    const IBRS_AND_IBPB_SHIFT: usize = 26;
+    const STIBP_SHIFT: usize = 27;
+    const L1D_FLUSH_SHIFT: usize = 28;
+    const IA32_ARCH_CAPABILITIES_MSR_SHIFT: usize = 29;
+    const IA32_CORE_CAPABILITIES_MSR_SHIFT: usize = 30;
+    const SSBD_SHIFT: usize = 31;
+
+    const AVX512_4VNNIW_MASK: u32 = (1 << Self::AVX512_4VNNIW_SHIFT) as u32;
+    const AVX512_4FMAPS_MASK: u32 = (1 << Self::AVX512_4FMAPS_SHIFT) as u32;
+    const FAST_SHORT_REP_MOV_MASK: u32 = (1 << Self::FAST_SHORT_REP_MOV_SHIFT) as u32;
+    const AVX512_VP2INTERSECT_MASK: u32 = (1 << Self::AVX512_VP2INTERSECT_SHIFT) as u32;
+    const MD_CLEAR_MASK: u32 = (1 << Self::MD_CLEAR_SHIFT) as u32;
+    const SERIALIZE_MASK: u32 = (1 << Self::SERIALIZE_SHIFT) as u32;
+    const HYBRID_MASK: u32 = (1 << Self::HYBRID_SHIFT) as u32;
+    const PCONFIG_MASK: u32 = (1 << Self::PCONFIG_SHIFT) as u32;
+    const CET_IBT_MASK: u32 = (1 << Self::CET_IBT_SHIFT) as u32;
+    const IBRS_AND_IBPB_MASK: u32 = (1 << Self::IBRS_AND_IBPB_SHIFT) as u32;
+    const STIBP_MASK: u32 = (1 << Self::STIBP_SHIFT) as u32;
+    const L1D_FLUSH_MASK: u32 = (1 << Self::L1D_FLUSH_SHIFT) as u32;
+    const IA32_ARCH_CAPABILITIES_MSR_MASK: u32 = (1 << Self::IA32_ARCH_CAPABILITIES_MSR_SHIFT) as u32;
+    const IA32_CORE_CAPABILITIES_MSR_MASK: u32 = (1 << Self::IA32_CORE_CAPABILITIES_MSR_SHIFT) as u32;
+    const SSBD_MASK: u32 = (1 << Self::SSBD_SHIFT) as u32;
+}
+
+impl From<u32> for Edx {
+    fn from(edx: u32) -> Self {
+        let avx512_4vnniw = edx & Self::AVX512_4VNNIW_MASK != 0;
+        let avx512_4fmaps = edx & Self::AVX512_4FMAPS_MASK != 0;
+        let fast_short_rep_mov = edx & Self::FAST_SHORT_REP_MOV_MASK != 0;
+        let avx512_vp2intersect = edx & Self::AVX512_VP2INTERSECT_MASK != 0;
+        let md_clear = edx & Self::MD_CLEAR_MASK != 0;
+        let serialize = edx & Self::SERIALIZE_MASK != 0;
+        let hybrid = edx & Self::HYBRID_MASK != 0;
+        let pconfig = edx & Self::PCONFIG_MASK != 0;
+        let cet_ibt = edx & Self::CET_IBT_MASK != 0;
+        let ibrs_and_ibpb = edx & Self::IBRS_AND_IBPB_MASK != 0;
+        let stibp = edx & Self::STIBP_MASK != 0;
+        let l1d_flush = edx & Self::L1D_FLUSH_MASK != 0;
+        let ia32_arch_capabilities_msr = edx & Self::IA32_ARCH_CAPABILITIES_MSR_MASK != 0;
+        let ia32_core_capabilities_msr = edx & Self::IA32_CORE_CAPABILITIES_MSR_MASK != 0;
+        let ssbd = edx & Self::SSBD_MASK != 0;
+        Self {
+            avx512_4vnniw,
+            avx512_4fmaps,
+            fast_short_rep_mov,
+            avx512_vp2intersect,
+            md_clear,
+            serialize,
+            hybrid,
+            pconfig,
+            cet_ibt,
+            ibrs_and_ibpb,
+            stibp,
+            l1d_flush,
+            ia32_arch_capabilities_msr,
+            ia32_core_capabilities_msr,
+            ssbd,
         }
     }
 }
