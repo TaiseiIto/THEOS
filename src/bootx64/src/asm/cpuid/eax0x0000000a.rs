@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x0000000a {
     eax: Eax,
     ebx: Ebx,
+    edx: Edx,
 }
 
 impl Eax0x0000000a {
@@ -18,14 +19,16 @@ impl Eax0x0000000a {
             let CpuidOutRegisters {
                 eax,
                 ebx,
-                edx: _,
+                edx,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
+            let edx: Edx = edx.into();
             Some(Self {
                 eax,
                 ebx,
+                edx,
             })
         } else {
             None
@@ -111,6 +114,45 @@ impl From<u32> for Ebx {
             branch_instruction_retired_event_not_available,
             branch_mispredict_retired_event_not_available,
             top_down_slots_event_not_available,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Edx {
+    number_of_contiguous_fixed_function_performance_counters: u8,
+    bit_width_of_fixed_function_performance_counters: u8,
+    anythread_deprecation: bool,
+}
+
+impl Edx {
+    const NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT: usize = 0;
+    const BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT: usize = 5;
+    const ANYTHREAD_DEPRECATION_SHIFT: usize = 15;
+
+    const NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT_END: usize = 4;
+    const BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT_END: usize = 12;
+    const ANYTHREAD_DEPRECATION_SHIFT_END: usize = 15;
+
+    const NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_LENGTH: usize = Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT_END - Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT + 1;
+    const BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_LENGTH: usize = Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT_END - Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT + 1;
+    const ANYTHREAD_DEPRECATION_LENGTH: usize = Self::ANYTHREAD_DEPRECATION_SHIFT_END - Self::ANYTHREAD_DEPRECATION_SHIFT + 1;
+
+    const NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_MASK: u32 = (((1 << Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_LENGTH) - 1) << Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT) as u32;
+    const BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_MASK: u32 = (((1 << Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_LENGTH) - 1) << Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT) as u32;
+    const ANYTHREAD_DEPRECATION_MASK: u32 = (((1 << Self::ANYTHREAD_DEPRECATION_LENGTH) - 1) << Self::ANYTHREAD_DEPRECATION_SHIFT) as u32;
+}
+
+impl From<u32> for Edx {
+    fn from(edx: u32) -> Self {
+        let number_of_contiguous_fixed_function_performance_counters = ((edx & Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_MASK) >> Self::NUMBER_OF_CONTIGUOUS_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT) as u8;
+        let bit_width_of_fixed_function_performance_counters = ((edx & Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_MASK) >> Self::BIT_WIDTH_OF_FIXED_FUNCTION_PERFORMANCE_COUNTERS_SHIFT) as u8;
+        let anythread_deprecation = edx & Self::ANYTHREAD_DEPRECATION_MASK != 0;
+        Self {
+            number_of_contiguous_fixed_function_performance_counters,
+            bit_width_of_fixed_function_performance_counters,
+            anythread_deprecation,
         }
     }
 }
