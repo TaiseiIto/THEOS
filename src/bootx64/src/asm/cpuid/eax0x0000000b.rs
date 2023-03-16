@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x0000000b {
     eax: Eax,
     ebx: Ebx,
+    edx: Edx,
 }
 
 impl Eax0x0000000b {
@@ -18,14 +19,16 @@ impl Eax0x0000000b {
             let CpuidOutRegisters {
                 eax,
                 ebx,
-                edx: _,
+                edx,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
+            let edx: Edx = edx.into();
             Some(Self {
                 eax,
                 ebx,
+                edx,
             })
         } else {
             None
@@ -44,7 +47,7 @@ impl Eax {
 }
 
 impl From<u32> for Eax {
-    fn from(eax: u32) -> Eax {
+    fn from(eax: u32) -> Self {
         let unique_topology_id_shift: u8 = (eax & Self::UNIQUE_TOPOLOGY_ID_SHIFT_MASK) as u8;
         Self {
             unique_topology_id_shift,
@@ -63,10 +66,25 @@ impl Ebx {
 }
 
 impl From<u32> for Ebx {
-    fn from(eax: u32) -> Ebx {
+    fn from(eax: u32) -> Self {
         let number_of_logical_processors: u16 = (eax & Self::NUMBER_OF_LOGICAL_PROCESSORS_MASK) as u16;
         Self {
             number_of_logical_processors,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Edx {
+    current_logical_processor: u32,
+}
+
+impl From<u32> for Edx {
+    fn from(edx: u32) -> Self {
+        let current_logical_processor = edx;
+        Self {
+            current_logical_processor,
         }
     }
 }
