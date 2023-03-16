@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x00000006 {
     eax: Eax,
     ebx: Ebx,
+    edx: Edx,
 }
 
 impl Eax0x00000006 {
@@ -17,14 +18,16 @@ impl Eax0x00000006 {
             let CpuidOutRegisters {
                 eax,
                 ebx,
-                edx: _,
+                edx,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
+            let edx: Edx = edx.into();
             Some(Self {
                 eax,
                 ebx,
+                edx,
             })
         } else {
             None
@@ -159,6 +162,45 @@ impl From<u32> for Ebx {
         let interpret_thresholds: u8 = (eax & 0xf) as u8;
         Self {
             interpret_thresholds,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Edx {
+    bitmap: u8,
+    enumerates: u8,
+    index: u16,
+}
+
+impl Edx {
+    const BITMAP_SHIFT: usize = 0;
+    const ENUMERATES_SHIFT: usize = 8;
+    const INDEX_SHIFT: usize = 16;
+
+    const BITMAP_SHIFT_END: usize = 7;
+    const ENUMERATES_SHIFT_END: usize = 11;
+    const INDEX_SHIFT_END: usize = 31;
+
+    const BITMAP_LENGTH: usize = Self::BITMAP_SHIFT_END - Self::BITMAP_SHIFT + 1;
+    const ENUMERATES_LENGTH: usize = Self::ENUMERATES_SHIFT_END - Self::ENUMERATES_SHIFT + 11;
+    const INDEX_LENGTH: usize = Self::INDEX_SHIFT_END - Self::INDEX_SHIFT + 11;
+
+    const BITMAP_MASK: u32 = (((1 << Self::BITMAP_LENGTH) - 1) << Self::BITMAP_SHIFT) as u32;
+    const ENUMERATES_MASK: u32 = (((1 << Self::ENUMERATES_LENGTH) - 1) << Self::ENUMERATES_SHIFT) as u32;
+    const INDEX_MASK: u32 = (((1 << Self::INDEX_LENGTH) - 1) << Self::INDEX_SHIFT) as u32;
+}
+
+impl From<u32> for Edx {
+    fn from(edx: u32) -> Self {
+        let bitmap = (edx & Self::BITMAP_MASK) as u8;
+        let enumerates = (edx & Self::ENUMERATES_MASK) as u8;
+        let index = (edx & Self::INDEX_MASK) as u16;
+        Self {
+            bitmap,
+            enumerates,
+            index,
         }
     }
 }
