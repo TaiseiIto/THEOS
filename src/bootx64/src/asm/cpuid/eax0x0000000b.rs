@@ -9,6 +9,7 @@ pub struct Eax0x0000000b {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x0000000b {
@@ -20,15 +21,17 @@ impl Eax0x0000000b {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -85,6 +88,28 @@ impl From<u32> for Edx {
         let current_logical_processor = edx;
         Self {
             current_logical_processor,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    level_number: u8,
+    level_type: u8,
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let [
+            level_number,
+            level_type,
+            _,
+            _,
+        ] = ecx.to_le_bytes();
+        Self {
+            level_number,
+            level_type,
         }
     }
 }
