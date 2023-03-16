@@ -7,6 +7,7 @@ use super::{
 #[derive(Debug)]
 pub struct Eax0x00000006 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x00000006 {
@@ -15,13 +16,15 @@ impl Eax0x00000006 {
         if eax <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
-                ebx: _,
+                ebx,
                 edx: _,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
             Some(Self {
                 eax,
+                ebx,
             })
         } else {
             None
@@ -141,6 +144,21 @@ impl From<u32> for Eax {
             hw_feedback,
             ignoring_idle_logical_processor_hwp_request,
             intel_thread_director,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    interpret_thresholds: u8,
+}
+
+impl From<u32> for Ebx {
+    fn from(eax: u32) -> Self {
+        let interpret_thresholds: u8 = (eax & 0xf) as u8;
+        Self {
+            interpret_thresholds,
         }
     }
 }
