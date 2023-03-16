@@ -8,6 +8,10 @@ pub mod eax0x00000007;
 
 use {
     core::arch::asm,
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::rflags,
 };
 
@@ -74,6 +78,13 @@ impl CpuidOutRegisters {
                 lateout("ecx") ecx,
             );
         }
+        uefi_println!("CPUID instruction!");
+        uefi_println!("in eax = {:#?}", eax_input);
+        uefi_println!("in ecx = {:#?}", ecx_input);
+        uefi_println!("out eax = {:#?}", eax);
+        uefi_println!("out ebx = {:#?}", ebx);
+        uefi_println!("out edx = {:#?}", edx);
+        uefi_println!("out ecx = {:#?}", ecx);
         Self {
             eax,
             ebx,
