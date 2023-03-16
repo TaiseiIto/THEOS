@@ -9,6 +9,7 @@ pub struct Eax0x00000007 {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x00000007 {
@@ -19,15 +20,17 @@ impl Eax0x00000007 {
                 eax,
                 ebx,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(eax);
             let eax: Eax = eax.into();
             let ebx: Ebx = ebx.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 ebx,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -308,6 +311,145 @@ impl From<u32> for Edx {
             ia32_arch_capabilities_msr,
             ia32_core_capabilities_msr,
             ssbd,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    prefetchwt1: bool,
+    avx512_vbmi: bool,
+    umip: bool,
+    pku: bool,
+    ospke: bool,
+    waitpkg: bool,
+    avx512_vbmi2: bool,
+    cet_ss: bool,
+    gfni: bool,
+    vaes: bool,
+    vpclmulqdq: bool,
+    avx512_vnni: bool,
+    avx512_bitalg: bool,
+    tme_en: bool,
+    avx512_vpopcntdq: bool,
+    la57: bool,
+    mawau: u8,
+    rdpid_and_ia32_tsc_aux: bool,
+    kl: bool,
+    cldemote: bool,
+    movdiri: bool,
+    movdir64b: bool,
+    sgx_lc: bool,
+    pks: bool,
+}
+
+impl Ecx {
+    const PREFETCHWT1_SHIFT: usize = 0;
+    const AVX512_VBMI_SHIFT: usize = 1;
+    const UMIP_SHIFT: usize = 2;
+    const PKU_SHIFT: usize = 3;
+    const OSPKE_SHIFT: usize = 4;
+    const WAITPKG_SHIFT: usize = 5;
+    const AVX512_VBMI2_SHIFT: usize = 6;
+    const CET_SS_SHIFT: usize = 7;
+    const GFNI_SHIFT: usize = 8;
+    const VAES_SHIFT: usize = 9;
+    const VPCLMULQDQ_SHIFT: usize = 10;
+    const AVX512_VNNI_SHIFT: usize = 11;
+    const AVX512_BITALG_SHIFT: usize = 12;
+    const TME_EN_SHIFT: usize = 13;
+    const AVX512_VPOPCNTDQ_SHIFT: usize = 14;
+    const LA57_SHIFT: usize = 16;
+    const MAWAU_SHIFT: usize = 17;
+    const RDPID_AND_IA32_TSC_AUX_SHIFT: usize = 22;
+    const KL_SHIFT: usize = 23;
+    const CLDEMOTE_SHIFT: usize = 25;
+    const MOVDIRI_SHIFT: usize = 27;
+    const MOVDIR64B_SHIFT: usize = 28;
+    const SGX_LC_SHIFT: usize = 30;
+    const PKS_SHIFT: usize = 31;
+
+    const MAWAU_SHIFT_END: usize = 21;
+    const MAWAU_LENGTH: usize = Self::MAWAU_SHIFT_END - Self::MAWAU_SHIFT + 1;
+
+    const PREFETCHWT1_MASK: u32 = (1 << Self::PREFETCHWT1_SHIFT) as u32;
+    const AVX512_VBMI_MASK: u32 = (1 << Self::AVX512_VBMI_SHIFT) as u32;
+    const UMIP_MASK: u32 = (1 << Self::UMIP_SHIFT) as u32;
+    const PKU_MASK: u32 = (1 << Self::PKU_SHIFT) as u32;
+    const OSPKE_MASK: u32 = (1 << Self::OSPKE_SHIFT) as u32;
+    const WAITPKG_MASK: u32 = (1 << Self::WAITPKG_SHIFT) as u32;
+    const AVX512_VBMI2_MASK: u32 = (1 << Self::AVX512_VBMI2_SHIFT) as u32;
+    const CET_SS_MASK: u32 = (1 << Self::CET_SS_SHIFT) as u32;
+    const GFNI_MASK: u32 = (1 << Self::GFNI_SHIFT) as u32;
+    const VAES_MASK: u32 = (1 << Self::VAES_SHIFT) as u32;
+    const VPCLMULQDQ_MASK: u32 = (1 << Self::VPCLMULQDQ_SHIFT) as u32;
+    const AVX512_VNNI_MASK: u32 = (1 << Self::AVX512_VNNI_SHIFT) as u32;
+    const AVX512_BITALG_MASK: u32 = (1 << Self::AVX512_BITALG_SHIFT) as u32;
+    const TME_EN_MASK: u32 = (1 << Self::TME_EN_SHIFT) as u32;
+    const AVX512_VPOPCNTDQ_MASK: u32 = (1 << Self::AVX512_VPOPCNTDQ_SHIFT) as u32;
+    const LA57_MASK: u32 = (1 << Self::LA57_SHIFT) as u32;
+    const MAWAU_MASK: u32 = (((1 << Self::MAWAU_LENGTH) - 1) << Self::MAWAU_SHIFT) as u32;
+    const RDPID_AND_IA32_TSC_AUX_MASK: u32 = (1 << Self::RDPID_AND_IA32_TSC_AUX_SHIFT) as u32;
+    const KL_MASK: u32 = (1 << Self::KL_SHIFT) as u32;
+    const CLDEMOTE_MASK: u32 = (1 << Self::CLDEMOTE_SHIFT) as u32;
+    const MOVDIRI_MASK: u32 = (1 << Self::MOVDIRI_SHIFT) as u32;
+    const MOVDIR64B_MASK: u32 = (1 << Self::MOVDIR64B_SHIFT) as u32;
+    const SGX_LC_MASK: u32 = (1 << Self::SGX_LC_SHIFT) as u32;
+    const PKS_MASK: u32 = (1 << Self::PKS_SHIFT) as u32;
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let prefetchwt1: bool = ecx & Self::PREFETCHWT1_MASK != 0;
+        let avx512_vbmi: bool = ecx & Self::AVX512_VBMI_MASK != 0;
+        let umip: bool = ecx & Self::UMIP_MASK != 0;
+        let pku: bool = ecx & Self::PKU_MASK != 0;
+        let ospke: bool = ecx & Self::OSPKE_MASK != 0;
+        let waitpkg: bool = ecx & Self::WAITPKG_MASK != 0;
+        let avx512_vbmi2: bool = ecx & Self::AVX512_VBMI2_MASK != 0;
+        let cet_ss: bool = ecx & Self::CET_SS_MASK != 0;
+        let gfni: bool = ecx & Self::GFNI_MASK != 0;
+        let vaes: bool = ecx & Self::VAES_MASK != 0;
+        let vpclmulqdq: bool = ecx & Self::VPCLMULQDQ_MASK != 0;
+        let avx512_vnni: bool = ecx & Self::AVX512_VNNI_MASK != 0;
+        let avx512_bitalg: bool = ecx & Self::AVX512_BITALG_MASK != 0;
+        let tme_en: bool = ecx & Self::TME_EN_MASK != 0;
+        let avx512_vpopcntdq: bool = ecx & Self::AVX512_VPOPCNTDQ_MASK != 0;
+        let la57: bool = ecx & Self::LA57_MASK != 0;
+        let mawau: u8 = ((ecx & Self::MAWAU_MASK) << Self::MAWAU_SHIFT) as u8;
+        let rdpid_and_ia32_tsc_aux: bool = ecx & Self::RDPID_AND_IA32_TSC_AUX_MASK != 0;
+        let kl: bool = ecx & Self::KL_MASK != 0;
+        let cldemote: bool = ecx & Self::CLDEMOTE_MASK != 0;
+        let movdiri: bool = ecx & Self::MOVDIRI_MASK != 0;
+        let movdir64b: bool = ecx & Self::MOVDIR64B_MASK != 0;
+        let sgx_lc: bool = ecx & Self::SGX_LC_MASK != 0;
+        let pks: bool = ecx & Self::PKS_MASK != 0;
+        Self {
+            prefetchwt1,
+            avx512_vbmi,
+            umip,
+            pku,
+            ospke,
+            waitpkg,
+            avx512_vbmi2,
+            cet_ss,
+            gfni,
+            vaes,
+            vpclmulqdq,
+            avx512_vnni,
+            avx512_bitalg,
+            tme_en,
+            avx512_vpopcntdq,
+            la57,
+            mawau,
+            rdpid_and_ia32_tsc_aux,
+            kl,
+            cldemote,
+            movdiri,
+            movdir64b,
+            sgx_lc,
+            pks,
         }
     }
 }
