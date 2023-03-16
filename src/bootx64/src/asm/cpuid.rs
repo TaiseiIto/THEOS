@@ -57,7 +57,7 @@ pub struct CpuidOutRegisters {
 }
 
 impl CpuidOutRegisters {
-    pub fn cpuid(eax_input: u32) -> Self {
+    pub fn cpuid(eax_input: u32, ecx_input: u32) -> Self {
         let mut eax: u32;
         let mut ebx: u32;
         let mut edx: u32;
@@ -67,10 +67,11 @@ impl CpuidOutRegisters {
                 "cpuid",
                 "mov esi, ebx",
                 in("eax") eax_input,
+                in("ecx") ecx_input,
                 lateout("eax") eax,
                 out("esi") ebx,
                 out("edx") edx,
-                out("ecx") ecx,
+                lateout("ecx") ecx,
             );
         }
         Self {

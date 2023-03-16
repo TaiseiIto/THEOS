@@ -15,13 +15,14 @@ pub struct Eax0x00000002 {
 impl Eax0x00000002 {
     pub fn new(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 2;
+        let ecx: u32 = 0;
         if eax <= eax0x00000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
                 ebx,
                 edx,
                 ecx,
-            } = CpuidOutRegisters::cpuid(eax);
+            } = CpuidOutRegisters::cpuid(eax, ecx);
             let mut eax: [u8; 4] = eax.to_le_bytes();
             let ebx: [u8; 4] = ebx.to_le_bytes();
             let edx: [u8; 4] = edx.to_le_bytes();

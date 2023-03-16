@@ -16,12 +16,13 @@ pub struct Eax0x00000000 {
 impl Eax0x00000000 {
     pub fn new() -> Self {
         let eax: u32 = 0;
+        let ecx: u32 = 0;
         let CpuidOutRegisters {
             eax,
             ebx,
             edx,
             ecx,
-        } = CpuidOutRegisters::cpuid(eax);
+        } = CpuidOutRegisters::cpuid(eax, ecx);
         let max_eax: u32 = eax;
         let vendor: [u32; 3] = [ebx, edx, ecx];
         let vendor: Vec<u8> = vendor
