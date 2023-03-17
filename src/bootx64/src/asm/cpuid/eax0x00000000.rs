@@ -15,8 +15,8 @@ pub struct Eax0x00000000 {
 
 impl Eax0x00000000 {
     pub fn new() -> Self {
-        let eax: u32 = 0;
-        let ecx: u32 = 0;
+        let eax: u32 = 0x00000000;
+        let ecx: u32 = 0x00000000;
         let CpuidOutRegisters {
             eax,
             ebx,
