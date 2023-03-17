@@ -8,6 +8,7 @@ use super::{
 pub struct Eax0x80000001 {
     eax: Eax,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Eax0x80000001 {
@@ -19,13 +20,15 @@ impl Eax0x80000001 {
                 eax,
                 ebx: _,
                 edx,
-                ecx: _,
+                ecx,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
             let edx: Edx = edx.into();
+            let ecx: Ecx = ecx.into();
             Some(Self {
                 eax,
                 edx,
+                ecx,
             })
         } else {
             None
@@ -85,6 +88,37 @@ impl From<u32> for Edx {
             gbyte_pages,
             rdtscp_and_ia32_tsc_aux,
             intel_64_architecture,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    lahf_sahf: bool,
+    lzcnt: bool,
+    prefetchw: bool,
+}
+
+impl Ecx {
+    const LAHF_SAHF_SHIFT: usize = 0;
+    const LZCNT_SHIFT: usize = 5;
+    const PREFETCHW_SHIFT: usize = 8;
+
+    const LAHF_SAHF_MASK: u32 = (1 << Self::LAHF_SAHF_SHIFT) as u32;
+    const LZCNT_MASK: u32 = (1 << Self::LZCNT_SHIFT) as u32;
+    const PREFETCHW_MASK: u32 = (1 << Self::PREFETCHW_SHIFT) as u32;
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let lahf_sahf: bool = ecx & Self::LAHF_SAHF_MASK != 0;
+        let lzcnt: bool = ecx & Self::LZCNT_MASK != 0;
+        let prefetchw: bool = ecx & Self::PREFETCHW_MASK != 0;
+        Self {
+            lahf_sahf,
+            lzcnt,
+            prefetchw,
         }
     }
 }
