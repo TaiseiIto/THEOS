@@ -1,6 +1,6 @@
 use super::{
     CpuidOutRegisters,
-    eax0x00000000::Eax0x00000000,
+    eax0x80000000::Eax0x80000000,
 };
 
 #[allow(dead_code)]
@@ -12,10 +12,10 @@ pub struct Eax0x80000001 {
 }
 
 impl Eax0x80000001 {
-    pub fn new(eax0x00000000: &Eax0x00000000) -> Option<Self> {
+    pub fn new(eax0x80000000: &Eax0x80000000) -> Option<Self> {
         let eax: u32 = 1;
         let ecx: u32 = 0;
-        if eax <= eax0x00000000.max_eax() {
+        if eax <= eax0x80000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
                 ebx: _,
