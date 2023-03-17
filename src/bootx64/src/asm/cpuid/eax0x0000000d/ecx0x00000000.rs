@@ -4,6 +4,7 @@ use super::super::CpuidOutRegisters;
 #[derive(Debug)]
 pub struct Ecx0x00000000 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Ecx0x00000000 {
@@ -12,13 +13,15 @@ impl Ecx0x00000000 {
         let ecx: u32 = 0x00000000;
         let CpuidOutRegisters {
             eax,
-            ebx: _,
+            ebx,
             edx: _,
             ecx: _,
         } = CpuidOutRegisters::cpuid(eax, ecx);
         let eax: Eax = eax.into();
+        let ebx: Ebx = ebx.into();
         Self {
             eax,
+            ebx,
         }
     }
 }
@@ -100,6 +103,21 @@ impl From<u32> for Eax {
             pkru_state,
             ia32_xss_1,
             ia32_xss_2,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    maximum_size_required_by_enabled_features_in_xcr0: u32,
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let maximum_size_required_by_enabled_features_in_xcr0: u32 = ebx;
+        Self {
+            maximum_size_required_by_enabled_features_in_xcr0,
         }
     }
 }
