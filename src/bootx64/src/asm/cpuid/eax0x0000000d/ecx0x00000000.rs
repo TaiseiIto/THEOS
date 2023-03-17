@@ -6,6 +6,7 @@ pub struct Ecx0x00000000 {
     eax: Eax,
     ebx: Ebx,
     edx: Edx,
+    ecx: Ecx,
 }
 
 impl Ecx0x00000000 {
@@ -16,15 +17,17 @@ impl Ecx0x00000000 {
             eax,
             ebx,
             edx,
-            ecx: _,
+            ecx,
         } = CpuidOutRegisters::cpuid(eax, ecx);
         let eax: Eax = eax.into();
         let ebx: Ebx = ebx.into();
         let edx: Edx = edx.into();
+        let ecx: Ecx = ecx.into();
         Self {
             eax,
             ebx,
             edx,
+            ecx,
         }
     }
 }
@@ -128,12 +131,27 @@ impl From<u32> for Ebx {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Edx {
-    maximum_size_of_the_xsave_xrstor_safe_area: u32,
+    supported_bits_of_the_upper_32_bits_of_xcr0: u32,
 }
 
 impl From<u32> for Edx {
     fn from(edx: u32) -> Self {
-        let maximum_size_of_the_xsave_xrstor_safe_area: u32 = edx;
+        let supported_bits_of_the_upper_32_bits_of_xcr0: u32 = edx;
+        Self {
+            supported_bits_of_the_upper_32_bits_of_xcr0,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ecx {
+    maximum_size_of_the_xsave_xrstor_safe_area: u32,
+}
+
+impl From<u32> for Ecx {
+    fn from(ecx: u32) -> Self {
+        let maximum_size_of_the_xsave_xrstor_safe_area: u32 = ecx;
         Self {
             maximum_size_of_the_xsave_xrstor_safe_area,
         }
