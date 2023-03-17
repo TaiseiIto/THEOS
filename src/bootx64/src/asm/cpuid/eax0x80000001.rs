@@ -13,8 +13,8 @@ pub struct Eax0x80000001 {
 
 impl Eax0x80000001 {
     pub fn new(eax0x80000000: &Eax0x80000000) -> Option<Self> {
-        let eax: u32 = 1;
-        let ecx: u32 = 0;
+        let eax: u32 = 0x80000001;
+        let ecx: u32 = 0x00000000;
         if eax <= eax0x80000000.max_eax() {
             let CpuidOutRegisters {
                 eax,

@@ -29,7 +29,12 @@ impl ProcessorBrandString {
                         edx,
                         ecx,
                     } = CpuidOutRegisters::cpuid(eax, ecx);
-                    [eax, ebx, ecx, edx]
+                    [
+                        eax,
+                        ebx,
+                        ecx,
+                        edx,
+                    ]
                         .into_iter()
                         .map(|register| register
                             .to_le_bytes()
