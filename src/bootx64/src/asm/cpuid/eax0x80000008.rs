@@ -7,6 +7,7 @@ use super::{
 #[derive(Debug)]
 pub struct Eax0x80000008 {
     eax: Eax,
+    ebx: Ebx,
 }
 
 impl Eax0x80000008 {
@@ -16,13 +17,15 @@ impl Eax0x80000008 {
         if eax <= eax0x80000000.max_eax() {
             let CpuidOutRegisters {
                 eax,
-                ebx: _,
+                ebx,
                 edx: _,
                 ecx: _,
             } = CpuidOutRegisters::cpuid(eax, ecx);
             let eax: Eax = eax.into();
+            let ebx: Ebx = ebx.into();
             Some(Self {
                 eax,
+                ebx,
             })
         } else {
             None
@@ -48,6 +51,26 @@ impl From<u32> for Eax {
         Self {
             physical_address_bits,
             linear_address_bits,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Ebx {
+    wbnoinvd: bool,
+}
+
+impl Ebx {
+    const WBNOINVD_SHIFT: usize = 9;
+    const WBNOINVD_MASK: u32 = (1 << Self::WBNOINVD_SHIFT) as u32;
+}
+
+impl From<u32> for Ebx {
+    fn from(ebx: u32) -> Self {
+        let wbnoinvd: bool = ebx & Self::WBNOINVD_MASK != 0;
+        Self {
+            wbnoinvd,
         }
     }
 }
