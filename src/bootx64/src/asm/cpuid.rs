@@ -12,6 +12,7 @@ pub mod eax0x0000000d;
 pub mod eax0x80000000;
 pub mod eax0x80000001;
 pub mod eax0x80000006;
+pub mod eax0x80000007;
 pub mod processor_brand_string;
 
 use {
@@ -40,6 +41,7 @@ pub struct Cpuid {
     eax0x80000000: eax0x80000000::Eax0x80000000,
     eax0x80000001: Option<eax0x80000001::Eax0x80000001>,
     eax0x80000006: Option<eax0x80000006::Eax0x80000006>,
+    eax0x80000007: Option<eax0x80000007::Eax0x80000007>,
     processor_brand_string: Option<processor_brand_string::ProcessorBrandString>,
 }
 
@@ -60,6 +62,7 @@ impl Cpuid {
             let eax0x80000000 = eax0x80000000::Eax0x80000000::new();
             let eax0x80000001 = eax0x80000001::Eax0x80000001::new(&eax0x80000000);
             let eax0x80000006 = eax0x80000006::Eax0x80000006::new(&eax0x80000000);
+            let eax0x80000007 = eax0x80000007::Eax0x80000007::new(&eax0x80000000);
             let processor_brand_string = processor_brand_string::ProcessorBrandString::new(&eax0x80000000);
             Some(Self {
                 eax0x00000000,
@@ -76,6 +79,7 @@ impl Cpuid {
                 eax0x80000000,
                 eax0x80000001,
                 eax0x80000006,
+                eax0x80000007,
                 processor_brand_string,
             })
         } else {
