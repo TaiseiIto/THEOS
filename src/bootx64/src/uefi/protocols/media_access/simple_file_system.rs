@@ -45,10 +45,13 @@ impl SimpleFileSystem {
         let mut simple_file_system: &void::Void = &simple_file_system;
         system::system()
             .boot_services
-            .handle_protocol(
+            .open_protocol(
                 system::image(),
                 &guid,
                 &mut simple_file_system,
+                system::image(),
+                void::Void::null(),
+                protocol_handler::OPEN_PROTOCOL_BY_HANDLE_PROTOCOL,
             )
             .expect("Can't get a simple file system protocol!");
         let simple_file_system: *const void::Void = &*simple_file_system;

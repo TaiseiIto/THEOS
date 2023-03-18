@@ -13,6 +13,14 @@ impl Void {
         Self {
         }
     }
+
+    pub fn null<'a>() -> &'a Self {
+        let null: usize = 0;
+        let null: *const Self = null as *const Self;
+        unsafe {
+            &*null
+        }
+    }
 }
 
 impl fmt::Debug for Void {

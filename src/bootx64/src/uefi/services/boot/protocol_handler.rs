@@ -86,6 +86,8 @@ pub struct LocateDevicePath(pub extern "efiapi" fn(&Guid, &mut &device_path::Dev
 #[repr(C)]
 pub struct OpenProtocol(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, &mut &void::Void, handle::Handle<'_>, handle::Handle<'_>, u32) -> status::Status);
 
+pub const OPEN_PROTOCOL_BY_HANDLE_PROTOCOL: u32 = 0x00000001;
+
 #[derive(WrappedFunction)]
 #[repr(C)]
 pub struct CloseProtocol(pub extern "efiapi" fn(handle::Handle<'_>, &Guid, handle::Handle<'_>, handle::Handle<'_>) -> status::Status);

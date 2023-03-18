@@ -177,5 +177,27 @@ impl BootServices<'_> {
             error => Err(error),
         }
     }
+
+    pub fn open_protocol(
+        &self,
+        handle: handle::Handle,
+        protocol: &protocol_handler::Guid,
+        interface: &mut &void::Void,
+        agent_handle: handle::Handle,
+        controller_handle: handle::Handle,
+        attributes: u32,
+    ) -> Result<(), status::Status> {
+        match self.open_protocol.0(
+            handle,
+            protocol,
+            interface,
+            agent_handle,
+            controller_handle,
+            attributes,
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
+    }
 }
 
