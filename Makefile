@@ -6,6 +6,8 @@ FAT_BOOT_SECTOR=$(FAT12_BOOT_SECTOR),$(FAT16_BOOT_SECTOR),$(FAT32_BOOT_SECTOR)
 BOOT_SECTOR=$(FAT_BOOT_SECTOR)
 BOOT_SOURCE=src/bootx64/target/x86_64-unknown-uefi/debug/bootx64.efi
 BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
+KERNEL_SOURCE=src/kernel/target/x86_64-unknown-none/debug/kernel
+KERNEL=$(THEOS_ROOT)/kernel.elf
 COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
@@ -18,6 +20,7 @@ all:
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
+	$(COPY) $(KERNEL_SOURCE) $(KERNEL)
 	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $(THEOS) 2> $(IMAGER_LOG)
 	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
 	cat $(IMAGER_LOG)
