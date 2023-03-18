@@ -44,6 +44,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
         None => false,
     };
     uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
+    let cr3: u64 = asm::get_cr3();
+    uefi_println!("cr3 = {:#x}", cr3);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
