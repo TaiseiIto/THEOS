@@ -15,4 +15,5 @@
 
 pub mod console_support;
 pub mod device_path;
+pub mod media_access;
 
