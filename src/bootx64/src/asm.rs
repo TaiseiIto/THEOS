@@ -5,6 +5,17 @@ use core::arch::asm;
 
 pub type Port = u16;
 
+pub fn get_cr0() -> u64 {
+    let mut cr0: u64;
+    unsafe {
+        asm!(
+            "mov rax, cr0",
+            out("rax") cr0,
+        );
+    }
+    cr0
+}
+
 pub fn get_cr3() -> u64 {
     let mut cr3: u64;
     unsafe {
