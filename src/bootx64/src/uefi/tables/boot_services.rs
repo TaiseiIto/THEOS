@@ -161,5 +161,21 @@ impl BootServices<'_> {
             error => Err(error),
         }
     }
+
+    pub fn handle_protocol(
+        &self,
+        handle: handle::Handle,
+        protocol: &protocol_handler::Guid,
+        interface: &mut &void::Void,
+    ) -> Result<(), status::Status> {
+        match self.handle_protocol.0(
+            handle,
+            protocol,
+            interface,
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
+    }
 }
 
