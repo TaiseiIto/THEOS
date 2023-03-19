@@ -3,9 +3,15 @@
 // 13.5 File Protocol
 
 use {
-    alloc::vec::Vec,
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::super::super::{
-        services::boot::protocol_handler,
+        services::{
+            boot::protocol_handler,
+            runtime::time,
+        },
         super::allocator,
         types::{
             char16,
@@ -38,7 +44,7 @@ pub struct FileProtocol {
 }
 
 impl FileProtocol {
-    pub fn read(&self) -> Vec<u8> {
+    pub fn read<'a>(&self) {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
@@ -48,24 +54,28 @@ impl FileProtocol {
         );
         let mut buffer = allocator::Allocated::new(buffer_size, 1);
         let buffer: &mut [u8] = buffer.get_mut();
-        {
-            let buffer: &mut u8 = &mut buffer[0];
-            let buffer: *mut u8 = &mut *buffer;
-            let buffer: usize = buffer as usize;
-            let buffer: *mut void::Void = buffer as *mut void::Void;
-            let buffer: &mut void::Void = unsafe {
-                &mut *buffer
-            };
-            match self.read.0(
-                &self,
-                &mut buffer_size,
-                buffer,
-            ) {
-                status::SUCCESS => (),
-                _ => panic!("Can't read a file protocol!"),
-            }
+        let buffer: &mut u8 = &mut buffer[0];
+        let buffer: *mut u8 = &mut *buffer;
+        let buffer: usize = buffer as usize;
+        let buffer: *mut void::Void = buffer as *mut void::Void;
+        let buffer: &mut void::Void = unsafe {
+            &mut *buffer
+        };
+        match self.read.0(
+            &self,
+            &mut buffer_size,
+            buffer,
+        ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't read a file protocol!"),
         }
-        buffer.to_vec()
+        let buffer: *const void::Void = &*buffer;
+        let buffer: usize = buffer as usize;
+        let file_info: *const FileInfo = buffer as *const FileInfo;
+        let file_info: &FileInfo = unsafe {
+            &*file_info
+        };
+        uefi_println!("file_info = {:#x?}", file_info);
     }
 }
 
@@ -142,4 +152,17 @@ struct FileSetInfo(pub extern "efiapi" fn(&FileProtocol, &protocol_handler::Guid
 #[derive(WrappedFunction)]
 #[repr(C)]
 struct FileFlush(pub extern "efiapi" fn(&FileProtocol) -> status::Status);
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct FileInfo<'a> {
+    size: u64,
+    file_size: u64,
+    physical_size: u64,
+    create_time: time::Time,
+    last_access_time: time::Time,
+    modification_time: time::Time,
+    attribute: u64,
+    file_name: char16::String<'a>,
+}
 
