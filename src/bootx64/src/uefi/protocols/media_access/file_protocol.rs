@@ -72,8 +72,10 @@ impl FileProtocol {
         let file_info: &FileInfo = unsafe {
             &*file_info
         };
+        let file_name = char16::String::new(&(file_info.file_name));
         FileInformation {
             allocated,
+            file_name,
             file_info,
         }
     }
@@ -169,12 +171,17 @@ pub struct FileInfo {
 #[allow(dead_code)]
 pub struct FileInformation<'a> {
     allocated: allocator::Allocated<'a>,
+    file_name: char16::String<'a>,
     file_info: &'a FileInfo,
 }
 
 impl<'a> fmt::Debug for FileInformation<'a> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:#x?}", self.file_info)
+        formatter
+            .debug_struct("FileInformation")
+            .field("file_name", &self.file_name)
+            .field("file_info", &self.file_info)
+            .finish()
     }
 }
 
