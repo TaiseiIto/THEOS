@@ -41,8 +41,10 @@ pub struct FileProtocol {
     flush_ex: FileFlushEx,
 }
 
-impl FileProtocol {
-    pub fn read<'a>(&self) -> Option<FileInformation<'a>> {
+impl<'a> Iterator for &'a FileProtocol {
+    type Item = FileInformation<'a>;
+
+    fn next(&mut self) -> Option<FileInformation<'a>> {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
