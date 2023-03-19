@@ -3,10 +3,7 @@
 // 13.5 File Protocol
 
 use {
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
+    alloc::vec::Vec,
     super::super::super::{
         services::boot::protocol_handler,
         super::allocator,
@@ -41,7 +38,7 @@ pub struct FileProtocol {
 }
 
 impl FileProtocol {
-    pub fn read(&self) {
+    pub fn read(&self) -> Vec<u8> {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
@@ -51,20 +48,24 @@ impl FileProtocol {
         );
         let mut buffer = allocator::Allocated::new(buffer_size, 1);
         let buffer: &mut [u8] = buffer.get_mut();
-        let buffer: &mut u8 = &mut buffer[0];
-        let buffer: *mut u8 = &mut *buffer;
-        let buffer: usize = buffer as usize;
-        let buffer: *mut void::Void = buffer as *mut void::Void;
-        let buffer: &mut void::Void = unsafe {
-            &mut *buffer
-        };
-        let status: status::Status = self.read.0(
-            &self,
-            &mut buffer_size,
-            buffer,
-        );
-        uefi_println!("FileProtocol::read status = {:#x}", status);
-        uefi_println!("FileProtocol::read buffer_size = {:#x}", buffer_size);
+        {
+            let buffer: &mut u8 = &mut buffer[0];
+            let buffer: *mut u8 = &mut *buffer;
+            let buffer: usize = buffer as usize;
+            let buffer: *mut void::Void = buffer as *mut void::Void;
+            let buffer: &mut void::Void = unsafe {
+                &mut *buffer
+            };
+            match self.read.0(
+                &self,
+                &mut buffer_size,
+                buffer,
+            ) {
+                status::SUCCESS => (),
+                _ => panic!("Can't read a file protocol!"),
+            }
+        }
+        buffer.to_vec()
     }
 }
 
