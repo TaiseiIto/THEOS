@@ -315,6 +315,10 @@ impl FileInformation<'_> {
     pub fn file_name(&self) -> String {
         self.file_name.clone()
     }
+
+    pub fn file_size(&self) -> usize {
+        self.file_info.file_size as usize
+    }
 }
 
 impl<'a> fmt::Debug for FileInformation<'a> {

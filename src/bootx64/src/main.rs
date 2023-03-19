@@ -75,6 +75,8 @@ fn use_boot_services() {
         .find(|file_information| file_information.file_name() == String::from("kernel.elf"))
         .expect("kernel.elf is nou found!");
     uefi_println!("kernel_elf = {:#x?}", kernel_elf);
+    let kernel_elf_size: usize = kernel_elf.file_size();
+    uefi_println!("kernel_elf_size = {:#x}", kernel_elf_size);
     // Open kernel.elf.
     let read = true;
     let write = false;
