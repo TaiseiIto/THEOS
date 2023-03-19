@@ -102,6 +102,103 @@ impl Drop for FileProtocol {
 #[repr(C)]
 struct FileOpen(pub extern "efiapi" fn(&FileProtocol, &mut &FileProtocol, char16::String, u64, u64) -> status::Status);
 
+pub struct OpenMode {
+    read: bool,
+    write: bool,
+    create: bool,
+}
+
+impl OpenMode {
+    pub fn new(
+        read: bool,
+        write: bool,
+        create: bool,
+    ) -> Self {
+        Self {
+            read,
+            write,
+            create,
+        }
+    }
+}
+
+impl Into<u64> for OpenMode {
+    fn into(self) -> u64 {
+        let read: u64 = match self.read {
+            true => 0x0000000000000001,
+            false => 0x0000000000000000,
+        };
+        let write: u64 = match self.write {
+            true => 0x0000000000000002,
+            false => 0x0000000000000000,
+        };
+        let create: u64 = match self.create {
+            true => 0x0000000000000000,
+            false => 0x8000000000000000,
+        };
+        read | write | create
+    }
+}
+
+pub struct Attributes {
+    read_only: bool,
+    hidden: bool,
+    system: bool,
+    reserved: bool,
+    directory: bool,
+    archive: bool,
+}
+
+impl Attributes {
+    pub fn new(
+        read_only: bool,
+        hidden: bool,
+        system: bool,
+        reserved: bool,
+        directory: bool,
+        archive: bool,
+    ) -> Self {
+        Self {
+            read_only,
+            hidden,
+            system,
+            reserved,
+            directory,
+            archive,
+        }
+    }
+}
+
+impl Into<u64> for Attributes {
+    fn into(self) -> u64 {
+        let read_only: u64 = match self.read_only {
+            true => 0x0000000000000001,
+            false => 0x0000000000000000,
+        };
+        let hidden: u64 = match self.hidden {
+            true => 0x0000000000000002,
+            false => 0x0000000000000000,
+        };
+        let system: u64 = match self.system {
+            true => 0x0000000000000004,
+            false => 0x0000000000000000,
+        };
+        let reserved: u64 = match self.reserved {
+            true => 0x0000000000000008,
+            false => 0x0000000000000000,
+        };
+        let directory: u64 = match self.directory {
+            true => 0x0000000000000010,
+            false => 0x0000000000000000,
+        };
+        let archive: u64 = match self.archive {
+            true => 0x0000000000000020,
+            false => 0x0000000000000000,
+        };
+        read_only | hidden | system | reserved | directory | archive
+    }
+}
+
 #[derive(WrappedFunction)]
 #[repr(C)]
 struct FileClose(pub extern "efiapi" fn(&FileProtocol) -> status::Status);
