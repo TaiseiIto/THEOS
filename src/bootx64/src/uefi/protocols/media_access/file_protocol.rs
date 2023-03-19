@@ -9,6 +9,7 @@ use {
     },
     super::super::super::{
         services::boot::protocol_handler,
+        super::allocator,
         types::{
             char16,
             event,
@@ -43,10 +44,24 @@ impl FileProtocol {
     pub fn read(&self) {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
+        self.read.0(
+            &self,
+            &mut buffer_size,
+            &mut buffer,
+        );
+        let mut buffer = allocator::Allocated::new(buffer_size, 1);
+        let buffer: &mut [u8] = buffer.get_mut();
+        let buffer: &mut u8 = &mut buffer[0];
+        let buffer: *mut u8 = &mut *buffer;
+        let buffer: usize = buffer as usize;
+        let buffer: *mut void::Void = buffer as *mut void::Void;
+        let buffer: &mut void::Void = unsafe {
+            &mut *buffer
+        };
         let status: status::Status = self.read.0(
             &self,
             &mut buffer_size,
-            &mut buffer
+            buffer,
         );
         uefi_println!("FileProtocol::read status = {:#x}", status);
         uefi_println!("FileProtocol::read buffer_size = {:#x}", buffer_size);
