@@ -39,8 +39,8 @@ pub struct EfiLoadedImage<'a> {
     unload: ImageUnload,
 }
 
-impl EfiLoadedImage<'_> {
-    pub fn new<'a>() -> &'a Self {
+impl<'a> EfiLoadedImage<'a> {
+    pub fn new() -> &'a Self {
         let guid = protocol_handler::Guid::new(
             0x5b1b31a1,
             0x9562,
@@ -75,6 +75,10 @@ impl EfiLoadedImage<'_> {
         unsafe {
             &*efi_loaded_image
         }
+    }
+
+    pub fn device_handle(&self) -> handle::Handle<'a> {
+        self.device_handle
     }
 }
 

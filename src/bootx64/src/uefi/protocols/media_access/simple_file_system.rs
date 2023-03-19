@@ -5,12 +5,15 @@
 use {
     super::{
         file_protocol,
-        super::super::{
-            services::boot::protocol_handler,
-            tables::system,
-            types::{
-                status,
-                void,
+        super::{
+            efi_loaded_image::efi_loaded_image,
+            super::{
+                services::boot::protocol_handler,
+                tables::system,
+                types::{
+                    status,
+                    void,
+                },
             },
         },
     },
@@ -46,7 +49,7 @@ impl SimpleFileSystem {
         system::system()
             .boot_services
             .open_protocol(
-                system::image(),
+                efi_loaded_image::EfiLoadedImage::new().device_handle(),
                 &guid,
                 &mut simple_file_system,
                 system::image(),
