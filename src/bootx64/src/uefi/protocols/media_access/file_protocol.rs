@@ -44,7 +44,7 @@ pub struct FileProtocol {
 }
 
 impl FileProtocol {
-    pub fn read<'a>(&self) {
+    pub fn read(&self) {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
@@ -155,7 +155,7 @@ struct FileFlush(pub extern "efiapi" fn(&FileProtocol) -> status::Status);
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct FileInfo<'a> {
+pub struct FileInfo {
     size: u64,
     file_size: u64,
     physical_size: u64,
@@ -163,6 +163,6 @@ pub struct FileInfo<'a> {
     last_access_time: time::Time,
     modification_time: time::Time,
     attribute: u64,
-    file_name: char16::String<'a>,
+    file_name: u16,
 }
 
