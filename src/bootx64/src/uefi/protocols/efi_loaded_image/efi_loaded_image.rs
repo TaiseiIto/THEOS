@@ -2,13 +2,23 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 9.1 EFI Loaded Image Protocol
 
-use super::super::super::{
-    services::boot::protocol_handler,
-    tables::system,
-    types::{
-        handle,
-        void,
+use {
+    super::super::{
+        device_path,
+        super::{
+            services::boot::{
+                memory_allocation,
+                protocol_handler,
+            },
+            tables::system,
+            types::{
+                handle,
+                status,
+                void,
+            },
+        },
     },
+    wrapped_function::WrappedFunction,
 };
 
 #[derive(Debug)]
@@ -18,6 +28,15 @@ pub struct EfiLoadedImage<'a> {
     parent_handle: handle::Handle<'a>,
     system_table: &'a system::System<'a>,
     device_handle: handle::Handle<'a>,
+    file_path: &'a device_path::DevicePathProtocol,
+    reserved: &'a void::Void,
+    load_options_size: u32,
+    load_options: &'a void::Void,
+    image_base: &'a void::Void,
+    image_size: u64,
+    image_code_type: memory_allocation::MemoryType,
+    image_data_type: memory_allocation::MemoryType,
+    unload: ImageUnload,
 }
 
 impl EfiLoadedImage<'_> {
@@ -58,4 +77,8 @@ impl EfiLoadedImage<'_> {
         }
     }
 }
+
+#[derive(WrappedFunction)]
+#[repr(C)]
+pub struct ImageUnload(pub extern "efiapi" fn(handle::Handle) -> status::Status);
 
