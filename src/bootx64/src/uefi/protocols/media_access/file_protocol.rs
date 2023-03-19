@@ -35,6 +35,15 @@ pub struct FileProtocol {
     flush_ex: FileFlushEx,
 }
 
+impl Drop for FileProtocol {
+    fn drop(&mut self) {
+        match self.close.0(&self) {
+            status::SUCCESS => (),
+            _ => panic!("Can't close a file protocol!"),
+        }
+    }
+}
+
 #[derive(WrappedFunction)]
 #[repr(C)]
 struct FileOpen(pub extern "efiapi" fn(&FileProtocol, &mut &FileProtocol, char16::String, u64, u64) -> status::Status);

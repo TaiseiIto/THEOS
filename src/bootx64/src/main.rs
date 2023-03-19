@@ -52,10 +52,14 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     uefi_println!("cr0 = {:#018x}", cr0);
     let cr3: u64 = asm::get_cr3();
     uefi_println!("cr3 = {:#018x}", cr3);
-    let simple_file_system = simple_file_system::SimpleFileSystem::new();
-    uefi_println!("simple_file_system = {:#x?}", simple_file_system);
-    let volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
-    uefi_println!("volume = {:#x?}", volume);
+    {
+        // Open the root directory.
+        let simple_file_system = simple_file_system::SimpleFileSystem::new();
+        uefi_println!("simple_file_system = {:#x?}", simple_file_system);
+        let volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
+        uefi_println!("volume = {:#x?}", volume);
+        // Close the root directory.
+    }
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
