@@ -171,8 +171,8 @@ impl Into<u64> for &OpenMode {
             false => 0x0000000000000000,
         };
         let create: u64 = match self.create {
-            true => 0x0000000000000000,
-            false => 0x8000000000000000,
+            true => 0x8000000000000000,
+            false => 0x0000000000000000,
         };
         read | write | create
     }
