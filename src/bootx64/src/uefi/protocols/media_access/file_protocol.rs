@@ -174,7 +174,7 @@ pub struct FileInformation<'a> {
 
 impl<'a> fmt::Debug for FileInformation<'a> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:?}", self.file_info)
+        write!(formatter, "{:#x?}", self.file_info)
     }
 }
 
