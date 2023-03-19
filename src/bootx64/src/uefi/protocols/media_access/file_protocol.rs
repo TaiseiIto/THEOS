@@ -3,7 +3,10 @@
 // 13.5 File Protocol
 
 use {
-    alloc::string::String,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
     core::fmt,
     super::super::super::{
         services::{
@@ -70,6 +73,31 @@ impl FileProtocol {
             error => Err(error),
         }
     }
+
+    pub fn read(
+        &self,
+        file_information: &FileInformation,
+    ) -> Vec<u8> {
+        let mut buffer_size: usize = file_information.file_size();
+        let mut allocated = allocator::Allocated::new(buffer_size, 1);
+        let buffer: &mut [u8] = allocated.get_mut();
+        let buffer_pointer: &mut u8 = &mut buffer[0];
+        let buffer_pointer: *mut u8 = &mut *buffer_pointer;
+        let buffer_pointer: usize = buffer_pointer as usize;
+        let buffer_pointer: *mut void::Void = buffer_pointer as *mut void::Void;
+        let buffer_pointer: &mut void::Void = unsafe {
+            &mut *buffer_pointer
+        };
+        match self.read.0(
+            self,
+            &mut buffer_size,
+            buffer_pointer,
+        ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't read a file!"),
+        }
+        buffer.to_vec()
+    }
 }
 
 impl<'a> Iterator for &'a FileProtocol {
@@ -79,7 +107,7 @@ impl<'a> Iterator for &'a FileProtocol {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
-            &self,
+            self,
             &mut buffer_size,
             &mut buffer,
         );
@@ -96,7 +124,7 @@ impl<'a> Iterator for &'a FileProtocol {
                     &mut *buffer
                 };
                 match self.read.0(
-                    &self,
+                    self,
                     &mut buffer_size,
                     buffer,
                 ) {

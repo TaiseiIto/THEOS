@@ -71,12 +71,10 @@ fn use_boot_services() {
     let mut root: &file_protocol::FileProtocol = simple_file_system.open_volume();
     uefi_println!("root = {:#x?}", root);
     // Find kernel.elf.
-    let kernel_elf: file_protocol::FileInformation = root
+    let kernel_elf_information: file_protocol::FileInformation = root
         .find(|file_information| file_information.file_name() == String::from("kernel.elf"))
         .expect("kernel.elf is nou found!");
-    uefi_println!("kernel_elf = {:#x?}", kernel_elf);
-    let kernel_elf_size: usize = kernel_elf.file_size();
-    uefi_println!("kernel_elf_size = {:#x}", kernel_elf_size);
+    uefi_println!("kernel_elf_information = {:#x?}", kernel_elf_information);
     // Open kernel.elf.
     let read = true;
     let write = false;
@@ -101,8 +99,10 @@ fn use_boot_services() {
         archive,
     );
     let kernel_elf: &file_protocol::FileProtocol = root
-        .open_child(&kernel_elf, &open_mode, &attributes)
+        .open_child(&kernel_elf_information, &open_mode, &attributes)
         .expect("Can't open kernel.elf!");
+    uefi_println!("kernel_elf = {:#x?}", kernel_elf);
+    let kernel_elf: Vec<u8> = kernel_elf.read(&kernel_elf_information);
     uefi_println!("kernel_elf = {:#x?}", kernel_elf);
     // Close kernel.elf and the root directory.
 }
