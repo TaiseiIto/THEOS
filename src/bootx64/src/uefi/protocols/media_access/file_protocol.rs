@@ -5,10 +5,6 @@
 use {
     alloc::string::String,
     core::fmt,
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
     super::super::super::{
         services::{
             boot::protocol_handler,
@@ -63,9 +59,6 @@ impl FileProtocol {
         let file_name = char16::String::new(&(file_information.file_info.file_name));
         let open_mode: u64 = open_mode.into();
         let attributes: u64 = attributes.into();
-        uefi_println!("open_child file_name = {:?}", file_name);
-        uefi_println!("open_child open_mode = {:#x}", open_mode);
-        uefi_println!("open_child attributes = {:#x}", attributes);
         match self.open.0(
             self,
             &mut file_protocol,
