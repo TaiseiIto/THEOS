@@ -1,6 +1,9 @@
-use core::{
-    char,
-    fmt,
+use {
+    alloc::string,
+    core::{
+        char,
+        fmt,
+    },
 };
 
 // Reference
@@ -14,6 +17,14 @@ pub struct String<'a>(&'a u16);
 impl<'a> String<'a> {
     pub fn new(string: &'a u16) -> Self {
         Self(string)
+    }
+}
+
+impl Into<string::String> for String<'_> {
+    fn into(self) -> string::String {
+        self
+            .map(|character| char::from_u32(character as u32).expect("Can't convert UTF-16LE into String!"))
+            .collect()
     }
 }
 

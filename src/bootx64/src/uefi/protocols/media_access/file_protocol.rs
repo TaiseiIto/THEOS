@@ -3,6 +3,7 @@
 // 13.5 File Protocol
 
 use {
+    alloc::string::String,
     core::fmt,
     super::super::super::{
         services::{
@@ -72,7 +73,7 @@ impl FileProtocol {
         let file_info: &FileInfo = unsafe {
             &*file_info
         };
-        let file_name = char16::String::new(&(file_info.file_name));
+        let file_name: String = char16::String::new(&(file_info.file_name)).into();
         FileInformation {
             allocated,
             file_name,
@@ -171,7 +172,7 @@ pub struct FileInfo {
 #[allow(dead_code)]
 pub struct FileInformation<'a> {
     allocated: allocator::Allocated<'a>,
-    file_name: char16::String<'a>,
+    file_name: String,
     file_info: &'a FileInfo,
 }
 
