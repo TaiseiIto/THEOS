@@ -58,7 +58,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
         uefi_println!("simple_file_system = {:#x?}", simple_file_system);
         let volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
         uefi_println!("volume = {:#x?}", volume);
-        let file_information: file_protocol::FileInformation = volume.read();
+        let file_information: Option<file_protocol::FileInformation> = volume.read();
         uefi_println!("file_information = {:#x?}", file_information);
         // Close the root directory.
     }

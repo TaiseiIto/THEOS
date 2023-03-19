@@ -42,7 +42,7 @@ pub struct FileProtocol {
 }
 
 impl FileProtocol {
-    pub fn read<'a>(&self) -> FileInformation<'a> {
+    pub fn read<'a>(&self) -> Option<FileInformation<'a>> {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
@@ -50,34 +50,39 @@ impl FileProtocol {
             &mut buffer_size,
             &mut buffer,
         );
-        let mut allocated = allocator::Allocated::new(buffer_size, 1);
-        let buffer: &mut [u8] = allocated.get_mut();
-        let buffer: &mut u8 = &mut buffer[0];
-        let buffer: *mut u8 = &mut *buffer;
-        let buffer: usize = buffer as usize;
-        let buffer: *mut void::Void = buffer as *mut void::Void;
-        let buffer: &mut void::Void = unsafe {
-            &mut *buffer
-        };
-        match self.read.0(
-            &self,
-            &mut buffer_size,
-            buffer,
-        ) {
-            status::SUCCESS => (),
-            _ => panic!("Can't read a file protocol!"),
-        }
-        let buffer: *const void::Void = &*buffer;
-        let buffer: usize = buffer as usize;
-        let file_info: *const FileInfo = buffer as *const FileInfo;
-        let file_info: &FileInfo = unsafe {
-            &*file_info
-        };
-        let file_name: String = char16::String::new(&(file_info.file_name)).into();
-        FileInformation {
-            allocated,
-            file_name,
-            file_info,
+        match buffer_size {
+            0 => None,
+            mut buffer_size => {
+                let mut allocated = allocator::Allocated::new(buffer_size, 1);
+                let buffer: &mut [u8] = allocated.get_mut();
+                let buffer: &mut u8 = &mut buffer[0];
+                let buffer: *mut u8 = &mut *buffer;
+                let buffer: usize = buffer as usize;
+                let buffer: *mut void::Void = buffer as *mut void::Void;
+                let buffer: &mut void::Void = unsafe {
+                    &mut *buffer
+                };
+                match self.read.0(
+                    &self,
+                    &mut buffer_size,
+                    buffer,
+                ) {
+                    status::SUCCESS => (),
+                    _ => panic!("Can't read a file protocol!"),
+                }
+                let buffer: *const void::Void = &*buffer;
+                let buffer: usize = buffer as usize;
+                let file_info: *const FileInfo = buffer as *const FileInfo;
+                let file_info: &FileInfo = unsafe {
+                    &*file_info
+                };
+                let file_name: String = char16::String::new(&(file_info.file_name)).into();
+                Some(FileInformation {
+                    allocated,
+                    file_name,
+                    file_info,
+                })
+            },
         }
     }
 }
