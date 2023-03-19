@@ -56,13 +56,16 @@ impl FileProtocol {
         let mut file_protocol: &Self = unsafe {
             &*file_protocol
         };
-        self.open.0(
+        match self.open.0(
             self,
             &mut file_protocol,
             char16::String::new(&(file_information.file_info.file_name)),
             open_mode.into(),
             attributes.into(),
-        );
+        ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't open a file protocol!"),
+        }
         file_protocol
     }
 }

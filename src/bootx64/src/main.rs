@@ -56,16 +56,43 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     let cr3: u64 = asm::get_cr3();
     uefi_println!("cr3 = {:#018x}", cr3);
     {
-        // Open the root directory.
+        // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         uefi_println!("simple_file_system = {:#x?}", simple_file_system);
-        let mut volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
-        uefi_println!("volume = {:#x?}", volume);
-        let kernel_elf: file_protocol::FileInformation = volume
+        // Open the root directory.
+        let mut root: &file_protocol::FileProtocol = simple_file_system.open_volume();
+        uefi_println!("root = {:#x?}", root);
+        // Find kernel.elf.
+        let kernel_elf: file_protocol::FileInformation = root
             .find(|file_information| file_information.file_name() == String::from("kernel.elf"))
             .expect("kernel.elf is nou found!");
         uefi_println!("kernel_elf = {:#x?}", kernel_elf);
-        // Close the root directory.
+        // Open kernel.elf.
+        let read = true;
+        let write = false;
+        let create = false;
+        let open_mode = file_protocol::OpenMode::new(
+            read,
+            write,
+            create,
+        );
+        let read_only: bool = false;
+        let hidden: bool = false;
+        let system: bool = false;
+        let reserved: bool = false;
+        let directory: bool = false;
+        let archive: bool = false;
+        let attributes = file_protocol::Attributes::new(
+            read_only,
+            hidden,
+            system,
+            reserved,
+            directory,
+            archive,
+        );
+        let kernel_elf: &file_protocol::FileProtocol = root.open_child(&kernel_elf, &open_mode, &attributes);
+        uefi_println!("kernel_elf = {:#x?}", kernel_elf);
+        // Close kernel.elf and the root directory.
     }
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
