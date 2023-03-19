@@ -90,7 +90,9 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
             directory,
             archive,
         );
-        let kernel_elf: &file_protocol::FileProtocol = root.open_child(&kernel_elf, &open_mode, &attributes);
+        let kernel_elf: &file_protocol::FileProtocol = root
+            .open_child(&kernel_elf, &open_mode, &attributes)
+            .expect("Can't open kernel.elf!");
         uefi_println!("kernel_elf = {:#x?}", kernel_elf);
         // Close kernel.elf and the root directory.
     }

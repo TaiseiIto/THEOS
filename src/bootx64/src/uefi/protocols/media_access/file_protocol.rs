@@ -5,6 +5,10 @@
 use {
     alloc::string::String,
     core::fmt,
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::super::super::{
         services::{
             boot::protocol_handler,
@@ -47,7 +51,7 @@ impl FileProtocol {
         file_information: &FileInformation,
         open_mode: &OpenMode,
         attributes: &Attributes
-    ) -> &Self {
+    ) -> Result<&Self, status::Status> {
         let file_protocol = void::Void::new();
         let file_protocol: &void::Void = &file_protocol;
         let file_protocol: *const void::Void = &*file_protocol;
@@ -56,17 +60,22 @@ impl FileProtocol {
         let mut file_protocol: &Self = unsafe {
             &*file_protocol
         };
+        let file_name = char16::String::new(&(file_information.file_info.file_name));
+        let open_mode: u64 = open_mode.into();
+        let attributes: u64 = attributes.into();
+        uefi_println!("open_child file_name = {:?}", file_name);
+        uefi_println!("open_child open_mode = {:#x}", open_mode);
+        uefi_println!("open_child attributes = {:#x}", attributes);
         match self.open.0(
             self,
             &mut file_protocol,
-            char16::String::new(&(file_information.file_info.file_name)),
+            file_name,
             open_mode.into(),
             attributes.into(),
         ) {
-            status::SUCCESS => (),
-            _ => panic!("Can't open a file protocol!"),
+            status::SUCCESS => Ok(file_protocol),
+            error => Err(error),
         }
-        file_protocol
     }
 }
 
