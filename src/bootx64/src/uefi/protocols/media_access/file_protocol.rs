@@ -183,6 +183,12 @@ pub struct FileInformation<'a> {
     file_info: &'a FileInfo,
 }
 
+impl FileInformation<'_> {
+    pub fn file_name(&self) -> String {
+        self.file_name.clone()
+    }
+}
+
 impl<'a> fmt::Debug for FileInformation<'a> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter

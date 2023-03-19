@@ -11,7 +11,10 @@ mod serial;
 mod uefi;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        vec::Vec,
+        string::String,
+    },
     asm::cpuid,
     core::panic::PanicInfo,
     uefi::{
@@ -56,10 +59,12 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
         // Open the root directory.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         uefi_println!("simple_file_system = {:#x?}", simple_file_system);
-        let volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
+        let mut volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
         uefi_println!("volume = {:#x?}", volume);
-        let file_informations: Vec<file_protocol::FileInformation> = volume.collect();
-        uefi_println!("file_information = {:#x?}", file_informations);
+        let kernel_elf: file_protocol::FileInformation = volume
+            .find(|file_information| file_information.file_name() == String::from("kernel.elf"))
+            .expect("kernel.elf is nou found!");
+        uefi_println!("kernel_elf = {:#x?}", kernel_elf);
         // Close the root directory.
     }
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
