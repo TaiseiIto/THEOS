@@ -21,18 +21,20 @@ impl Iterator for String<'_> {
     type Item = u16;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let character: &u16 = self.0;
-        let character = character as *const u16;
-        let character = unsafe {
-            character.add(1)
-        };
-        let character: &u16 = unsafe {
-            &*character
-        };
-        self.0 = character;
         match *self.0 {
             0x0000 => None,
-            _ => Some(*character),
+            character => {
+                let next_character: &u16 = self.0;
+                let next_character = next_character as *const u16;
+                let next_character = unsafe {
+                    next_character.add(1)
+                };
+                let next_character: &u16 = unsafe {
+                    &*next_character
+                };
+                self.0 = next_character;
+                Some(character)
+            },
         }
     }
 }
