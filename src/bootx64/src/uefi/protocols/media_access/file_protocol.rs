@@ -3,10 +3,7 @@
 // 13.5 File Protocol
 
 use {
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
+    core::fmt,
     super::super::super::{
         services::{
             boot::protocol_handler,
@@ -44,7 +41,7 @@ pub struct FileProtocol {
 }
 
 impl FileProtocol {
-    pub fn read(&self) {
+    pub fn read<'a>(&self) -> FileInformation<'a> {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(
@@ -52,8 +49,8 @@ impl FileProtocol {
             &mut buffer_size,
             &mut buffer,
         );
-        let mut buffer = allocator::Allocated::new(buffer_size, 1);
-        let buffer: &mut [u8] = buffer.get_mut();
+        let mut allocated = allocator::Allocated::new(buffer_size, 1);
+        let buffer: &mut [u8] = allocated.get_mut();
         let buffer: &mut u8 = &mut buffer[0];
         let buffer: *mut u8 = &mut *buffer;
         let buffer: usize = buffer as usize;
@@ -75,7 +72,10 @@ impl FileProtocol {
         let file_info: &FileInfo = unsafe {
             &*file_info
         };
-        uefi_println!("file_info = {:#x?}", file_info);
+        FileInformation {
+            allocated,
+            file_info,
+        }
     }
 }
 
@@ -164,5 +164,17 @@ pub struct FileInfo {
     modification_time: time::Time,
     attribute: u64,
     file_name: u16,
+}
+
+#[allow(dead_code)]
+pub struct FileInformation<'a> {
+    allocated: allocator::Allocated<'a>,
+    file_info: &'a FileInfo,
+}
+
+impl<'a> fmt::Debug for FileInformation<'a> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{:?}", self.file_info)
+    }
 }
 

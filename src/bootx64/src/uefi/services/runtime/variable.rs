@@ -3,7 +3,6 @@
 // 8.2 Variable Services
 
 use {
-    core::fmt,
     super::super::{
         boot::protocol_handler,
         super::types::{
@@ -12,41 +11,22 @@ use {
             void,
         },
     },
+    wrapped_function::WrappedFunction,
 };
 
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct GetVariable(pub extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
 
-impl fmt::Debug for GetVariable {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct GetNextVariableName(pub extern "efiapi" fn(&mut usize, char16::MutString, &mut protocol_handler::Guid) -> status::Status);
 
-impl fmt::Debug for GetNextVariableName {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct SetVariable(pub extern "efiapi" fn(char16::String, &protocol_handler::Guid, &mut u32, &mut usize, &mut void::Void) -> status::Status);
 
-impl fmt::Debug for SetVariable {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
-
+#[derive(WrappedFunction)]
 #[repr(C)]
 pub struct QueryVariableInfo(pub extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -> status::Status);
-
-impl fmt::Debug for QueryVariableInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#x}", self.0 as usize)
-    }
-}
 
