@@ -41,6 +41,32 @@ pub struct FileProtocol {
     flush_ex: FileFlushEx,
 }
 
+impl FileProtocol {
+    pub fn open_child(
+        &self,
+        file_information: &FileInformation,
+        open_mode: &OpenMode,
+        attributes: &Attributes
+    ) -> &Self {
+        let file_protocol = void::Void::new();
+        let file_protocol: &void::Void = &file_protocol;
+        let file_protocol: *const void::Void = &*file_protocol;
+        let file_protocol: usize = file_protocol as usize;
+        let file_protocol: *const Self = file_protocol as *const Self;
+        let mut file_protocol: &Self = unsafe {
+            &*file_protocol
+        };
+        self.open.0(
+            self,
+            &mut file_protocol,
+            char16::String::new(&(file_information.file_info.file_name)),
+            open_mode.into(),
+            attributes.into(),
+        );
+        file_protocol
+    }
+}
+
 impl<'a> Iterator for &'a FileProtocol {
     type Item = FileInformation<'a>;
 
@@ -122,7 +148,7 @@ impl OpenMode {
     }
 }
 
-impl Into<u64> for OpenMode {
+impl Into<u64> for &OpenMode {
     fn into(self) -> u64 {
         let read: u64 = match self.read {
             true => 0x0000000000000001,
@@ -169,7 +195,7 @@ impl Attributes {
     }
 }
 
-impl Into<u64> for Attributes {
+impl Into<u64> for &Attributes {
     fn into(self) -> u64 {
         let read_only: u64 = match self.read_only {
             true => 0x0000000000000001,
