@@ -64,6 +64,21 @@ impl SimpleFileSystem {
             &*simple_file_system
         }
     }
+    
+    pub fn open_volume<'a>(&self) -> &'a file_protocol::FileProtocol {
+        let volume = void::Void::new();
+        let volume: &void::Void = &volume;
+        let volume: *const void::Void = &*volume;
+        let volume: usize = volume as usize;
+        let volume: *const file_protocol::FileProtocol = volume as *const file_protocol::FileProtocol;
+        let mut volume: &file_protocol::FileProtocol = unsafe {
+            &*volume
+        };
+        match self.open_volume.0(self, &mut volume) {
+            status::SUCCESS => volume,
+            _ => panic!("Can't open the volume!"),
+        }
+    }
 }
 
 #[derive(WrappedFunction)]

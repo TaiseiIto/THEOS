@@ -15,7 +15,10 @@ use {
     asm::cpuid,
     core::panic::PanicInfo,
     uefi::{
-        protocols::media_access::simple_file_system,
+        protocols::media_access::{
+            file_protocol,
+            simple_file_system,
+        },
         services::boot::memory_allocation,
         types::{
             handle,
@@ -51,6 +54,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     uefi_println!("cr3 = {:#018x}", cr3);
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);
+    let volume: &file_protocol::FileProtocol = simple_file_system.open_volume();
+    uefi_println!("volume = {:#x?}", volume);
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
