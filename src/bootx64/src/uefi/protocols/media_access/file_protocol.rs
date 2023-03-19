@@ -3,6 +3,10 @@
 // 13.5 File Protocol
 
 use {
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::super::super::{
         services::boot::protocol_handler,
         types::{
@@ -33,6 +37,20 @@ pub struct FileProtocol {
     read_ex: FileReadEx,
     write_ex: FileWriteEx,
     flush_ex: FileFlushEx,
+}
+
+impl FileProtocol {
+    pub fn read(&self) {
+        let mut buffer = void::Void::new();
+        let mut buffer_size: usize = 0;
+        let status: status::Status = self.read.0(
+            &self,
+            &mut buffer_size,
+            &mut buffer
+        );
+        uefi_println!("FileProtocol::read status = {:#x}", status);
+        uefi_println!("FileProtocol::read buffer_size = {:#x}", buffer_size);
+    }
 }
 
 impl Drop for FileProtocol {
