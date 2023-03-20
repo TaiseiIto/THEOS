@@ -368,9 +368,9 @@ pub struct Node<'a> {
 }
 
 impl Node<'_> {
-    pub fn child(mut self, name: String) -> Self {
+    pub fn child(mut self, name: &str) -> Self {
         let information: FileInformation = self.protocol
-            .find(|information| information.file_name() == name)
+            .find(|information| information.file_name().as_str() == name)
             .expect("A child is nou found!");
         let read = true;
         let write = false;
@@ -407,10 +407,10 @@ impl Node<'_> {
         self.protocol.read(&self.information)
     }
 
-    pub fn root_child(file_system: &simple_file_system::SimpleFileSystem, name: String) -> Self {
+    pub fn root_child(file_system: &simple_file_system::SimpleFileSystem, name: &str) -> Self {
         let mut root: &FileProtocol = file_system.open_volume();
         let information: FileInformation = root
-            .find(|information| information.file_name() == name)
+            .find(|information| information.file_name().as_str() == name)
             .expect("A root child is nou found!");
         let read = true;
         let write = false;

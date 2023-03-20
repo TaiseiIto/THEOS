@@ -3,10 +3,8 @@
 // 13.4 Simple File System Protocol
 
 use {
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
+    alloc::vec::Vec,
+    core::str,
     super::{
         file_protocol,
         super::{
@@ -84,8 +82,15 @@ impl SimpleFileSystem {
         }
     }
 
-    pub fn read_file(&self, path: &str) {
-        uefi_println!("read file \"{}\"", path);
+    pub fn read_file(&self, path: &str) -> Vec<u8> {
+        let mut path: str::Split<char> = path.split('/');
+        path.next().expect("Can't read a file!");
+        let name: &str = path.next().expect("Can't read a file!");
+        let mut node = file_protocol::Node::root_child(self, name);
+        for name in path {
+            node = node.child(name);
+        }
+        node.read_file()
     }
 }
 

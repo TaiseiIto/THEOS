@@ -11,17 +11,11 @@ mod serial;
 mod uefi;
 
 use {
-    alloc::{
-        vec::Vec,
-        string::String,
-    },
+    alloc::vec::Vec,
     asm::cpuid,
     core::panic::PanicInfo,
     uefi::{
-        protocols::media_access::{
-            file_protocol,
-            simple_file_system,
-        },
+        protocols::media_access::simple_file_system,
         services::boot::memory_allocation,
         types::{
             handle,
@@ -67,7 +61,8 @@ fn use_boot_services() {
     // Open the file system.
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);
-    simple_file_system.read_file("/kernel.elf");
+    let kernel_elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
+    uefi_println!("kernel_elf = {:#x?}", kernel_elf);
     // Close kernel.elf and the root directory.
 }
 
