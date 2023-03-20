@@ -3,6 +3,10 @@
 // 13.4 Simple File System Protocol
 
 use {
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::{
         file_protocol,
         super::{
@@ -78,6 +82,10 @@ impl SimpleFileSystem {
             status::SUCCESS => volume,
             _ => panic!("Can't open the volume!"),
         }
+    }
+
+    pub fn read_file(&self, path: &str) {
+        uefi_println!("read file \"{}\"", path);
     }
 }
 
