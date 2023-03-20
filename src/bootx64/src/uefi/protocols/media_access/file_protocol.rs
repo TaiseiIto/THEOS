@@ -368,11 +368,46 @@ pub struct Node<'a> {
 }
 
 impl Node<'_> {
+    pub fn child(mut self, name: String) -> Self {
+        let information: FileInformation = self.protocol
+            .find(|information| information.file_name() == name)
+            .expect("A child is nou found!");
+        let read = true;
+        let write = false;
+        let create = false;
+        let open_mode = OpenMode::new(
+            read,
+            write,
+            create,
+        );
+        let read_only: bool = false;
+        let hidden: bool = false;
+        let system: bool = false;
+        let reserved: bool = false;
+        let directory: bool = false;
+        let archive: bool = false;
+        let attributes = Attributes::new(
+            read_only,
+            hidden,
+            system,
+            reserved,
+            directory,
+            archive,
+        );
+        let protocol: &FileProtocol = self.protocol
+            .open_child(&information, &open_mode, &attributes)
+            .expect("Can't open a root child!");
+        Self {
+            information,
+            protocol,
+        }
+    }
+
     pub fn root_child(file_system: &simple_file_system::SimpleFileSystem, name: String) -> Self {
         let mut root: &FileProtocol = file_system.open_volume();
         let information: FileInformation = root
             .find(|information| information.file_name() == name)
-            .expect("kernel.elf is nou found!");
+            .expect("A root child is nou found!");
         let read = true;
         let write = false;
         let create = false;
