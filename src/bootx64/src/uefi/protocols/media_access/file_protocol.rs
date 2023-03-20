@@ -403,6 +403,10 @@ impl Node<'_> {
         }
     }
 
+    pub fn read_file(self) -> Vec<u8> {
+        self.protocol.read(&self.information)
+    }
+
     pub fn root_child(file_system: &simple_file_system::SimpleFileSystem, name: String) -> Self {
         let mut root: &FileProtocol = file_system.open_volume();
         let information: FileInformation = root
