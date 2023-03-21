@@ -17,6 +17,9 @@ pub struct Header {
     sh_name: u32,
     sh_type: sh_type::Type,
     sh_flags: sh_flags::Flags,
+    sh_addr: usize,
+    sh_offset: usize,
+    sh_size: usize,
 }
 
 const SH_NAME_BEGIN: usize = 0;
@@ -28,6 +31,15 @@ const SH_TYPE_END: usize = SH_TYPE_BEGIN + SH_TYPE_LENGTH;
 const SH_FLAGS_BEGIN: usize = SH_TYPE_END;
 const SH_FLAGS_LENGTH: usize = mem::size_of::<usize>();
 const SH_FLAGS_END: usize = SH_FLAGS_BEGIN + SH_FLAGS_LENGTH;
+const SH_ADDR_BEGIN: usize = SH_FLAGS_END;
+const SH_ADDR_LENGTH: usize = mem::size_of::<usize>();
+const SH_ADDR_END: usize = SH_ADDR_BEGIN + SH_ADDR_LENGTH;
+const SH_OFFSET_BEGIN: usize = SH_ADDR_END;
+const SH_OFFSET_LENGTH: usize = mem::size_of::<usize>();
+const SH_OFFSET_END: usize = SH_OFFSET_BEGIN + SH_OFFSET_LENGTH;
+const SH_SIZE_BEGIN: usize = SH_OFFSET_END;
+const SH_SIZE_LENGTH: usize = mem::size_of::<usize>();
+const SH_SIZE_END: usize = SH_SIZE_BEGIN + SH_SIZE_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -59,10 +71,25 @@ impl From<&[u8]> for Header {
             .expect("Can't read an ELF!");
         let sh_flags = usize::from_le_bytes(sh_flags);
         let sh_flags: sh_flags::Flags = sh_flags.into();
+        let sh_addr: [u8; SH_ADDR_LENGTH] = header[SH_ADDR_BEGIN..SH_ADDR_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_addr = usize::from_le_bytes(sh_addr);
+        let sh_offset: [u8; SH_OFFSET_LENGTH] = header[SH_OFFSET_BEGIN..SH_OFFSET_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_offset = usize::from_le_bytes(sh_offset);
+        let sh_size: [u8; SH_SIZE_LENGTH] = header[SH_SIZE_BEGIN..SH_SIZE_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_size = usize::from_le_bytes(sh_size);
         Self {
             sh_name,
             sh_type,
             sh_flags,
+            sh_addr,
+            sh_offset,
+            sh_size,
         }
     }
 }
