@@ -1,14 +1,18 @@
 // References
 // https://refspecs.linuxfoundation.org/elf/elf.pdf
 
-use alloc::vec::Vec;
+pub mod header;
 
+#[derive(Debug)]
 pub struct Elf {
+    header: header::Header,
 }
 
 impl Elf {
-    pub fn new(elf: Vec<u8>) -> Self {
+    pub fn new(elf: &[u8]) -> Self {
+        let header = header::Header::new(elf);
         Self {
+            header,
         }
     }
 }
