@@ -13,6 +13,34 @@ use {
 
 #[allow(dead_code)]
 #[derive(Debug)]
+pub struct Program {
+    header: Header,
+    bytes: Vec<u8>
+}
+
+impl Program {
+    pub fn new(header: Header, elf: &[u8]) -> Self {
+        let begin: usize = header.p_offset;
+        let size: usize = header.p_filesz;
+        let end: usize = begin + size;
+        let bytes: Vec<u8> = elf[begin..end].to_vec();
+        Self {
+            header,
+            bytes,
+        }
+    }
+
+    pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
+        let headers: Vec<Header> = Header::read(header, elf);
+        headers
+            .into_iter()
+            .map(|header| Self::new(header, elf))
+            .collect()
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
 pub struct Header {
     p_type: p_type::Type,
     p_flags: p_flags::Flags,
@@ -50,7 +78,7 @@ const P_ALIGN_LENGTH: usize = mem::size_of::<usize>();
 const P_ALIGN_END: usize = P_ALIGN_BEGIN + P_ALIGN_LENGTH;
 
 impl Header {
-    pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
+    pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
         let header_size: usize = header.e_phentsize();
         let header_number: usize = header.e_phnum();
         let headers_begin: usize = header.e_phoff();

@@ -58,7 +58,7 @@ const SH_ENTSIZE_LENGTH: usize = mem::size_of::<usize>();
 const SH_ENTSIZE_END: usize = SH_ENTSIZE_BEGIN + SH_ENTSIZE_LENGTH;
 
 impl Header {
-    pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
+    pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
         let header_size: usize = header.e_shentsize();
         let header_number: usize = header.e_shnum();
         let headers_begin: usize = header.e_shoff();

@@ -12,18 +12,18 @@ use alloc::vec::Vec;
 #[derive(Debug)]
 pub struct Elf {
     header: header::Header,
-    program_headers: Vec<program::Header>,
+    programs: Vec<program::Program>,
     section_headers: Vec<section::Header>,
 }
 
 impl Elf {
     pub fn new(elf: &[u8]) -> Self {
         let header: header::Header = elf.into();
-        let program_headers = program::Header::read(elf, &header);
-        let section_headers = section::Header::read(elf, &header);
+        let programs = program::Program::read(&header, elf);
+        let section_headers = section::Header::read(&header, elf);
         Self {
             header,
-            program_headers,
+            programs,
             section_headers,
         }
     }
