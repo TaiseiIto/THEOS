@@ -7,6 +7,7 @@ extern crate alloc;
 
 mod allocator;
 mod asm;
+mod elf;
 mod serial;
 mod uefi;
 
@@ -62,7 +63,7 @@ fn use_boot_services() {
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);
     let kernel_elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
-    uefi_println!("kernel_elf = {:#x?}", kernel_elf);
+    let kernel_elf = elf::Elf::new(kernel_elf);
     // Close kernel.elf and the root directory.
 }
 
