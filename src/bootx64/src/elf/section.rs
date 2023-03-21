@@ -20,6 +20,10 @@ pub struct Header {
     sh_addr: usize,
     sh_offset: usize,
     sh_size: usize,
+    sh_link: u32,
+    sh_info: u32,
+    sh_addralign: usize,
+    sh_entsize: usize,
 }
 
 const SH_NAME_BEGIN: usize = 0;
@@ -40,6 +44,18 @@ const SH_OFFSET_END: usize = SH_OFFSET_BEGIN + SH_OFFSET_LENGTH;
 const SH_SIZE_BEGIN: usize = SH_OFFSET_END;
 const SH_SIZE_LENGTH: usize = mem::size_of::<usize>();
 const SH_SIZE_END: usize = SH_SIZE_BEGIN + SH_SIZE_LENGTH;
+const SH_LINK_BEGIN: usize = SH_SIZE_END;
+const SH_LINK_LENGTH: usize = mem::size_of::<u32>();
+const SH_LINK_END: usize = SH_LINK_BEGIN + SH_LINK_LENGTH;
+const SH_INFO_BEGIN: usize = SH_LINK_END;
+const SH_INFO_LENGTH: usize = mem::size_of::<u32>();
+const SH_INFO_END: usize = SH_INFO_BEGIN + SH_INFO_LENGTH;
+const SH_ADDRALIGN_BEGIN: usize = SH_INFO_END;
+const SH_ADDRALIGN_LENGTH: usize = mem::size_of::<usize>();
+const SH_ADDRALIGN_END: usize = SH_ADDRALIGN_BEGIN + SH_ADDRALIGN_LENGTH;
+const SH_ENTSIZE_BEGIN: usize = SH_ADDRALIGN_END;
+const SH_ENTSIZE_LENGTH: usize = mem::size_of::<usize>();
+const SH_ENTSIZE_END: usize = SH_ENTSIZE_BEGIN + SH_ENTSIZE_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -83,6 +99,22 @@ impl From<&[u8]> for Header {
             .try_into()
             .expect("Can't read an ELF!");
         let sh_size = usize::from_le_bytes(sh_size);
+        let sh_link: [u8; SH_LINK_LENGTH] = header[SH_LINK_BEGIN..SH_LINK_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_link = u32::from_le_bytes(sh_link);
+        let sh_info: [u8; SH_INFO_LENGTH] = header[SH_INFO_BEGIN..SH_INFO_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_info = u32::from_le_bytes(sh_info);
+        let sh_addralign: [u8; SH_ADDRALIGN_LENGTH] = header[SH_ADDRALIGN_BEGIN..SH_ADDRALIGN_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_addralign = usize::from_le_bytes(sh_addralign);
+        let sh_entsize: [u8; SH_ENTSIZE_LENGTH] = header[SH_ENTSIZE_BEGIN..SH_ENTSIZE_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_entsize = usize::from_le_bytes(sh_entsize);
         Self {
             sh_name,
             sh_type,
@@ -90,6 +122,10 @@ impl From<&[u8]> for Header {
             sh_addr,
             sh_offset,
             sh_size,
+            sh_link,
+            sh_info,
+            sh_addralign,
+            sh_entsize,
         }
     }
 }
