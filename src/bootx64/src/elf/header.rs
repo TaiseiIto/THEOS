@@ -80,6 +80,18 @@ impl Header {
     pub fn e_phoff(&self) -> usize {
         self.e_phoff
     }
+
+    pub fn e_shentsize(&self) -> usize {
+        self.e_shentsize as usize
+    }
+
+    pub fn e_shnum(&self) -> usize {
+        self.e_shnum as usize
+    }
+
+    pub fn e_shoff(&self) -> usize {
+        self.e_shoff
+    }
 }
 
 impl From<&[u8]> for Header {
