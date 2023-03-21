@@ -1,5 +1,5 @@
 // References
-// https://refspecs.linuxfoundation.org/elf/gabi4+/ch4.eheader.html
+// https://refspecs.linuxfoundation.org/elf/elf.pdf
 // https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
 
 use super::EI_NIDENT;
@@ -26,8 +26,8 @@ const OSABI_OFFSET: usize = VERSION_OFFSET + 1;
 const ABI_VERSION_OFFSET: usize = OSABI_OFFSET + 1;
 const PAD_OFFSET: usize = ABI_VERSION_OFFSET + 1;
 
-impl Ident {
-    pub fn new(ident: [u8; EI_NIDENT]) -> Self {
+impl From<[u8; EI_NIDENT]> for Ident {
+    fn from(ident: [u8; EI_NIDENT]) -> Self {
         let mag: [u8; MAG_LENGTH] = ident[MAG_BEGIN..MAG_END]
             .try_into()
             .expect("Can't read an ELF!");
@@ -55,17 +55,17 @@ impl Ident {
 
 #[derive(Debug)]
 pub enum Class {
-    ClassNone,
-    Class32,
-    Class64,
+    Unknown,
+    Bit32,
+    Bit64,
 }
 
 impl From<u8> for Class {
     fn from(class: u8) -> Self {
         match class {
-            0 => Self::ClassNone,
-            1 => Self::Class32,
-            2 => Self::Class64,
+            0 => Self::Unknown,
+            1 => Self::Bit32,
+            2 => Self::Bit64,
             _ => panic!("Can't read an ELF!"),
         }
     }
@@ -73,17 +73,17 @@ impl From<u8> for Class {
 
 #[derive(Debug)]
 pub enum Data {
-    DataNone,
-    Data2LSB, // Little endian
-    Data2MSB, // Big endian
+    Unknown,
+    LittleEndian,
+    BigEndian,
 }
 
 impl From<u8> for Data {
     fn from(data: u8) -> Self {
         match data {
-            0 => Self::DataNone,
-            1 => Self::Data2LSB,
-            2 => Self::Data2MSB,
+            0 => Self::Unknown,
+            1 => Self::LittleEndian,
+            2 => Self::BigEndian,
             _ => panic!("Can't read an ELF!"),
         }
     }

@@ -1,5 +1,6 @@
 // References
 // https://refspecs.linuxfoundation.org/elf/elf.pdf
+// https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
 
 pub mod header;
 
