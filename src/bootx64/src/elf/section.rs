@@ -4,13 +4,19 @@
 
 use {
     alloc::vec::Vec,
+    core::mem,
     super::header,
 };
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Header {
+    sh_name: u32,
 }
+
+const SH_NAME_BEGIN: usize = 0;
+const SH_NAME_LENGTH: usize = mem::size_of::<u32>();
+const SH_NAME_END: usize = SH_NAME_BEGIN + SH_NAME_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -28,7 +34,12 @@ impl Header {
 
 impl From<&[u8]> for Header {
     fn from(header: &[u8]) -> Self {
+        let sh_name: [u8; SH_NAME_LENGTH] = header[SH_NAME_BEGIN..SH_NAME_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_name = u32::from_le_bytes(sh_name);
         Self {
+            sh_name,
         }
     }
 }
