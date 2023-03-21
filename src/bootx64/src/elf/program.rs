@@ -14,6 +14,11 @@ pub struct Header {
     p_type: Type,
     p_flags: u32,
     p_offset: usize,
+    p_vaddr: usize,
+    p_paddr: usize,
+    p_filesz: usize,
+    p_memsz: usize,
+    p_align: usize,
 }
 
 const P_TYPE_BEGIN: usize = 0;
@@ -25,6 +30,21 @@ const P_FLAGS_END: usize = P_FLAGS_BEGIN + P_FLAGS_LENGTH;
 const P_OFFSET_BEGIN: usize = P_FLAGS_END;
 const P_OFFSET_LENGTH: usize = mem::size_of::<usize>();
 const P_OFFSET_END: usize = P_OFFSET_BEGIN + P_OFFSET_LENGTH;
+const P_VADDR_BEGIN: usize = P_OFFSET_END;
+const P_VADDR_LENGTH: usize = mem::size_of::<usize>();
+const P_VADDR_END: usize = P_VADDR_BEGIN + P_VADDR_LENGTH;
+const P_PADDR_BEGIN: usize = P_VADDR_END;
+const P_PADDR_LENGTH: usize = mem::size_of::<usize>();
+const P_PADDR_END: usize = P_PADDR_BEGIN + P_PADDR_LENGTH;
+const P_FILESZ_BEGIN: usize = P_PADDR_END;
+const P_FILESZ_LENGTH: usize = mem::size_of::<usize>();
+const P_FILESZ_END: usize = P_FILESZ_BEGIN + P_FILESZ_LENGTH;
+const P_MEMSZ_BEGIN: usize = P_FILESZ_END;
+const P_MEMSZ_LENGTH: usize = mem::size_of::<usize>();
+const P_MEMSZ_END: usize = P_MEMSZ_BEGIN + P_MEMSZ_LENGTH;
+const P_ALIGN_BEGIN: usize = P_MEMSZ_END;
+const P_ALIGN_LENGTH: usize = mem::size_of::<usize>();
+const P_ALIGN_END: usize = P_ALIGN_BEGIN + P_ALIGN_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -55,10 +75,35 @@ impl From<&[u8]> for Header {
             .try_into()
             .expect("Can't read an ELF!");
         let p_offset = usize::from_le_bytes(p_offset);
+        let p_vaddr: [u8; P_VADDR_LENGTH] = header[P_VADDR_BEGIN..P_VADDR_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_vaddr = usize::from_le_bytes(p_vaddr);
+        let p_paddr: [u8; P_PADDR_LENGTH] = header[P_PADDR_BEGIN..P_PADDR_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_paddr = usize::from_le_bytes(p_paddr);
+        let p_filesz: [u8; P_FILESZ_LENGTH] = header[P_FILESZ_BEGIN..P_FILESZ_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_filesz = usize::from_le_bytes(p_filesz);
+        let p_memsz: [u8; P_MEMSZ_LENGTH] = header[P_MEMSZ_BEGIN..P_MEMSZ_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_memsz = usize::from_le_bytes(p_memsz);
+        let p_align: [u8; P_ALIGN_LENGTH] = header[P_ALIGN_BEGIN..P_ALIGN_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_align = usize::from_le_bytes(p_align);
         Self {
             p_type,
             p_flags,
             p_offset,
+            p_vaddr,
+            p_paddr,
+            p_filesz,
+            p_memsz,
+            p_align,
         }
     }
 }
