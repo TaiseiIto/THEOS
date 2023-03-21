@@ -9,6 +9,8 @@ pub enum Type {
     Executable,
     Shared,
     Core,
+    OperatingSystemSpecific(u16),
+    ProcessorSpecific(u16),
 }
 
 impl From<u16> for Type {
@@ -19,7 +21,15 @@ impl From<u16> for Type {
             0x0002 => Self::Executable,
             0x0003 => Self::Shared,
             0x0004 => Self::Core,
-            _ => panic!("Can't read an ELF!"),
+            e_type => {
+                if 0xfe00 <= e_type && e_type < 0xff00 {
+                    Self::OperatingSystemSpecific(e_type)
+                } else if 0xff00 <= e_type {
+                    Self::ProcessorSpecific(e_type)
+                } else {
+                    panic!("Can't read an ELF!")
+                }
+            },
         }
     }
 }
