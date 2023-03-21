@@ -11,6 +11,8 @@ pub struct Ident {
     data: Data,
     version: u8,
     osabi: OsAbi,
+    abi_version: u8,
+    pad: u8,
 }
 
 const MAG: [u8; MAG_LENGTH] = [0x7f, 0x45, 0x4c, 0x46];
@@ -21,6 +23,8 @@ const CLASS_OFFSET: usize = MAG_END;
 const DATA_OFFSET: usize = CLASS_OFFSET + 1;
 const VERSION_OFFSET: usize = DATA_OFFSET + 1;
 const OSABI_OFFSET: usize = VERSION_OFFSET + 1;
+const ABI_VERSION_OFFSET: usize = OSABI_OFFSET + 1;
+const PAD_OFFSET: usize = ABI_VERSION_OFFSET + 1;
 
 impl Ident {
     pub fn new(ident: [u8; EI_NIDENT]) -> Self {
@@ -31,6 +35,8 @@ impl Ident {
         let data: Data = ident[DATA_OFFSET].into();
         let version: u8 = ident[VERSION_OFFSET];
         let osabi: OsAbi = ident[OSABI_OFFSET].into();
+        let abi_version: u8 = ident[ABI_VERSION_OFFSET];
+        let pad: u8 = ident[PAD_OFFSET];
         if let MAG = mag {
             Self {
                 mag,
@@ -38,6 +44,8 @@ impl Ident {
                 data,
                 version,
                 osabi,
+                abi_version,
+                pad,
             }
         } else {
             panic!("Can't read an ELF!");
