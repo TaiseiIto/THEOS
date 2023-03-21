@@ -2,6 +2,7 @@
 // https://refspecs.linuxfoundation.org/elf/elf.pdf
 // https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
 
+pub mod p_flags;
 pub mod p_type;
 
 use {
@@ -14,7 +15,7 @@ use {
 #[derive(Debug)]
 pub struct Header {
     p_type: p_type::Type,
-    p_flags: u32,
+    p_flags: p_flags::Flags,
     p_offset: usize,
     p_vaddr: usize,
     p_paddr: usize,
@@ -73,6 +74,7 @@ impl From<&[u8]> for Header {
             .try_into()
             .expect("Can't read an ELF!");
         let p_flags = u32::from_le_bytes(p_flags);
+        let p_flags: p_flags::Flags = p_flags.into();
         let p_offset: [u8; P_OFFSET_LENGTH] = header[P_OFFSET_BEGIN..P_OFFSET_END]
             .try_into()
             .expect("Can't read an ELF!");
