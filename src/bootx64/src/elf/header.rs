@@ -20,6 +20,11 @@ pub struct Header {
     e_shoff: usize,
     e_flags: u32,
     e_ehsize: u16,
+    e_phentsize: u16,
+    e_phnum: u16,
+    e_shentsize: u16,
+    e_shnum: u16,
+    e_shstrndx: u16,
 }
 
 const EI_NIDENT: usize = 0x10;
@@ -47,6 +52,21 @@ const E_FLAGS_END: usize = E_FLAGS_BEGIN + E_FLAGS_LENGTH;
 const E_EHSIZE_BEGIN: usize = E_FLAGS_END;
 const E_EHSIZE_LENGTH: usize = mem::size_of::<u16>();
 const E_EHSIZE_END: usize = E_EHSIZE_BEGIN + E_EHSIZE_LENGTH;
+const E_PHENTSIZE_BEGIN: usize = E_EHSIZE_END;
+const E_PHENTSIZE_LENGTH: usize = mem::size_of::<u16>();
+const E_PHENTSIZE_END: usize = E_PHENTSIZE_BEGIN + E_PHENTSIZE_LENGTH;
+const E_PHNUM_BEGIN: usize = E_PHENTSIZE_END;
+const E_PHNUM_LENGTH: usize = mem::size_of::<u16>();
+const E_PHNUM_END: usize = E_PHNUM_BEGIN + E_PHNUM_LENGTH;
+const E_SHENTSIZE_BEGIN: usize = E_PHNUM_END;
+const E_SHENTSIZE_LENGTH: usize = mem::size_of::<u16>();
+const E_SHENTSIZE_END: usize = E_SHENTSIZE_BEGIN + E_SHENTSIZE_LENGTH;
+const E_SHNUM_BEGIN: usize = E_SHENTSIZE_END;
+const E_SHNUM_LENGTH: usize = mem::size_of::<u16>();
+const E_SHNUM_END: usize = E_SHNUM_BEGIN + E_SHNUM_LENGTH;
+const E_SHSTRNDX_BEGIN: usize = E_SHNUM_END;
+const E_SHSTRNDX_LENGTH: usize = mem::size_of::<u16>();
+const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
     pub fn new(header: &[u8]) -> Self {
@@ -88,6 +108,26 @@ impl Header {
             .try_into()
             .expect("Can't read an ELF header!");
         let e_ehsize = u16::from_le_bytes(e_ehsize);
+        let e_phentsize: [u8; E_PHENTSIZE_LENGTH] = header[E_PHENTSIZE_BEGIN..E_PHENTSIZE_END]
+            .try_into()
+            .expect("Can't read an ELF header!");
+        let e_phentsize = u16::from_le_bytes(e_phentsize);
+        let e_phnum: [u8; E_PHNUM_LENGTH] = header[E_PHNUM_BEGIN..E_PHNUM_END]
+            .try_into()
+            .expect("Can't read an ELF header!");
+        let e_phnum = u16::from_le_bytes(e_phnum);
+        let e_shentsize: [u8; E_SHENTSIZE_LENGTH] = header[E_SHENTSIZE_BEGIN..E_SHENTSIZE_END]
+            .try_into()
+            .expect("Can't read an ELF header!");
+        let e_shentsize = u16::from_le_bytes(e_shentsize);
+        let e_shnum: [u8; E_SHNUM_LENGTH] = header[E_SHNUM_BEGIN..E_SHNUM_END]
+            .try_into()
+            .expect("Can't read an ELF header!");
+        let e_shnum = u16::from_le_bytes(e_shnum);
+        let e_shstrndx: [u8; E_SHSTRNDX_LENGTH] = header[E_SHSTRNDX_BEGIN..E_SHSTRNDX_END]
+            .try_into()
+            .expect("Can't read an ELF header!");
+        let e_shstrndx = u16::from_le_bytes(e_shstrndx);
         Self {
             e_ident,
             e_type,
@@ -98,6 +138,11 @@ impl Header {
             e_shoff,
             e_flags,
             e_ehsize,
+            e_phentsize,
+            e_phnum,
+            e_shentsize,
+            e_shnum,
+            e_shstrndx,
         }
     }
 }
