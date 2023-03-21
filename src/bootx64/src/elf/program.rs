@@ -55,6 +55,8 @@ pub enum Type {
     Shlib,
     Phdr,
     Tls,
+    OperatingSystemSpecific(u32),
+    ProcessorSpecific(u32),
 }
 
 impl From<u32> for Type {
@@ -68,7 +70,15 @@ impl From<u32> for Type {
             0x00000005 => Self::Shlib,
             0x00000006 => Self::Phdr,
             0x00000007 => Self::Tls,
-            _ => panic!("Can't read an ELF!"),
+            p_type => {
+                if 0x60000000 <= p_type && p_type < 0x70000000 {
+                    Self::OperatingSystemSpecific(p_type)
+                } else if 0x70000000 <= p_type && p_type < 0x80000000 {
+                    Self::ProcessorSpecific(p_type)
+                } else {
+                    panic!("Can't read an ELF!")
+                }
+            },
         }
     }
 }
