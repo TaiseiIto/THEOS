@@ -4,6 +4,7 @@
 
 use super::EI_NIDENT;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Ident {
     mag: [u8; MAG_LENGTH],

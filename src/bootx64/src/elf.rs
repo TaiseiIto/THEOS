@@ -4,6 +4,7 @@
 
 pub mod header;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Elf {
     header: header::Header,
