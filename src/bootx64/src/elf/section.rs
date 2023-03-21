@@ -2,6 +2,7 @@
 // https://refspecs.linuxfoundation.org/elf/elf.pdf
 // https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
 
+pub mod sh_flags;
 pub mod sh_type;
 
 use {
@@ -15,6 +16,7 @@ use {
 pub struct Header {
     sh_name: u32,
     sh_type: sh_type::Type,
+    sh_flags: sh_flags::Flags,
 }
 
 const SH_NAME_BEGIN: usize = 0;
@@ -23,6 +25,9 @@ const SH_NAME_END: usize = SH_NAME_BEGIN + SH_NAME_LENGTH;
 const SH_TYPE_BEGIN: usize = SH_NAME_END;
 const SH_TYPE_LENGTH: usize = mem::size_of::<u32>();
 const SH_TYPE_END: usize = SH_TYPE_BEGIN + SH_TYPE_LENGTH;
+const SH_FLAGS_BEGIN: usize = SH_TYPE_END;
+const SH_FLAGS_LENGTH: usize = mem::size_of::<usize>();
+const SH_FLAGS_END: usize = SH_FLAGS_BEGIN + SH_FLAGS_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -49,9 +54,15 @@ impl From<&[u8]> for Header {
             .expect("Can't read an ELF!");
         let sh_type = u32::from_le_bytes(sh_type);
         let sh_type: sh_type::Type = sh_type.into();
+        let sh_flags: [u8; SH_FLAGS_LENGTH] = header[SH_FLAGS_BEGIN..SH_FLAGS_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let sh_flags = usize::from_le_bytes(sh_flags);
+        let sh_flags: sh_flags::Flags = sh_flags.into();
         Self {
             sh_name,
             sh_type,
+            sh_flags,
         }
     }
 }
