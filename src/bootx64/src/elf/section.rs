@@ -13,6 +13,34 @@ use {
 
 #[allow(dead_code)]
 #[derive(Debug)]
+pub struct Section {
+    header: Header,
+    bytes: Vec<u8>,
+}
+
+impl Section {
+    pub fn new(header: Header, elf: &[u8]) -> Self {
+        let begin: usize = header.sh_offset;
+        let size: usize = header.sh_size;
+        let end: usize = begin + size;
+        let bytes: Vec<u8> = elf[begin..end].to_vec();
+        Self {
+            header,
+            bytes,
+        }
+    }
+
+    pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
+        let headers: Vec<Header> = Header::read(header, elf);
+        headers
+            .into_iter()
+            .map(|header| Self::new(header, elf))
+            .collect()
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
 pub struct Header {
     sh_name: u32,
     sh_type: sh_type::Type,
