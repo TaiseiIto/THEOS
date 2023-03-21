@@ -92,6 +92,10 @@ impl Header {
     pub fn e_shoff(&self) -> usize {
         self.e_shoff
     }
+
+    pub fn e_shstrndx(&self) -> usize {
+        self.e_shstrndx as usize
+    }
 }
 
 impl From<&[u8]> for Header {

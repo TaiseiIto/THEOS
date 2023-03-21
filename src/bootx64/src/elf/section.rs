@@ -6,7 +6,10 @@ pub mod sh_flags;
 pub mod sh_type;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
     core::mem,
     super::header,
 };
@@ -14,17 +17,26 @@ use {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Section {
+    name: String,
     header: Header,
     bytes: Vec<u8>,
 }
 
 impl Section {
-    pub fn new(header: Header, elf: &[u8]) -> Self {
+    pub fn new(header: Header, elf: &[u8], shstrtab: &[u8]) -> Self {
         let begin: usize = header.sh_offset;
         let size: usize = header.sh_size;
         let end: usize = begin + size;
         let bytes: Vec<u8> = elf[begin..end].to_vec();
+        let name_begin: usize = header.sh_name as usize;
+        let name: Vec<u8> = shstrtab[name_begin..]
+            .split(|byte| *byte == 0x00)
+            .next()
+            .expect("Can't read an ELF!")
+            .to_vec();
+        let name = String::from_utf8(name).expect("Can't read an ELF!");
         Self {
+            name,
             header,
             bytes,
         }
@@ -32,9 +44,15 @@ impl Section {
 
     pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
         let headers: Vec<Header> = Header::read(header, elf);
+        let shstrndx: usize = header.e_shstrndx();
+        let shstrtab: &Header = &headers[shstrndx];
+        let shstrtab_begin: usize = shstrtab.sh_offset;
+        let shstrtab_size: usize = shstrtab.sh_size;
+        let shstrtab_end: usize = shstrtab_begin + shstrtab_size;
+        let shstrtab: &[u8] = &elf[shstrtab_begin..shstrtab_end];
         headers
             .into_iter()
-            .map(|header| Self::new(header, elf))
+            .map(|header| Self::new(header, elf, shstrtab))
             .collect()
     }
 }
