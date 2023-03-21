@@ -4,12 +4,19 @@
 
 use {
     alloc::vec::Vec,
+    core::mem,
     super::header,
 };
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Header {
+    p_type: Type,
 }
+
+const P_TYPE_BEGIN: usize = 0;
+const P_TYPE_LENGTH: usize = mem::size_of::<u32>();
+const P_TYPE_END: usize = P_TYPE_BEGIN + P_TYPE_LENGTH;
 
 impl Header {
     pub fn read(elf: &[u8], header: &header::Header) -> Vec<Self> {
@@ -27,7 +34,41 @@ impl Header {
 
 impl From<&[u8]> for Header {
     fn from(header: &[u8]) -> Self {
+        let p_type: [u8; P_TYPE_LENGTH] = header[P_TYPE_BEGIN..P_TYPE_END]
+            .try_into()
+            .expect("Can't read an ELF!");
+        let p_type = u32::from_le_bytes(p_type);
+        let p_type: Type = p_type.into();
         Self {
+            p_type,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Type {
+    Null,
+    Load,
+    Dynamic,
+    Interp,
+    Note,
+    Shlib,
+    Phdr,
+    Tls,
+}
+
+impl From<u32> for Type {
+    fn from(p_type: u32) -> Self {
+        match p_type {
+            0x00000000 => Self::Null,
+            0x00000001 => Self::Load,
+            0x00000002 => Self::Dynamic,
+            0x00000003 => Self::Interp,
+            0x00000004 => Self::Note,
+            0x00000005 => Self::Shlib,
+            0x00000006 => Self::Phdr,
+            0x00000007 => Self::Tls,
+            _ => panic!("Can't read an ELF!"),
         }
     }
 }
