@@ -330,10 +330,10 @@ impl Iterator for MemoryDescriptors<'_> {
         match self.descriptors {
             0 => None,
             _ => {
-                let mut memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = [0; MEMORY_DESCRIPTOR_SIZE];
-                for (i, byte) in self.buffer[..MEMORY_DESCRIPTOR_SIZE].iter().enumerate() {
-                    memory_descriptor[i] = *byte;
-                }
+                let memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = self
+                    .buffer[..MEMORY_DESCRIPTOR_SIZE]
+                    .try_into()
+                    .expect("Can't get a memory descriptor!");
                 let memory_descriptor: MemoryDescriptor = memory_descriptor.into();
                 self.buffer = &self.buffer[self.descriptor_size..];
                 self.descriptors -= 1;

@@ -48,17 +48,17 @@ impl<'a> Iterator for Configurations<'a> {
         match self.number_of_tables {
             0 => None,
             _ => {
-                let configurations: &'a Configuration<'a> = self.configurations;
-                let configurations = configurations as *const Configuration<'a>;
-                let configurations = unsafe {
-                    configurations.add(1)
+                let configuration: &'a Configuration<'a> = self.configurations;
+                let next_configuration = configuration as *const Configuration<'a>;
+                let next_configuration = unsafe {
+                    next_configuration.add(1)
                 };
-                let configurations: &'a Configuration<'a> = unsafe {
-                    &*configurations
+                let next_configuration: &'a Configuration<'a> = unsafe {
+                    &*next_configuration
                 };
-                self.configurations = configurations;
+                self.configurations = next_configuration;
                 self.number_of_tables -= 1;
-                Some(configurations)
+                Some(configuration)
             },
         }
     }
