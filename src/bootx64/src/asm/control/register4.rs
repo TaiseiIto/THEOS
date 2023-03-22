@@ -18,6 +18,7 @@ pub struct Cr4 {
     osfxsr: bool,
     osxmmexcpt: bool,
     umip: bool,
+    la57: bool,
     vmxe: bool,
     smxe: bool,
     fsgsbase: bool,
@@ -44,6 +45,7 @@ impl Cr4 {
     const OSFXSR_SHIFT: usize = 9;
     const OSXMMEXCPT_SHIFT: usize = 10;
     const UMIP_SHIFT: usize = 11;
+    const LA57_SHIFT: usize = 12;
     const VMXE_SHIFT: usize = 13;
     const SMXE_SHIFT: usize = 14;
     const FSGSBASE_SHIFT: usize = 16;
@@ -68,6 +70,7 @@ impl Cr4 {
     const OSFXSR_MASK: u64 = 1 << Self::OSFXSR_SHIFT;
     const OSXMMEXCPT_MASK: u64 = 1 << Self::OSXMMEXCPT_SHIFT;
     const UMIP_MASK: u64 = 1 << Self::UMIP_SHIFT;
+    const LA57_MASK: u64 = 1 << Self::LA57_SHIFT;
     const VMXE_MASK: u64 = 1 << Self::VMXE_SHIFT;
     const SMXE_MASK: u64 = 1 << Self::SMXE_SHIFT;
     const FSGSBASE_MASK: u64 = 1 << Self::FSGSBASE_SHIFT;
@@ -100,6 +103,7 @@ impl Cr4 {
         let osfxsr: bool = cr4 & Self::OSFXSR_MASK != 0;
         let osxmmexcpt: bool = cr4 & Self::OSXMMEXCPT_MASK != 0;
         let umip: bool = cr4 & Self::UMIP_MASK != 0;
+        let la57: bool = cr4 & Self::LA57_MASK != 0;
         let vmxe: bool = cr4 & Self::VMXE_MASK != 0;
         let smxe: bool = cr4 & Self::SMXE_MASK != 0;
         let fsgsbase: bool = cr4 & Self::FSGSBASE_MASK != 0;
@@ -124,6 +128,7 @@ impl Cr4 {
             osfxsr,
             osxmmexcpt,
             umip,
+            la57,
             vmxe,
             smxe,
             fsgsbase,
@@ -136,6 +141,14 @@ impl Cr4 {
             cet,
             pks,
         }
+    }
+
+    pub fn la57(&self) -> bool {
+        self.la57
+    }
+
+    pub fn pae(&self) -> bool {
+        self.pae
     }
 }
 

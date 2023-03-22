@@ -43,5 +43,9 @@ impl Ia32Efer {
             None => None,
         }
     }
+
+    pub fn lme(&self) -> bool {
+        self.lme
+    }
 }
 

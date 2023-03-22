@@ -8,6 +8,7 @@ extern crate alloc;
 mod allocator;
 mod asm;
 mod elf;
+mod memory;
 mod serial;
 mod uefi;
 
@@ -19,6 +20,7 @@ use {
         msr::architectural::ia32_efer,
     },
     core::panic::PanicInfo,
+    memory::paging,
     uefi::{
         protocols::media_access::simple_file_system,
         services::boot::memory_allocation,
@@ -69,6 +71,8 @@ fn use_boot_services() {
     uefi_println!("CR3 = {:#x?}", cr3);
     let cr4 = control::register4::Cr4::get();
     uefi_println!("CR4 = {:#x?}", cr4);
+    let paging_mode = paging::Mode::get(&cr0, &cr4, &ia32_efer);
+    uefi_println!("paging mode = {:#?}", paging_mode);
     // Open the file system.
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);

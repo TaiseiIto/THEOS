@@ -77,5 +77,9 @@ impl Cr0 {
             pg,
         }
     }
+
+    pub fn pg(&self) -> bool {
+        self.pg
+    }
 }
 
