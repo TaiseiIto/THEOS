@@ -16,6 +16,7 @@ use {
     asm::{
         control,
         cpuid,
+        msr::architectural::ia32_efer,
     },
     core::panic::PanicInfo,
     uefi::{
@@ -54,18 +55,20 @@ fn use_boot_services() {
     let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
     uefi_println!("cpuid = {:#x?}", cpuid);
     let supports_5_level_paging: bool = match cpuid {
-        Some(cpuid) => cpuid.supports_5_level_paging(),
+        Some(ref cpuid) => cpuid.supports_5_level_paging(),
         None => false,
     };
     uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
+    let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
+    uefi_println!("IA32_EFER = {:#x?}", ia32_efer);
     let cr0 = control::register0::Cr0::get();
-    uefi_println!("cr0 = {:#x?}", cr0);
+    uefi_println!("CR0 = {:#x?}", cr0);
     let cr2 = control::register2::Cr2::get();
-    uefi_println!("cr2 = {:#x?}", cr2);
+    uefi_println!("CR2 = {:#x?}", cr2);
     let cr3 = control::register3::Cr3::get();
-    uefi_println!("cr3 = {:#x?}", cr3);
+    uefi_println!("CR3 = {:#x?}", cr3);
     let cr4 = control::register4::Cr4::get();
-    uefi_println!("cr4 = {:#x?}", cr4);
+    uefi_println!("CR4 = {:#x?}", cr4);
     // Open the file system.
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);

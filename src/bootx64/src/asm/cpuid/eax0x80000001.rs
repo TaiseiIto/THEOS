@@ -34,6 +34,10 @@ impl Eax0x80000001 {
             None
         }
     }
+
+    pub fn supports_ia32_efer(&self) -> bool {
+        self.edx.supports_ia32_efer()
+    }
 }
 
 #[allow(dead_code)]
@@ -73,6 +77,10 @@ impl Edx {
     const GBYTE_PAGES_MASK: u32 = (1 << Self::GBYTE_PAGES_SHIFT) as u32;
     const RDTSCP_AND_IA32_TSC_AUX_MASK: u32 = (1 << Self::RDTSCP_AND_IA32_TSC_AUX_SHIFT) as u32;
     const INTEL_64_ARCHITECTURE_MASK: u32 = (1 << Self::INTEL_64_ARCHITECTURE_SHIFT) as u32;
+
+    pub fn supports_ia32_efer(&self) -> bool {
+        self.execute_disable_bit || self.intel_64_architecture
+    }
 }
 
 impl From<u32> for Edx {

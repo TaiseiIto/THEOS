@@ -72,7 +72,7 @@ impl Rflags {
         set_rflags(self.into());
     }
 
-    pub fn cpuid_is_supported() -> bool {
+    pub fn supports_cpuid() -> bool {
         let mut rflags = Self::get();
         rflags.id = true;
         Self::set(&rflags);

@@ -3,6 +3,7 @@
 
 pub mod control;
 pub mod cpuid;
+pub mod msr;
 pub mod rflags;
 
 use core::arch::asm;

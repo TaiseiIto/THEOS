@@ -49,7 +49,7 @@ pub struct Cpuid {
 
 impl Cpuid {
     pub fn new() -> Option<Self> {
-        if rflags::Rflags::cpuid_is_supported() {
+        if rflags::Rflags::supports_cpuid() {
             let eax0x00000000 = eax0x00000000::Eax0x00000000::new();
             let eax0x00000001 = eax0x00000001::Eax0x00000001::new(&eax0x00000000);
             let eax0x00000002 = eax0x00000002::Eax0x00000002::new(&eax0x00000000);
@@ -94,6 +94,13 @@ impl Cpuid {
     pub fn supports_5_level_paging(&self) -> bool {
         match &self.eax0x00000007 {
             Some(eax0x00000007) => eax0x00000007.supports_5_level_paging(),
+            None => false,
+        }
+    }
+
+    pub fn supports_ia32_efer(&self) -> bool {
+        match &self.eax0x80000001 {
+            Some(eax0x80000001) => eax0x80000001.supports_ia32_efer(),
             None => false,
         }
     }
