@@ -13,7 +13,10 @@ mod uefi;
 
 use {
     alloc::vec::Vec,
-    asm::cpuid,
+    asm::{
+        control,
+        cpuid,
+    },
     core::panic::PanicInfo,
     uefi::{
         protocols::media_access::simple_file_system,
@@ -55,8 +58,8 @@ fn use_boot_services() {
         None => false,
     };
     uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
-    let cr0: u64 = asm::get_cr0();
-    uefi_println!("cr0 = {:#018x}", cr0);
+    let cr0 = control::register0::Cr0::get();
+    uefi_println!("cr0 = {:#x?}", cr0);
     let cr3: u64 = asm::get_cr3();
     uefi_println!("cr3 = {:#018x}", cr3);
     // Open the file system.
