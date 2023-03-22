@@ -62,8 +62,8 @@ fn use_boot_services() {
     uefi_println!("cr0 = {:#x?}", cr0);
     let cr2 = control::register2::Cr2::get();
     uefi_println!("cr2 = {:#x?}", cr2);
-    let cr3: u64 = asm::get_cr3();
-    uefi_println!("cr3 = {:#018x}", cr3);
+    let cr3 = control::register3::Cr3::get();
+    uefi_println!("cr3 = {:#x?}", cr3);
     // Open the file system.
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
     uefi_println!("simple_file_system = {:#x?}", simple_file_system);
