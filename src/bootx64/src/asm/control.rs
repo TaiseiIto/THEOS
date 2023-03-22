@@ -4,4 +4,5 @@
 pub mod register0;
 pub mod register2;
 pub mod register3;
+pub mod register4;
 
