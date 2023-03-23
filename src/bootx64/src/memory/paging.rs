@@ -22,17 +22,17 @@ impl Mode {
     pub fn get(cr0: &Cr0, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
         if cr0.pg() {
             if cr4.pae() {
-                match ia32_efer {
-                    Some(ia32_efer) => if ia32_efer.lme() {
-                        if cr4.la57() {
-                            Self::Level5
-                        } else {
-                            Self::Level4
-                        }
+                if ia32_efer
+                    .as_ref()
+                    .expect("Can't get a paging mode!")
+                    .lme() {
+                    if cr4.la57() {
+                        Self::Level5
                     } else {
-                        Self::Pae
-                    },
-                    None => panic!("Can't get a paging mode!"),
+                        Self::Level4
+                    }
+                } else {
+                    Self::Pae
                 }
             } else {
                 Self::Bit32
