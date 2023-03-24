@@ -8,9 +8,11 @@ use alloc::vec::Vec;
 pub struct Cr3<'a> {
     pwt: bool,
     pcd: bool,
-    page_map_level_4_table: &'a [u64; 0x200],
-    page_map_level_4_entries: Vec<PageMapLevel4Entry>,
+    page_map_level_4_table: &'a [u64; ENTRIES],
+    page_map_level_4_entries: Vec<PageMapLevel4Entry<'a>>,
 }
+
+const ENTRIES: usize = 0x200;
 
 impl Cr3<'_> {
     const PWT_SHIFT: usize = 3;
@@ -26,8 +28,8 @@ impl From<u64> for Cr3<'_> {
         let pwt: bool = cr3 & Self::PWT_MASK != 0;
         let pcd: bool = cr3 & Self::PCD_MASK != 0;
         let page_map_level_4_table: u64 = cr3 & Self::PAGE_DIRECTORY_BASE_MASK;
-        let page_map_level_4_table: *const [u64; 0x200] = page_map_level_4_table as *const [u64; 0x200];
-        let page_map_level_4_table: &[u64; 0x200] = unsafe {
+        let page_map_level_4_table: *const [u64; ENTRIES] = page_map_level_4_table as *const [u64; ENTRIES];
+        let page_map_level_4_table: &[u64; ENTRIES] = unsafe {
             &*page_map_level_4_table
         };
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
@@ -45,7 +47,7 @@ impl From<u64> for Cr3<'_> {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PageMapLevel4Entry {
+pub struct PageMapLevel4Entry<'a> {
     writable: bool,
     user_mode_access: bool,
     page_write_through: bool,
@@ -53,9 +55,10 @@ pub struct PageMapLevel4Entry {
     accessed: bool,
     restart: bool,
     execute_disable: bool,
+    page_directory_pointer_table: &'a [u64; ENTRIES],
 }
 
-impl PageMapLevel4Entry {
+impl PageMapLevel4Entry<'_> {
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -64,6 +67,8 @@ impl PageMapLevel4Entry {
     const ACCESSED_SHIFT: usize = 5;
     const RESTART_SHIFT: usize = 11;
     const EXECUTE_DISABLE_SHIFT: usize = 63;
+    const PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN: usize = 12;
+    const PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END: usize = 52;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
     const WRITABLE_MASK: u64 = 1 << Self::WRITABLE_SHIFT;
@@ -73,6 +78,7 @@ impl PageMapLevel4Entry {
     const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
+    const PAGE_DIRECTORY_POINTER_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN);
 
     fn read(page_map_level_4_entry: u64) -> Option<Self> {
         if page_map_level_4_entry & Self::PRESENT_MASK != 0 {
@@ -83,6 +89,11 @@ impl PageMapLevel4Entry {
             let accessed: bool = page_map_level_4_entry & Self::ACCESSED_MASK != 0;
             let restart: bool = page_map_level_4_entry & Self::RESTART_MASK != 0;
             let execute_disable: bool = page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
+            let page_directory_pointer_table: u64 = page_map_level_4_entry & Self::PAGE_DIRECTORY_POINTER_TABLE_MASK;
+            let page_directory_pointer_table: *const [u64; ENTRIES] = page_directory_pointer_table as *const [u64; ENTRIES];
+            let page_directory_pointer_table: &[u64; ENTRIES] = unsafe {
+                &*page_directory_pointer_table
+            };
             Some(Self {
                 writable,
                 user_mode_access,
@@ -91,6 +102,7 @@ impl PageMapLevel4Entry {
                 accessed,
                 restart,
                 execute_disable,
+                page_directory_pointer_table,
             })
         } else {
             None
