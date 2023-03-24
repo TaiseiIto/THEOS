@@ -46,16 +46,51 @@ impl From<u64> for Cr3<'_> {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct PageMapLevel4Entry {
+    writable: bool,
+    user_mode_access: bool,
+    page_write_through: bool,
+    page_cache_disable: bool,
+    accessed: bool,
+    restart: bool,
+    execute_disable: bool,
 }
 
 impl PageMapLevel4Entry {
     const PRESENT_SHIFT: usize = 0;
+    const WRITABLE_SHIFT: usize = 1;
+    const USER_MODE_ACCESS_SHIFT: usize = 2;
+    const PAGE_WRITE_THROUGH_SHIFT: usize = 3;
+    const PAGE_CACHE_DISABLE_SHIFT: usize = 4;
+    const ACCESSED_SHIFT: usize = 5;
+    const RESTART_SHIFT: usize = 11;
+    const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
+    const WRITABLE_MASK: u64 = 1 << Self::WRITABLE_SHIFT;
+    const USER_MODE_ACCESS_MASK: u64 = 1 << Self::USER_MODE_ACCESS_SHIFT;
+    const PAGE_WRITE_THROUGH_MASK: u64 = 1 << Self::PAGE_WRITE_THROUGH_SHIFT;
+    const PAGE_CACHE_DISABLE_MASK: u64 = 1 << Self::PAGE_CACHE_DISABLE_SHIFT;
+    const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
+    const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
+    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_map_level_4_entry: u64) -> Option<Self> {
         if page_map_level_4_entry & Self::PRESENT_MASK != 0 {
+            let writable: bool = page_map_level_4_entry & Self::WRITABLE_MASK != 0;
+            let user_mode_access: bool = page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
+            let page_write_through: bool = page_map_level_4_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
+            let page_cache_disable: bool = page_map_level_4_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
+            let accessed: bool = page_map_level_4_entry & Self::ACCESSED_MASK != 0;
+            let restart: bool = page_map_level_4_entry & Self::RESTART_MASK != 0;
+            let execute_disable: bool = page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                writable,
+                user_mode_access,
+                page_write_through,
+                page_cache_disable,
+                accessed,
+                restart,
+                execute_disable,
             })
         } else {
             None

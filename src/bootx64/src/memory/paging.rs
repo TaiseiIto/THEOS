@@ -13,7 +13,7 @@ use super::super::asm::{
 };
 
 #[derive(Debug)]
-pub enum Paging<'a> {
+pub enum State<'a> {
     Disable,
     Bit32,
     Pae,
@@ -23,7 +23,7 @@ pub enum Paging<'a> {
     Level5,
 }
 
-impl Paging<'_> {
+impl State<'_> {
     pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
         if cr0.pg() {
             if cr4.pae() {

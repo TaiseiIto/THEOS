@@ -71,7 +71,7 @@ fn use_boot_services() {
     uefi_println!("CR3 = {:#x?}", cr3);
     let cr4 = control::register4::Cr4::get();
     uefi_println!("CR4 = {:#x?}", cr4);
-    let paging = paging::Paging::get(&cr0, &cr3, &cr4, &ia32_efer);
+    let paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
     uefi_println!("paging = {:#x?}", paging);
     // Open the file system.
     let simple_file_system = simple_file_system::SimpleFileSystem::new();
