@@ -1,6 +1,8 @@
 // References
 // Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 3 System Programming Guide, Chapter 4 Paging
 
+pub mod level4;
+
 use super::super::asm::{
     control::{
         register0::Cr0,
@@ -16,7 +18,7 @@ pub enum Paging {
     Bit32,
     Pae,
     Level4 {
-        cr3: u64,
+        cr3: level4::Cr3,
     },
     Level5,
 }
@@ -33,6 +35,7 @@ impl Paging {
                         Self::Level5
                     } else {
                         let cr3: u64 = cr3.into();
+                        let cr3: level4::Cr3 = cr3.into();
                         Self::Level4 {
                             cr3,
                         }
