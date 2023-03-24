@@ -1,12 +1,15 @@
 // References
 // Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 3 System Programming Guide, Chapter 4 Paging, Section 5 4-Level Paging And 5-Level Paging
 
+use alloc::vec::Vec;
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Cr3<'a> {
     pwt: bool,
     pcd: bool,
     page_map_level_4_table: &'a [u64; 0x200],
+    page_map_level_4_entries: Vec<PageMapLevel4Entry>,
 }
 
 impl Cr3<'_> {
@@ -27,11 +30,36 @@ impl From<u64> for Cr3<'_> {
         let page_map_level_4_table: &[u64; 0x200] = unsafe {
             &*page_map_level_4_table
         };
+        let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
+            .iter()
+            .filter_map(|page_map_level_4_entry| PageMapLevel4Entry::read(*page_map_level_4_entry))
+            .collect();
         Self {
             pwt,
             pcd,
             page_map_level_4_table,
+            page_map_level_4_entries,
         }
 	}
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct PageMapLevel4Entry {
+}
+
+impl PageMapLevel4Entry {
+    const PRESENT_SHIFT: usize = 0;
+
+    const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
+
+    fn read(page_map_level_4_entry: u64) -> Option<Self> {
+        if page_map_level_4_entry & Self::PRESENT_MASK != 0 {
+            Some(Self {
+            })
+        } else {
+            None
+        }
+    }
 }
 
