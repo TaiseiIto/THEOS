@@ -3,7 +3,8 @@
 
 QEMU = qemu-system-x86_64
 ENABLE_5_LEVEL_PAGING = -cpu qemu64,+la57
-LOG = -d int,cpu_reset
+LOG_FILE = ../qemu.log
+LOG = -d int,cpu_reset -D $(LOG_FILE)
 NO_REBOOT = --no-reboot
 OVMF_CODE = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
 OVMF_CODE_OPTION = -drive file=$(OVMF_CODE),format=raw,if=pflash
