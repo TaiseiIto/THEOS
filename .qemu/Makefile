@@ -3,6 +3,8 @@
 
 QEMU = qemu-system-x86_64
 ENABLE_5_LEVEL_PAGING = -cpu qemu64,+la57
+LOG = -d int,cpu_reset
+NO_REBOOT = --no-reboot
 OVMF_CODE = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
 OVMF_CODE_OPTION = -drive file=$(OVMF_CODE),format=raw,if=pflash
 OVMF_VARS = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
@@ -15,7 +17,7 @@ VNC_OPTION = -vnc :0
 
 # Run THEOS on QEMU.
 run:
-	$(QEMU) $(ENABLE_5_LEVEL_PAGING) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(SERIAL_OPTION) $(VNC_OPTION) | tee $(SERIAL_LOG)
+	$(QEMU) $(ENABLE_5_LEVEL_PAGING) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) | tee $(SERIAL_LOG)
 
 # Stop THEOS on QEMU.
 stop:
