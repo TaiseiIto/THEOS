@@ -6,9 +6,15 @@ pub mod header;
 pub mod program;
 pub mod section;
 
-use alloc::{
-    collections::btree_set::BTreeSet,
-    vec::Vec,
+use {
+    alloc::{
+        collections::{
+            btree_map::BTreeMap,
+            btree_set::BTreeSet,
+        },
+        vec::Vec,
+    },
+    super::memory,
 };
 
 #[allow(dead_code)]
@@ -31,7 +37,15 @@ impl Elf {
         }
     }
 
-    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+    pub fn deploy(&self) -> BTreeMap<usize, memory::Pages> {
+        self
+            .necessary_page_numbers()
+            .into_iter()
+            .map(|page_number| (page_number, memory::Pages::new(1)))
+            .collect()
+    }
+
+    fn necessary_page_numbers(&self) -> BTreeSet<usize> {
         self.programs
             .iter()
             .map(|program| program.necessary_page_numbers())

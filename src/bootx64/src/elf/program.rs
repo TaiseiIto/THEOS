@@ -100,7 +100,7 @@ impl Header {
             .collect()
     }
 
-    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+    fn necessary_page_numbers(&self) -> BTreeSet<usize> {
         let begin_address: usize = self.p_vaddr;
         let begin_page: usize = begin_address / PAGE_SIZE;
         let end_address: usize = self.p_vaddr + self.p_memsz;
