@@ -6,9 +6,15 @@ pub mod p_flags;
 pub mod p_type;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_set::BTreeSet,
+        vec::Vec,
+    },
     core::mem,
-    super::header,
+    super::{
+        header,
+        super::uefi::services::boot::memory_allocation::PAGE_SIZE,
+    },
 };
 
 #[allow(dead_code)]
@@ -36,6 +42,10 @@ impl Program {
             .into_iter()
             .map(|header| Self::new(header, elf))
             .collect()
+    }
+
+    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+        self.header.necessary_page_numbers()
     }
 }
 
@@ -87,6 +97,16 @@ impl Header {
         elf[headers_begin..headers_end]
             .chunks(header_size)
             .map(|header| header.into())
+            .collect()
+    }
+
+    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+        let begin_address: usize = self.p_vaddr;
+        let begin_page: usize = begin_address / PAGE_SIZE;
+        let end_address: usize = self.p_vaddr + self.p_memsz;
+        let end_page: usize = (end_address + PAGE_SIZE - 1) / PAGE_SIZE;
+        (begin_page..end_page)
+            .into_iter()
             .collect()
     }
 }

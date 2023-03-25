@@ -104,7 +104,7 @@ pub struct MemoryDescriptor {
     attribute: u64,
 }
 
-const PAGE_SIZE: usize = 0x1000;
+pub const PAGE_SIZE: usize = 0x1000;
 
 impl MemoryDescriptor {
     pub fn physical_end(&self) -> PhysicalAddress {

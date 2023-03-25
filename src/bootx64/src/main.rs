@@ -79,6 +79,7 @@ fn use_boot_services() {
     let kernel_elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
     let kernel_elf = elf::Elf::new(&kernel_elf[..]);
     uefi_println!("kernel_elf = {:#x?}", kernel_elf);
+    uefi_println!("kernel_elf.necessary_page_numbers() = {:#x?}", kernel_elf.necessary_page_numbers());
     // Close kernel.elf and the root directory.
 }
 

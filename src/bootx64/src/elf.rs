@@ -6,7 +6,10 @@ pub mod header;
 pub mod program;
 pub mod section;
 
-use alloc::vec::Vec;
+use alloc::{
+    collections::btree_set::BTreeSet,
+    vec::Vec,
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -26,6 +29,17 @@ impl Elf {
             programs,
             sections,
         }
+    }
+
+    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+        self.programs
+            .iter()
+            .map(|program| program.necessary_page_numbers())
+            .fold(BTreeSet::<usize>::new(), |necessary_page_numbers, next_necessary_page_numbers| necessary_page_numbers
+                .union(&next_necessary_page_numbers)
+                .cloned()
+                .collect()
+            )
     }
 }
 
