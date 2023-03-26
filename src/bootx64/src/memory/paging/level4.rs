@@ -131,6 +131,7 @@ pub struct PageDirectoryPointerEntry<'a> {
     page_directory_table: Option<&'a [u64; ENTRIES]>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
     page_1_gib_physical_address: Option<u64>,
+    protection_key: Option<u8>,
     execute_disable: bool,
 }
 
@@ -149,6 +150,8 @@ impl PageDirectoryPointerEntry<'_> {
     const PAGE_DIRECTORY_TABLE_SHIFT_END: usize = 52;
     const PAGE_1_GIB_SHIFT_BEGIN: usize = 30;
     const PAGE_1_GIB_SHIFT_END: usize = 52;
+    const PROTECTION_KEY_SHIFT_BEGIN: usize = 59;
+    const PROTECTION_KEY_SHIFT_END: usize = 63;
     const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
@@ -163,6 +166,7 @@ impl PageDirectoryPointerEntry<'_> {
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
     const PAGE_1_GIB_MASK: u64 = (1 << Self::PAGE_1_GIB_SHIFT_END) - (1 << Self::PAGE_1_GIB_SHIFT_BEGIN);
+    const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_directory_pointer_entry: u64) -> Option<Self> {
@@ -203,6 +207,11 @@ impl PageDirectoryPointerEntry<'_> {
             } else {
                 None
             };
+            let protection_key: Option<u8> = if page_size_1_gib {
+                Some(((page_directory_pointer_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8)
+            } else {
+                None
+            };
             let execute_disable: bool = page_directory_pointer_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
@@ -217,6 +226,7 @@ impl PageDirectoryPointerEntry<'_> {
                 page_directory_table,
                 page_directory_entries,
                 page_1_gib_physical_address,
+                protection_key,
                 execute_disable,
             })
         } else {
