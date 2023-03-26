@@ -358,6 +358,7 @@ pub struct PageEntry<'a> {
     dirty: bool,
     page_attribute_table: bool,
     restart: bool,
+    physical_address: u64,
     protection_key: u8,
     execute_disable: bool,
 }
@@ -372,6 +373,8 @@ impl<'a> PageEntry<'a> {
     const DIRTY_SHIFT: usize = 6;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 7;
     const RESTART_SHIFT: usize = 11;
+    const PHYSICAL_ADDRESS_SHIFT_BEGIN: usize = 12;
+    const PHYSICAL_ADDRESS_SHIFT_END: usize = 52;
     const PROTECTION_KEY_SHIFT_BEGIN: usize = 59;
     const PROTECTION_KEY_SHIFT_END: usize = 63;
     const EXECUTE_DISABLE_SHIFT: usize = 63;
@@ -385,6 +388,7 @@ impl<'a> PageEntry<'a> {
     const DIRTY_MASK: u64 = 1 << Self::DIRTY_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
+    const PHYSICAL_ADDRESS_MASK: u64 = (1 << Self::PHYSICAL_ADDRESS_SHIFT_END) - (1 << Self::PHYSICAL_ADDRESS_SHIFT_BEGIN);
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
@@ -398,6 +402,7 @@ impl<'a> PageEntry<'a> {
             let dirty: bool = *page_entry & Self::DIRTY_MASK != 0;
             let page_attribute_table: bool = *page_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
             let restart: bool = *page_entry & Self::RESTART_MASK != 0;
+            let physical_address: u64 = *page_entry & Self::PHYSICAL_ADDRESS_MASK;
             let protection_key: u8 = ((*page_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8;
             let execute_disable: bool = *page_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
@@ -410,6 +415,7 @@ impl<'a> PageEntry<'a> {
                 dirty,
                 page_attribute_table,
                 restart,
+                physical_address,
                 protection_key,
                 execute_disable,
             })
