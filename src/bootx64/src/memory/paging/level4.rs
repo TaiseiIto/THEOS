@@ -127,7 +127,6 @@ pub struct PageDirectoryPointerEntry<'a> {
     page_size_1_gib: bool,
     restart: bool,
     page_attribute_table: Option<bool>,
-    page_directory_table: Option<&'a [u64; ENTRIES]>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
     page_1_gib_physical_address: Option<u64>,
     protection_key: Option<u8>,
@@ -184,21 +183,18 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 None
             };
             let page_directory_table: u64 = *page_directory_pointer_entry & Self::PAGE_DIRECTORY_TABLE_MASK;
-            let page_directory_table: *const [u64; ENTRIES] = page_directory_table as *const [u64; ENTRIES];
-            let page_directory_table: &[u64; ENTRIES] = unsafe {
-                &*page_directory_table
+            let page_directory_table: *mut [u64; ENTRIES] = page_directory_table as *mut [u64; ENTRIES];
+            let page_directory_table: &mut [u64; ENTRIES] = unsafe {
+                &mut *page_directory_table
             };
-            let (page_directory_table, page_directory_entries): (Option<&[u64; ENTRIES]>, Option<Vec<PageDirectoryEntry>>) = if page_size_1_gib {
-                (None, None)
+            let page_directory_entries: Option<Vec<PageDirectoryEntry>> = if page_size_1_gib {
+                None
             } else {
-                (
-                    Some(page_directory_table),
-                    Some(
-                        page_directory_table
-                            .iter()
-                            .filter_map(|page_directory_entry| PageDirectoryEntry::read(*page_directory_entry))
-                            .collect()
-                    ),
+                Some(
+                    page_directory_table
+                        .iter_mut()
+                        .filter_map(|page_directory_entry| PageDirectoryEntry::read(page_directory_entry))
+                        .collect()
                 )
             };
             let page_1_gib_physical_address: Option<u64> = if page_size_1_gib {
@@ -223,7 +219,6 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 page_size_1_gib,
                 restart,
                 page_attribute_table,
-                page_directory_table,
                 page_directory_entries,
                 page_1_gib_physical_address,
                 protection_key,
@@ -238,6 +233,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct PageDirectoryEntry<'a> {
+    page_directory_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
     page_write_through: bool,
@@ -254,7 +250,7 @@ pub struct PageDirectoryEntry<'a> {
     execute_disable: bool,
 }
 
-impl PageDirectoryEntry<'_> {
+impl<'a> PageDirectoryEntry<'a> {
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -288,22 +284,22 @@ impl PageDirectoryEntry<'_> {
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
-    fn read(page_directory_entry: u64) -> Option<Self> {
-        if page_directory_entry & Self::PRESENT_MASK != 0 {
-            let writable: bool = page_directory_entry & Self::WRITABLE_MASK != 0;
-            let user_mode_access: bool = page_directory_entry & Self::USER_MODE_ACCESS_MASK != 0;
-            let page_write_through: bool = page_directory_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
-            let page_cache_disable: bool = page_directory_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
-            let accessed: bool = page_directory_entry & Self::ACCESSED_MASK != 0;
-            let dirty: bool = page_directory_entry & Self::DIRTY_MASK != 0;
-            let page_size_2_mib: bool = page_directory_entry & Self::PAGE_SIZE_2_MIB_MASK != 0;
-            let restart: bool = page_directory_entry & Self::RESTART_MASK != 0;
+    fn read(page_directory_entry: &'a mut u64) -> Option<Self> {
+        if *page_directory_entry & Self::PRESENT_MASK != 0 {
+            let writable: bool = *page_directory_entry & Self::WRITABLE_MASK != 0;
+            let user_mode_access: bool = *page_directory_entry & Self::USER_MODE_ACCESS_MASK != 0;
+            let page_write_through: bool = *page_directory_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
+            let page_cache_disable: bool = *page_directory_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
+            let accessed: bool = *page_directory_entry & Self::ACCESSED_MASK != 0;
+            let dirty: bool = *page_directory_entry & Self::DIRTY_MASK != 0;
+            let page_size_2_mib: bool = *page_directory_entry & Self::PAGE_SIZE_2_MIB_MASK != 0;
+            let restart: bool = *page_directory_entry & Self::RESTART_MASK != 0;
             let page_attribute_table: Option<bool> = if page_size_2_mib {
-                Some(page_directory_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0)
+                Some(*page_directory_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0)
             } else {
                 None
             };
-            let page_table: u64 = page_directory_entry & Self::PAGE_DIRECTORY_TABLE_MASK;
+            let page_table: u64 = *page_directory_entry & Self::PAGE_DIRECTORY_TABLE_MASK;
             let page_table: *const [u64; ENTRIES] = page_table as *const [u64; ENTRIES];
             let page_table: &[u64; ENTRIES] = unsafe {
                 &*page_table
@@ -322,17 +318,18 @@ impl PageDirectoryEntry<'_> {
                 )
             };
             let page_2_mib_physical_address: Option<u64> = if page_size_2_mib {
-                Some(page_directory_entry & Self::PAGE_2_MIB_MASK)
+                Some(*page_directory_entry & Self::PAGE_2_MIB_MASK)
             } else {
                 None
             };
             let protection_key: Option<u8> = if page_size_2_mib {
-                Some(((page_directory_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8)
+                Some(((*page_directory_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8)
             } else {
                 None
             };
-            let execute_disable: bool = page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
+            let execute_disable: bool = *page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                page_directory_entry,
                 writable,
                 user_mode_access,
                 page_write_through,
