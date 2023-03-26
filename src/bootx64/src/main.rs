@@ -37,7 +37,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     serial::Serial::init_com1();
     serial_println!("Hello, World!");
     system::init_system(image_handle, system_table);
-    use_boot_services();
+    let _kernel = Kernel::new();
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
     serial_println!("Succeeded in exiting boot services.");
     loop {
@@ -45,40 +45,53 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     }
 }
 
-fn use_boot_services() {
-    uefi_println!("Hello, World!");
-    uefi_println!("image_handle = {:#x?}", system::image());
-    uefi_println!("system_table = {:#x?}", system::system());
-    let memory_map = memory_allocation::Map::new();
-    let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
-    let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
-    uefi_println!("memory_map = {:#x?}", memory_map);
-    uefi_println!("memory_size = {:#x}", memory_size);
-    let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
-    uefi_println!("cpuid = {:#x?}", cpuid);
-    let supports_5_level_paging: bool = match cpuid {
-        Some(ref cpuid) => cpuid.supports_5_level_paging(),
-        None => false,
-    };
-    uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
-    let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
-    uefi_println!("IA32_EFER = {:#x?}", ia32_efer);
-    let cr0 = control::register0::Cr0::get();
-    uefi_println!("CR0 = {:#x?}", cr0);
-    let cr2 = control::register2::Cr2::get();
-    uefi_println!("CR2 = {:#x?}", cr2);
-    let cr3 = control::register3::Cr3::get();
-    uefi_println!("CR3 = {:#x?}", cr3);
-    let cr4 = control::register4::Cr4::get();
-    uefi_println!("CR4 = {:#x?}", cr4);
-    let _paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
-    // Open the file system.
-    let simple_file_system = simple_file_system::SimpleFileSystem::new();
-    uefi_println!("simple_file_system = {:#x?}", simple_file_system);
-    let kernel_elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
-    let kernel_elf = elf::Elf::new(&kernel_elf[..]);
-    uefi_println!("kernel_elf = {:#x?}", kernel_elf);
-    // Close kernel.elf and the root directory.
+#[allow(dead_code)]
+struct Kernel<'a> {
+    elf: elf::Elf<'a>,
+    cpuid: Option<cpuid::Cpuid>,
+    paging: paging::State<'a>,
+}
+
+impl Kernel<'_> {
+    fn new() -> Self {
+        uefi_println!("Hello, World!");
+        uefi_println!("image_handle = {:#x?}", system::image());
+        uefi_println!("system_table = {:#x?}", system::system());
+        let memory_map = memory_allocation::Map::new();
+        let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
+        let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
+        uefi_println!("memory_map = {:#x?}", memory_map);
+        uefi_println!("memory_size = {:#x}", memory_size);
+        let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
+        uefi_println!("cpuid = {:#x?}", cpuid);
+        let supports_5_level_paging: bool = match cpuid {
+            Some(ref cpuid) => cpuid.supports_5_level_paging(),
+            None => false,
+        };
+        uefi_println!("supports_5_level_paging = {}", supports_5_level_paging);
+        let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
+        uefi_println!("IA32_EFER = {:#x?}", ia32_efer);
+        let cr0 = control::register0::Cr0::get();
+        uefi_println!("CR0 = {:#x?}", cr0);
+        let cr2 = control::register2::Cr2::get();
+        uefi_println!("CR2 = {:#x?}", cr2);
+        let cr3 = control::register3::Cr3::get();
+        uefi_println!("CR3 = {:#x?}", cr3);
+        let cr4 = control::register4::Cr4::get();
+        uefi_println!("CR4 = {:#x?}", cr4);
+        let paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
+        // Open the file system.
+        let simple_file_system = simple_file_system::SimpleFileSystem::new();
+        uefi_println!("simple_file_system = {:#x?}", simple_file_system);
+        let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
+        let elf = elf::Elf::new(&elf[..]);
+        uefi_println!("elf = {:#x?}", elf);
+        Self {
+            elf,
+            cpuid,
+            paging,
+        }
+    }
 }
 
 #[panic_handler]
