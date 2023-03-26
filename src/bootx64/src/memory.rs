@@ -37,6 +37,7 @@ impl Pages<'_> {
         let bytes: &mut [u8] = unsafe {
             slice::from_raw_parts_mut(virtual_address, length)
         };
+        bytes.iter_mut().for_each(|x| *x = 0x00);
         Self {
             bytes,
             pages,
