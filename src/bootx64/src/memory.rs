@@ -72,6 +72,10 @@ impl PageRange {
     pub fn end(&self) -> usize {
         self.0.end
     }
+
+    pub fn size(&self) -> usize {
+        self.end() - self.start()
+    }
 }
 
 impl PartialOrd for PageRange {

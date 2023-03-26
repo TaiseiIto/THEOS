@@ -8,7 +8,10 @@ pub mod section;
 
 use {
     alloc::{
-        collections::btree_set::BTreeSet,
+        collections::{
+            btree_map::BTreeMap,
+            btree_set::BTreeSet,
+        },
         vec::Vec,
     },
     super::memory,
@@ -34,7 +37,15 @@ impl Elf {
         }
     }
 
-    pub fn necessary_page_numbers(&self) -> BTreeSet<memory::PageRange> {
+    pub fn deploy(&self) -> BTreeMap<memory::PageRange, memory::Pages> {
+        self
+            .necessary_page_ranges()
+            .into_iter()
+            .map(|page_range| (page_range.clone(), memory::Pages::new(page_range.size())))
+            .collect()
+    }
+
+    pub fn necessary_page_ranges(&self) -> BTreeSet<memory::PageRange> {
         self.programs
             .iter()
             .map(|program| program.necessary_page_numbers())

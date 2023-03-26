@@ -13,7 +13,10 @@ mod serial;
 mod uefi;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     asm::{
         control,
         cpuid,
@@ -78,7 +81,8 @@ fn use_boot_services() {
     let kernel_elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
     let kernel_elf = elf::Elf::new(&kernel_elf[..]);
     uefi_println!("kernel_elf = {:#x?}", kernel_elf);
-    uefi_println!("kernel_elf.necessary_page_numbers = {:#x?}", kernel_elf.necessary_page_numbers());
+    let deployed_kernel_elf: BTreeMap<memory::PageRange, memory::Pages> = kernel_elf.deploy();
+    uefi_println!("deployed_kernel_elf = {:#x?}", deployed_kernel_elf);
     // Close kernel.elf and the root directory.
 }
 
