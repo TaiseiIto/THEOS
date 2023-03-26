@@ -50,7 +50,24 @@ impl Elf {
             .fold(
                 BTreeSet::<memory::PageRange>::new(),
                 |mut page_ranges, page_number| {
-                    page_ranges.insert(memory::PageRange::new(page_number..page_number + 1));
+                    let mut page_range_start: usize = page_number;
+                    let mut page_range_end: usize = page_number + 1;
+                    if let Some(page_range) = page_ranges
+                        .clone()
+                        .iter()
+                        .find(|page_range| page_range_end == page_range.start()) {
+                        page_range_end = page_range.end();
+                        page_ranges.remove(page_range);
+                    }
+                    if let Some(page_range) = page_ranges
+                        .clone()
+                        .iter()
+                        .find(|page_range| page_range.end() == page_range_start) {
+                        page_range_start = page_range.start();
+                        page_ranges.remove(page_range);
+                    }
+                    let page_range = memory::PageRange::new(page_range_start..page_range_end);
+                    page_ranges.insert(page_range);
                     page_ranges
                 }
             )

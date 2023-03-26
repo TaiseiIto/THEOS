@@ -1,7 +1,6 @@
 pub mod paging;
 
 use {
-    alloc::collections::btree_set::BTreeSet,
     core::{
         cmp::Ordering,
         ops::Range,
@@ -58,7 +57,7 @@ impl Drop for Pages<'_> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PageRange(Range<usize>);
 
 impl PageRange {

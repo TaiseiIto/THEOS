@@ -13,10 +13,7 @@ mod serial;
 mod uefi;
 
 use {
-    alloc::{
-        collections::btree_map::BTreeMap,
-        vec::Vec,
-    },
+    alloc::vec::Vec,
     asm::{
         control,
         cpuid,
