@@ -250,6 +250,7 @@ pub struct PageDirectoryEntry<'a> {
     page_table: Option<&'a [u64; ENTRIES]>,
     page_entries: Option<Vec<PageEntry>>,
     page_2_mib_physical_address: Option<u64>,
+    protection_key: Option<u8>,
     execute_disable: bool,
 }
 
@@ -268,6 +269,8 @@ impl PageDirectoryEntry<'_> {
     const PAGE_DIRECTORY_TABLE_SHIFT_END: usize = 52;
     const PAGE_2_MIB_SHIFT_BEGIN: usize = 21;
     const PAGE_2_MIB_SHIFT_END: usize = 52;
+    const PROTECTION_KEY_SHIFT_BEGIN: usize = 59;
+    const PROTECTION_KEY_SHIFT_END: usize = 63;
     const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
@@ -282,6 +285,7 @@ impl PageDirectoryEntry<'_> {
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
     const PAGE_2_MIB_MASK: u64 = (1 << Self::PAGE_2_MIB_SHIFT_END) - (1 << Self::PAGE_2_MIB_SHIFT_BEGIN);
+    const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_directory_entry: u64) -> Option<Self> {
@@ -322,6 +326,11 @@ impl PageDirectoryEntry<'_> {
             } else {
                 None
             };
+            let protection_key: Option<u8> = if page_size_2_mib {
+                Some(((page_directory_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8)
+            } else {
+                None
+            };
             let execute_disable: bool = page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
@@ -336,6 +345,7 @@ impl PageDirectoryEntry<'_> {
                 page_table,
                 page_entries,
                 page_2_mib_physical_address,
+                protection_key,
                 execute_disable,
             })
         } else {
@@ -355,6 +365,7 @@ pub struct PageEntry {
     dirty: bool,
     page_attribute_table: bool,
     restart: bool,
+    protection_key: u8,
     execute_disable: bool,
 }
 
@@ -368,6 +379,8 @@ impl PageEntry {
     const DIRTY_SHIFT: usize = 6;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 7;
     const RESTART_SHIFT: usize = 11;
+    const PROTECTION_KEY_SHIFT_BEGIN: usize = 59;
+    const PROTECTION_KEY_SHIFT_END: usize = 63;
     const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
@@ -379,6 +392,7 @@ impl PageEntry {
     const DIRTY_MASK: u64 = 1 << Self::DIRTY_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
+    const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_entry: u64) -> Option<Self> {
@@ -391,6 +405,7 @@ impl PageEntry {
             let dirty: bool = page_entry & Self::DIRTY_MASK != 0;
             let page_attribute_table: bool = page_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
             let restart: bool = page_entry & Self::RESTART_MASK != 0;
+            let protection_key: u8 = ((page_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8;
             let execute_disable: bool = page_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
@@ -401,6 +416,7 @@ impl PageEntry {
                 dirty,
                 page_attribute_table,
                 restart,
+                protection_key,
                 execute_disable,
             })
         } else {
