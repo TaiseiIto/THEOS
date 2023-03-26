@@ -54,9 +54,9 @@ pub struct PageMapLevel4Entry<'a> {
     page_cache_disable: bool,
     accessed: bool,
     restart: bool,
-    execute_disable: bool,
     page_directory_pointer_table: &'a [u64; ENTRIES],
     page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>>,
+    execute_disable: bool,
 }
 
 impl PageMapLevel4Entry<'_> {
@@ -67,9 +67,9 @@ impl PageMapLevel4Entry<'_> {
     const PAGE_CACHE_DISABLE_SHIFT: usize = 4;
     const ACCESSED_SHIFT: usize = 5;
     const RESTART_SHIFT: usize = 11;
-    const EXECUTE_DISABLE_SHIFT: usize = 63;
     const PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN: usize = 12;
     const PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END: usize = 52;
+    const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
     const WRITABLE_MASK: u64 = 1 << Self::WRITABLE_SHIFT;
@@ -78,8 +78,8 @@ impl PageMapLevel4Entry<'_> {
     const PAGE_CACHE_DISABLE_MASK: u64 = 1 << Self::PAGE_CACHE_DISABLE_SHIFT;
     const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
-    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
     const PAGE_DIRECTORY_POINTER_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN);
+    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_map_level_4_entry: u64) -> Option<Self> {
         if page_map_level_4_entry & Self::PRESENT_MASK != 0 {
@@ -89,7 +89,6 @@ impl PageMapLevel4Entry<'_> {
             let page_cache_disable: bool = page_map_level_4_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
             let accessed: bool = page_map_level_4_entry & Self::ACCESSED_MASK != 0;
             let restart: bool = page_map_level_4_entry & Self::RESTART_MASK != 0;
-            let execute_disable: bool = page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             let page_directory_pointer_table: u64 = page_map_level_4_entry & Self::PAGE_DIRECTORY_POINTER_TABLE_MASK;
             let page_directory_pointer_table: *const [u64; ENTRIES] = page_directory_pointer_table as *const [u64; ENTRIES];
             let page_directory_pointer_table: &[u64; ENTRIES] = unsafe {
@@ -99,6 +98,7 @@ impl PageMapLevel4Entry<'_> {
                 .iter()
                 .filter_map(|page_directory_pointer_entry| PageDirectoryPointerEntry::read(*page_directory_pointer_entry))
                 .collect();
+            let execute_disable: bool = page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
                 user_mode_access,
@@ -106,9 +106,9 @@ impl PageMapLevel4Entry<'_> {
                 page_cache_disable,
                 accessed,
                 restart,
-                execute_disable,
                 page_directory_pointer_table,
                 page_directory_pointer_entries,
+                execute_disable,
             })
         } else {
             None
@@ -128,10 +128,10 @@ pub struct PageDirectoryPointerEntry<'a> {
     page_size_1_gib: bool,
     restart: bool,
     page_attribute_table: Option<bool>,
-    execute_disable: bool,
     page_directory_table: Option<&'a [u64; ENTRIES]>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
     page_1_gib_physical_address: Option<u64>,
+    execute_disable: bool,
 }
 
 impl PageDirectoryPointerEntry<'_> {
@@ -145,11 +145,11 @@ impl PageDirectoryPointerEntry<'_> {
     const PAGE_SIZE_1_GIB_SHIFT: usize = 7;
     const RESTART_SHIFT: usize = 11;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 12;
-    const EXECUTE_DISABLE_SHIFT: usize = 63;
     const PAGE_DIRECTORY_TABLE_SHIFT_BEGIN: usize = 12;
     const PAGE_DIRECTORY_TABLE_SHIFT_END: usize = 52;
     const PAGE_1_GIB_SHIFT_BEGIN: usize = 30;
     const PAGE_1_GIB_SHIFT_END: usize = 52;
+    const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
     const WRITABLE_MASK: u64 = 1 << Self::WRITABLE_SHIFT;
@@ -161,9 +161,9 @@ impl PageDirectoryPointerEntry<'_> {
     const PAGE_SIZE_1_GIB_MASK: u64 = 1 << Self::PAGE_SIZE_1_GIB_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
-    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
     const PAGE_1_GIB_MASK: u64 = (1 << Self::PAGE_1_GIB_SHIFT_END) - (1 << Self::PAGE_1_GIB_SHIFT_BEGIN);
+    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_directory_pointer_entry: u64) -> Option<Self> {
         if page_directory_pointer_entry & Self::PRESENT_MASK != 0 {
@@ -180,7 +180,6 @@ impl PageDirectoryPointerEntry<'_> {
             } else {
                 None
             };
-            let execute_disable: bool = page_directory_pointer_entry & Self::EXECUTE_DISABLE_MASK != 0;
             let page_directory_table: u64 = page_directory_pointer_entry & Self::PAGE_DIRECTORY_TABLE_MASK;
             let page_directory_table: *const [u64; ENTRIES] = page_directory_table as *const [u64; ENTRIES];
             let page_directory_table: &[u64; ENTRIES] = unsafe {
@@ -204,6 +203,7 @@ impl PageDirectoryPointerEntry<'_> {
             } else {
                 None
             };
+            let execute_disable: bool = page_directory_pointer_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
                 user_mode_access,
@@ -214,10 +214,10 @@ impl PageDirectoryPointerEntry<'_> {
                 page_size_1_gib,
                 restart,
                 page_attribute_table,
-                execute_disable,
                 page_directory_table,
                 page_directory_entries,
                 page_1_gib_physical_address,
+                execute_disable,
             })
         } else {
             None
@@ -237,10 +237,10 @@ pub struct PageDirectoryEntry<'a> {
     page_size_2_mib: bool,
     restart: bool,
     page_attribute_table: Option<bool>,
-    execute_disable: bool,
     page_table: Option<&'a [u64; ENTRIES]>,
     page_entries: Option<Vec<PageEntry>>,
     page_2_mib_physical_address: Option<u64>,
+    execute_disable: bool,
 }
 
 impl PageDirectoryEntry<'_> {
@@ -254,11 +254,11 @@ impl PageDirectoryEntry<'_> {
     const PAGE_SIZE_2_MIB_SHIFT: usize = 7;
     const RESTART_SHIFT: usize = 11;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 12;
-    const EXECUTE_DISABLE_SHIFT: usize = 63;
     const PAGE_DIRECTORY_TABLE_SHIFT_BEGIN: usize = 12;
     const PAGE_DIRECTORY_TABLE_SHIFT_END: usize = 52;
     const PAGE_2_MIB_SHIFT_BEGIN: usize = 21;
     const PAGE_2_MIB_SHIFT_END: usize = 52;
+    const EXECUTE_DISABLE_SHIFT: usize = 63;
 
     const PRESENT_MASK: u64 = 1 << Self::PRESENT_SHIFT;
     const WRITABLE_MASK: u64 = 1 << Self::WRITABLE_SHIFT;
@@ -270,9 +270,9 @@ impl PageDirectoryEntry<'_> {
     const PAGE_SIZE_2_MIB_MASK: u64 = 1 << Self::PAGE_SIZE_2_MIB_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
-    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
     const PAGE_2_MIB_MASK: u64 = (1 << Self::PAGE_2_MIB_SHIFT_END) - (1 << Self::PAGE_2_MIB_SHIFT_BEGIN);
+    const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn read(page_directory_entry: u64) -> Option<Self> {
         if page_directory_entry & Self::PRESENT_MASK != 0 {
@@ -289,7 +289,6 @@ impl PageDirectoryEntry<'_> {
             } else {
                 None
             };
-            let execute_disable: bool = page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
             let page_table: u64 = page_directory_entry & Self::PAGE_DIRECTORY_TABLE_MASK;
             let page_table: *const [u64; ENTRIES] = page_table as *const [u64; ENTRIES];
             let page_table: &[u64; ENTRIES] = unsafe {
@@ -313,6 +312,7 @@ impl PageDirectoryEntry<'_> {
             } else {
                 None
             };
+            let execute_disable: bool = page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
                 writable,
                 user_mode_access,
@@ -323,10 +323,10 @@ impl PageDirectoryEntry<'_> {
                 page_size_2_mib,
                 restart,
                 page_attribute_table,
-                execute_disable,
                 page_table,
                 page_entries,
                 page_2_mib_physical_address,
+                execute_disable,
             })
         } else {
             None
