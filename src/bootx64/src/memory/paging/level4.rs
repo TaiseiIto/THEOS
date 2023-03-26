@@ -45,7 +45,7 @@ impl From<u64> for Cr3<'_> {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PageMapLevel4Entry<'a> {
+struct PageMapLevel4Entry<'a> {
     page_map_level_4_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -116,7 +116,7 @@ impl<'a> PageMapLevel4Entry<'a> {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PageDirectoryPointerEntry<'a> {
+struct PageDirectoryPointerEntry<'a> {
     page_directory_pointer_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -232,7 +232,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PageDirectoryEntry<'a> {
+struct PageDirectoryEntry<'a> {
     page_directory_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -348,7 +348,7 @@ impl<'a> PageDirectoryEntry<'a> {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PageEntry<'a> {
+struct PageEntry<'a> {
     page_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -422,6 +422,12 @@ impl<'a> PageEntry<'a> {
         } else {
             None
         }
+    }
+
+    fn set_physical_address(&mut self, physical_address: u64) {
+        *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
+        *self.page_entry |= physical_address & Self::PHYSICAL_ADDRESS_MASK;
+        self.physical_address = physical_address;
     }
 }
 
