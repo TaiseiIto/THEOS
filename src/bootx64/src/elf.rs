@@ -19,45 +19,19 @@ use {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct Elf {
+pub struct Elf<'a> {
     header: header::Header,
     programs: Vec<program::Program>,
     sections: Vec<section::Section>,
+    deployed: BTreeMap<memory::PageRange, memory::Pages<'a>>,
 }
 
-impl Elf {
+impl Elf<'_> {
     pub fn new(elf: &[u8]) -> Self {
         let header: header::Header = elf.into();
         let programs = program::Program::read(&header, elf);
         let sections = section::Section::read(&header, elf);
-        Self {
-            header,
-            programs,
-            sections,
-        }
-    }
-
-    pub fn deploy(&self) -> BTreeMap<memory::PageRange, memory::Pages> {
-        self
-            .necessary_page_ranges()
-            .into_iter()
-            .map(|page_range| {
-                let mut pages = memory::Pages::new(page_range.size());
-                let page_range: memory::PageRange = page_range.clone();
-                for program in self.programs.iter() {
-                    let start_page: usize = program.start_page();
-                    let start_offset: usize = program.start_offset();
-                    if page_range.contains(start_page) {
-                        pages.write(start_page - page_range.start(), start_offset, program.bytes());
-                    }
-                }
-                (page_range, pages)
-            })
-            .collect()
-    }
-
-    pub fn necessary_page_ranges(&self) -> BTreeSet<memory::PageRange> {
-        self.programs
+        let deployed: BTreeMap<memory::PageRange, memory::Pages> = programs
             .iter()
             .map(|program| program.necessary_page_numbers())
             .fold(
@@ -93,6 +67,26 @@ impl Elf {
                     page_ranges
                 }
             )
+            .into_iter()
+            .map(|page_range| {
+                let mut pages = memory::Pages::new(page_range.size());
+                let page_range: memory::PageRange = page_range.clone();
+                for program in programs.iter() {
+                    let start_page: usize = program.start_page();
+                    let start_offset: usize = program.start_offset();
+                    if page_range.contains(start_page) {
+                        pages.write(start_page - page_range.start(), start_offset, program.bytes());
+                    }
+                }
+                (page_range, pages)
+            })
+            .collect();
+        Self {
+            header,
+            programs,
+            sections,
+            deployed,
+        }
     }
 }
 
