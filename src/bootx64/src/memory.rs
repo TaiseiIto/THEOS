@@ -1,7 +1,12 @@
 pub mod paging;
 
 use {
-    core::slice,
+    alloc::collections::btree_set::BTreeSet,
+    core::{
+        cmp::Ordering,
+        ops::Range,
+        slice,
+    },
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -50,6 +55,38 @@ impl Drop for Pages<'_> {
                 self.pages,
             )
             .expect("Can't free pages!");
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct PageRange(Range<usize>);
+
+impl PageRange {
+    pub fn new(range: Range<usize>) -> Self {
+        Self(range)
+    }
+
+    pub fn start(&self) -> usize {
+        self.0.start
+    }
+
+    pub fn end(&self) -> usize {
+        self.0.end
+    }
+}
+
+impl PartialOrd for PageRange {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for PageRange {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.0.start.cmp(&other.0.start) {
+            Ordering::Equal => self.0.end.cmp(&other.0.end),
+            ordering => ordering,
+        }
     }
 }
 

@@ -8,9 +8,7 @@ pub mod section;
 
 use {
     alloc::{
-        collections::{
-            btree_set::BTreeSet,
-        },
+        collections::btree_set::BTreeSet,
         vec::Vec,
     },
     super::memory,
@@ -36,14 +34,25 @@ impl Elf {
         }
     }
 
-    pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
+    pub fn necessary_page_numbers(&self) -> BTreeSet<memory::PageRange> {
         self.programs
             .iter()
             .map(|program| program.necessary_page_numbers())
-            .fold(BTreeSet::<usize>::new(), |necessary_page_numbers, next_necessary_page_numbers| necessary_page_numbers
-                .union(&next_necessary_page_numbers)
-                .cloned()
-                .collect()
+            .fold(
+                BTreeSet::<usize>::new(),
+                |page_numbers, next_page_numbers|
+                    page_numbers
+                        .union(&next_page_numbers)
+                        .cloned()
+                        .collect()
+            )
+            .into_iter()
+            .fold(
+                BTreeSet::<memory::PageRange>::new(),
+                |mut page_ranges, page_number| {
+                    page_ranges.insert(memory::PageRange::new(page_number..page_number + 1));
+                    page_ranges
+                }
             )
     }
 }
