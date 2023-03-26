@@ -14,7 +14,7 @@ use {
 
 #[derive(Debug)]
 pub struct Pages<'a> {
-    bytes: &'a [u8],
+    bytes: &'a mut [u8],
     pages: usize,
     physical_address: memory_allocation::PhysicalAddress,
 }
@@ -32,16 +32,22 @@ impl Pages<'_> {
             )
             .expect("Can't allocate pages!");
         // Assume identity mapping.
-        let virtual_address: *const u8 = physical_address as *const u8;
+        let virtual_address: *mut u8 = physical_address as *mut u8;
         let length: usize = pages * memory_allocation::PAGE_SIZE;
-        let bytes: &[u8] = unsafe {
-            slice::from_raw_parts(virtual_address, length)
+        let bytes: &mut [u8] = unsafe {
+            slice::from_raw_parts_mut(virtual_address, length)
         };
         Self {
             bytes,
             pages,
             physical_address,
         }
+    }
+
+    pub fn write(&mut self, page: usize, offset: usize, bytes: &[u8]) {
+        let start: usize = page * memory_allocation::PAGE_SIZE + offset;
+        let end: usize = start + bytes.len();
+        self.bytes[start..end].copy_from_slice(bytes);
     }
 }
 
@@ -63,6 +69,10 @@ pub struct PageRange(Range<usize>);
 impl PageRange {
     pub fn new(range: Range<usize>) -> Self {
         Self(range)
+    }
+
+    pub fn contains(&self, page: usize) -> bool {
+        self.0.contains(&page)
     }
 
     pub fn start(&self) -> usize {

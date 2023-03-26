@@ -44,8 +44,20 @@ impl Program {
             .collect()
     }
 
+    pub fn bytes(&self) -> &Vec<u8> {
+        &self.bytes
+    }
+
     pub fn necessary_page_numbers(&self) -> BTreeSet<usize> {
         self.header.necessary_page_numbers()
+    }
+
+    pub fn start_page(&self) -> usize {
+        self.header.start_page()
+    }
+
+    pub fn start_offset(&self) -> usize {
+        self.header.start_offset()
     }
 }
 
@@ -88,7 +100,7 @@ const P_ALIGN_LENGTH: usize = mem::size_of::<usize>();
 const P_ALIGN_END: usize = P_ALIGN_BEGIN + P_ALIGN_LENGTH;
 
 impl Header {
-    pub fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
+    fn read(header: &header::Header, elf: &[u8]) -> Vec<Self> {
         let header_size: usize = header.e_phentsize();
         let header_number: usize = header.e_phnum();
         let headers_begin: usize = header.e_phoff();
@@ -108,6 +120,14 @@ impl Header {
         (begin_page..end_page)
             .into_iter()
             .collect()
+    }
+
+    fn start_page(&self) -> usize {
+        self.p_vaddr / PAGE_SIZE
+    }
+
+    fn start_offset(&self) -> usize {
+        self.p_offset
     }
 }
 
