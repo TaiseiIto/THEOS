@@ -310,7 +310,16 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         } else {
             0
         };
-        *self.page_directory_pointer_entry = present | writable | user_mode_access | page_write_through | page_cache_disable | accessed | restart | page_directory_table | execute_disable;
+        *self.page_directory_pointer_entry =
+            present
+            | writable
+            | user_mode_access
+            | page_write_through
+            | page_cache_disable
+            | accessed
+            | restart
+            | page_directory_table
+            | execute_disable;
     }
 }
 
@@ -388,15 +397,89 @@ impl<'a> PageDirectoryEntry<'a> {
         protection_key: u8,
         execute_disable: bool,
     ) -> Self {
+        let present_bit: u64 = Self::PRESENT_MASK;
+        let writable_bit: u64 = if writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access_bit: u64 = if user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_bit: u64 = if page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_bit: u64 = if page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
         let accessed: bool = false;
+        let accessed_bit: u64 = if accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
         let dirty: bool = false;
+        let dirty_bit: u64 = if dirty {
+            Self::DIRTY_MASK
+        } else {
+            0
+        };
         let page_size_2_mib: bool = true;
+        let page_size_2_mib_bit: u64 = if page_size_2_mib {
+            Self::PAGE_2_MIB_MASK
+        } else {
+            0
+        };
         let global: Option<bool> = Some(global);
+        let global_bit: u64 = match global {
+            Some(true) => Self::GLOBAL_MASK,
+            _ => 0,
+        };
+        let restart_bit: u64 = if restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
         let page_attribute_table: Option<bool> = Some(page_attribute_table);
+        let page_attribute_table_bit: u64 = match page_attribute_table {
+            Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
+            _ => 0,
+        };
         let page_table_page: Option<Pages> = None;
         let page_entries: Option<Vec<PageEntry>> = None;
         let page_2_mib_physical_address: Option<usize> = Some(physical_address);
+        let page_2_mib_physical_address_bits: u64 = physical_address as u64 & Self::PAGE_2_MIB_MASK;
         let protection_key: Option<u8> = Some(protection_key);
+        let protection_key_bits: u64 = match protection_key {
+            Some(protection_key) => (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN,
+            None => 0,
+        };
+        let execute_disable_bit: u64 = if execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *page_directory_entry =
+            present_bit
+            | writable_bit
+            | user_mode_access_bit
+            | page_write_through_bit
+            | page_cache_disable_bit
+            | accessed_bit
+            | dirty_bit
+            | page_size_2_mib_bit
+            | global_bit
+            | restart_bit
+            | page_attribute_table_bit
+            | page_2_mib_physical_address_bits
+            | protection_key_bits
+            | execute_disable_bit;
         Self {
             virtual_address,
             page_directory_entry,
@@ -568,7 +651,16 @@ impl<'a> PageDirectoryEntry<'a> {
         } else {
             0
         };
-        *self.page_directory_entry = present | writable | user_mode_access | page_write_through | page_cache_disable | accessed | restart | page_table | execute_disable;
+        *self.page_directory_entry =
+            present
+            | writable
+            | user_mode_access
+            | page_write_through
+            | page_cache_disable
+            | accessed
+            | restart
+            | page_table
+            | execute_disable;
     }
 }
 
@@ -636,50 +728,51 @@ impl<'a> PageEntry<'a> {
         protection_key: u8,
         execute_disable: bool,
     ) -> Self {
+        let present_bit: u64 = Self::PRESENT_MASK;
         let writable_bit: u64 = if writable {
-            1 << Self::WRITABLE_SHIFT
+            Self::WRITABLE_MASK
         } else {
             0
         };
         let user_mode_access_bit: u64 = if user_mode_access {
-            1 << Self::USER_MODE_ACCESS_SHIFT
+            Self::USER_MODE_ACCESS_MASK
         } else {
             0
         };
         let page_write_through_bit: u64 = if page_write_through {
-            1 << Self::PAGE_WRITE_THROUGH_SHIFT
+            Self::PAGE_WRITE_THROUGH_MASK
         } else {
             0
         };
         let page_cache_disable_bit: u64 = if page_cache_disable {
-            1 << Self::PAGE_CACHE_DISABLE_SHIFT
+            Self::PAGE_CACHE_DISABLE_MASK
         } else {
             0
         };
         let accessed: bool = false;
         let accessed_bit: u64 = if accessed {
-            1 << Self::ACCESSED_SHIFT
+            Self::ACCESSED_MASK
         } else {
             0
         };
         let dirty: bool = false;
         let dirty_bit: u64 = if dirty {
-            1 << Self::DIRTY_SHIFT
+            Self::DIRTY_MASK
         } else {
             0
         };
         let page_attribute_table_bit: u64 = if page_attribute_table {
-            1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
         } else {
             0
         };
         let global_bit: u64 = if global {
-            1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
         } else {
             0
         };
         let restart_bit: u64 = if restart {
-            1 << Self::RESTART_SHIFT
+            Self::RESTART_MASK
         } else {
             0
         };
@@ -687,11 +780,24 @@ impl<'a> PageEntry<'a> {
         let physical_address: usize = physical_address as usize;
         let protection_key_bits: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
         let execute_disable_bit: u64 = if execute_disable {
-            1 << Self::EXECUTE_DISABLE_SHIFT
+            Self::EXECUTE_DISABLE_MASK
         } else {
             0
         };
-        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | global_bit | restart_bit | physical_address_bits | protection_key_bits | execute_disable_bit;
+        *page_entry =
+            present_bit
+            | writable_bit
+            | user_mode_access_bit
+            | page_write_through_bit
+            | page_cache_disable_bit
+            | accessed_bit
+            | dirty_bit
+            | page_attribute_table_bit
+            | global_bit
+            | restart_bit
+            | physical_address_bits
+            | protection_key_bits
+            | execute_disable_bit;
         Self {
             virtual_address,
             page_entry,
