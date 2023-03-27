@@ -138,7 +138,7 @@ struct PageDirectoryPointerEntry<'a> {
     restart: bool,
     page_attribute_table: Option<bool>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
-    page_1_gib_physical_address: Option<u64>,
+    page_1_gib_physical_address: Option<usize>,
     protection_key: Option<u8>,
     execute_disable: bool,
 }
@@ -215,8 +215,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                         .collect()
                 )
             };
-            let page_1_gib_physical_address: Option<u64> = if page_size_1_gib {
-                Some(*page_directory_pointer_entry & Self::PAGE_1_GIB_MASK)
+            let page_1_gib_physical_address: Option<usize> = if page_size_1_gib {
+                Some((*page_directory_pointer_entry & Self::PAGE_1_GIB_MASK) as usize)
             } else {
                 None
             };
@@ -267,7 +267,7 @@ struct PageDirectoryEntry<'a> {
     page_attribute_table: Option<bool>,
     page_table_page: Option<Pages<'a>>,
     page_entries: Option<Vec<PageEntry<'a>>>,
-    page_2_mib_physical_address: Option<u64>,
+    page_2_mib_physical_address: Option<usize>,
     protection_key: Option<u8>,
     execute_disable: bool,
 }
@@ -345,8 +345,8 @@ impl<'a> PageDirectoryEntry<'a> {
                         .collect()
                 )
             };
-            let page_2_mib_physical_address: Option<u64> = if page_size_2_mib {
-                Some(*page_directory_entry & Self::PAGE_2_MIB_MASK)
+            let page_2_mib_physical_address: Option<usize> = if page_size_2_mib {
+                Some((*page_directory_entry& Self::PAGE_2_MIB_MASK) as usize)
             } else {
                 None
             };
@@ -380,11 +380,11 @@ impl<'a> PageDirectoryEntry<'a> {
         }
     }
 
-    fn devide(&mut self) {
+    fn divide(&mut self) {
         self.page_table_page = Some(Pages::new(1));
         let page_table_page: &mut [u8] = self.page_table_page
             .as_mut()
-            .expect("Can't devide a page!")
+            .expect("Can't divide a page!")
             .bytes();
         let page_table_page_len: usize = page_table_page.len();
         let page_table_page: *mut u8 = page_table_page.as_mut_ptr();
@@ -404,11 +404,11 @@ impl<'a> PageDirectoryEntry<'a> {
                     self.user_mode_access,
                     self.page_write_through,
                     self.page_cache_disable,
-                    self.page_attribute_table.expect("Can't devide a page!"),
-                    self.global.expect("Can't devide a page!"),
+                    self.page_attribute_table.expect("Can't divide a page!"),
+                    self.global.expect("Can't divide a page!"),
                     self.restart,
-                    self.page_2_mib_physical_address.expect("Can't devide a page!") + (i << 12) as u64,
-                    self.protection_key.expect("Can't devide a page!"),
+                    self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << 12),
+                    self.protection_key.expect("Can't divide a page!"),
                     self.execute_disable,
                 ))
                 .collect()
@@ -430,7 +430,7 @@ struct PageEntry<'a> {
     page_attribute_table: bool,
     global: bool,
     restart: bool,
-    physical_address: u64,
+    physical_address: usize,
     protection_key: u8,
     execute_disable: bool,
 }
@@ -476,7 +476,7 @@ impl<'a> PageEntry<'a> {
         page_attribute_table: bool,
         global: bool,
         restart: bool,
-        physical_address: u64,
+        physical_address: usize,
         protection_key: u8,
         execute_disable: bool,
     ) -> Self {
@@ -527,14 +527,15 @@ impl<'a> PageEntry<'a> {
         } else {
             0
         };
-        let physical_address: u64 = physical_address & Self::PHYSICAL_ADDRESS_MASK;
+        let physical_address_bits: u64 = physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
+        let physical_address: usize = physical_address as usize;
         let protection_key_bits: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
         let execute_disable_bit: u64 = if execute_disable {
             1 << Self::EXECUTE_DISABLE_SHIFT
         } else {
             0
         };
-        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | global_bit | restart_bit | physical_address | protection_key_bits | execute_disable_bit;
+        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | global_bit | restart_bit | physical_address_bits | protection_key_bits | execute_disable_bit;
         Self {
             virtual_address,
             page_entry,
@@ -564,7 +565,7 @@ impl<'a> PageEntry<'a> {
             let page_attribute_table: bool = *page_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
             let global: bool = *page_entry & Self::GLOBAL_MASK != 0;
             let restart: bool = *page_entry & Self::RESTART_MASK != 0;
-            let physical_address: u64 = *page_entry & Self::PHYSICAL_ADDRESS_MASK;
+            let physical_address: usize = (*page_entry & Self::PHYSICAL_ADDRESS_MASK) as usize;
             let protection_key: u8 = ((*page_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8;
             let execute_disable: bool = *page_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
@@ -588,9 +589,9 @@ impl<'a> PageEntry<'a> {
         }
     }
 
-    fn set_physical_address(&mut self, physical_address: u64) {
+    fn set_physical_address(&mut self, physical_address: usize) {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
-        *self.page_entry |= physical_address & Self::PHYSICAL_ADDRESS_MASK;
+        *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
     }
 }
