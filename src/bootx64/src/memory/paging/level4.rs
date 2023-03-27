@@ -125,6 +125,7 @@ struct PageDirectoryPointerEntry<'a> {
     accessed: bool,
     dirty: bool,
     page_size_1_gib: bool,
+    global: Option<bool>,
     restart: bool,
     page_attribute_table: Option<bool>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
@@ -142,6 +143,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const ACCESSED_SHIFT: usize = 5;
     const DIRTY_SHIFT: usize = 6;
     const PAGE_SIZE_1_GIB_SHIFT: usize = 7;
+    const GLOBAL_SHIFT: usize = 8;
     const RESTART_SHIFT: usize = 11;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 12;
     const PAGE_DIRECTORY_TABLE_SHIFT_BEGIN: usize = 12;
@@ -160,6 +162,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
     const DIRTY_MASK: u64 = 1 << Self::DIRTY_SHIFT;
     const PAGE_SIZE_1_GIB_MASK: u64 = 1 << Self::PAGE_SIZE_1_GIB_SHIFT;
+    const GLOBAL_MASK: u64 = 1 << Self::GLOBAL_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
@@ -176,6 +179,11 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             let accessed: bool = *page_directory_pointer_entry & Self::ACCESSED_MASK != 0;
             let dirty: bool = *page_directory_pointer_entry & Self::DIRTY_MASK != 0;
             let page_size_1_gib: bool = *page_directory_pointer_entry & Self::PAGE_SIZE_1_GIB_MASK != 0;
+            let global: Option<bool> = if page_size_1_gib {
+                Some(*page_directory_pointer_entry & Self::GLOBAL_MASK != 0)
+            } else {
+                None
+            };
             let restart: bool = *page_directory_pointer_entry & Self::RESTART_MASK != 0;
             let page_attribute_table: Option<bool> = if page_size_1_gib {
                 Some(*page_directory_pointer_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0)
@@ -217,6 +225,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 accessed,
                 dirty,
                 page_size_1_gib,
+                global,
                 restart,
                 page_attribute_table,
                 page_directory_entries,
@@ -241,6 +250,7 @@ struct PageDirectoryEntry<'a> {
     accessed: bool,
     dirty: bool,
     page_size_2_mib: bool,
+    global: Option<bool>,
     restart: bool,
     page_attribute_table: Option<bool>,
     page_entries: Option<Vec<PageEntry<'a>>>,
@@ -258,6 +268,7 @@ impl<'a> PageDirectoryEntry<'a> {
     const ACCESSED_SHIFT: usize = 5;
     const DIRTY_SHIFT: usize = 6;
     const PAGE_SIZE_2_MIB_SHIFT: usize = 7;
+    const GLOBAL_SHIFT: usize = 8;
     const RESTART_SHIFT: usize = 11;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 12;
     const PAGE_DIRECTORY_TABLE_SHIFT_BEGIN: usize = 12;
@@ -276,6 +287,7 @@ impl<'a> PageDirectoryEntry<'a> {
     const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
     const DIRTY_MASK: u64 = 1 << Self::DIRTY_SHIFT;
     const PAGE_SIZE_2_MIB_MASK: u64 = 1 << Self::PAGE_SIZE_2_MIB_SHIFT;
+    const GLOBAL_MASK: u64 = 1 << Self::GLOBAL_SHIFT;
     const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
     const PAGE_DIRECTORY_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_TABLE_SHIFT_BEGIN);
@@ -292,6 +304,11 @@ impl<'a> PageDirectoryEntry<'a> {
             let accessed: bool = *page_directory_entry & Self::ACCESSED_MASK != 0;
             let dirty: bool = *page_directory_entry & Self::DIRTY_MASK != 0;
             let page_size_2_mib: bool = *page_directory_entry & Self::PAGE_SIZE_2_MIB_MASK != 0;
+            let global: Option<bool> = if page_size_2_mib {
+                Some(*page_directory_entry & Self::GLOBAL_MASK != 0)
+            } else {
+                None
+            };
             let restart: bool = *page_directory_entry & Self::RESTART_MASK != 0;
             let page_attribute_table: Option<bool> = if page_size_2_mib {
                 Some(*page_directory_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0)
@@ -333,6 +350,7 @@ impl<'a> PageDirectoryEntry<'a> {
                 accessed,
                 dirty,
                 page_size_2_mib,
+                global,
                 restart,
                 page_attribute_table,
                 page_entries,
