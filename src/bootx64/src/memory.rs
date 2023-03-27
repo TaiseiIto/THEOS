@@ -49,6 +49,10 @@ impl Pages<'_> {
         self.bytes
     }
 
+    pub fn physical_address(&self) -> memory_allocation::PhysicalAddress {
+        self.physical_address
+    }
+
     pub fn write(&mut self, page: usize, offset: usize, bytes: &[u8]) {
         let start: usize = page * memory_allocation::PAGE_SIZE + offset;
         let end: usize = start + bytes.len();

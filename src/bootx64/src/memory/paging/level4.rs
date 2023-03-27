@@ -383,6 +383,7 @@ impl<'a> PageDirectoryEntry<'a> {
     }
 
     fn divide(&mut self) {
+        self.page_size_2_mib = false;
         self.global = None;
         self.page_attribute_table = None;
         self.page_table_page = Some(Pages::new(1));
@@ -419,6 +420,18 @@ impl<'a> PageDirectoryEntry<'a> {
         );
         self.page_2_mib_physical_address = None;
         self.protection_key = None;
+        let present: u64 = 1 << Self::PRESENT_SHIFT;
+        let writable: u64 = (self.writable as u64) << Self::WRITABLE_SHIFT;
+        let user_mode_access: u64 = (self.user_mode_access as u64) << Self::USER_MODE_ACCESS_SHIFT;
+        let page_write_through: u64 = (self.page_write_through as u64) << Self::PAGE_WRITE_THROUGH_SHIFT;
+        let page_cache_disable: u64 = (self.page_cache_disable as u64) << Self::PAGE_CACHE_DISABLE_SHIFT;
+        let accessed: u64 = (self.accessed as u64) << Self::ACCESSED_SHIFT;
+        let restart: u64 = (self.restart as u64) << Self::RESTART_SHIFT;
+        let page_table: u64 = self.page_table_page
+            .as_ref()
+            .expect("Can't divide a page!")
+            .physical_address();
+        let execute_disable: u64 = (self.execute_disable as u64) << Self::EXECUTE_DISABLE_SHIFT;
     }
 }
 
