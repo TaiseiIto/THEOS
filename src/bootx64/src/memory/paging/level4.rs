@@ -374,6 +374,50 @@ impl<'a> PageDirectoryEntry<'a> {
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
+    fn new(
+        virtual_address: usize,
+        page_directory_entry: &'a mut u64,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        global: bool,
+        restart: bool,
+        page_attribute_table: bool,
+        physical_address: usize,
+        protection_key: u8,
+        execute_disable: bool,
+    ) -> Self {
+        let accessed: bool = false;
+        let dirty: bool = false;
+        let page_size_2_mib: bool = true;
+        let global: Option<bool> = Some(global);
+        let page_attribute_table: Option<bool> = Some(page_attribute_table);
+        let page_table_page: Option<Pages> = None;
+        let page_entries: Option<Vec<PageEntry>> = None;
+        let page_2_mib_physical_address: Option<usize> = Some(physical_address);
+        let protection_key: Option<u8> = Some(protection_key);
+        Self {
+            virtual_address,
+            page_directory_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            dirty,
+            page_size_2_mib,
+            global,
+            restart,
+            page_attribute_table,
+            page_table_page,
+            page_entries,
+            page_2_mib_physical_address,
+            protection_key,
+            execute_disable,
+        }
+    }
+
     fn read(virtual_address: usize, page_directory_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_directory_entry & Self::WRITABLE_MASK != 0;
