@@ -137,6 +137,7 @@ struct PageDirectoryPointerEntry<'a> {
     global: Option<bool>,
     restart: bool,
     page_attribute_table: Option<bool>,
+    page_directory_table_page: Option<Pages<'a>>,
     page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>>,
     page_1_gib_physical_address: Option<usize>,
     protection_key: Option<u8>,
@@ -204,6 +205,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             let page_directory_table: &mut [u64; ENTRIES] = unsafe {
                 &mut *page_directory_table
             };
+            let page_directory_table_page: Option<Pages> = None;
             let page_directory_entries: Option<Vec<PageDirectoryEntry>> = if page_size_1_gib {
                 None
             } else {
@@ -239,6 +241,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 global,
                 restart,
                 page_attribute_table,
+                page_directory_table_page,
                 page_directory_entries,
                 page_1_gib_physical_address,
                 protection_key,
@@ -247,6 +250,67 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         } else {
             None
         }
+    }
+
+    fn divide(&mut self) {
+        self.page_size_1_gib = false;
+        self.global = None;
+        self.page_attribute_table = None;
+        self.page_directory_table_page = Some(Pages::new(1));
+        let page_directory_table_page: &mut [u8] = self.page_directory_table_page
+            .as_mut()
+            .expect("Can't divide a page!")
+            .bytes();
+        let page_directory_table_page_len: usize = page_directory_table_page.len();
+        let page_directory_table_page: *mut u8 = page_directory_table_page.as_mut_ptr();
+        let page_directory_table_page: *mut u64 = page_directory_table_page as *mut u64;
+        let page_directory_table_page_len: usize = page_directory_table_page_len / 8;
+        let page_table_page: &mut [u64] = unsafe {
+            slice::from_raw_parts_mut(page_directory_table_page, page_directory_table_page_len)
+        };
+        self.page_1_gib_physical_address = None;
+        self.protection_key = None;
+        let present: u64 = Self::PRESENT_MASK;
+        let writable: u64 = if self.writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access: u64 = if self.user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through: u64 = if self.page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable: u64 = if self.page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed: u64 = if self.accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let restart: u64 = if self.restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let page_directory_table: u64 = self.page_directory_table_page
+            .as_ref()
+            .expect("Can't divide a page!")
+            .physical_address();
+        let execute_disable: u64 = if self.execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *self.page_directory_pointer_entry = present | writable | user_mode_access | page_write_through | page_cache_disable | accessed | restart | page_directory_table | execute_disable;
     }
 }
 
