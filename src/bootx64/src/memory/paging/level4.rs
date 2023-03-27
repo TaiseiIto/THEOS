@@ -357,6 +357,7 @@ struct PageEntry<'a> {
     accessed: bool,
     dirty: bool,
     page_attribute_table: bool,
+    global: bool,
     restart: bool,
     physical_address: u64,
     protection_key: u8,
@@ -372,6 +373,7 @@ impl<'a> PageEntry<'a> {
     const ACCESSED_SHIFT: usize = 5;
     const DIRTY_SHIFT: usize = 6;
     const PAGE_ATTRIBUTE_TABLE_SHIFT: usize = 7;
+    const GLOBAL_SHIFT: usize = 8;
     const RESTART_SHIFT: usize = 11;
     const PHYSICAL_ADDRESS_SHIFT_BEGIN: usize = 12;
     const PHYSICAL_ADDRESS_SHIFT_END: usize = 52;
@@ -386,8 +388,9 @@ impl<'a> PageEntry<'a> {
     const PAGE_CACHE_DISABLE_MASK: u64 = 1 << Self::PAGE_CACHE_DISABLE_SHIFT;
     const ACCESSED_MASK: u64 = 1 << Self::ACCESSED_SHIFT;
     const DIRTY_MASK: u64 = 1 << Self::DIRTY_SHIFT;
-    const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PAGE_ATTRIBUTE_TABLE_MASK: u64 = 1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT;
+    const GLOBAL_MASK: u64 = 1 << Self::GLOBAL_SHIFT;
+    const RESTART_MASK: u64 = 1 << Self::RESTART_SHIFT;
     const PHYSICAL_ADDRESS_MASK: u64 = (1 << Self::PHYSICAL_ADDRESS_SHIFT_END) - (1 << Self::PHYSICAL_ADDRESS_SHIFT_BEGIN);
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
@@ -398,9 +401,8 @@ impl<'a> PageEntry<'a> {
         user_mode_access: bool,
         page_write_through: bool,
         page_cache_disable: bool,
-        accessed: bool,
-        dirty: bool,
         page_attribute_table: bool,
+        global: bool,
         restart: bool,
         physical_address: u64,
         protection_key: u8,
@@ -426,17 +428,24 @@ impl<'a> PageEntry<'a> {
         } else {
             0
         };
+        let accessed: bool = false;
         let accessed_bit: u64 = if accessed {
             1 << Self::ACCESSED_SHIFT
         } else {
             0
         };
+        let dirty: bool = false;
         let dirty_bit: u64 = if dirty {
             1 << Self::DIRTY_SHIFT
         } else {
             0
         };
         let page_attribute_table_bit: u64 = if page_attribute_table {
+            1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
+        } else {
+            0
+        };
+        let global_bit: u64 = if global {
             1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
         } else {
             0
@@ -453,7 +462,7 @@ impl<'a> PageEntry<'a> {
         } else {
             0
         };
-        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | restart_bit | physical_address | protection_key_bits | execute_disable_bit;
+        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | global_bit | restart_bit | physical_address | protection_key_bits | execute_disable_bit;
         Self {
             page_entry,
             writable,
@@ -463,6 +472,7 @@ impl<'a> PageEntry<'a> {
             accessed,
             dirty,
             page_attribute_table,
+            global,
             restart,
             physical_address,
             protection_key,
@@ -479,6 +489,7 @@ impl<'a> PageEntry<'a> {
             let accessed: bool = *page_entry & Self::ACCESSED_MASK != 0;
             let dirty: bool = *page_entry & Self::DIRTY_MASK != 0;
             let page_attribute_table: bool = *page_entry & Self::PAGE_ATTRIBUTE_TABLE_MASK != 0;
+            let global: bool = *page_entry & Self::GLOBAL_MASK != 0;
             let restart: bool = *page_entry & Self::RESTART_MASK != 0;
             let physical_address: u64 = *page_entry & Self::PHYSICAL_ADDRESS_MASK;
             let protection_key: u8 = ((*page_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8;
@@ -492,6 +503,7 @@ impl<'a> PageEntry<'a> {
                 accessed,
                 dirty,
                 page_attribute_table,
+                global,
                 restart,
                 physical_address,
                 protection_key,
