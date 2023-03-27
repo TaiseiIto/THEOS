@@ -420,18 +420,47 @@ impl<'a> PageDirectoryEntry<'a> {
         );
         self.page_2_mib_physical_address = None;
         self.protection_key = None;
-        let present: u64 = 1 << Self::PRESENT_SHIFT;
-        let writable: u64 = (self.writable as u64) << Self::WRITABLE_SHIFT;
-        let user_mode_access: u64 = (self.user_mode_access as u64) << Self::USER_MODE_ACCESS_SHIFT;
-        let page_write_through: u64 = (self.page_write_through as u64) << Self::PAGE_WRITE_THROUGH_SHIFT;
-        let page_cache_disable: u64 = (self.page_cache_disable as u64) << Self::PAGE_CACHE_DISABLE_SHIFT;
-        let accessed: u64 = (self.accessed as u64) << Self::ACCESSED_SHIFT;
-        let restart: u64 = (self.restart as u64) << Self::RESTART_SHIFT;
+        let present: u64 = Self::PRESENT_MASK;
+        let writable: u64 = if self.writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access: u64 = if self.user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through: u64 = if self.page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable: u64 = if self.page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed: u64 = if self.accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let restart: u64 = if self.restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
         let page_table: u64 = self.page_table_page
             .as_ref()
             .expect("Can't divide a page!")
             .physical_address();
-        let execute_disable: u64 = (self.execute_disable as u64) << Self::EXECUTE_DISABLE_SHIFT;
+        let execute_disable: u64 = if self.execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *self.page_directory_entry = present | writable | user_mode_access | page_write_through | page_cache_disable | accessed | restart | page_table | execute_disable;
     }
 }
 
