@@ -45,6 +45,10 @@ impl Pages<'_> {
         }
     }
 
+    pub fn bytes(&mut self) -> &mut [u8] {
+        self.bytes
+    }
+
     pub fn write(&mut self, page: usize, offset: usize, bytes: &[u8]) {
         let start: usize = page * memory_allocation::PAGE_SIZE + offset;
         let end: usize = start + bytes.len();

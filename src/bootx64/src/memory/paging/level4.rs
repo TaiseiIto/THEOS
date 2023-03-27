@@ -1,7 +1,11 @@
 // References
 // Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 3 System Programming Guide, Chapter 4 Paging, Section 5 4-Level Paging And 5-Level Paging
 
-use alloc::vec::Vec;
+use {
+    alloc::vec::Vec,
+    core::slice,
+    super::super::Pages,
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -261,6 +265,7 @@ struct PageDirectoryEntry<'a> {
     global: Option<bool>,
     restart: bool,
     page_attribute_table: Option<bool>,
+    page_table_page: Option<Pages<'a>>,
     page_entries: Option<Vec<PageEntry<'a>>>,
     page_2_mib_physical_address: Option<u64>,
     protection_key: Option<u8>,
@@ -328,6 +333,7 @@ impl<'a> PageDirectoryEntry<'a> {
             let page_table: &mut [u64; ENTRIES] = unsafe {
                 &mut *page_table
             };
+            let page_table_page: Option<Pages> = None;
             let page_entries: Option<Vec<PageEntry>> = if page_size_2_mib {
                 None
             } else {
@@ -363,6 +369,7 @@ impl<'a> PageDirectoryEntry<'a> {
                 global,
                 restart,
                 page_attribute_table,
+                page_table_page,
                 page_entries,
                 page_2_mib_physical_address,
                 protection_key,
@@ -371,6 +378,41 @@ impl<'a> PageDirectoryEntry<'a> {
         } else {
             None
         }
+    }
+
+    fn devide(&mut self) {
+        self.page_table_page = Some(Pages::new(1));
+        let page_table_page: &mut [u8] = self.page_table_page
+            .as_mut()
+            .expect("Can't devide a page!")
+            .bytes();
+        let page_table_page_len: usize = page_table_page.len();
+        let page_table_page: *mut u8 = page_table_page.as_mut_ptr();
+        let page_table_page: *mut u64 = page_table_page as *mut u64;
+        let page_table_page_len: usize = page_table_page_len / 8;
+        let page_table_page: &mut [u64] = unsafe {
+            slice::from_raw_parts_mut(page_table_page, page_table_page_len)
+        };
+        self.page_entries = Some(
+            page_table_page
+                .iter_mut()
+                .enumerate()
+                .map(|(i, page_entry)| PageEntry::new(
+                    self.virtual_address + (i << 12),
+                    page_entry,
+                    self.writable,
+                    self.user_mode_access,
+                    self.page_write_through,
+                    self.page_cache_disable,
+                    self.page_attribute_table.expect("Can't devide a page!"),
+                    self.global.expect("Can't devide a page!"),
+                    self.restart,
+                    self.page_2_mib_physical_address.expect("Can't devide a page!") + (i << 12) as u64,
+                    self.protection_key.expect("Can't devide a page!"),
+                    self.execute_disable,
+                ))
+                .collect()
+        );
     }
 }
 
