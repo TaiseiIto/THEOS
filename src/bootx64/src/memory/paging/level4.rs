@@ -33,7 +33,8 @@ impl From<u64> for Cr3<'_> {
         };
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .iter_mut()
-            .filter_map(|page_map_level_4_entry| PageMapLevel4Entry::read(page_map_level_4_entry))
+            .enumerate()
+            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read((i as u64) << 39, page_map_level_4_entry))
             .collect();
         Self {
             pwt,
@@ -46,6 +47,7 @@ impl From<u64> for Cr3<'_> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageMapLevel4Entry<'a> {
+    virtual_address: u64,
     page_map_level_4_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -79,7 +81,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const PAGE_DIRECTORY_POINTER_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
-    fn read(page_map_level_4_entry: &'a mut u64) -> Option<Self> {
+    fn read(virtual_address: u64, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
         if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
@@ -98,6 +100,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .collect();
             let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                virtual_address,
                 page_map_level_4_entry,
                 writable,
                 user_mode_access,
