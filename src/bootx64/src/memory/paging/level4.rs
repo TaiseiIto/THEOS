@@ -145,6 +145,8 @@ struct PageDirectoryPointerEntry<'a> {
 }
 
 impl<'a> PageDirectoryPointerEntry<'a> {
+    const PAGE_DIRECTORY_ENTRY_INDEX_SHIFT: usize = 21;
+
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -265,9 +267,29 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         let page_directory_table_page: *mut u8 = page_directory_table_page.as_mut_ptr();
         let page_directory_table_page: *mut u64 = page_directory_table_page as *mut u64;
         let page_directory_table_page_len: usize = page_directory_table_page_len / 8;
-        let page_table_page: &mut [u64] = unsafe {
+        let page_directory_table_page: &mut [u64] = unsafe {
             slice::from_raw_parts_mut(page_directory_table_page, page_directory_table_page_len)
         };
+        self.page_directory_entries = Some(
+            page_directory_table_page
+                .iter_mut()
+                .enumerate()
+                .map(|(i, page_directory_entry)| PageDirectoryEntry::new(
+                    self.virtual_address + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                    page_directory_entry,
+                    self.writable,
+                    self.user_mode_access,
+                    self.page_write_through,
+                    self.page_cache_disable,
+                    self.global.expect("Can't divide a page!"),
+                    self.restart,
+                    self.page_attribute_table.expect("Can't divide a page!"),
+                    self.page_1_gib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                    self.protection_key.expect("Can't divide a page!"),
+                    self.execute_disable,
+                ))
+                .collect()
+        );
         self.page_1_gib_physical_address = None;
         self.protection_key = None;
         let present: u64 = Self::PRESENT_MASK;
