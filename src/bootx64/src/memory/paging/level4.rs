@@ -273,6 +273,8 @@ struct PageDirectoryEntry<'a> {
 }
 
 impl<'a> PageDirectoryEntry<'a> {
+    const PAGE_ENTRY_INDEX_SHIFT: usize = 12;
+
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -341,7 +343,7 @@ impl<'a> PageDirectoryEntry<'a> {
                     page_table
                         .iter_mut()
                         .enumerate()
-                        .filter_map(|(i, page_entry)| PageEntry::read(virtual_address + (i << 12), page_entry))
+                        .filter_map(|(i, page_entry)| PageEntry::read(virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT), page_entry))
                         .collect()
                 )
             };
@@ -381,6 +383,8 @@ impl<'a> PageDirectoryEntry<'a> {
     }
 
     fn divide(&mut self) {
+        self.global = None;
+        self.page_attribute_table = None;
         self.page_table_page = Some(Pages::new(1));
         let page_table_page: &mut [u8] = self.page_table_page
             .as_mut()
@@ -398,7 +402,7 @@ impl<'a> PageDirectoryEntry<'a> {
                 .iter_mut()
                 .enumerate()
                 .map(|(i, page_entry)| PageEntry::new(
-                    self.virtual_address + (i << 12),
+                    self.virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
                     page_entry,
                     self.writable,
                     self.user_mode_access,
@@ -407,12 +411,14 @@ impl<'a> PageDirectoryEntry<'a> {
                     self.page_attribute_table.expect("Can't divide a page!"),
                     self.global.expect("Can't divide a page!"),
                     self.restart,
-                    self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << 12),
+                    self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
                     self.protection_key.expect("Can't divide a page!"),
                     self.execute_disable,
                 ))
                 .collect()
         );
+        self.page_2_mib_physical_address = None;
+        self.protection_key = None;
     }
 }
 
