@@ -255,93 +255,99 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     }
 
     fn divide(&mut self) {
-        self.page_size_1_gib = false;
-        self.global = None;
-        self.page_attribute_table = None;
-        self.page_directory_table_page = Some(Pages::new(1));
-        let page_directory_table_page: &mut [u8] = self.page_directory_table_page
-            .as_mut()
-            .expect("Can't divide a page!")
-            .bytes();
-        let page_directory_table_page_len: usize = page_directory_table_page.len();
-        let page_directory_table_page: *mut u8 = page_directory_table_page.as_mut_ptr();
-        let page_directory_table_page: *mut u64 = page_directory_table_page as *mut u64;
-        let page_directory_table_page_len: usize = page_directory_table_page_len / 8;
-        let page_directory_table_page: &mut [u64] = unsafe {
-            slice::from_raw_parts_mut(page_directory_table_page, page_directory_table_page_len)
-        };
-        self.page_directory_entries = Some(
-            page_directory_table_page
-                .iter_mut()
-                .enumerate()
-                .map(|(i, page_directory_entry)| PageDirectoryEntry::new(
-                    self.virtual_address + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
-                    page_directory_entry,
-                    self.writable,
-                    self.user_mode_access,
-                    self.page_write_through,
-                    self.page_cache_disable,
-                    self.global.expect("Can't divide a page!"),
-                    self.restart,
-                    self.page_attribute_table.expect("Can't divide a page!"),
-                    self.page_1_gib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
-                    self.protection_key.expect("Can't divide a page!"),
-                    self.execute_disable,
-                ))
-                .collect()
-        );
-        self.page_1_gib_physical_address = None;
-        self.protection_key = None;
-        let present: u64 = Self::PRESENT_MASK;
-        let writable: u64 = if self.writable {
-            Self::WRITABLE_MASK
-        } else {
-            0
-        };
-        let user_mode_access: u64 = if self.user_mode_access {
-            Self::USER_MODE_ACCESS_MASK
-        } else {
-            0
-        };
-        let page_write_through: u64 = if self.page_write_through {
-            Self::PAGE_WRITE_THROUGH_MASK
-        } else {
-            0
-        };
-        let page_cache_disable: u64 = if self.page_cache_disable {
-            Self::PAGE_CACHE_DISABLE_MASK
-        } else {
-            0
-        };
-        let accessed: u64 = if self.accessed {
-            Self::ACCESSED_MASK
-        } else {
-            0
-        };
-        let restart: u64 = if self.restart {
-            Self::RESTART_MASK
-        } else {
-            0
-        };
-        let page_directory_table: u64 = self.page_directory_table_page
-            .as_ref()
-            .expect("Can't divide a page!")
-            .physical_address();
-        let execute_disable: u64 = if self.execute_disable {
-            Self::EXECUTE_DISABLE_MASK
-        } else {
-            0
-        };
-        *self.page_directory_pointer_entry =
-            present
-            | writable
-            | user_mode_access
-            | page_write_through
-            | page_cache_disable
-            | accessed
-            | restart
-            | page_directory_table
-            | execute_disable;
+        if !self.divided() {
+            self.page_size_1_gib = false;
+            self.global = None;
+            self.page_attribute_table = None;
+            self.page_directory_table_page = Some(Pages::new(1));
+            let page_directory_table_page: &mut [u8] = self.page_directory_table_page
+                .as_mut()
+                .expect("Can't divide a page!")
+                .bytes();
+            let page_directory_table_page_len: usize = page_directory_table_page.len();
+            let page_directory_table_page: *mut u8 = page_directory_table_page.as_mut_ptr();
+            let page_directory_table_page: *mut u64 = page_directory_table_page as *mut u64;
+            let page_directory_table_page_len: usize = page_directory_table_page_len / 8;
+            let page_directory_table_page: &mut [u64] = unsafe {
+                slice::from_raw_parts_mut(page_directory_table_page, page_directory_table_page_len)
+            };
+            self.page_directory_entries = Some(
+                page_directory_table_page
+                    .iter_mut()
+                    .enumerate()
+                    .map(|(i, page_directory_entry)| PageDirectoryEntry::new(
+                        self.virtual_address + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                        page_directory_entry,
+                        self.writable,
+                        self.user_mode_access,
+                        self.page_write_through,
+                        self.page_cache_disable,
+                        self.global.expect("Can't divide a page!"),
+                        self.restart,
+                        self.page_attribute_table.expect("Can't divide a page!"),
+                        self.page_1_gib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                        self.protection_key.expect("Can't divide a page!"),
+                        self.execute_disable,
+                    ))
+                    .collect()
+            );
+            self.page_1_gib_physical_address = None;
+            self.protection_key = None;
+            let present: u64 = Self::PRESENT_MASK;
+            let writable: u64 = if self.writable {
+                Self::WRITABLE_MASK
+            } else {
+                0
+            };
+            let user_mode_access: u64 = if self.user_mode_access {
+                Self::USER_MODE_ACCESS_MASK
+            } else {
+                0
+            };
+            let page_write_through: u64 = if self.page_write_through {
+                Self::PAGE_WRITE_THROUGH_MASK
+            } else {
+                0
+            };
+            let page_cache_disable: u64 = if self.page_cache_disable {
+                Self::PAGE_CACHE_DISABLE_MASK
+            } else {
+                0
+            };
+            let accessed: u64 = if self.accessed {
+                Self::ACCESSED_MASK
+            } else {
+                0
+            };
+            let restart: u64 = if self.restart {
+                Self::RESTART_MASK
+            } else {
+                0
+            };
+            let page_directory_table: u64 = self.page_directory_table_page
+                .as_ref()
+                .expect("Can't divide a page!")
+                .physical_address();
+            let execute_disable: u64 = if self.execute_disable {
+                Self::EXECUTE_DISABLE_MASK
+            } else {
+                0
+            };
+            *self.page_directory_pointer_entry =
+                present
+                | writable
+                | user_mode_access
+                | page_write_through
+                | page_cache_disable
+                | accessed
+                | restart
+                | page_directory_table
+                | execute_disable;
+        }
+    }
+
+    fn divided(&self) -> bool {
+        self.page_directory_entries.is_some()
     }
 }
 
@@ -596,93 +602,99 @@ impl<'a> PageDirectoryEntry<'a> {
     }
 
     fn divide(&mut self) {
-        self.page_size_2_mib = false;
-        self.global = None;
-        self.page_attribute_table = None;
-        self.page_table_page = Some(Pages::new(1));
-        let page_table_page: &mut [u8] = self.page_table_page
-            .as_mut()
-            .expect("Can't divide a page!")
-            .bytes();
-        let page_table_page_len: usize = page_table_page.len();
-        let page_table_page: *mut u8 = page_table_page.as_mut_ptr();
-        let page_table_page: *mut u64 = page_table_page as *mut u64;
-        let page_table_page_len: usize = page_table_page_len / 8;
-        let page_table_page: &mut [u64] = unsafe {
-            slice::from_raw_parts_mut(page_table_page, page_table_page_len)
-        };
-        self.page_entries = Some(
-            page_table_page
-                .iter_mut()
-                .enumerate()
-                .map(|(i, page_entry)| PageEntry::new(
-                    self.virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
-                    page_entry,
-                    self.writable,
-                    self.user_mode_access,
-                    self.page_write_through,
-                    self.page_cache_disable,
-                    self.page_attribute_table.expect("Can't divide a page!"),
-                    self.global.expect("Can't divide a page!"),
-                    self.restart,
-                    self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
-                    self.protection_key.expect("Can't divide a page!"),
-                    self.execute_disable,
-                ))
-                .collect()
-        );
-        self.page_2_mib_physical_address = None;
-        self.protection_key = None;
-        let present: u64 = Self::PRESENT_MASK;
-        let writable: u64 = if self.writable {
-            Self::WRITABLE_MASK
-        } else {
-            0
-        };
-        let user_mode_access: u64 = if self.user_mode_access {
-            Self::USER_MODE_ACCESS_MASK
-        } else {
-            0
-        };
-        let page_write_through: u64 = if self.page_write_through {
-            Self::PAGE_WRITE_THROUGH_MASK
-        } else {
-            0
-        };
-        let page_cache_disable: u64 = if self.page_cache_disable {
-            Self::PAGE_CACHE_DISABLE_MASK
-        } else {
-            0
-        };
-        let accessed: u64 = if self.accessed {
-            Self::ACCESSED_MASK
-        } else {
-            0
-        };
-        let restart: u64 = if self.restart {
-            Self::RESTART_MASK
-        } else {
-            0
-        };
-        let page_table: u64 = self.page_table_page
-            .as_ref()
-            .expect("Can't divide a page!")
-            .physical_address();
-        let execute_disable: u64 = if self.execute_disable {
-            Self::EXECUTE_DISABLE_MASK
-        } else {
-            0
-        };
-        *self.page_directory_entry =
-            present
-            | writable
-            | user_mode_access
-            | page_write_through
-            | page_cache_disable
-            | accessed
-            | restart
-            | page_table
-            | execute_disable;
+        if !self.divided() {
+            self.page_size_2_mib = false;
+            self.global = None;
+            self.page_attribute_table = None;
+            self.page_table_page = Some(Pages::new(1));
+            let page_table_page: &mut [u8] = self.page_table_page
+                .as_mut()
+                .expect("Can't divide a page!")
+                .bytes();
+            let page_table_page_len: usize = page_table_page.len();
+            let page_table_page: *mut u8 = page_table_page.as_mut_ptr();
+            let page_table_page: *mut u64 = page_table_page as *mut u64;
+            let page_table_page_len: usize = page_table_page_len / 8;
+            let page_table_page: &mut [u64] = unsafe {
+                slice::from_raw_parts_mut(page_table_page, page_table_page_len)
+            };
+            self.page_entries = Some(
+                page_table_page
+                    .iter_mut()
+                    .enumerate()
+                    .map(|(i, page_entry)| PageEntry::new(
+                        self.virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
+                        page_entry,
+                        self.writable,
+                        self.user_mode_access,
+                        self.page_write_through,
+                        self.page_cache_disable,
+                        self.page_attribute_table.expect("Can't divide a page!"),
+                        self.global.expect("Can't divide a page!"),
+                        self.restart,
+                        self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
+                        self.protection_key.expect("Can't divide a page!"),
+                        self.execute_disable,
+                    ))
+                    .collect()
+            );
+            self.page_2_mib_physical_address = None;
+            self.protection_key = None;
+            let present: u64 = Self::PRESENT_MASK;
+            let writable: u64 = if self.writable {
+                Self::WRITABLE_MASK
+            } else {
+                0
+            };
+            let user_mode_access: u64 = if self.user_mode_access {
+                Self::USER_MODE_ACCESS_MASK
+            } else {
+                0
+            };
+            let page_write_through: u64 = if self.page_write_through {
+                Self::PAGE_WRITE_THROUGH_MASK
+            } else {
+                0
+            };
+            let page_cache_disable: u64 = if self.page_cache_disable {
+                Self::PAGE_CACHE_DISABLE_MASK
+            } else {
+                0
+            };
+            let accessed: u64 = if self.accessed {
+                Self::ACCESSED_MASK
+            } else {
+                0
+            };
+            let restart: u64 = if self.restart {
+                Self::RESTART_MASK
+            } else {
+                0
+            };
+            let page_table: u64 = self.page_table_page
+                .as_ref()
+                .expect("Can't divide a page!")
+                .physical_address();
+            let execute_disable: u64 = if self.execute_disable {
+                Self::EXECUTE_DISABLE_MASK
+            } else {
+                0
+            };
+            *self.page_directory_entry =
+                present
+                | writable
+                | user_mode_access
+                | page_write_through
+                | page_cache_disable
+                | accessed
+                | restart
+                | page_table
+                | execute_disable;
+        }
+    }
+
+    fn divided(&self) -> bool {
+        self.page_entries.is_some()
     }
 }
 
