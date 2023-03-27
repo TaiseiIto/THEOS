@@ -34,7 +34,7 @@ impl From<u64> for Cr3<'_> {
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .iter_mut()
             .enumerate()
-            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read((i as u64) << 39, page_map_level_4_entry))
+            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read(i << 39, page_map_level_4_entry))
             .collect();
         Self {
             pwt,
@@ -47,7 +47,7 @@ impl From<u64> for Cr3<'_> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageMapLevel4Entry<'a> {
-    virtual_address: u64,
+    virtual_address: usize,
     page_map_level_4_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -81,7 +81,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const PAGE_DIRECTORY_POINTER_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
-    fn read(virtual_address: u64, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
+    fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
         if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
@@ -96,7 +96,8 @@ impl<'a> PageMapLevel4Entry<'a> {
             };
             let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
                 .iter_mut()
-                .filter_map(|page_directory_pointer_entry| PageDirectoryPointerEntry::read(page_directory_pointer_entry))
+                .enumerate()
+                .filter_map(|(i, page_directory_pointer_entry)| PageDirectoryPointerEntry::read(virtual_address + (i << 30), page_directory_pointer_entry))
                 .collect();
             let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
@@ -120,6 +121,7 @@ impl<'a> PageMapLevel4Entry<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageDirectoryPointerEntry<'a> {
+    virtual_address: usize,
     page_directory_pointer_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -173,7 +175,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
-    fn read(page_directory_pointer_entry: &'a mut u64) -> Option<Self> {
+    fn read(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_pointer_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_directory_pointer_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_directory_pointer_entry & Self::USER_MODE_ACCESS_MASK != 0;
@@ -204,7 +206,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 Some(
                     page_directory_table
                         .iter_mut()
-                        .filter_map(|page_directory_entry| PageDirectoryEntry::read(page_directory_entry))
+                        .enumerate()
+                        .filter_map(|(i, page_directory_entry)| PageDirectoryEntry::read(virtual_address + (i << 21), page_directory_entry))
                         .collect()
                 )
             };
@@ -220,6 +223,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             };
             let execute_disable: bool = *page_directory_pointer_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                virtual_address,
                 page_directory_pointer_entry,
                 writable,
                 user_mode_access,
@@ -245,6 +249,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageDirectoryEntry<'a> {
+    virtual_address: usize,
     page_directory_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -298,7 +303,7 @@ impl<'a> PageDirectoryEntry<'a> {
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
-    fn read(page_directory_entry: &'a mut u64) -> Option<Self> {
+    fn read(virtual_address: usize, page_directory_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_directory_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_directory_entry & Self::USER_MODE_ACCESS_MASK != 0;
@@ -329,7 +334,8 @@ impl<'a> PageDirectoryEntry<'a> {
                 Some(
                     page_table
                         .iter_mut()
-                        .filter_map(|page_entry| PageEntry::read(page_entry))
+                        .enumerate()
+                        .filter_map(|(i, page_entry)| PageEntry::read(virtual_address + (i << 12), page_entry))
                         .collect()
                 )
             };
@@ -345,6 +351,7 @@ impl<'a> PageDirectoryEntry<'a> {
             };
             let execute_disable: bool = *page_directory_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                virtual_address,
                 page_directory_entry,
                 writable,
                 user_mode_access,
@@ -370,6 +377,7 @@ impl<'a> PageDirectoryEntry<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageEntry<'a> {
+    virtual_address: usize,
     page_entry: &'a mut u64,
     writable: bool,
     user_mode_access: bool,
@@ -417,6 +425,7 @@ impl<'a> PageEntry<'a> {
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     fn new(
+        virtual_address: usize,
         page_entry: &'a mut u64,
         writable: bool,
         user_mode_access: bool,
@@ -485,6 +494,7 @@ impl<'a> PageEntry<'a> {
         };
         *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | global_bit | restart_bit | physical_address | protection_key_bits | execute_disable_bit;
         Self {
+            virtual_address,
             page_entry,
             writable,
             user_mode_access,
@@ -501,7 +511,7 @@ impl<'a> PageEntry<'a> {
         }
     }
 
-    fn read(page_entry: &'a mut u64) -> Option<Self> {
+    fn read(virtual_address: usize, page_entry: &'a mut u64) -> Option<Self> {
         if *page_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_entry & Self::USER_MODE_ACCESS_MASK != 0;
@@ -516,6 +526,7 @@ impl<'a> PageEntry<'a> {
             let protection_key: u8 = ((*page_entry & Self::PROTECTION_KEY_MASK) >> Self::PROTECTION_KEY_SHIFT_BEGIN) as u8;
             let execute_disable: bool = *page_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                virtual_address,
                 page_entry,
                 writable,
                 user_mode_access,
