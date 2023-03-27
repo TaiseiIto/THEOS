@@ -406,7 +406,55 @@ impl<'a> PageEntry<'a> {
         protection_key: u8,
         execute_disable: bool,
     ) -> Self {
-        let new_page_entry = Self {
+        let writable_bit: u64 = if writable {
+            1 << Self::WRITABLE_SHIFT
+        } else {
+            0
+        };
+        let user_mode_access_bit: u64 = if user_mode_access {
+            1 << Self::USER_MODE_ACCESS_SHIFT
+        } else {
+            0
+        };
+        let page_write_through_bit: u64 = if page_write_through {
+            1 << Self::PAGE_WRITE_THROUGH_SHIFT
+        } else {
+            0
+        };
+        let page_cache_disable_bit: u64 = if page_cache_disable {
+            1 << Self::PAGE_CACHE_DISABLE_SHIFT
+        } else {
+            0
+        };
+        let accessed_bit: u64 = if accessed {
+            1 << Self::ACCESSED_SHIFT
+        } else {
+            0
+        };
+        let dirty_bit: u64 = if dirty {
+            1 << Self::DIRTY_SHIFT
+        } else {
+            0
+        };
+        let page_attribute_table_bit: u64 = if page_attribute_table {
+            1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
+        } else {
+            0
+        };
+        let restart_bit: u64 = if restart {
+            1 << Self::RESTART_SHIFT
+        } else {
+            0
+        };
+        let physical_address: u64 = physical_address & Self::PHYSICAL_ADDRESS_MASK;
+        let protection_key_bits: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+        let execute_disable_bit: u64 = if execute_disable {
+            1 << Self::EXECUTE_DISABLE_SHIFT
+        } else {
+            0
+        };
+        *page_entry = writable_bit | user_mode_access_bit | page_write_through_bit | page_cache_disable_bit | accessed_bit | dirty_bit | page_attribute_table_bit | restart_bit | physical_address | protection_key_bits | execute_disable_bit;
+        Self {
             page_entry,
             writable,
             user_mode_access,
@@ -419,56 +467,7 @@ impl<'a> PageEntry<'a> {
             physical_address,
             protection_key,
             execute_disable,
-        };
-        let writable: u64 = if writable {
-            1 << Self::WRITABLE_SHIFT
-        } else {
-            0
-        };
-        let user_mode_access: u64 = if user_mode_access {
-            1 << Self::USER_MODE_ACCESS_SHIFT
-        } else {
-            0
-        };
-        let page_write_through: u64 = if page_write_through {
-            1 << Self::PAGE_WRITE_THROUGH_SHIFT
-        } else {
-            0
-        };
-        let page_cache_disable: u64 = if page_cache_disable {
-            1 << Self::PAGE_CACHE_DISABLE_SHIFT
-        } else {
-            0
-        };
-        let accessed: u64 = if accessed {
-            1 << Self::ACCESSED_SHIFT
-        } else {
-            0
-        };
-        let dirty: u64 = if dirty {
-            1 << Self::DIRTY_SHIFT
-        } else {
-            0
-        };
-        let page_attribute_table: u64 = if page_attribute_table {
-            1 << Self::PAGE_ATTRIBUTE_TABLE_SHIFT
-        } else {
-            0
-        };
-        let restart: u64 = if restart {
-            1 << Self::RESTART_SHIFT
-        } else {
-            0
-        };
-        let physical_address: u64 = physical_address & Self::PHYSICAL_ADDRESS_MASK;
-        let protection_key: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
-        let execute_disable: u64 = if execute_disable {
-            1 << Self::EXECUTE_DISABLE_SHIFT
-        } else {
-            0
-        };
-        *new_page_entry.page_entry = writable | user_mode_access | page_write_through | page_cache_disable | accessed | dirty | page_attribute_table | restart | physical_address | protection_key | execute_disable;
-        new_page_entry
+        }
     }
 
     fn read(page_entry: &'a mut u64) -> Option<Self> {
