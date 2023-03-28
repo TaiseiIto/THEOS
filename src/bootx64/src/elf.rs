@@ -95,10 +95,10 @@ impl Elf<'_> {
     pub fn page_map(&self) -> BTreeMap<usize, usize> {
         self.deployed
             .iter()
-            .enumerate()
-            .map(|(i, (page_range, pages))| page_range
+            .map(|(page_range, pages)| page_range
                 .clone()
-                .map(move |page| (pages.physical_address() as usize + i * memory_allocation::PAGE_SIZE, page * memory_allocation::PAGE_SIZE))
+                .enumerate()
+                .map(|(i, page)| (pages.physical_address() as usize + i * memory_allocation::PAGE_SIZE, page * memory_allocation::PAGE_SIZE))
             )
             .flatten()
             .collect()
