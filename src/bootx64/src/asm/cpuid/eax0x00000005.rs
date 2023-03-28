@@ -78,9 +78,7 @@ pub struct Edx {
 impl From<u32> for Edx {
     fn from(edx: u32) -> Self {
         let mut number_of_sub_c_states: [u8; 8] = [0; 8];
-        for i in 0..8 {
-            number_of_sub_c_states[i] = ((edx >> (4 * i)) & 0x0f) as u8;
-        }
+        (0..8).for_each(|i| number_of_sub_c_states[i] = ((edx >> (4 * i)) & 0x0f) as u8);
         Self {
             number_of_sub_c_states,
         }

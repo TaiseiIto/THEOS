@@ -33,9 +33,13 @@ impl SimpleTextOutput<'_> {
     }
 
     pub fn print(&self, string: &str) -> Result<(), status::Status> {
-        for character in string.chars() {
-            self.put_char(character)?;
-        }
+        string
+            .chars()
+            .for_each(|character|
+                self
+                    .put_char(character)
+                    .expect("Can't print a character!")
+            );
         Ok(())
     }
 

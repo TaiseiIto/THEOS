@@ -227,9 +227,7 @@ impl Into<line_status_register::LineStatusRegister> for &Serial {
 
 impl Write for Serial {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        for byte in s.bytes() {
-            self.write_byte(byte);
-        }
+        s.bytes().for_each(|byte| self.write_byte(byte));
         Ok(())
     }
 }

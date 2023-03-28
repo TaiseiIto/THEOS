@@ -182,16 +182,18 @@ impl AddressMap {
 
     fn delete(&mut self, provided: usize) {
         let key: usize = provided;
-        for pair in self.pairs.iter_mut() {
-            if let Some(AddressPair {
-                allocated: _,
-                provided,
-            }) = pair {
-                if *provided == key {
-                    *pair = None;
+        self.pairs
+            .iter_mut()
+            .for_each(|pair| 
+                if let Some(AddressPair {
+                    allocated: _,
+                    provided,
+                }) = pair {
+                    if *provided == key {
+                        *pair = None;
+                    }
                 }
-            }
-        }
+            )
     }
 
     fn remaining_pairs(&self) -> usize {

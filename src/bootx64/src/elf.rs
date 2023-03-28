@@ -74,13 +74,15 @@ impl Elf<'_> {
             .map(|page_range| {
                 let mut pages = memory::Pages::new(page_range.size());
                 let page_range: memory::PageRange = page_range.clone();
-                for program in programs.iter() {
-                    let start_page: usize = program.start_page();
-                    let start_offset: usize = program.start_offset();
-                    if page_range.contains(start_page) {
-                        pages.write(start_page - page_range.start(), start_offset, program.bytes());
-                    }
-                }
+                programs
+                    .iter()
+                    .for_each(|program| {
+                        let start_page: usize = program.start_page();
+                        let start_offset: usize = program.start_offset();
+                        if page_range.contains(start_page) {
+                            pages.write(start_page - page_range.start(), start_offset, program.bytes());
+                        }
+                    });
                 (page_range, pages)
             })
             .collect();

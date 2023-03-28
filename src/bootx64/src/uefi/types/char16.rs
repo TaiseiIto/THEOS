@@ -54,9 +54,9 @@ impl fmt::Debug for String<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let char16 = self.clone();
         write!(f, "\"").expect("Can't print an UTF16 string!");
-        for character in char::decode_utf16(char16.into_iter()).filter_map(|character| character.ok()) {
-            write!(f, "{}", character).expect("Can't print an UTF16 string!");
-        }
+        char::decode_utf16(char16.into_iter())
+            .filter_map(|character| character.ok())
+            .for_each(|character|write!(f, "{}", character).expect("Can't print an UTF16 string!"));
         write!(f, "\"")
     }
 }
