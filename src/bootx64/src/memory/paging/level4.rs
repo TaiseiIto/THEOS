@@ -311,8 +311,6 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     fn divide(&mut self) {
         if !self.divided() {
             self.page_size_1_gib = false;
-            self.global = None;
-            self.page_attribute_table = None;
             self.page_directory_table_page = Some(Pages::new(1));
             let page_directory_table_page: &mut [u8] = self.page_directory_table_page
                 .as_mut()
@@ -345,6 +343,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                     ))
                     .collect()
             );
+            self.global = None;
+            self.page_attribute_table = None;
             self.page_1_gib_physical_address = None;
             self.protection_key = None;
             let present: u64 = Self::PRESENT_MASK;
@@ -694,8 +694,6 @@ impl<'a> PageDirectoryEntry<'a> {
     fn divide(&mut self) {
         if !self.divided() {
             self.page_size_2_mib = false;
-            self.global = None;
-            self.page_attribute_table = None;
             self.page_table_page = Some(Pages::new(1));
             let page_table_page: &mut [u8] = self.page_table_page
                 .as_mut()
@@ -728,6 +726,8 @@ impl<'a> PageDirectoryEntry<'a> {
                     ))
                     .collect()
             );
+            self.global = None;
+            self.page_attribute_table = None;
             self.page_2_mib_physical_address = None;
             self.protection_key = None;
             let present: u64 = Self::PRESENT_MASK;
