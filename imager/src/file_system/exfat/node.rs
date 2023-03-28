@@ -351,9 +351,10 @@ impl Node {
             children,
             directory_entries: _,
         } = &object.content {
-            for child in children.borrow_mut().iter_mut() {
-                *child.parent.borrow_mut() = Rc::downgrade(&object);
-            }
+            children
+                .borrow_mut()
+                .iter_mut()
+                .for_each(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
         }
         object
     }
@@ -415,9 +416,10 @@ impl Node {
             children,
             directory_entries: _,
         } = &object.content {
-            for child in children.borrow_mut().iter_mut() {
-                *child.parent.borrow_mut() = Rc::downgrade(&object);
-            }
+            children
+                .borrow_mut()
+                .iter_mut()
+                .for_each(|child | *child.parent.borrow_mut() = Rc::downgrade(&object));
         }
         object
     }
@@ -465,9 +467,10 @@ impl Node {
                     children,
                     directory_entries: _,
                 } = &object.content {
-                    for child in children.borrow_mut().iter_mut() {
-                        *child.parent.borrow_mut() = Rc::downgrade(&object);
-                    }
+                    children
+                        .borrow_mut()
+                        .iter_mut() 
+                        .for_each(|child| *child.parent.borrow_mut() = Rc::downgrade(&object));
                 }
                 object
             } else {

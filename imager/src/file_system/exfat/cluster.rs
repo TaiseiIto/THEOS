@@ -135,9 +135,9 @@ impl Clusters {
     }
 
     pub fn set_used_flags(&mut self, allocation_bitmap: &allocation_bitmap::AllocationBitmap) {
-        for cluster in self.clusters.iter_mut() {
-            cluster.set_used_flag(allocation_bitmap);
-        }
+        self.clusters
+            .iter_mut()
+            .for_each(|cluster| cluster.set_used_flag(allocation_bitmap));
     }
 
     pub fn upcase_table(&self, first_cluster: u32, data_length: usize) -> upcase_table::UpcaseTable {

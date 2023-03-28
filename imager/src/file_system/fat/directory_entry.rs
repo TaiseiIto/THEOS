@@ -103,62 +103,64 @@ impl DirectoryEntry {
 
     pub fn deduplicate(directory_entries: &Vec<&Self>) {
         let mut duplication: HashSet<[u8; short_file_name::STEM_LENGTH]> = HashSet::new();
-        for directory_entry in directory_entries.iter() {
-            if let Self::ShortFileName {
-                stem,
-                extension,
-                attribute: _,
-                name_flags: _,
-                created_time: _,
-                accessed_time: _,
-                written_time: _,
-                cluster: _,
-                size: _,
-                long_file_name: Some(long_file_name),
-                checksum,
-            } = directory_entry {
-                let mut new_stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
-                while duplication.contains(&new_stem) {
-                    let stem = String::from_utf8(new_stem.to_vec()).expect("Can't deduplicate file name stems.");
-                    let mut stem: Vec<String> = stem
-                        .split('~')
-                        .map(|string| string.to_string())
-                        .collect();
-                    if let Some(suffix) = stem.pop() {
-                        let stem: String = stem.join("~");
-                        let mut stem: Vec<u8> = stem
-                            .as_bytes()
-                            .to_vec();
-                        let suffix: usize = suffix
-                            .parse()
-                            .expect("Can't deduplicate file name stems.");
-                        let suffix: usize = suffix + 1;
-                        let suffix: String = format!("~{}", suffix);
-                        let suffix: Vec<u8> = suffix
-                            .as_bytes()
-                            .to_vec();
-                        stem.truncate(short_file_name::STEM_LENGTH - suffix.len());
-                        stem.extend(suffix);
-                        new_stem = stem
-                            .try_into()
-                            .expect("Can't deduplicate file name stems.")
-                    } else {
-                        panic!("Can't deduplicate file name stems.");
+        directory_entries
+            .iter()
+            .for_each(|directory_entry| {
+                if let Self::ShortFileName {
+                    stem,
+                    extension,
+                    attribute: _,
+                    name_flags: _,
+                    created_time: _,
+                    accessed_time: _,
+                    written_time: _,
+                    cluster: _,
+                    size: _,
+                    long_file_name: Some(long_file_name),
+                    checksum,
+                } = directory_entry {
+                    let mut new_stem: [u8; short_file_name::STEM_LENGTH] = *stem.borrow();
+                    while duplication.contains(&new_stem) {
+                        let stem = String::from_utf8(new_stem.to_vec()).expect("Can't deduplicate file name stems.");
+                        let mut stem: Vec<String> = stem
+                            .split('~')
+                            .map(|string| string.to_string())
+                            .collect();
+                        if let Some(suffix) = stem.pop() {
+                            let stem: String = stem.join("~");
+                            let mut stem: Vec<u8> = stem
+                                .as_bytes()
+                                .to_vec();
+                            let suffix: usize = suffix
+                                .parse()
+                                .expect("Can't deduplicate file name stems.");
+                            let suffix: usize = suffix + 1;
+                            let suffix: String = format!("~{}", suffix);
+                            let suffix: Vec<u8> = suffix
+                                .as_bytes()
+                                .to_vec();
+                            stem.truncate(short_file_name::STEM_LENGTH - suffix.len());
+                            stem.extend(suffix);
+                            new_stem = stem
+                                .try_into()
+                                .expect("Can't deduplicate file name stems.")
+                        } else {
+                            panic!("Can't deduplicate file name stems.");
+                        }
                     }
+                    duplication.insert(new_stem);
+                    *stem.borrow_mut() = new_stem;
+                    let new_checksum: u8 = [
+                        stem.borrow().to_vec(),
+                        extension.to_vec(),
+                    ]
+                        .concat()
+                        .into_iter()
+                        .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
+                    long_file_name.set_checksum(new_checksum);
+                    *checksum.borrow_mut() = new_checksum;
                 }
-                duplication.insert(new_stem);
-                *stem.borrow_mut() = new_stem;
-                let new_checksum: u8 = [
-                    stem.borrow().to_vec(),
-                    extension.to_vec(),
-                ]
-                    .concat()
-                    .into_iter()
-                    .fold(0x00u8, |checksum, byte| (checksum >> 1) + (checksum << 7) + byte);
-                long_file_name.set_checksum(new_checksum);
-                *checksum.borrow_mut() = new_checksum;
-            }
-        }
+            });
     }
 
     pub fn get_name(&self) -> String {
