@@ -51,12 +51,7 @@ impl State<'_> {
         }
     }
 
-    pub fn swap_pages(&mut self, first_address: usize, second_address: usize) {
-        self.set_physical_address(first_address, second_address);
-        self.set_physical_address(second_address, first_address);
-    }
-
-    fn divide_page(&mut self, virtual_address: usize) {
+    pub fn divide_page(&mut self, virtual_address: usize) {
         match self {
             Self::Disable => {
             },
@@ -72,6 +67,11 @@ impl State<'_> {
             Self::Level5 => {
             },
         }
+    }
+
+    pub fn swap_pages(&mut self, first_address: usize, second_address: usize) {
+        self.set_physical_address(first_address, second_address);
+        self.set_physical_address(second_address, first_address);
     }
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {

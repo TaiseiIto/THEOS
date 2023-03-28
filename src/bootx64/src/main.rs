@@ -83,7 +83,7 @@ impl Kernel<'_> {
         uefi_println!("CR3 = {:#x?}", cr3);
         let cr4 = control::register4::Cr4::get();
         uefi_println!("CR4 = {:#x?}", cr4);
-        let paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
+        let mut paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         uefi_println!("simple_file_system = {:#x?}", simple_file_system);
@@ -91,6 +91,10 @@ impl Kernel<'_> {
         let elf = elf::Elf::new(&elf[..]);
         uefi_println!("elf = {:#x?}", elf);
         let page_map: BTreeMap<usize, usize> = elf.page_map();
+        page_map
+            .values()
+            .for_each(|virtual_address| paging.divide_page(*virtual_address));
+        uefi_println!("page_map = {:#x?}", page_map);
         Self {
             elf,
             cpuid,
