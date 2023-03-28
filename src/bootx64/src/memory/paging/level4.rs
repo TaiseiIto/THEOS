@@ -141,6 +141,18 @@ impl<'a> PageMapLevel4Entry<'a> {
         }
     }
 
+    fn divide_child(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_pointer_entries
+                .iter_mut()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't divide a page!")
+                .divide();
+        } else {
+            panic!("Can't divide a page!")
+        }
+    }
+
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             self.page_directory_pointer_entries
@@ -377,6 +389,23 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 | restart
                 | page_directory_table
                 | execute_disable;
+        }
+    }
+
+    fn divide_child(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            if !self.divided() {
+                self.divide();
+            }
+            self.page_directory_entries
+                .as_mut()
+                .expect("Can't divide a page!")
+                .iter_mut()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't divide a page!")
+                .divide();
+        } else {
+            panic!("Can't divide a page!")
         }
     }
 
