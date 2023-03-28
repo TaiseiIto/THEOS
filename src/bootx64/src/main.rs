@@ -92,7 +92,8 @@ impl Kernel<'_> {
         uefi_println!("elf = {:#x?}", elf);
         let page_map: BTreeMap<usize, usize> = elf.page_map();
         page_map
-            .values()
+            .keys()
+            .chain(page_map.values())
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
         uefi_println!("page_map = {:#x?}", page_map);
         Self {
