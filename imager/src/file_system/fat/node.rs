@@ -134,9 +134,10 @@ impl Content {
             .map(|child| Rc::new(child))
             .collect();
         let children: RefCell<Vec<Rc<Node>>> = RefCell::new(children);
-        for child in children.borrow().iter() {
-            child.set_parent();
-        }
+        children
+            .borrow()
+            .iter()
+            .for_each(|child| child.set_parent());
         let node: RefCell<Weak<Node>> = RefCell::new(Weak::new());
         let root = Self::Directory {
             children,
@@ -150,9 +151,10 @@ impl Content {
             children,
             node: _,
         } = source.into() {
-            for child in children.borrow().iter() {
-                child.set_parent();
-            }
+            children
+                .borrow()
+                .iter()
+                .for_each(|child| child.set_parent());
             let node = RefCell::new(Weak::new());
             let root = Self::Directory {
                 children,
@@ -210,9 +212,10 @@ impl Content {
             children,
             node: _,
         } = self {
-            for child in children.borrow().iter() {
-                child.write_clusters(clusters);
-            }
+            children
+                .borrow()
+                .iter()
+                .for_each(|child| child.write_clusters(clusters));
         }
     }
 
@@ -221,9 +224,10 @@ impl Content {
             children,
             node: _,
         } = self {
-            for child in children.borrow().iter() {
-                child.write_clusters(clusters);
-            }
+            children
+                .borrow()
+                .iter()
+                .for_each(|child| child.write_clusters(clusters));
         }
     }
 }
@@ -423,13 +427,16 @@ impl Node {
             node,
         } = &self.clone().content {
             *node.borrow_mut() = Rc::downgrade(self);
-            for child in children.borrow_mut().iter_mut() {
-                child.set_parent();
-                *child
-                    .clone()
-                    .parent
-                    .borrow_mut() = Rc::downgrade(self);
-            }
+            children
+                .borrow_mut()
+                .iter_mut()
+                .for_each(|child| {
+                    child.set_parent();
+                    *child
+                        .clone()
+                        .parent
+                        .borrow_mut() = Rc::downgrade(self);
+                });
         }
     }
 
