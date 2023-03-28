@@ -50,5 +50,28 @@ impl State<'_> {
             Self::Disable
         }
     }
+
+    pub fn swap_pages(&mut self, first_address: usize, second_address: usize) {
+        self.set_physical_address(first_address, second_address);
+        self.set_physical_address(second_address, first_address);
+    }
+
+    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.set_physical_address(virtual_address, physical_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
 }
 

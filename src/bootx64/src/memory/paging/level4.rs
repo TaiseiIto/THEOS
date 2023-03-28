@@ -33,7 +33,7 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
-    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+    pub fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         self.page_map_level_4_entries
             .iter_mut()
             .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
