@@ -32,6 +32,14 @@ impl Cr3<'_> {
     const PWT_MASK: u64 = 1 << Self::PWT_SHIFT;
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
+
+    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+        self.page_map_level_4_entries
+            .iter_mut()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a physical address!")
+            .set_physical_address(virtual_address, physical_address);
+    }
 }
 
 impl From<u64> for Cr3<'_> {
@@ -130,6 +138,18 @@ impl<'a> PageMapLevel4Entry<'a> {
             })
         } else {
             None
+        }
+    }
+
+    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_pointer_entries
+                .iter_mut()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a physical address!")
+                .set_physical_address(virtual_address, physical_address);
+        } else {
+            panic!("Can't set a physical address!")
         }
     }
 }
