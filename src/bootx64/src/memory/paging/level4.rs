@@ -363,6 +363,23 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     fn divided(&self) -> bool {
         self.page_directory_entries.is_some()
     }
+
+    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+        if !self.divided() {
+            self.divide();
+        }
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_entries
+                .as_mut()
+                .expect("Can't set a physical address!")
+                .iter_mut()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a physical address!")
+                .set_physical_address(virtual_address, physical_address);
+        } else {
+            panic!("Can't set a physical address!")
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -715,6 +732,9 @@ impl<'a> PageDirectoryEntry<'a> {
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         if !self.divided() {
+            self.divide();
+        }
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             self.page_entries
                 .as_mut()
                 .expect("Can't set a physical address!")
@@ -722,8 +742,6 @@ impl<'a> PageDirectoryEntry<'a> {
                 .find(|page_entry| page_entry.virtual_address == virtual_address)
                 .expect("Can't set a physical address!")
                 .set_physical_address(physical_address);
-        }
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
         } else {
             panic!("Can't set a physical address!")
         }
