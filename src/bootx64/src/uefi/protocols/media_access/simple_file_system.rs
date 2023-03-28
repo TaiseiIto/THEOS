@@ -86,11 +86,12 @@ impl SimpleFileSystem {
         let mut path: str::Split<char> = path.split('/');
         path.next().expect("Can't read a file!");
         let name: &str = path.next().expect("Can't read a file!");
-        let mut node = file_protocol::Node::root_child(self, name);
-        for name in path {
-            node = node.child(name);
-        }
-        node.read_file()
+        path
+            .fold(
+                file_protocol::Node::root_child(self, name),
+                |node, name| node.child(name)
+            )
+            .read_file()
     }
 }
 
