@@ -56,6 +56,24 @@ impl State<'_> {
         self.set_physical_address(second_address, first_address);
     }
 
+    fn divide_page(&mut self, virtual_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.divide_child(virtual_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         match self {
             Self::Disable => {

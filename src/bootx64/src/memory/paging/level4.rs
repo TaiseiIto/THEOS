@@ -33,6 +33,14 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
+    pub fn divide_child(&mut self, virtual_address: usize) {
+        self.page_map_level_4_entries
+            .iter_mut()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't divide a page!")
+            .divide_child(virtual_address);
+    }
+
     pub fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         self.page_map_level_4_entries
             .iter_mut()
@@ -147,7 +155,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .iter_mut()
                 .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
                 .expect("Can't divide a page!")
-                .divide();
+                .divide_child(virtual_address);
         } else {
             panic!("Can't divide a page!")
         }
