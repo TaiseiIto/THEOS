@@ -4,6 +4,10 @@
 use {
     alloc::vec::Vec,
     core::slice,
+    crate::{
+        serial_print,
+        serial_println,
+    },
     super::super::Pages,
 };
 
@@ -770,6 +774,8 @@ impl<'a> PageDirectoryEntry<'a> {
             } else {
                 0
             };
+            serial_println!("write page directory entry!");
+            serial_println!("*self.page_directory_entry = {:#x}", *self.page_directory_entry);
             *self.page_directory_entry =
                 present
                 | writable
@@ -780,6 +786,7 @@ impl<'a> PageDirectoryEntry<'a> {
                 | restart
                 | page_table
                 | execute_disable;
+            serial_println!("end divide 2 mib page");
         }
     }
 
