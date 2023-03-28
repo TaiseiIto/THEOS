@@ -386,7 +386,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         if !self.divided() {
-            self.divide();
+            panic!("Can't set a physical address!")
         }
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             self.page_directory_entries
@@ -752,7 +752,7 @@ impl<'a> PageDirectoryEntry<'a> {
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
         if !self.divided() {
-            self.divide();
+            panic!("Can't set a physical address!")
         }
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             self.page_entries

@@ -13,7 +13,10 @@ mod serial;
 mod uefi;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     asm::{
         control,
         cpuid,
@@ -50,6 +53,7 @@ struct Kernel<'a> {
     elf: elf::Elf<'a>,
     cpuid: Option<cpuid::Cpuid>,
     paging: paging::State<'a>,
+    page_map: BTreeMap<usize, usize>,
 }
 
 impl Kernel<'_> {
@@ -86,18 +90,19 @@ impl Kernel<'_> {
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
         uefi_println!("elf = {:#x?}", elf);
+        let page_map: BTreeMap<usize, usize> = elf.page_map();
         Self {
             elf,
             cpuid,
             paging,
+            page_map,
         }
     }
 
     fn start(&mut self) {
-        self.elf
-            .page_map()
-            .into_iter()
-            .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(physical_address, virtual_address));
+        self.page_map
+            .iter()
+            .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(*physical_address, *virtual_address));
         serial_println!("Succeeded in swapping pages!");
     }
 }
