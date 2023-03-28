@@ -7,6 +7,14 @@ use {
     super::super::Pages,
 };
 
+fn cannonicalize(virtual_address: usize) -> usize {
+    if virtual_address & (1 << (PageMapLevel4Entry::INDEX_SHIFT_END - 1)) == 0 {
+        virtual_address & !(usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_END)
+    } else {
+        virtual_address | (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_END)
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Cr3<'a> {
@@ -38,7 +46,7 @@ impl From<u64> for Cr3<'_> {
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .iter_mut()
             .enumerate()
-            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read(i << 39, page_map_level_4_entry))
+            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read(cannonicalize(i << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
             .collect();
         Self {
             pwt,
@@ -105,7 +113,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
                 .iter_mut()
                 .enumerate()
-                .filter_map(|(i, page_directory_pointer_entry)| PageDirectoryPointerEntry::read(virtual_address + (i << 30), page_directory_pointer_entry))
+                .filter_map(|(i, page_directory_pointer_entry)| PageDirectoryPointerEntry::read(virtual_address + (i << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN), page_directory_pointer_entry))
                 .collect();
             let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
