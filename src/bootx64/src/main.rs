@@ -37,9 +37,9 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     serial::Serial::init_com1();
     serial_println!("Hello, World!");
     system::init_system(image_handle, system_table);
-    let _kernel = Kernel::new();
+    let mut kernel = Kernel::new();
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
-    serial_println!("Succeeded in exiting boot services.");
+    kernel.start();
     loop {
         asm::hlt();
     }
@@ -86,12 +86,19 @@ impl Kernel<'_> {
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
         uefi_println!("elf = {:#x?}", elf);
-        uefi_println!("elf.page_map() = {:#x?}", elf.page_map());
         Self {
             elf,
             cpuid,
             paging,
         }
+    }
+
+    fn start(&mut self) {
+        self.elf
+            .page_map()
+            .into_iter()
+            .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(physical_address, virtual_address));
+        serial_println!("Succeeded in swapping pages!");
     }
 }
 
