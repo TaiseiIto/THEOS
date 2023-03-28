@@ -14,7 +14,10 @@ use {
         },
         vec::Vec,
     },
-    super::memory,
+    super::{
+        memory,
+        uefi::services::boot::memory_allocation,
+    },
 };
 
 #[allow(dead_code)]
@@ -87,6 +90,18 @@ impl Elf<'_> {
             sections,
             deployed,
         }
+    }
+
+    pub fn page_map(&self) -> BTreeMap<usize, usize> {
+        self.deployed
+            .iter()
+            .enumerate()
+            .map(|(i, (page_range, pages))| page_range
+                .clone()
+                .map(move |page| (pages.physical_address() as usize + i * memory_allocation::PAGE_SIZE, page * memory_allocation::PAGE_SIZE))
+            )
+            .flatten()
+            .collect()
     }
 }
 

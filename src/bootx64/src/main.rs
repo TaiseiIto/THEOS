@@ -86,6 +86,7 @@ impl Kernel<'_> {
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
         uefi_println!("elf = {:#x?}", elf);
+        uefi_println!("elf.page_map() = {:#x?}", elf.page_map());
         Self {
             elf,
             cpuid,

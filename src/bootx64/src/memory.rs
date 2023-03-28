@@ -112,3 +112,11 @@ impl Ord for PageRange {
     }
 }
 
+impl Iterator for PageRange {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
