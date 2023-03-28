@@ -85,6 +85,10 @@ impl<'a> PageMapLevel4Entry<'a> {
     const PAGE_DIRECTORY_POINTER_TABLE_MASK: u64 = (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_END) - (1 << Self::PAGE_DIRECTORY_POINTER_TABLE_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
+    const INDEX_SHIFT_BEGIN: usize = 39;
+    const INDEX_SHIFT_END: usize = 48;
+    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
+
     fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
         if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {
             let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
@@ -145,8 +149,6 @@ struct PageDirectoryPointerEntry<'a> {
 }
 
 impl<'a> PageDirectoryPointerEntry<'a> {
-    const PAGE_DIRECTORY_ENTRY_INDEX_SHIFT: usize = 21;
-
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -181,6 +183,10 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const PAGE_1_GIB_MASK: u64 = (1 << Self::PAGE_1_GIB_SHIFT_END) - (1 << Self::PAGE_1_GIB_SHIFT_BEGIN);
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
+
+    const INDEX_SHIFT_BEGIN: usize = 30;
+    const INDEX_SHIFT_END: usize = 39;
+    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn read(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_pointer_entry & Self::PRESENT_MASK != 0 {
@@ -276,7 +282,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                     .iter_mut()
                     .enumerate()
                     .map(|(i, page_directory_entry)| PageDirectoryEntry::new(
-                        self.virtual_address + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                        self.virtual_address + (i << PageDirectoryEntry::INDEX_SHIFT_BEGIN),
                         page_directory_entry,
                         self.writable,
                         self.user_mode_access,
@@ -285,7 +291,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                         self.global.expect("Can't divide a page!"),
                         self.restart,
                         self.page_attribute_table.expect("Can't divide a page!"),
-                        self.page_1_gib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_DIRECTORY_ENTRY_INDEX_SHIFT),
+                        self.page_1_gib_physical_address.expect("Can't divide a page!") + (i << PageDirectoryEntry::INDEX_SHIFT_BEGIN),
                         self.protection_key.expect("Can't divide a page!"),
                         self.execute_disable,
                     ))
@@ -374,8 +380,6 @@ struct PageDirectoryEntry<'a> {
 }
 
 impl<'a> PageDirectoryEntry<'a> {
-    const PAGE_ENTRY_INDEX_SHIFT: usize = 12;
-
     const PRESENT_SHIFT: usize = 0;
     const WRITABLE_SHIFT: usize = 1;
     const USER_MODE_ACCESS_SHIFT: usize = 2;
@@ -410,6 +414,10 @@ impl<'a> PageDirectoryEntry<'a> {
     const PAGE_2_MIB_MASK: u64 = (1 << Self::PAGE_2_MIB_SHIFT_END) - (1 << Self::PAGE_2_MIB_SHIFT_BEGIN);
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
+
+    const INDEX_SHIFT_BEGIN: usize = 21;
+    const INDEX_SHIFT_END: usize = 30;
+    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(
         virtual_address: usize,
@@ -562,7 +570,7 @@ impl<'a> PageDirectoryEntry<'a> {
                     page_table
                         .iter_mut()
                         .enumerate()
-                        .filter_map(|(i, page_entry)| PageEntry::read(virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT), page_entry))
+                        .filter_map(|(i, page_entry)| PageEntry::read(virtual_address + (i << PageEntry::INDEX_SHIFT_BEGIN), page_entry))
                         .collect()
                 )
             };
@@ -623,7 +631,7 @@ impl<'a> PageDirectoryEntry<'a> {
                     .iter_mut()
                     .enumerate()
                     .map(|(i, page_entry)| PageEntry::new(
-                        self.virtual_address + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
+                        self.virtual_address + (i << PageEntry::INDEX_SHIFT_BEGIN),
                         page_entry,
                         self.writable,
                         self.user_mode_access,
@@ -632,7 +640,7 @@ impl<'a> PageDirectoryEntry<'a> {
                         self.page_attribute_table.expect("Can't divide a page!"),
                         self.global.expect("Can't divide a page!"),
                         self.restart,
-                        self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << Self::PAGE_ENTRY_INDEX_SHIFT),
+                        self.page_2_mib_physical_address.expect("Can't divide a page!") + (i << PageEntry::INDEX_SHIFT_BEGIN),
                         self.protection_key.expect("Can't divide a page!"),
                         self.execute_disable,
                     ))
@@ -696,6 +704,12 @@ impl<'a> PageDirectoryEntry<'a> {
     fn divided(&self) -> bool {
         self.page_entries.is_some()
     }
+
+    fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
+        if !self.divided() {
+            self.divide()
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -747,6 +761,10 @@ impl<'a> PageEntry<'a> {
     const PHYSICAL_ADDRESS_MASK: u64 = (1 << Self::PHYSICAL_ADDRESS_SHIFT_END) - (1 << Self::PHYSICAL_ADDRESS_SHIFT_BEGIN);
     const PROTECTION_KEY_MASK: u64 = (1 << Self::PROTECTION_KEY_SHIFT_END) - (1 << Self::PROTECTION_KEY_SHIFT_BEGIN);
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
+
+    const INDEX_SHIFT_BEGIN: usize = 12;
+    const INDEX_SHIFT_END: usize = 21;
+    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(
         virtual_address: usize,
