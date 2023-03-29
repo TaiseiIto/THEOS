@@ -52,6 +52,14 @@ impl Cr3<'_> {
             .expect("Can't set a physical address!")
             .set_physical_address(virtual_address, physical_address);
     }
+
+    pub fn get_heterogeneous_size_page(&self, virtual_address: usize) -> HeterogeneousSizePage {
+        self.page_map_level_4_entries
+            .iter()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't get a heterogeneous size page!")
+            .get_heterogeneous_size_page(virtual_address)
+    }
 }
 
 impl From<u64> for Cr3<'_> {
@@ -174,6 +182,18 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn get_heterogeneous_size_page(&self, virtual_address: usize) -> HeterogeneousSizePage {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_pointer_entries
+                .iter()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't get a heterogeneous size page!")
+                .get_heterogeneous_size_page(virtual_address)
+        } else {
+            panic!("Can't get a heterogeneous size page!")
         }
     }
 }
@@ -439,6 +459,24 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn get_heterogeneous_size_page(&self, virtual_address: usize) -> HeterogeneousSizePage {
+        if self.divided() {
+            if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+                self.page_directory_entries
+                    .as_ref()
+                    .expect("Can't get a heterogeneous size page!")
+                    .iter()
+                    .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                    .expect("Can't get a heterogeneous size page!")
+                    .get_heterogeneous_size_page(virtual_address)
+            } else {
+                panic!("Can't get a heterogeneous size page!")
+            }
+        } else {
+            HeterogeneousSizePage::Page1Gib(self)
         }
     }
 }
@@ -822,6 +860,24 @@ impl<'a> PageDirectoryEntry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+
+    fn get_heterogeneous_size_page(&self, virtual_address: usize) -> HeterogeneousSizePage {
+        if self.divided() {
+            if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+                self.page_entries
+                    .as_ref()
+                    .expect("Can't get a heterogeneous size page!")
+                    .iter()
+                    .find(|page_entry| page_entry.virtual_address == virtual_address & (usize::MAX << PageEntry::INDEX_SHIFT_BEGIN))
+                    .expect("Can't get a heterogeneous size page!")
+                    .get_heterogeneous_size_page()
+            } else {
+                panic!("Can't get a heterogeneous size page!")
+            }
+        } else {
+            HeterogeneousSizePage::Page2Mib(self)
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -1020,19 +1076,17 @@ impl<'a> PageEntry<'a> {
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
     }
+
+    fn get_heterogeneous_size_page(&self) -> HeterogeneousSizePage {
+        HeterogeneousSizePage::Page4Kib(self)
+    }
 }
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum HeterogeneousSizePage<'a> {
-    Page4Kib {
-        entry: &'a PageEntry<'a>,
-    },
-    Page2Mib {
-        entry: &'a PageDirectoryEntry<'a>,
-    },
-    Page1Gib {
-        entry: &'a PageDirectoryPointerEntry<'a>,
-    },
+    Page4Kib(&'a PageEntry<'a>),
+    Page2Mib(&'a PageDirectoryEntry<'a>),
+    Page1Gib(&'a PageDirectoryPointerEntry<'a>),
 }
 
