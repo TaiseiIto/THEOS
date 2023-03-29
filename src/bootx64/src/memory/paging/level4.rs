@@ -775,7 +775,19 @@ impl<'a> PageDirectoryEntry<'a> {
                 0
             };
             serial_println!("write page directory entry!");
-            serial_println!("*self.page_directory_entry = {:#x}", *self.page_directory_entry);
+            serial_println!("old *self.page_directory_entry = {:#x}", *self.page_directory_entry);
+            serial_println!(
+                "new *self.page_directory_entry = {:#x}", 
+                present
+                | writable
+                | user_mode_access
+                | page_write_through
+                | page_cache_disable
+                | accessed
+                | restart
+                | page_table
+                | execute_disable,
+            );
             *self.page_directory_entry =
                 present
                 | writable
