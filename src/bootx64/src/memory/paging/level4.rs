@@ -1022,3 +1022,17 @@ impl<'a> PageEntry<'a> {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub enum HeterogeneousSizePage<'a> {
+    Page4Kib {
+        entry: &'a PageEntry<'a>,
+    },
+    Page2Mib {
+        entry: &'a PageDirectoryEntry<'a>,
+    },
+    Page1Gib {
+        entry: &'a PageDirectoryPointerEntry<'a>,
+    },
+}
+
