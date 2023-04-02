@@ -53,8 +53,8 @@ impl Cr3<'_> {
             .into_iter()
             .enumerate()
             .map(|(index, page_map_level_4_entry)| (index, index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN, page_map_level_4_entry))
-            .filter(|(_index, address, _page_map_level_4_entry)| *address < memory_size)
-            .map(|(index, address, page_map_level_4_entry)| PageMapLevel4Entry::new(address, page_map_level_4_entry))
+            .filter(|(_index, virtual_address, _page_map_level_4_entry)| *virtual_address < memory_size)
+            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry, memory_size))
             .collect();
         Self {
             pwt,
@@ -116,6 +116,7 @@ struct PageMapLevel4Entry<'a> {
     page_cache_disable: bool,
     accessed: bool,
     restart: bool,
+    page_directory_pointer_table_page: Option<Pages<'a>>,
     page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>>,
     execute_disable: bool,
 }
@@ -146,7 +147,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_SHIFT_END: usize = 48;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
-    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64, memory_size: usize) -> Self {
         let present: bool = true;
         let writable: bool = false;
         let user_mode_access: bool = false;
@@ -154,8 +155,27 @@ impl<'a> PageMapLevel4Entry<'a> {
         let page_cache_disable: bool = false;
         let accessed: bool = false;
         let restart: bool = false;
-        let page_directory_pointer_entries = Vec::<PageDirectoryPointerEntry>::new();
         let execute_disable: bool = false;
+        let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
+        let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page
+            .as_mut()
+            .expect("Can't create a new page map level 4 entry!")
+            .bytes();
+        let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
+        let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
+        let page_directory_pointer_table: *mut u8 = page_directory_pointer_table.as_mut_ptr();
+        let page_directory_pointer_table: *mut u64 = page_directory_pointer_table as *mut u64;
+        let page_directory_pointer_table_len: usize = page_directory_pointer_table_len / 8;
+        let page_directory_pointer_table: &mut [u64] = unsafe {
+            slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
+        };
+        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
+            .into_iter()
+            .enumerate()
+            .map(|(index, page_directory_pointer_entry)| (index, virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN), page_directory_pointer_entry))
+            .filter(|(_index, virtual_address, _page_directory_pointer_entry)| *virtual_address < memory_size)
+            .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry, memory_size))
+            .collect();
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
         } else {
@@ -214,6 +234,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             page_cache_disable,
             accessed,
             restart,
+            page_directory_pointer_table_page,
             page_directory_pointer_entries,
             execute_disable,
         }
@@ -227,6 +248,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             let page_cache_disable: bool = *page_map_level_4_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
             let accessed: bool = *page_map_level_4_entry & Self::ACCESSED_MASK != 0;
             let restart: bool = *page_map_level_4_entry & Self::RESTART_MASK != 0;
+            let page_directory_pointer_table_page: Option<Pages> = None;
             let page_directory_pointer_table: u64 = *page_map_level_4_entry & Self::PAGE_DIRECTORY_POINTER_TABLE_MASK;
             let page_directory_pointer_table: *mut [u64; ENTRIES] = page_directory_pointer_table as *mut [u64; ENTRIES];
             let page_directory_pointer_table: &mut [u64; ENTRIES] = unsafe {
@@ -247,6 +269,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                 page_cache_disable,
                 accessed,
                 restart,
+                page_directory_pointer_table_page,
                 page_directory_pointer_entries,
                 execute_disable,
             })
@@ -341,6 +364,68 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const INDEX_SHIFT_BEGIN: usize = 30;
     const INDEX_SHIFT_END: usize = 39;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
+
+    fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64, memory_size: usize) -> Self {
+        let present: bool = true;
+        let writable: bool = false;
+        let user_mode_access: bool = false;
+        let page_write_through: bool = false;
+        let page_cache_disable: bool = false;
+        let accessed: bool = false;
+        let dirty: bool = false;
+        let page_size_1_gib: bool = virtual_address + (1 << Self::INDEX_SHIFT_BEGIN) <= memory_size;
+        let global: Option<bool> = if page_size_1_gib {
+            Some(false)
+        } else {
+            None
+        };
+        let restart: bool = false;
+        let page_attribute_table: Option<bool> = if page_size_1_gib {
+            Some(false)
+        } else {
+            None
+        };
+        let page_directory_table_page: Option<Pages> = if page_size_1_gib {
+            None
+        } else {
+            Some(Pages::new(1))
+        };
+        let page_directory_entries: Option<Vec<PageDirectoryEntry>> = if page_size_1_gib {
+            None
+        } else {
+            Some(Vec::<PageDirectoryEntry>::new())
+        };
+        let page_1_gib_physical_address: Option<usize> = if page_size_1_gib {
+            Some(virtual_address)
+        } else {
+            None
+        };
+        let protection_key: Option<u8> = if page_size_1_gib {
+            Some(0)
+        } else {
+            None
+        };
+        let execute_disable: bool = false;
+        Self {
+            virtual_address,
+            page_directory_pointer_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            dirty,
+            page_size_1_gib,
+            global,
+            restart,
+            page_attribute_table,
+            page_directory_table_page,
+            page_directory_entries,
+            page_1_gib_physical_address,
+            protection_key,
+            execute_disable,
+        }
+    }
 
     fn read(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_pointer_entry & Self::PRESENT_MASK != 0 {
