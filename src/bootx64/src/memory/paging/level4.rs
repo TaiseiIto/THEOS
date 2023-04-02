@@ -33,6 +33,17 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
+    pub fn new(cr3: u64) -> Self {
+        let pwt: bool = cr3 & Self::PWT_MASK != 0;
+        let pcd: bool = cr3 & Self::PCD_MASK != 0;
+        let page_map_level_4_entries = Vec::<PageMapLevel4Entry>::new();
+        Self {
+            pwt,
+            pcd,
+            page_map_level_4_entries,
+        }
+    }
+
     pub fn divide_child(&mut self, virtual_address: usize) {
         self.page_map_level_4_entries
             .iter_mut()
