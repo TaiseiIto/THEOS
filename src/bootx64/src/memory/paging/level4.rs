@@ -20,6 +20,7 @@ fn cannonicalize(virtual_address: usize) -> usize {
 pub struct Cr3<'a> {
     pwt: bool,
     pcd: bool,
+    page_map_level_4_table_page: Option<Pages<'a>>,
     page_map_level_4_entries: Vec<PageMapLevel4Entry<'a>>,
 }
 
@@ -33,13 +34,32 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
-    pub fn new(cr3: u64) -> Self {
+    pub fn new(cr3: u64, memory_size: usize) -> Self {
         let pwt: bool = cr3 & Self::PWT_MASK != 0;
         let pcd: bool = cr3 & Self::PCD_MASK != 0;
-        let page_map_level_4_entries = Vec::<PageMapLevel4Entry>::new();
+        let mut page_map_level_4_table_page: Option<Pages> = Some(Pages::new(1));
+        let page_map_level_4_table: &mut [u8] = page_map_level_4_table_page
+            .as_mut()
+            .expect("Can't create a new CR3 structure!")
+            .bytes();
+        let page_map_level_4_table_len: usize = page_map_level_4_table.len();
+        let page_map_level_4_table: *mut u8 = page_map_level_4_table.as_mut_ptr();
+        let page_map_level_4_table: *mut u64 = page_map_level_4_table as *mut u64;
+        let page_map_level_4_table_len: usize = page_map_level_4_table_len / 8;
+        let page_map_level_4_table: &mut [u64] = unsafe {
+            slice::from_raw_parts_mut(page_map_level_4_table, page_map_level_4_table_len)
+        };
+        let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
+            .into_iter()
+            .enumerate()
+            .map(|(index, page_map_level_4_entry)| (index, index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN, page_map_level_4_entry))
+            .filter(|(_index, address, _page_map_level_4_entry)| *address < memory_size)
+            .map(|(index, address, page_map_level_4_entry)| PageMapLevel4Entry::new(address, page_map_level_4_entry))
+            .collect();
         Self {
             pwt,
             pcd,
+            page_map_level_4_table_page,
             page_map_level_4_entries,
         }
     }
@@ -65,6 +85,7 @@ impl From<u64> for Cr3<'_> {
 	fn from(cr3: u64) -> Self {
         let pwt: bool = cr3 & Self::PWT_MASK != 0;
         let pcd: bool = cr3 & Self::PCD_MASK != 0;
+        let page_map_level_4_table_page: Option<Pages> = None;
         let page_map_level_4_table: u64 = cr3 & Self::PAGE_DIRECTORY_BASE_MASK;
         let page_map_level_4_table: *mut [u64; ENTRIES] = page_map_level_4_table as *mut [u64; ENTRIES];
         let page_map_level_4_table: &mut [u64; ENTRIES] = unsafe {
@@ -78,6 +99,7 @@ impl From<u64> for Cr3<'_> {
         Self {
             pwt,
             pcd,
+            page_map_level_4_table_page,
             page_map_level_4_entries,
         }
 	}
@@ -123,6 +145,29 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_SHIFT_BEGIN: usize = 39;
     const INDEX_SHIFT_END: usize = 48;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
+
+    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+        let writable: bool = false;
+        let user_mode_access: bool = false;
+        let page_write_through: bool = false;
+        let page_cache_disable: bool = false;
+        let accessed: bool = false;
+        let restart: bool = false;
+        let page_directory_pointer_entries = Vec::<PageDirectoryPointerEntry>::new();
+        let execute_disable: bool = false;
+        Self {
+            virtual_address,
+            page_map_level_4_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            restart,
+            page_directory_pointer_entries,
+            execute_disable,
+        }
+    }
 
     fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
         if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {

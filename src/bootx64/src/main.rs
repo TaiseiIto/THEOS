@@ -63,6 +63,7 @@ impl Kernel<'_> {
         uefi_println!("system_table = {:#x?}", system::system());
         let memory_map = memory_allocation::Map::new();
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
+        let memory_size = memory_size as usize;
         let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
         uefi_println!("memory_map = {:#x?}", memory_map);
         uefi_println!("memory_size = {:#x}", memory_size);
@@ -83,7 +84,7 @@ impl Kernel<'_> {
         uefi_println!("CR3 = {:#x?}", cr3);
         let cr4 = control::register4::Cr4::get();
         uefi_println!("CR4 = {:#x?}", cr4);
-        let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer);
+        let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
         uefi_println!("paging = {:#x?}", paging);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
