@@ -149,7 +149,7 @@ impl<'a> PageMapLevel4Entry<'a> {
 
     fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64, memory_size: usize) -> Self {
         let present: bool = true;
-        let writable: bool = false;
+        let writable: bool = true;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
         let page_cache_disable: bool = false;
@@ -367,7 +367,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
     fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64, memory_size: usize) -> Self {
         let present: bool = true;
-        let writable: bool = false;
+        let writable: bool = true;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
         let page_cache_disable: bool = false;
@@ -406,6 +406,83 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             None
         };
         let execute_disable: bool = false;
+        let present_in_entry: u64 = if present {
+            Self::PRESENT_MASK
+        } else {
+            0
+        };
+        let writable_in_entry: u64 = if writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access_in_entry: u64 = if user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_in_entry: u64 = if page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_in_entry: u64 = if page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed_in_entry: u64 = if accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let dirty_in_entry: u64 = if dirty {
+            Self::DIRTY_MASK
+        } else {
+            0
+        };
+        let page_size_1_gib_in_entry: u64 = if page_size_1_gib {
+            Self::PAGE_SIZE_1_GIB_MASK
+        } else {
+            0
+        };
+        let global_in_entry: u64 = if global.unwrap_or(false) {
+            Self::GLOBAL_MASK
+        } else {
+            0
+        };
+        let restart_in_entry: u64 = if restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let page_attribute_table_in_entry: u64 = if page_attribute_table.unwrap_or(false) {
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
+        } else {
+            0
+        };
+        let page_1_gib_physical_address_in_entry: u64 = page_1_gib_physical_address.unwrap_or(0) as u64;
+        let protection_key_in_entry: u64 = (protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+        let execute_disable_in_entry: u64 = if execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *page_directory_pointer_entry =
+            present_in_entry           
+            | writable_in_entry
+            | user_mode_access_in_entry
+            | page_write_through_in_entry
+            | page_cache_disable_in_entry
+            | accessed_in_entry
+            | dirty_in_entry
+            | page_size_1_gib_in_entry
+            | global_in_entry
+            | restart_in_entry
+            | page_attribute_table_in_entry
+            | page_1_gib_physical_address_in_entry
+            | protection_key_in_entry
+            | execute_disable_in_entry;
         Self {
             virtual_address,
             page_directory_pointer_entry,
