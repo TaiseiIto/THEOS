@@ -105,5 +105,9 @@ impl Elf<'_> {
             .flatten()
             .collect()
     }
+
+    pub fn run(&self) {
+        self.header.run()
+    }
 }
 

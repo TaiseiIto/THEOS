@@ -69,6 +69,13 @@ const E_SHSTRNDX_LENGTH: usize = mem::size_of::<u16>();
 const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
+    pub fn run(&self) {
+        let main: fn() = unsafe {
+            mem::transmute(self.e_entry)
+        };
+        main()
+    }
+
     pub fn e_phentsize(&self) -> usize {
         self.e_phentsize as usize
     }

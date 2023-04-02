@@ -42,8 +42,8 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     system::init_system(image_handle, system_table);
     let mut kernel = Kernel::new();
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
-    kernel.start();
-    panic!("Can't start the kernel!");
+    kernel.run();
+    panic!("Can't run the kernel!");
 }
 
 #[allow(dead_code)]
@@ -94,13 +94,13 @@ impl Kernel<'_> {
         }
     }
 
-    fn start(&mut self) {
+    fn run(&mut self) {
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(*physical_address, *virtual_address));
         serial_println!("kernel = {:#x?}", self);
         asm::set_cr3(self.paging.get_cr3());
-        serial_println!("Succeeded in setting CR3");
+        self.elf.run()
     }
 }
 
