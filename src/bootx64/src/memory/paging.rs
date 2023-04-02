@@ -78,6 +78,15 @@ impl State<'_> {
         }
     }
 
+    pub fn get_cr3(&self) -> u64 {
+        match self {
+            Self::Level4 {
+                cr3,
+            } => cr3.into(),
+            _ => panic!("Can't get CR3!"),
+        }
+    }
+
     pub fn divide_page(&mut self, virtual_address: usize) {
         match self {
             Self::Disable => {

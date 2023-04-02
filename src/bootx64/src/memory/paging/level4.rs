@@ -105,6 +105,25 @@ impl From<u64> for Cr3<'_> {
 	}
 }
 
+impl Into<u64> for &Cr3<'_> {
+    fn into(self) -> u64 {
+        let pwt: u64 = if self.pwt {
+            Cr3::PWT_MASK
+        } else {
+            0
+        };
+        let pcd: u64 = if self.pcd {
+            Cr3::PCD_MASK
+        } else {
+            0
+        };
+        let page_map_level_4_table: &u64 = self.page_map_level_4_entries[0].page_map_level_4_entry;
+        let page_map_level_4_table: *const u64 = page_map_level_4_table as *const u64;
+        let page_map_level_4_table: u64 = page_map_level_4_table as u64;
+        pwt | pcd | page_map_level_4_table
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageMapLevel4Entry<'a> {

@@ -100,7 +100,8 @@ impl Kernel<'_> {
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(*physical_address, *virtual_address));
-        serial_println!("kernel = {:#x?}", self)
+        serial_println!("kernel = {:#x?}", self);
+        serial_println!("CR3 = {:#x}", self.paging.get_cr3());
     }
 }
 
