@@ -147,6 +147,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+        let present: bool = true;
         let writable: bool = false;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
@@ -155,6 +156,55 @@ impl<'a> PageMapLevel4Entry<'a> {
         let restart: bool = false;
         let page_directory_pointer_entries = Vec::<PageDirectoryPointerEntry>::new();
         let execute_disable: bool = false;
+        let present_in_entry: u64 = if present {
+            Self::PRESENT_MASK
+        } else {
+            0
+        };
+        let writable_in_entry: u64 = if writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access_in_entry: u64 = if user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_in_entry: u64 = if page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_in_entry: u64 = if page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed_in_entry: u64 = if accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let restart_in_entry: u64 = if restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let execute_disable_in_entry: u64 = if execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *page_map_level_4_entry = 
+            present_in_entry
+            | writable_in_entry
+            | user_mode_access_in_entry
+            | page_write_through_in_entry
+            | page_cache_disable_in_entry
+            | accessed_in_entry
+            | restart_in_entry
+            | execute_disable_in_entry;
         Self {
             virtual_address,
             page_map_level_4_entry,
