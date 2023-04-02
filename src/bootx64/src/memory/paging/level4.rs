@@ -818,7 +818,7 @@ impl<'a> PageDirectoryEntry<'a> {
         };
         let page_size_2_mib: bool = true;
         let page_size_2_mib_bit: u64 = if page_size_2_mib {
-            Self::PAGE_2_MIB_MASK
+            Self::PAGE_SIZE_2_MIB_MASK
         } else {
             0
         };
