@@ -176,6 +176,10 @@ impl<'a> PageMapLevel4Entry<'a> {
         let restart: bool = false;
         let execute_disable: bool = false;
         let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
+        let page_directory_pointer_table_address: u64 = page_directory_pointer_table_page
+            .as_ref()
+            .expect("Can't create a new page map level 4 entry!")
+            .physical_address();
         let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page
             .as_mut()
             .expect("Can't create a new page map level 4 entry!")
@@ -243,6 +247,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             | page_cache_disable_in_entry
             | accessed_in_entry
             | restart_in_entry
+            | page_directory_pointer_table_address
             | execute_disable_in_entry;
         Self {
             virtual_address,
