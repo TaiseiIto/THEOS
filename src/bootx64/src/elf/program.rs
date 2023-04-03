@@ -127,7 +127,7 @@ impl Header {
     }
 
     fn start_offset(&self) -> usize {
-        self.p_offset
+        self.p_vaddr % PAGE_SIZE
     }
 }
 
