@@ -82,9 +82,9 @@ impl Kernel<'_> {
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
         let page_map: BTreeMap<usize, usize> = elf.page_map();
+        uefi_println!("page_map = {:#x?}", page_map);
         page_map
-            .keys()
-            .chain(page_map.values())
+            .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
         Self {
             elf,
@@ -97,7 +97,7 @@ impl Kernel<'_> {
     fn run(&mut self) {
         self.page_map
             .iter()
-            .for_each(|(physical_address, virtual_address)| self.paging.swap_pages(*physical_address, *virtual_address));
+            .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         serial_println!("kernel = {:#x?}", self);
         asm::set_cr3(self.paging.get_cr3());
         self.elf.run()
