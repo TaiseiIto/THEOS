@@ -59,6 +59,10 @@ impl Program {
     pub fn start_offset(&self) -> usize {
         self.header.start_offset()
     }
+
+    pub fn virtual_address(&self) -> usize {
+        self.header.p_vaddr
+    }
 }
 
 #[allow(dead_code)]
