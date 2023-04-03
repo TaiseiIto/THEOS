@@ -78,9 +78,11 @@ impl Elf<'_> {
             .map(|page_range| {
                 let mut pages = memory::Pages::new(page_range.size());
                 let page_range: memory::PageRange = page_range.clone();
+                uefi_println!("page_range = {:#x?}", page_range);
                 programs
                     .iter()
                     .for_each(|program| {
+                        uefi_println!("program = {:#x?}", program);
                         let start_page: usize = program.start_page();
                         let start_offset: usize = program.start_offset();
                         if page_range.contains(start_page) {
