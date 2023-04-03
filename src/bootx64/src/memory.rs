@@ -6,6 +6,10 @@ use {
         ops::Range,
         slice,
     },
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -54,8 +58,13 @@ impl Pages<'_> {
     }
 
     pub fn write(&mut self, page: usize, offset: usize, bytes: &[u8]) {
+        uefi_println!("page = {:#x}", page);
+        uefi_println!("offset = {:#x}", offset);
         let start: usize = page * memory_allocation::PAGE_SIZE + offset;
+        uefi_println!("start = {:#x}", start);
+        uefi_println!("length = {:#x}", bytes.len());
         let end: usize = start + bytes.len();
+        uefi_println!("end = {:#x}", end);
         self.bytes[start..end].copy_from_slice(bytes);
     }
 }
