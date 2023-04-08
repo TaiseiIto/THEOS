@@ -6,7 +6,13 @@ pub mod e_ident;
 pub mod e_machine;
 pub mod e_type;
 
-use core::mem;
+use {
+    core::mem,
+    crate::{
+        serial_print,
+        serial_println,
+    },
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -70,6 +76,8 @@ const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
     pub fn run(&self) {
+        serial_println!("Header.run()");
+        serial_println!("self.e_entry = {:#x}", self.e_entry);
         let main: fn() = unsafe {
             mem::transmute(self.e_entry)
         };

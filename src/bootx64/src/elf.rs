@@ -14,6 +14,10 @@ use {
         },
         vec::Vec,
     },
+    crate::{
+        serial_print,
+        serial_println,
+    },
     super::{
         memory,
         uefi::services::boot::memory_allocation,
@@ -108,6 +112,7 @@ impl Elf<'_> {
     }
 
     pub fn run(&self) {
+        serial_println!("Elf.run()");
         self.header.run()
     }
 }
