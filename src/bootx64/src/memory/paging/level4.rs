@@ -130,6 +130,7 @@ impl Into<u64> for &Cr3<'_> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageMapLevel4Entry<'a> {
+    present: bool,
     virtual_address: usize,
     page_map_level_4_entry: &'a mut u64,
     writable: bool,
@@ -214,7 +215,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .into_iter()
                 .enumerate()
                 .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
-                .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry))
+                .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry, memory_size))
                 .collect(),
             None => Vec::<PageDirectoryPointerEntry>::new(),
         };
@@ -269,6 +270,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             | page_directory_pointer_table_address.unwrap_or(0)
             | execute_disable_in_entry;
         Self {
+            present,
             virtual_address,
             page_map_level_4_entry,
             writable,
@@ -285,6 +287,7 @@ impl<'a> PageMapLevel4Entry<'a> {
 
     fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
         if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {
+            let present: bool = *page_map_level_4_entry & Self::PRESENT_MASK != 0;
             let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
             let page_write_through: bool = *page_map_level_4_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
@@ -304,6 +307,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .collect();
             let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                present,
                 virtual_address,
                 page_map_level_4_entry,
                 writable,
@@ -349,6 +353,7 @@ impl<'a> PageMapLevel4Entry<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct PageDirectoryPointerEntry<'a> {
+    present: bool,
     virtual_address: usize,
     page_directory_pointer_entry: &'a mut u64,
     writable: bool,
@@ -408,8 +413,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const INDEX_SHIFT_END: usize = 39;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
-    fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Self {
-        let present: bool = true;
+    fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64, memory_size: usize) -> Self {
+        let present: bool = virtual_address < memory_size;
         let writable: bool = true;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
@@ -527,6 +532,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             | protection_key_in_entry
             | execute_disable_in_entry;
         Self {
+            present,
             virtual_address,
             page_directory_pointer_entry,
             writable,
@@ -549,6 +555,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
     fn read(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Option<Self> {
         if *page_directory_pointer_entry & Self::PRESENT_MASK != 0 {
+            let present: bool = *page_directory_pointer_entry & Self::PRESENT_MASK != 0;
             let writable: bool = *page_directory_pointer_entry & Self::WRITABLE_MASK != 0;
             let user_mode_access: bool = *page_directory_pointer_entry & Self::USER_MODE_ACCESS_MASK != 0;
             let page_write_through: bool = *page_directory_pointer_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
@@ -596,6 +603,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             };
             let execute_disable: bool = *page_directory_pointer_entry & Self::EXECUTE_DISABLE_MASK != 0;
             Some(Self {
+                present,
                 virtual_address,
                 page_directory_pointer_entry,
                 writable,
