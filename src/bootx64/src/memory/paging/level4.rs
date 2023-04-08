@@ -366,6 +366,56 @@ impl<'a> PageMapLevel4Entry<'a> {
                 self.present = true;
                 self.page_directory_pointer_table_page = page_directory_pointer_table_page;
                 self.page_directory_pointer_entries = page_directory_pointer_entries;
+                let present_in_entry: u64 = if self.present {
+                    Self::PRESENT_MASK
+                } else {
+                    0
+                };
+                let writable_in_entry: u64 = if self.writable {
+                    Self::WRITABLE_MASK
+                } else {
+                    0
+                };
+                let user_mode_access_in_entry: u64 = if self.user_mode_access {
+                    Self::USER_MODE_ACCESS_MASK
+                } else {
+                    0
+                };
+                let page_write_through_in_entry: u64 = if self.page_write_through {
+                    Self::PAGE_WRITE_THROUGH_MASK
+                } else {
+                    0
+                };
+                let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+                    Self::PAGE_CACHE_DISABLE_MASK
+                } else {
+                    0
+                };
+                let accessed_in_entry: u64 = if self.accessed {
+                    Self::ACCESSED_MASK
+                } else {
+                    0
+                };
+                let restart_in_entry: u64 = if self.restart {
+                    Self::RESTART_MASK
+                } else {
+                    0
+                };
+                let execute_disable_in_entry: u64 = if self.execute_disable {
+                    Self::EXECUTE_DISABLE_MASK
+                } else {
+                    0
+                };
+                *self.page_map_level_4_entry = 
+                    present_in_entry
+                    | writable_in_entry
+                    | user_mode_access_in_entry
+                    | page_write_through_in_entry
+                    | page_cache_disable_in_entry
+                    | accessed_in_entry
+                    | restart_in_entry
+                    | page_directory_pointer_table_address.unwrap_or(0)
+                    | execute_disable_in_entry;
             }
             self.page_directory_pointer_entries
                 .iter_mut()
