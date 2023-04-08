@@ -98,7 +98,6 @@ impl Kernel<'_> {
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
-        serial_println!("kernel = {:#x?}", self);
         asm::set_cr3(self.paging.get_cr3());
         self.elf.run()
     }

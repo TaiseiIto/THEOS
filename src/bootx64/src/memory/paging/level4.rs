@@ -4,6 +4,10 @@
 use {
     alloc::vec::Vec,
     core::slice,
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::super::Pages,
 };
 
@@ -52,7 +56,7 @@ impl Cr3<'_> {
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .into_iter()
             .enumerate()
-            .map(|(index, page_map_level_4_entry)| (index, index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN, page_map_level_4_entry))
+            .map(|(index, page_map_level_4_entry)| (index, cannonicalize(index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
             .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry))
             .collect();
         Self {
@@ -166,6 +170,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+        uefi_println!("PageMapLevel4Entry::new virtual_address = {:#x}", virtual_address);
         let present: bool = true;
         let writable: bool = true;
         let user_mode_access: bool = false;
@@ -194,7 +199,7 @@ impl<'a> PageMapLevel4Entry<'a> {
         let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
             .into_iter()
             .enumerate()
-            .map(|(index, page_directory_pointer_entry)| (index, virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN), page_directory_pointer_entry))
+            .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
             .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry))
             .collect();
         let present_in_entry: u64 = if present {
@@ -618,7 +623,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                     .iter_mut()
                     .enumerate()
                     .map(|(i, page_directory_entry)| PageDirectoryEntry::new(
-                        self.virtual_address + (i << PageDirectoryEntry::INDEX_SHIFT_BEGIN),
+                        cannonicalize(self.virtual_address + (i << PageDirectoryEntry::INDEX_SHIFT_BEGIN)),
                         page_directory_entry,
                         self.writable,
                         self.user_mode_access,
@@ -1001,7 +1006,7 @@ impl<'a> PageDirectoryEntry<'a> {
                     .iter_mut()
                     .enumerate()
                     .map(|(i, page_entry)| PageEntry::new(
-                        self.virtual_address + (i << PageEntry::INDEX_SHIFT_BEGIN),
+                        cannonicalize(self.virtual_address + (i << PageEntry::INDEX_SHIFT_BEGIN)),
                         page_entry,
                         self.writable,
                         self.user_mode_access,
