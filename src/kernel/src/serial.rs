@@ -43,6 +43,20 @@ pub fn print(serial: &mut Serial, args: fmt::Arguments) {
     asm::outb(0x03f8, 0x74);
     asm::outb(0x03f8, 0x0a);
     serial.write_fmt(args).expect("Can't output to serial port!");
+    asm::outb(0x03f8, 0x73);
+    asm::outb(0x03f8, 0x65);
+    asm::outb(0x03f8, 0x72);
+    asm::outb(0x03f8, 0x69);
+    asm::outb(0x03f8, 0x61);
+    asm::outb(0x03f8, 0x6c);
+    asm::outb(0x03f8, 0x3a);
+    asm::outb(0x03f8, 0x3a);
+    asm::outb(0x03f8, 0x70);
+    asm::outb(0x03f8, 0x72);
+    asm::outb(0x03f8, 0x69);
+    asm::outb(0x03f8, 0x6e);
+    asm::outb(0x03f8, 0x74);
+    asm::outb(0x03f8, 0x0a);
 }
 
 pub struct Serial {
@@ -241,6 +255,16 @@ impl Into<line_status_register::LineStatusRegister> for &Serial {
 
 impl Write for Serial {
     fn write_str(&mut self, s: &str) -> fmt::Result {
+        asm::outb(0x03f8, 0x77);
+        asm::outb(0x03f8, 0x72);
+        asm::outb(0x03f8, 0x69);
+        asm::outb(0x03f8, 0x74);
+        asm::outb(0x03f8, 0x65);
+        asm::outb(0x03f8, 0x5f);
+        asm::outb(0x03f8, 0x73);
+        asm::outb(0x03f8, 0x74);
+        asm::outb(0x03f8, 0x72);
+        asm::outb(0x03f8, 0x0a);
         s.bytes().for_each(|byte| self.write_byte(byte));
         Ok(())
     }
