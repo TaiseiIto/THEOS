@@ -71,6 +71,7 @@ impl Kernel<'_> {
             Some(ref cpuid) => cpuid.supports_5_level_paging(),
             None => false,
         };
+        uefi_println!("supports_5_level_paging = {:?}", supports_5_level_paging);
         let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
         let cr0 = control::register0::Cr0::get();
         let cr2 = control::register2::Cr2::get();

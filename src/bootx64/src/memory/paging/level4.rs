@@ -52,8 +52,8 @@ impl Cr3<'_> {
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .into_iter()
             .enumerate()
-            .map(|(index, page_map_level_4_entry)| (index, cannonicalize(index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
-            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry, memory_size))
+            .map(|(index, page_map_level_4_entry)| (cannonicalize(index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
+            .map(|(virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry, memory_size))
             .collect();
         Self {
             pwt,
@@ -208,8 +208,8 @@ impl<'a> PageMapLevel4Entry<'a> {
             Some(page_directory_pointer_table) => page_directory_pointer_table
                 .into_iter()
                 .enumerate()
-                .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
-                .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry, memory_size))
+                .map(|(index, page_directory_pointer_entry)| (cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
+                .map(|(virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry, memory_size))
                 .collect(),
             None => Vec::<PageDirectoryPointerEntry>::new(),
         };
@@ -352,8 +352,8 @@ impl<'a> PageMapLevel4Entry<'a> {
                     Some(page_directory_pointer_table) => page_directory_pointer_table
                         .into_iter()
                         .enumerate()
-                        .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
-                        .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::add(virtual_address, page_directory_pointer_entry))
+                        .map(|(index, page_directory_pointer_entry)| (cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
+                        .map(|(virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::add(virtual_address, page_directory_pointer_entry))
                         .collect(),
                     None => Vec::<PageDirectoryPointerEntry>::new(),
                 };
