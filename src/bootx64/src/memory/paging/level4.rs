@@ -356,7 +356,7 @@ impl<'a> PageMapLevel4Entry<'a> {
                     Some(page_directory_pointer_table) => page_directory_pointer_table
                         .into_iter()
                         .enumerate()
-                        .map(|(index, page_directory_pointer_entry)| (cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
+                        .map(|(index, page_directory_pointer_entry)| (cannonicalize(self.virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
                         .map(|(virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::add(virtual_address, page_directory_pointer_entry))
                         .collect(),
                     None => Vec::<PageDirectoryPointerEntry>::new(),
