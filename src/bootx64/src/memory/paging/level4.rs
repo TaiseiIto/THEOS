@@ -38,7 +38,7 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
-    pub fn new(cr3: u64) -> Self {
+    pub fn new(cr3: u64, memory_size: usize) -> Self {
         let pwt: bool = cr3 & Self::PWT_MASK != 0;
         let pcd: bool = cr3 & Self::PCD_MASK != 0;
         let mut page_map_level_4_table_page: Option<Pages> = Some(Pages::new(1));
@@ -57,7 +57,7 @@ impl Cr3<'_> {
             .into_iter()
             .enumerate()
             .map(|(index, page_map_level_4_entry)| (index, cannonicalize(index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
-            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry))
+            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry, memory_size))
             .collect();
         Self {
             pwt,
@@ -169,9 +169,9 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_SHIFT_END: usize = 48;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
-    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64, memory_size: usize) -> Self {
         uefi_println!("PageMapLevel4Entry::new virtual_address = {:#x}", virtual_address);
-        let present: bool = true;
+        let present: bool = virtual_address < memory_size;
         let writable: bool = true;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
