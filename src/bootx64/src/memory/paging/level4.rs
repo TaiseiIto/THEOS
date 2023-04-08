@@ -4,6 +4,10 @@
 use {
     alloc::vec::Vec,
     core::slice,
+    crate::{
+        uefi_print,
+        uefi_println,
+    },
     super::super::Pages,
 };
 
@@ -411,6 +415,10 @@ impl<'a> PageMapLevel4Entry<'a> {
                     | page_directory_pointer_table_address.unwrap_or(0)
                     | execute_disable_in_entry;
             }
+            uefi_println!("virtual_address = {:#x}", virtual_address);
+            self.page_directory_pointer_entries
+                .iter()
+                .for_each(|page_directory_pointer_entry| uefi_println!("page_directory_pointer_entry.virtual_address = {:#x}", page_directory_pointer_entry.virtual_address));
             self.page_directory_pointer_entries
                 .iter_mut()
                 .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
