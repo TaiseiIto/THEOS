@@ -179,29 +179,45 @@ impl<'a> PageMapLevel4Entry<'a> {
         let accessed: bool = false;
         let restart: bool = false;
         let execute_disable: bool = false;
-        let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
-        let page_directory_pointer_table_address: u64 = page_directory_pointer_table_page
-            .as_ref()
-            .expect("Can't create a new page map level 4 entry!")
-            .physical_address();
-        let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page
-            .as_mut()
-            .expect("Can't create a new page map level 4 entry!")
-            .bytes();
-        let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
-        let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
-        let page_directory_pointer_table: *mut u8 = page_directory_pointer_table.as_mut_ptr();
-        let page_directory_pointer_table: *mut u64 = page_directory_pointer_table as *mut u64;
-        let page_directory_pointer_table_len: usize = page_directory_pointer_table_len / 8;
-        let page_directory_pointer_table: &mut [u64] = unsafe {
-            slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
+        let mut page_directory_pointer_table_page: Option<Pages> = if present {
+            Some(Pages::new(1))
+        } else {
+            None
         };
-        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
-            .into_iter()
-            .enumerate()
-            .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
-            .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry))
-            .collect();
+        let page_directory_pointer_table_address: Option<u64> = page_directory_pointer_table_page
+            .as_ref()
+            .map(|page| page.physical_address());
+        let mut page_directory_pointer_table: Option<&mut [u8]> = page_directory_pointer_table_page
+            .as_mut()
+            .map(|page| page.bytes());
+        let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table
+            .as_ref()
+            .map(|page_directory_pointer_table| page_directory_pointer_table.len());
+        let page_directory_pointer_table: Option<*mut u8> = page_directory_pointer_table
+            .as_mut()
+            .map(|page_directory_pointer_table| page_directory_pointer_table.as_mut_ptr());
+        let page_directory_pointer_table: Option<*mut u64> = page_directory_pointer_table
+            .as_ref()
+            .map(|page_directory_pointer_table| *page_directory_pointer_table as *mut u64);
+        let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table_len
+            .as_ref()
+            .map(|page_directory_pointer_table_len| page_directory_pointer_table_len / 8);
+        let page_directory_pointer_table: Option<&mut [u64]> = if let (Some(page_directory_pointer_table), Some(page_directory_pointer_table_len)) = (page_directory_pointer_table, page_directory_pointer_table_len) {
+            Some(unsafe {
+                slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
+            })
+        } else {
+            None
+        };
+        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
+            Some(page_directory_pointer_table) => page_directory_pointer_table
+                .into_iter()
+                .enumerate()
+                .map(|(index, page_directory_pointer_entry)| (index, cannonicalize(virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
+                .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry))
+                .collect(),
+            None => Vec::<PageDirectoryPointerEntry>::new(),
+        };
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
         } else {
@@ -250,7 +266,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             | page_cache_disable_in_entry
             | accessed_in_entry
             | restart_in_entry
-            | page_directory_pointer_table_address
+            | page_directory_pointer_table_address.unwrap_or(0)
             | execute_disable_in_entry;
         Self {
             virtual_address,
