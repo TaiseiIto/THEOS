@@ -534,7 +534,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             Some(Vec::<PageDirectoryEntry>::new())
         };
         let page_1_gib_physical_address: Option<usize> = if page_size_1_gib {
-            Some(virtual_address)
+            Some(0)
         } else {
             None
         };
@@ -859,6 +859,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
     fn divide(&mut self) {
         if !self.divided() {
+            self.present = true;
             self.page_size_1_gib = false;
             self.page_directory_table_page = Some(Pages::new(1));
             let page_directory_table_page: &mut [u8] = self.page_directory_table_page
@@ -896,7 +897,11 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             self.page_attribute_table = None;
             self.page_1_gib_physical_address = None;
             self.protection_key = None;
-            let present: u64 = Self::PRESENT_MASK;
+            let present: u64 = if self.present {
+                Self::PRESENT_MASK
+            } else {
+                0
+            };
             let writable: u64 = if self.writable {
                 Self::WRITABLE_MASK
             } else {
