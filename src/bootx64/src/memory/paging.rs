@@ -24,7 +24,7 @@ pub enum State<'a> {
 }
 
 impl State<'_> {
-    pub fn new(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>, memory_size: usize) -> Self {
+    pub fn new(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
         if cr0.pg() {
             if cr4.pae() {
                 if ia32_efer
@@ -35,7 +35,7 @@ impl State<'_> {
                         Self::Level5
                     } else {
                         let cr3: u64 = cr3.into();
-                        let cr3 = level4::Cr3::new(cr3, memory_size);
+                        let cr3 = level4::Cr3::new(cr3);
                         Self::Level4 {
                             cr3,
                         }

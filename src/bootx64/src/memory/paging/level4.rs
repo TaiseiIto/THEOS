@@ -34,7 +34,7 @@ impl Cr3<'_> {
     const PCD_MASK: u64 = 1 << Self::PCD_SHIFT;
     const PAGE_DIRECTORY_BASE_MASK: u64 = 0xfffffffffffff000;
 
-    pub fn new(cr3: u64, memory_size: usize) -> Self {
+    pub fn new(cr3: u64) -> Self {
         let pwt: bool = cr3 & Self::PWT_MASK != 0;
         let pcd: bool = cr3 & Self::PCD_MASK != 0;
         let mut page_map_level_4_table_page: Option<Pages> = Some(Pages::new(1));
@@ -53,8 +53,7 @@ impl Cr3<'_> {
             .into_iter()
             .enumerate()
             .map(|(index, page_map_level_4_entry)| (index, index << PageMapLevel4Entry::INDEX_SHIFT_BEGIN, page_map_level_4_entry))
-            .filter(|(_index, virtual_address, _page_map_level_4_entry)| *virtual_address < memory_size)
-            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry, memory_size))
+            .map(|(index, virtual_address, page_map_level_4_entry)| PageMapLevel4Entry::new(virtual_address, page_map_level_4_entry))
             .collect();
         Self {
             pwt,
@@ -166,7 +165,7 @@ impl<'a> PageMapLevel4Entry<'a> {
     const INDEX_SHIFT_END: usize = 48;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
-    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64, memory_size: usize) -> Self {
+    fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
         let present: bool = true;
         let writable: bool = true;
         let user_mode_access: bool = false;
@@ -196,8 +195,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             .into_iter()
             .enumerate()
             .map(|(index, page_directory_pointer_entry)| (index, virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN), page_directory_pointer_entry))
-            .filter(|(_index, virtual_address, _page_directory_pointer_entry)| *virtual_address < memory_size)
-            .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry, memory_size))
+            .map(|(index, virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::new(virtual_address, page_directory_pointer_entry))
             .collect();
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
@@ -389,7 +387,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const INDEX_SHIFT_END: usize = 39;
     const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
-    fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64, memory_size: usize) -> Self {
+    fn new(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Self {
         let present: bool = true;
         let writable: bool = true;
         let user_mode_access: bool = false;
@@ -397,7 +395,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         let page_cache_disable: bool = false;
         let accessed: bool = false;
         let dirty: bool = false;
-        let page_size_1_gib: bool = virtual_address + (1 << Self::INDEX_SHIFT_BEGIN) <= memory_size;
+        let page_size_1_gib: bool = true;
         let global: Option<bool> = if page_size_1_gib {
             Some(false)
         } else {
