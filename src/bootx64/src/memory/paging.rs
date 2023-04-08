@@ -51,33 +51,6 @@ impl State<'_> {
         }
     }
 
-    pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
-        if cr0.pg() {
-            if cr4.pae() {
-                if ia32_efer
-                    .as_ref()
-                    .expect("Can't get a paging mode!")
-                    .lme() {
-                    if cr4.la57() {
-                        Self::Level5
-                    } else {
-                        let cr3: u64 = cr3.into();
-                        let cr3: level4::Cr3 = cr3.into();
-                        Self::Level4 {
-                            cr3,
-                        }
-                    }
-                } else {
-                    Self::Pae
-                }
-            } else {
-                Self::Bit32
-            }
-        } else {
-            Self::Disable
-        }
-    }
-
     pub fn get_cr3(&self) -> u64 {
         match self {
             Self::Level4 {

@@ -4,10 +4,6 @@
 use {
     alloc::vec::Vec,
     core::slice,
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
     super::super::Pages,
 };
 
@@ -168,10 +164,8 @@ impl<'a> PageMapLevel4Entry<'a> {
 
     const INDEX_SHIFT_BEGIN: usize = 39;
     const INDEX_SHIFT_END: usize = 48;
-    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(virtual_address: usize, page_map_level_4_entry: &'a mut u64, memory_size: usize) -> Self {
-        uefi_println!("PageMapLevel4Entry::new virtual_address = {:#x}", virtual_address);
         let present: bool = virtual_address < memory_size;
         let writable: bool = true;
         let user_mode_access: bool = false;
@@ -500,8 +494,6 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     const INDEX_SHIFT_BEGIN: usize = 30;
-    const INDEX_SHIFT_END: usize = 39;
-    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn add(virtual_address: usize, page_directory_pointer_entry: &'a mut u64) -> Self {
         let present: bool = false;
@@ -1052,8 +1044,6 @@ impl<'a> PageDirectoryEntry<'a> {
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     const INDEX_SHIFT_BEGIN: usize = 21;
-    const INDEX_SHIFT_END: usize = 30;
-    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(
         virtual_address: usize,
@@ -1410,8 +1400,6 @@ impl<'a> PageEntry<'a> {
     const EXECUTE_DISABLE_MASK: u64 = 1 << Self::EXECUTE_DISABLE_SHIFT;
 
     const INDEX_SHIFT_BEGIN: usize = 12;
-    const INDEX_SHIFT_END: usize = 21;
-    const INDEX_MASK: u64 = (1 << Self::INDEX_SHIFT_END) - (1 << Self::INDEX_SHIFT_BEGIN);
 
     fn new(
         virtual_address: usize,
