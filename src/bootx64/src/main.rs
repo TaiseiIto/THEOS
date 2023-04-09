@@ -8,6 +8,7 @@ extern crate alloc;
 mod allocator;
 mod asm;
 mod elf;
+mod gdt;
 mod memory;
 mod serial;
 mod uefi;
@@ -90,6 +91,8 @@ impl Kernel<'_> {
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
+        let gdtr = gdt::Register::get();
+        uefi_println!("gdtr = {:#x?}", gdtr);
         Self {
             elf,
             cpuid,
