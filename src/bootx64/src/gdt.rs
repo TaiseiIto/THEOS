@@ -125,6 +125,36 @@ impl Descriptor {
     const DB_MASK: u64 = ((1u64 << Self::DB_LENGTH) - 1) << Self::DB_SHIFT_BEGIN;
     const G_MASK: u64 = ((1u64 << Self::G_LENGTH) - 1) << Self::G_SHIFT_BEGIN;
     const BASE_HIGH_MASK: u64 = ((1u64 << Self::BASE_HIGH_LENGTH) - 1) << Self::BASE_HIGH_SHIFT_BEGIN;
+
+    pub fn new(
+        base: u32,
+        limit: u32,
+        segment_type: u8,
+        s: bool,
+        dpl: u8,
+        p: bool,
+        avl: bool,
+        l: bool,
+        db: bool,
+    ) -> Self {
+        let (limit, g): (u32, bool) = if limit < 1 << (Self::LIMIT_LOW_LENGTH + Self::LIMIT_HIGH_LENGTH) {
+            (limit, false)
+        } else {
+            (limit >> 12, true)
+        };
+        Self {
+            base,
+            limit,
+            segment_type,
+            s,
+            dpl,
+            p,
+            avl,
+            l,
+            db,
+            g,
+        }
+    }
 }
 
 impl From<u64> for Descriptor {
