@@ -90,6 +90,11 @@ unsafe impl GlobalAlloc for Allocator {
         let requested_size: usize = layout.size();
         uefi_println!("alloc.requested_size = {:#x}", requested_size);
         let align: usize = layout.align();
+        let align: usize = if align <= 8 {
+            0
+        } else {
+            align
+        };
         uefi_println!("alloc.align = {:#x}", align);
         let memory_type = memory_allocation::MemoryType::LoaderData;
         let allocated_size: usize = align + requested_size - 1;
