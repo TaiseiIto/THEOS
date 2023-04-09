@@ -4,6 +4,7 @@ use {
     core::{
         cmp::Ordering,
         ops::Range,
+        ptr,
         slice,
     },
     super::uefi::{
@@ -34,10 +35,12 @@ impl Pages<'_> {
         // Assume identity mapping.
         let virtual_address: *mut u8 = physical_address as *mut u8;
         let length: usize = pages * memory_allocation::PAGE_SIZE;
+        unsafe {
+            ptr::write_bytes(virtual_address, 0x00, length);
+        }
         let bytes: &mut [u8] = unsafe {
             slice::from_raw_parts_mut(virtual_address, length)
         };
-        bytes.iter_mut().for_each(|x| *x = 0x00);
         Self {
             bytes,
             pages,

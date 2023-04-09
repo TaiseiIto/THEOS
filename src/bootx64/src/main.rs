@@ -53,6 +53,7 @@ struct Kernel<'a> {
     cpuid: Option<cpuid::Cpuid>,
     paging: paging::State<'a>,
     page_map: BTreeMap<usize, usize>,
+    stack: memory::Pages<'a>,
 }
 
 impl Kernel<'_> {
@@ -82,7 +83,9 @@ impl Kernel<'_> {
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
-        let page_map: BTreeMap<usize, usize> = elf.page_map();
+        let mut page_map: BTreeMap<usize, usize> = elf.page_map();
+        let stack = memory::Pages::new(1);
+        page_map.insert(stack.physical_address() as usize, 0xfffffffffffff000);
         uefi_println!("page_map = {:#x?}", page_map);
         page_map
             .values()
@@ -92,6 +95,7 @@ impl Kernel<'_> {
             cpuid,
             paging,
             page_map,
+            stack,
         }
     }
 
