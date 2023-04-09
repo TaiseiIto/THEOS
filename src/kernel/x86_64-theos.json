@@ -11,7 +11,7 @@
 	"linker-flavor": "ld.lld",
 	"post-link-args": {
 		"ld.lld": [
-			"--entry=_start",
+			"--entry=main",
 			"--image-base=0xffff800000000000",
 			"--nostdlib",
 			"--static"
