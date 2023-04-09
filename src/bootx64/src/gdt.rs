@@ -63,7 +63,7 @@ impl Into<Vec<Descriptor>> for Register {
 pub struct Descriptor {
     base: u32,
     limit: u32,
-    segment_type: u8,
+    segment_type: SegmentType,
     s: bool,
     dpl: u8,
     p: bool,
@@ -129,7 +129,7 @@ impl Descriptor {
     pub fn new(
         base: u32,
         limit: u32,
-        segment_type: u8,
+        segment_type: SegmentType,
         s: bool,
         dpl: u8,
         p: bool,
@@ -166,6 +166,7 @@ impl From<u64> for Descriptor {
         let limit_high: u32 = ((descriptor & Self::LIMIT_HIGH_MASK) >> Self::LIMIT_HIGH_SHIFT_BEGIN) as u32;
         let limit: u32 = (limit_high << Self::LIMIT_LOW_LENGTH) | limit_low;
         let segment_type: u8 = ((descriptor & Self::SEGMENT_TYPE_MASK) >> Self::SEGMENT_TYPE_SHIFT_BEGIN) as u8;
+        let segment_type: SegmentType = segment_type.into();
         let s: bool = descriptor & Self::S_MASK != 0;
         let dpl: u8 = ((descriptor & Self::DPL_MASK) >> Self::DPL_SHIFT_BEGIN) as u8;
         let p: bool = descriptor & Self::P_MASK != 0;
@@ -194,7 +195,10 @@ impl Into<u64> for Descriptor {
         let base_high: u64 = (((self.base as u64) >> Self::BASE_LOW_LENGTH) << Self::BASE_HIGH_SHIFT_BEGIN) & Self::BASE_HIGH_MASK;
         let limit_low: u64 = ((self.limit as u64) << Self::LIMIT_LOW_SHIFT_BEGIN) & Self::LIMIT_LOW_MASK;
         let limit_high: u64 = (((self.limit as u64) >> Self::LIMIT_LOW_LENGTH) << Self::LIMIT_HIGH_SHIFT_BEGIN) & Self::LIMIT_HIGH_MASK;
-        let segment_type: u64 = ((self.segment_type as u64) << Self::SEGMENT_TYPE_SHIFT_BEGIN) & Self::SEGMENT_TYPE_MASK;
+        let segment_type: u8 = self.segment_type
+            .clone()
+            .into();
+        let segment_type: u64 = ((segment_type as u64) << Self::SEGMENT_TYPE_SHIFT_BEGIN) & Self::SEGMENT_TYPE_MASK;
         let s: u64 = if self.s {
             Self::S_MASK
         } else {
@@ -238,6 +242,128 @@ impl Into<u64> for Descriptor {
         | l
         | db
         | g
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum SegmentType {
+    Data {
+        accessed: bool,
+        writable: bool,
+        expansion_direction: bool,
+    },
+    Code {
+        accessed: bool,
+        readable: bool,
+        conforming: bool,
+    }
+}
+
+impl SegmentType {
+    const ACCESSED_SHIFT: usize = 0;
+    const WRITABLE_SHIFT: usize = 1;
+    const EXPANSION_DIRECTION_SHIFT: usize = 2;
+    const READABLE_SHIFT: usize = 1;
+    const CONFORMING_SHIFT: usize = 2;
+    const EXECUTABLE_SHIFT: usize = 3;
+
+    const ACCESSED_MASK: u8 = 1 << Self::ACCESSED_SHIFT;
+    const WRITABLE_MASK: u8 = 1 << Self::WRITABLE_SHIFT;
+    const EXPANSION_DIRECTION_MASK: u8 = 1 << Self::EXPANSION_DIRECTION_SHIFT;
+    const READABLE_MASK: u8 = 1 << Self::READABLE_SHIFT;
+    const CONFORMING_MASK: u8 = 1 << Self::CONFORMING_SHIFT;
+    const EXECUTABLE_MASK: u8 = 1 << Self::EXECUTABLE_SHIFT;
+}
+
+impl From<u8> for SegmentType {
+    fn from(segment_type: u8) -> Self {
+        let accessed: bool = segment_type & Self::ACCESSED_MASK != 0;
+        if segment_type & Self::EXECUTABLE_MASK != 0 {
+            let readable: bool = segment_type & Self::READABLE_MASK != 0;
+            let conforming: bool = segment_type & Self::CONFORMING_MASK != 0;
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+            }
+        } else {
+            let writable: bool = segment_type & Self::WRITABLE_MASK != 0;
+            let expansion_direction: bool = segment_type & Self::EXPANSION_DIRECTION_MASK != 0;
+            Self::Data {
+                accessed,
+                writable,
+                expansion_direction,
+            }
+        }
+    }
+}
+
+impl Into<u8> for SegmentType {
+    fn into(self) -> u8 {
+        match self {
+            Self::Data {
+                accessed,
+                writable,
+                expansion_direction,
+            } => {
+                let executable: bool = false;
+                let executable: u8 = if executable {
+                    Self::EXECUTABLE_MASK
+                } else {
+                    0
+                };
+                let accessed: u8 = if accessed {
+                    Self::ACCESSED_MASK
+                } else {
+                    0
+                };
+                let writable: u8 = if writable {
+                    Self::WRITABLE_MASK
+                } else {
+                    0
+                };
+                let expansion_direction: u8 = if expansion_direction {
+                    Self::EXPANSION_DIRECTION_MASK
+                } else {
+                    0
+                };
+                executable
+                | accessed
+                | writable
+                | expansion_direction
+            },
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+            } => {
+                let executable: bool = true;
+                let executable: u8 = if executable {
+                    Self::EXECUTABLE_MASK
+                } else {
+                    0
+                };
+                let accessed: u8 = if accessed {
+                    Self::ACCESSED_MASK
+                } else {
+                    0
+                };
+                let readable: u8 = if readable {
+                    Self::READABLE_MASK
+                } else {
+                    0
+                };
+                let conforming: u8 = if conforming {
+                    Self::CONFORMING_MASK
+                } else {
+                    0
+                };
+                executable
+                | accessed
+                | readable
+                | conforming
+            },
+        }
     }
 }
 
