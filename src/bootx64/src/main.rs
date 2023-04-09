@@ -91,8 +91,8 @@ impl Kernel<'_> {
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
-        let gdtr: &[u64] = gdt::Register::get().into();
-        uefi_println!("gdtr = {:#x?}", gdtr);
+        let gdt: Vec<gdt::Descriptor> = gdt::Register::get().into();
+        uefi_println!("gdt = {:#x?}", gdt);
         Self {
             elf,
             cpuid,
