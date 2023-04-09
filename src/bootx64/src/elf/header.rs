@@ -7,7 +7,10 @@ pub mod e_machine;
 pub mod e_type;
 
 use {
-    core::mem,
+    core::{
+        arch::asm,
+        mem,
+    },
     crate::{
         serial_print,
         serial_println,
@@ -78,10 +81,13 @@ impl Header {
     pub fn run(&self) {
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
-        let main: fn() = unsafe {
-            mem::transmute(self.e_entry)
-        };
-        main()
+        unsafe {
+            asm!(
+                "xor rsp, rsp",
+                "call rax",
+                in("rax") self.e_entry,
+            );
+        }
     }
 
     pub fn e_phentsize(&self) -> usize {
