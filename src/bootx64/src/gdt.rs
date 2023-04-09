@@ -58,6 +58,7 @@ impl Into<Vec<Descriptor>> for Register {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Descriptor {
     base: u32,
@@ -130,10 +131,10 @@ impl From<u64> for Descriptor {
     fn from(descriptor: u64) -> Self {
         let base_low: u32 = ((descriptor & Self::BASE_LOW_MASK) >> Self::BASE_LOW_SHIFT_BEGIN) as u32;
         let base_high: u32 = ((descriptor & Self::BASE_HIGH_MASK) >> Self::BASE_HIGH_SHIFT_BEGIN) as u32;
-        let base: u32 = (base_high << 24) | base_low;
+        let base: u32 = (base_high << Self::BASE_LOW_LENGTH) | base_low;
         let limit_low: u32 = ((descriptor & Self::LIMIT_LOW_MASK) >> Self::LIMIT_LOW_SHIFT_BEGIN) as u32;
         let limit_high: u32 = ((descriptor & Self::LIMIT_HIGH_MASK) >> Self::LIMIT_HIGH_SHIFT_BEGIN) as u32;
-        let limit: u32 = (limit_high << 16) | limit_low;
+        let limit: u32 = (limit_high << Self::LIMIT_LOW_LENGTH) | limit_low;
         let segment_type: u8 = ((descriptor & Self::SEGMENT_TYPE_MASK) >> Self::SEGMENT_TYPE_SHIFT_BEGIN) as u8;
         let s: bool = descriptor & Self::S_MASK != 0;
         let dpl: u8 = ((descriptor & Self::DPL_MASK) >> Self::DPL_SHIFT_BEGIN) as u8;
@@ -154,6 +155,59 @@ impl From<u64> for Descriptor {
             db,
             g,
         }
+    }
+}
+
+impl Into<u64> for Descriptor {
+    fn into(self) -> u64 {
+        let base_low: u64 = ((self.base as u64) << Self::BASE_LOW_SHIFT_BEGIN) & Self::BASE_LOW_MASK;
+        let base_high: u64 = (((self.base as u64) >> Self::BASE_LOW_LENGTH) << Self::BASE_HIGH_SHIFT_BEGIN) & Self::BASE_HIGH_MASK;
+        let limit_low: u64 = ((self.limit as u64) << Self::LIMIT_LOW_SHIFT_BEGIN) & Self::LIMIT_LOW_MASK;
+        let limit_high: u64 = (((self.limit as u64) >> Self::LIMIT_LOW_LENGTH) << Self::LIMIT_HIGH_SHIFT_BEGIN) & Self::LIMIT_HIGH_MASK;
+        let segment_type: u64 = ((self.segment_type as u64) << Self::SEGMENT_TYPE_SHIFT_BEGIN) & Self::SEGMENT_TYPE_MASK;
+        let s: u64 = if self.s {
+            Self::S_MASK
+        } else {
+            0
+        };
+        let dpl: u64 = ((self.dpl as u64) << Self::DPL_SHIFT_BEGIN) & Self::DPL_MASK;
+        let p: u64 = if self.p {
+            Self::P_MASK
+        } else {
+            0
+        };
+        let avl: u64 = if self.avl {
+            Self::AVL_MASK
+        } else {
+            0
+        };
+        let l: u64 = if self.l {
+            Self::L_MASK
+        } else {
+            0
+        };
+        let db: u64 = if self.db {
+            Self::DB_MASK
+        } else {
+            0
+        };
+        let g: u64 = if self.g {
+            Self::G_MASK
+        } else {
+            0
+        };
+        base_low
+        | base_high
+        | limit_low
+        | limit_high
+        | segment_type
+        | s
+        | dpl
+        | p
+        | avl
+        | l
+        | db
+        | g
     }
 }
 
