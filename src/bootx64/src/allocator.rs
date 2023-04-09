@@ -91,7 +91,7 @@ unsafe impl GlobalAlloc for Allocator {
         uefi_println!("alloc.requested_size = {:#x}", requested_size);
         let align: usize = layout.align();
         let align: usize = if align <= 8 {
-            0
+            1
         } else {
             align
         };
