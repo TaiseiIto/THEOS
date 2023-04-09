@@ -1,3 +1,7 @@
-[target.x86_64-unknown-none]
-rustflags = ["-C", "link-arg=-Ttext=0xffff800000000000"]
+[build]
+target = "x86_64-theos.json"
+
+[unstable]
+build-std-features = ["compiler-builtins-mem"]
+build-std = ["core", "compiler_builtins"]
 
