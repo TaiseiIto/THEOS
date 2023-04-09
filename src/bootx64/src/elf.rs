@@ -40,7 +40,6 @@ impl Elf<'_> {
         let sections = section::Section::read(&header, elf);
         let deployed: BTreeMap<memory::PageRange, memory::Pages> = programs
             .iter()
-            .filter(|program| 0x8000000000000000 < program.virtual_address())
             .map(|program| program.necessary_page_numbers())
             .fold(
                 BTreeSet::<usize>::new(),
