@@ -10,6 +10,7 @@ mod serial;
 pub extern "C" fn main() -> ! {
     serial::Serial::init_com1();
     serial_println!("Hello, kernel.elf!");
+    serial_println!("RSP = {:#x}", asm::get_rsp());
     loop {
         asm::hlt();
     }

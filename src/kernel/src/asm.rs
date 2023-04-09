@@ -5,6 +5,17 @@ use core::arch::asm;
 
 pub type Port = u16;
 
+pub fn get_rsp() -> usize {
+    let mut rsp: usize;
+    unsafe {
+        asm!(
+            "mov rax, rsp",
+            out("rax") rsp,
+        );
+    }
+    rsp
+}
+
 pub fn hlt() {
     unsafe {
         asm!("hlt");
