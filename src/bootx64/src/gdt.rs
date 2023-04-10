@@ -126,7 +126,97 @@ impl Descriptor {
     const G_MASK: u64 = ((1u64 << Self::G_LENGTH) - 1) << Self::G_SHIFT_BEGIN;
     const BASE_HIGH_MASK: u64 = ((1u64 << Self::BASE_HIGH_LENGTH) - 1) << Self::BASE_HIGH_SHIFT_BEGIN;
 
-    pub fn new(
+    pub fn code() -> Self {
+        let base: u32 = 0x00000000;
+        let limit: u32 = 0xffffffff;
+        let accessed: bool = false;
+        let readable: bool = true;
+        let conforming: bool = true;
+        let segment_type = SegmentType::Code {
+            accessed,
+            readable,
+            conforming,
+        };
+        let s: bool = true;
+        let dpl: u8 = 0x00;
+        let p: bool = true;
+        let avl: bool = false;
+        let l: bool = true;
+        let db: bool = false;
+        Self::new(
+            base,
+            limit,
+            segment_type,
+            s,
+            dpl,
+            p,
+            avl,
+            l,
+            db,
+        )
+    }
+
+    pub fn data() -> Self {
+        let base: u32 = 0x00000000;
+        let limit: u32 = 0xffffffff;
+        let accessed: bool = false;
+        let writable: bool = true;
+        let expansion_direction: bool = false;
+        let segment_type = SegmentType::Data {
+            accessed,
+            writable,
+            expansion_direction,
+        };
+        let s: bool = true;
+        let dpl: u8 = 0x00;
+        let p: bool = true;
+        let avl: bool = false;
+        let l: bool = false;
+        let db: bool = true;
+        Self::new(
+            base,
+            limit,
+            segment_type,
+            s,
+            dpl,
+            p,
+            avl,
+            l,
+            db,
+        )
+    }
+
+    pub fn null() -> Self {
+        let base: u32 = 0x00000000;
+        let limit: u32 = 0x00000000;
+        let accessed: bool = false;
+        let writable: bool = false;
+        let expansion_direction: bool = false;
+        let segment_type = SegmentType::Data {
+            accessed,
+            writable,
+            expansion_direction,
+        };
+        let s: bool = false;
+        let dpl: u8 = 0x00;
+        let p: bool = false;
+        let avl: bool = false;
+        let l: bool = false;
+        let db: bool = false;
+        Self::new(
+            base,
+            limit,
+            segment_type,
+            s,
+            dpl,
+            p,
+            avl,
+            l,
+            db,
+        )
+    }
+
+    fn new(
         base: u32,
         limit: u32,
         segment_type: SegmentType,
