@@ -66,6 +66,7 @@ impl Into<Vec<Descriptor>> for Register {
 pub struct Gdt {
     descriptors: Vec<Descriptor>,
     region: Vec<u64>,
+    register: Register,
 }
 
 impl Gdt {
@@ -81,9 +82,19 @@ impl Gdt {
                 .clone()
                 .into())
             .collect();
+        let region_slice: &[u64] = &region[..];
+        let base: *const u64 = region_slice.as_ptr();
+        let base: u64 = base as u64;
+        let limit: usize = region_slice.len() * mem::size_of::<u64>() - 1;
+        let limit: u16 = limit as u16;
+        let register = Register {
+            base,
+            limit,
+        };
         Self {
             descriptors,
             region,
+            register,
         }
     }
 }
