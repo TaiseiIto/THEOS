@@ -52,8 +52,9 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
 struct Kernel<'a> {
     elf: elf::Elf<'a>,
     cpuid: Option<cpuid::Cpuid>,
-    paging: paging::State<'a>,
+    gdt: gdt::Gdt,
     page_map: BTreeMap<usize, usize>,
+    paging: paging::State<'a>,
     stack: memory::Pages<'a>,
 }
 
@@ -84,6 +85,10 @@ impl Kernel<'_> {
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
+        let gdt: Vec<gdt::Descriptor> = gdt::Register::get().into();
+        uefi_println!("old gdt = {:#x?}", gdt);
+        let gdt = gdt::Gdt::new();
+        uefi_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
         let stack = memory::Pages::new(1);
         page_map.insert(stack.physical_address() as usize, 0xfffffffffffff000);
@@ -91,13 +96,12 @@ impl Kernel<'_> {
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
-        let gdt: Vec<gdt::Descriptor> = gdt::Register::get().into();
-        uefi_println!("gdt = {:#x?}", gdt);
         Self {
             elf,
             cpuid,
-            paging,
+            gdt,
             page_map,
+            paging,
             stack,
         }
     }

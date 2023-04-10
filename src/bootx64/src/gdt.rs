@@ -61,6 +61,7 @@ impl Into<Vec<Descriptor>> for Register {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Gdt {
     descriptors: Vec<Descriptor>,
