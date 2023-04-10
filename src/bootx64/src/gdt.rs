@@ -8,6 +8,7 @@ use {
         mem,
         slice,
     },
+    super::memory,
 };
 
 #[derive(Debug)]
@@ -58,8 +59,46 @@ impl Into<Vec<Descriptor>> for Register {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
+pub struct Gdt<'a> {
+    descriptors: Vec<Descriptor>,
+    pages: memory::Pages<'a>,
+}
+
+impl Gdt<'_> {
+    pub fn new() -> Self {
+        let mut pages = memory::Pages::new(1);
+        let descriptors: &mut [u8] = pages
+            .bytes();
+        let descriptors: &mut [u64] = unsafe {
+            let length: usize = descriptors.len() / mem::size_of::<u64>();
+            let descriptors: *mut u8 = descriptors.as_mut_ptr();
+            let descriptors: *mut u64 = descriptors as *mut u64;
+            slice::from_raw_parts_mut(descriptors, length)
+        };
+        let descriptors: Vec<Descriptor> = descriptors
+            .iter_mut()
+            .enumerate()
+            .map(|(i, descriptor_region)| {
+                let descriptor: Descriptor = match i {
+                    0 => Descriptor::null(),
+                    1 => Descriptor::code(),
+                    2 => Descriptor::data(),
+                    _ => Descriptor::null(),
+                };
+                *descriptor_region = descriptor.clone().into();
+                descriptor
+            })
+            .collect();
+        Self {
+            descriptors,
+            pages,
+        }
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug)]
 pub struct Descriptor {
     base: u32,
     limit: u32,
@@ -126,7 +165,7 @@ impl Descriptor {
     const G_MASK: u64 = ((1u64 << Self::G_LENGTH) - 1) << Self::G_SHIFT_BEGIN;
     const BASE_HIGH_MASK: u64 = ((1u64 << Self::BASE_HIGH_LENGTH) - 1) << Self::BASE_HIGH_SHIFT_BEGIN;
 
-    pub fn code() -> Self {
+    fn code() -> Self {
         let base: u32 = 0x00000000;
         let limit: u32 = 0xffffffff;
         let accessed: bool = false;
@@ -156,7 +195,7 @@ impl Descriptor {
         )
     }
 
-    pub fn data() -> Self {
+    fn data() -> Self {
         let base: u32 = 0x00000000;
         let limit: u32 = 0xffffffff;
         let accessed: bool = false;
@@ -186,7 +225,7 @@ impl Descriptor {
         )
     }
 
-    pub fn null() -> Self {
+    fn null() -> Self {
         let base: u32 = 0x00000000;
         let limit: u32 = 0x00000000;
         let accessed: bool = false;
