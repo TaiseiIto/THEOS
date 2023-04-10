@@ -111,6 +111,7 @@ impl Kernel<'_> {
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         asm::set_cr3(self.paging.get_cr3());
+        self.gdt.set();
         serial_println!("Kernel.run()");
         self.elf.run()
     }

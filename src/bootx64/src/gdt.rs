@@ -38,6 +38,22 @@ impl Register {
             limit,
         }
     }
+
+    pub fn set(&self) {
+        let base: u128 = self.base as u128;
+        let base: u128 = base << 16;
+        let limit: u128 = self.limit as u128;
+        let gdtr: u128 = base | limit;
+        let gdtrp: &u128 = &gdtr;
+        let gdtrp: *const u128 = gdtrp as *const u128;
+        let gdtrp: usize = gdtrp as usize;
+        unsafe {
+            asm!(
+                "lgdt [{}]",
+                in(reg) gdtrp,
+            );
+        }
+    }
 }
 
 impl Into<&'static [u64]> for Register {
@@ -96,6 +112,10 @@ impl Gdt {
             region,
             register,
         }
+    }
+
+    pub fn set(&self) {
+        self.register.set()
     }
 }
 
