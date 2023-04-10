@@ -2,13 +2,15 @@
 // Intel 64 an IA-32 Architectures Software Developer's Manual 3.3.4.5 Segment Discriptor
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        vec,
+        vec::Vec,
+    },
     core::{
         arch::asm,
         mem,
         slice,
     },
-    super::memory,
 };
 
 #[derive(Debug)]
@@ -60,39 +62,27 @@ impl Into<Vec<Descriptor>> for Register {
 }
 
 #[derive(Debug)]
-pub struct Gdt<'a> {
+pub struct Gdt {
     descriptors: Vec<Descriptor>,
-    pages: memory::Pages<'a>,
+    region: Vec<u64>,
 }
 
-impl Gdt<'_> {
+impl Gdt {
     pub fn new() -> Self {
-        let mut pages = memory::Pages::new(1);
-        let descriptors: &mut [u8] = pages
-            .bytes();
-        let descriptors: &mut [u64] = unsafe {
-            let length: usize = descriptors.len() / mem::size_of::<u64>();
-            let descriptors: *mut u8 = descriptors.as_mut_ptr();
-            let descriptors: *mut u64 = descriptors as *mut u64;
-            slice::from_raw_parts_mut(descriptors, length)
-        };
-        let descriptors: Vec<Descriptor> = descriptors
-            .iter_mut()
-            .enumerate()
-            .map(|(i, descriptor_region)| {
-                let descriptor: Descriptor = match i {
-                    0 => Descriptor::null(),
-                    1 => Descriptor::code(),
-                    2 => Descriptor::data(),
-                    _ => Descriptor::null(),
-                };
-                *descriptor_region = descriptor.clone().into();
-                descriptor
-            })
+        let descriptors: Vec<Descriptor> = vec![
+            Descriptor::null(),
+            Descriptor::code(),
+            Descriptor::data(),
+        ];
+        let region: Vec<u64> = descriptors
+            .iter()
+            .map(|descriptor| descriptor
+                .clone()
+                .into())
             .collect();
         Self {
             descriptors,
-            pages,
+            region,
         }
     }
 }
