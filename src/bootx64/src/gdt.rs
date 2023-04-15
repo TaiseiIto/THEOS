@@ -156,6 +156,15 @@ impl Gdt {
                 in("si") self.gs,
                 in("di") self.ss,
             );
+            asm!(
+                "movzx rax, ax",
+                "mov rbx, .0",
+                "push rax",
+                "push rbx",
+                "retfq",
+                "0:",
+                in("ax") self.cs,
+            );
         }
     }
 }
