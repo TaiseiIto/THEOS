@@ -114,9 +114,9 @@ impl Elf<'_> {
             .collect()
     }
 
-    pub fn run(&self, serial: &serial::Serial, system: &system::System) {
+    pub fn run(&self, serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::PassedMap) {
         serial_println!("Elf.run()");
-        self.header.run(serial, system)
+        self.header.run(serial, system, memory_map)
     }
 }
 

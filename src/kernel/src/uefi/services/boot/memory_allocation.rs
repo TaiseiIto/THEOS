@@ -90,6 +90,16 @@ pub struct FreePages(pub extern "efiapi" fn(PhysicalAddress, usize) -> status::S
 #[repr(C)]
 pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut u8, &mut usize, &mut usize, &mut u32) -> status::Status);
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct PassedMap<'a> {
+    buffer: &'a [u8],
+    key: usize,
+    descriptors: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
 #[repr(C)]
 pub struct MemoryDescriptor {
     memory_type: u32,

@@ -17,7 +17,10 @@ use {
     },
     super::super::{
         serial,
-        uefi::tables::system,
+        uefi::{
+            services::boot::memory_allocation,
+            tables::system,
+        },
     },
 };
 
@@ -82,13 +85,15 @@ const E_SHSTRNDX_LENGTH: usize = mem::size_of::<u16>();
 const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
-    pub fn run(&self, serial: &serial::Serial, system: &system::System) {
+    pub fn run(&self, serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::PassedMap) {
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
         let serial: *const serial::Serial = serial as *const serial::Serial;
         let serial: usize = serial as usize;
         let system: *const system::System = system as *const system::System;
         let system: usize = system as usize;
+        let memory_map: *const memory_allocation::PassedMap = memory_map as *const memory_allocation::PassedMap;
+        let memory_map: usize = memory_map as usize;
         unsafe {
             asm!(
                 "xor rsp, rsp",
@@ -96,6 +101,7 @@ impl Header {
                 in("rax") self.e_entry,
                 in("rdi") serial,
                 in("rsi") system,
+                in("rdx") memory_map,
             );
         }
     }

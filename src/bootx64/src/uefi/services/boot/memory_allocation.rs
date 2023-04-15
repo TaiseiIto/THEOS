@@ -307,6 +307,39 @@ impl Into<Vec<MemoryDescriptor>> for &Map<'_> {
     }
 }
 
+#[allow(dead_code)]
+pub struct PassedMap<'a> {
+    buffer: &'a [u8],
+    key: usize,
+    descriptors: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
+impl<'a> From<&'a Map<'a>> for PassedMap<'a> {
+    fn from(map: &'a Map<'a>) -> Self {
+        let Map {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        } = map;
+        let buffer: &[u8] = buffer.get_ref();
+        let key: usize = *key;
+        let descriptors: usize = *descriptors;
+        let descriptor_size: usize = *descriptor_size;
+        let descriptor_version: u32 = *descriptor_version;
+        Self {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct MemoryDescriptors<'a> {
     buffer: &'a [u8],
