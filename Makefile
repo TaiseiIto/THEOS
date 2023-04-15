@@ -22,8 +22,8 @@ all:
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
 	$(COPY) $(KERNEL_SOURCE) $(KERNEL)
 	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $(THEOS) 2> $(IMAGER_LOG)
-	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
-	cat $(IMAGER_LOG)
+	# $(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
+	# cat $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
