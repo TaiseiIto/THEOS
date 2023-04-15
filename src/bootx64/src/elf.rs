@@ -20,6 +20,7 @@ use {
     },
     super::{
         memory,
+        serial,
         uefi::services::boot::memory_allocation,
     },
 };
@@ -110,9 +111,9 @@ impl Elf<'_> {
             .collect()
     }
 
-    pub fn run(&self) {
+    pub fn run(&self, serial: &serial::Serial) {
         serial_println!("Elf.run()");
-        self.header.run()
+        self.header.run(serial)
     }
 }
 

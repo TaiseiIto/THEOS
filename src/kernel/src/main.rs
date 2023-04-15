@@ -7,8 +7,8 @@ mod asm;
 mod serial;
 
 #[no_mangle]
-pub extern "C" fn main() -> ! {
-    serial::Serial::init_com1();
+pub extern "C" fn main(serial: &serial::Serial) -> ! {
+    serial::Serial::init_com1(serial);
     serial_println!("Hello, kernel.elf!");
     serial_println!("RSP = {:#x}", asm::get_rsp());
     loop {

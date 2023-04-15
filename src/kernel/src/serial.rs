@@ -31,13 +31,12 @@ pub fn print(serial: &mut Serial, args: fmt::Arguments) {
     serial.write_fmt(args).expect("Can't output to serial port!");
 }
 
+#[derive(Clone)]
 pub struct Serial {
     port: asm::Port,
 }
 
 static mut COM1: Option<Serial> = None;
-const COM1PORT: asm::Port = 0x03f8;
-const BAUD: u32 = 9600;
 const FREQUENCY: u32 = 115200;
 
 impl Serial {
@@ -50,9 +49,9 @@ impl Serial {
         }
     }
 
-    pub fn init_com1() {
+    pub fn init_com1(serial: &Serial) {
         unsafe {
-            COM1 = Some(Self::new(COM1PORT, BAUD));
+            COM1 = Some(serial.clone());
         }
     }
 

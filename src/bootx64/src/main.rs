@@ -43,7 +43,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     system::init_system(image_handle, system_table);
     let mut kernel = Kernel::new();
     let _memory_map: memory_allocation::Map = system::exit_boot_services();
-    kernel.run();
+    kernel.run(serial::Serial::com1());
     panic!("Can't run the kernel!");
 }
 
@@ -106,14 +106,14 @@ impl Kernel<'_> {
         }
     }
 
-    fn run(&mut self) {
+    fn run(&mut self, serial: &serial::Serial) {
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         asm::set_cr3(self.paging.get_cr3());
         self.gdt.set();
         serial_println!("Kernel.run()");
-        self.elf.run()
+        self.elf.run(serial)
     }
 }
 

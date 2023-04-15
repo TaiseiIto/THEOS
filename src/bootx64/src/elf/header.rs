@@ -15,6 +15,7 @@ use {
         serial_print,
         serial_println,
     },
+    super::super::serial,
 };
 
 #[allow(dead_code)]
@@ -78,14 +79,17 @@ const E_SHSTRNDX_LENGTH: usize = mem::size_of::<u16>();
 const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
-    pub fn run(&self) {
+    pub fn run(&self, serial: &serial::Serial) {
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
+        let serial: *const serial::Serial = serial as *const serial::Serial;
+        let serial: usize = serial as usize;
         unsafe {
             asm!(
                 "xor rsp, rsp",
                 "call rax",
                 in("rax") self.e_entry,
+                in("rdi") serial,
             );
         }
     }
