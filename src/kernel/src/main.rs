@@ -20,6 +20,10 @@ pub extern "C" fn main(serial: &serial::Serial, system: &system::System, memory_
     serial_println!("RSP = {:#x}", asm::get_rsp());
     serial_println!("system = {:#x?}", system);
     serial_println!("memory_map = {:#x?}", memory_map);
+    let memory_map: memory_allocation::MemoryDescriptors = memory_map.into();
+    memory_map.for_each(|memory_descriptor| {
+        serial_println!("memory_descriptor = {:#x?}", memory_descriptor);
+    });
     loop {
         asm::hlt();
     }
