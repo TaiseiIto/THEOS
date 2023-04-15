@@ -8,6 +8,10 @@ use {
         mem,
         slice,
     },
+    crate::{
+        serial_print,
+        serial_println,
+    },
 };
 
 #[derive(Debug)]
@@ -142,6 +146,7 @@ impl Gdt {
     }
 
     pub fn set(&self) {
+        serial_println!("new gdt = {:#x?}", self);
         self.register.set();
         unsafe {
             asm!(
@@ -242,7 +247,7 @@ impl Descriptor {
         let limit: u32 = 0xffffffff;
         let accessed: bool = false;
         let readable: bool = true;
-        let conforming: bool = true;
+        let conforming: bool = false;
         let segment_type = SegmentType::Code {
             accessed,
             readable,
