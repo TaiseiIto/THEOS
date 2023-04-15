@@ -163,7 +163,7 @@ impl Gdt {
             );
             asm!(
                 "movzx rax, ax",
-                "mov rbx, 0f",
+                "lea rbx, 0f",
                 "push rax",
                 "push rbx",
                 "retfq",
