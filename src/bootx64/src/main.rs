@@ -28,11 +28,11 @@ use {
     uefi::{
         protocols::media_access::simple_file_system,
         services::boot::memory_allocation,
+        tables::system,
         types::{
             handle,
             status,
         },
-        tables::system,
     },
 };
 
@@ -44,7 +44,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     let mut kernel = Kernel::new();
     let memory_map: &memory_allocation::Map = &system::exit_boot_services();
     let memory_map: memory_allocation::PassedMap = memory_map.into();
-    kernel.run(serial::Serial::com1(), system::system(), &memory_map);
+    kernel.run(system::image(), system::system(), &memory_map, serial::Serial::com1());
     panic!("Can't run the kernel!");
 }
 
@@ -114,14 +114,14 @@ impl Kernel<'_> {
         }
     }
 
-    fn run(&mut self, serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::PassedMap) {
+    fn run(&mut self, image: handle::Handle<'static>, system: &system::System, memory_map: &memory_allocation::PassedMap, serial: &serial::Serial) {
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         asm::set_cr3(self.paging.get_cr3());
         self.gdt.set();
         serial_println!("Kernel.run()");
-        self.elf.run(serial, system, memory_map)
+        self.elf.run(image, system, memory_map, serial)
     }
 }
 

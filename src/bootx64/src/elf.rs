@@ -24,6 +24,7 @@ use {
         uefi::{
             services::boot::memory_allocation,
             tables::system,
+            types::handle,
         },
     },
 };
@@ -114,9 +115,9 @@ impl Elf<'_> {
             .collect()
     }
 
-    pub fn run(&self, serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::PassedMap) {
+    pub fn run(&self, image: handle::Handle<'static>, system: &system::System, memory_map: &memory_allocation::PassedMap, serial: &serial::Serial) {
         serial_println!("Elf.run()");
-        self.header.run(serial, system, memory_map)
+        self.header.run(image, system, memory_map, serial)
     }
 }
 
