@@ -2,10 +2,7 @@
 // Intel 64 an IA-32 Architectures Software Developer's Manual 3.3.4.5 Segment Discriptor
 
 use {
-    alloc::{
-        vec,
-        vec::Vec,
-    },
+    alloc::vec::Vec,
     core::{
         arch::asm,
         mem,
@@ -83,15 +80,33 @@ pub struct Gdt {
     descriptors: Vec<Descriptor>,
     region: Vec<u64>,
     register: Register,
+    cs: u16,
+    ds: u16,
+    es: u16,
+    fs: u16,
+    gs: u16,
+    ss: u16,
 }
 
 impl Gdt {
     pub fn new() -> Self {
-        let descriptors: Vec<Descriptor> = vec![
-            Descriptor::null(),
-            Descriptor::code(),
-            Descriptor::data(),
+        const NULL_DESCRIPTOR: u16 = 0x00;
+        const CODE_DESCRIPTOR: u16 = 0x08;
+        const DATA_DESCRIPTOR: u16 = 0x10;
+        let descriptors: [u16; 3] = [
+            NULL_DESCRIPTOR,
+            CODE_DESCRIPTOR,
+            DATA_DESCRIPTOR,
         ];
+        let descriptors: Vec<Descriptor> = descriptors
+            .into_iter()
+            .map(|descriptor| match descriptor {
+                NULL_DESCRIPTOR => Descriptor::null(),
+                CODE_DESCRIPTOR => Descriptor::code(),
+                DATA_DESCRIPTOR => Descriptor::data(),
+                _ => panic!("Can't create a new GDT!"),
+            })
+            .collect();
         let region: Vec<u64> = descriptors
             .iter()
             .map(|descriptor| descriptor
@@ -107,15 +122,41 @@ impl Gdt {
             base,
             limit,
         };
+        let cs: u16 = CODE_DESCRIPTOR;
+        let ds: u16 = DATA_DESCRIPTOR;
+        let es: u16 = DATA_DESCRIPTOR;
+        let fs: u16 = DATA_DESCRIPTOR;
+        let gs: u16 = DATA_DESCRIPTOR;
+        let ss: u16 = DATA_DESCRIPTOR;
         Self {
             descriptors,
             region,
             register,
+            cs,
+            ds,
+            es,
+            fs,
+            gs,
+            ss,
         }
     }
 
     pub fn set(&self) {
-        self.register.set()
+        self.register.set();
+        unsafe {
+            asm!(
+                "mov ds, ax",
+                "mov es, cx",
+                "mov fs, dx",
+                "mov gs, si",
+                "mov ss, di",
+                in("ax") self.ds,
+                in("cx") self.es,
+                in("dx") self.fs,
+                in("si") self.gs,
+                in("di") self.ss,
+            );
+        }
     }
 }
 
