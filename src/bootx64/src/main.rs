@@ -90,8 +90,15 @@ impl Kernel<'_> {
         let gdt = gdt::Gdt::new();
         uefi_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
-        let stack = memory::Pages::new(1);
-        page_map.insert(stack.physical_address() as usize, 0xfffffffffffff000);
+        let stack = memory::Pages::new(0x10);
+        let stack_pages: usize = stack.pages();
+        stack
+            .physical_addresses()
+            .enumerate()
+            .map(|(i, physical_address)| (0usize - (stack_pages - i) * memory_allocation::PAGE_SIZE, physical_address))
+            .for_each(|(virtual_address, physical_address)| {
+                page_map.insert(physical_address as usize, virtual_address);
+            });
         uefi_println!("page_map = {:#x?}", page_map);
         page_map
             .values()

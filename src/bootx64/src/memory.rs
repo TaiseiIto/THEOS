@@ -3,6 +3,7 @@ pub mod paging;
 use {
     core::{
         cmp::Ordering,
+        iter::StepBy,
         ops::Range,
         ptr,
         slice,
@@ -52,8 +53,19 @@ impl Pages<'_> {
         self.bytes
     }
 
+    pub fn pages(&self) -> usize {
+        self.pages
+    }
+
     pub fn physical_address(&self) -> memory_allocation::PhysicalAddress {
         self.physical_address
+    }
+
+    pub fn physical_addresses(&self) -> StepBy<Range<usize>> {
+        let begin: usize = self.physical_address as usize;
+        let end: usize = begin + self.pages * memory_allocation::PAGE_SIZE;
+        let step: usize = memory_allocation::PAGE_SIZE;
+        (begin..end).step_by(step)
     }
 
     pub fn write(&mut self, page: usize, offset: usize, bytes: &[u8]) {
