@@ -92,7 +92,7 @@ pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut u8, &mut usize, 
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PassedMap<'a> {
+pub struct Map<'a> {
     buffer: &'a [u8],
     key: usize,
     descriptors: usize,

@@ -14,7 +14,7 @@ use {
 };
 
 #[no_mangle]
-pub extern "C" fn main(serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::PassedMap) -> ! {
+pub extern "C" fn main(serial: &serial::Serial, system: &system::System, memory_map: &memory_allocation::Map) -> ! {
     serial::Serial::init_com1(serial);
     serial_println!("Hello, kernel.elf!");
     serial_println!("RSP = {:#x}", asm::get_rsp());
