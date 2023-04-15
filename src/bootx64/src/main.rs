@@ -95,7 +95,7 @@ impl Kernel<'_> {
         stack
             .physical_addresses()
             .enumerate()
-            .map(|(i, physical_address)| (0usize - (stack_pages - i) * memory_allocation::PAGE_SIZE, physical_address))
+            .map(|(i, physical_address)| (usize::MAX - (stack_pages - i) * memory_allocation::PAGE_SIZE + 1, physical_address))
             .for_each(|(virtual_address, physical_address)| {
                 page_map.insert(physical_address as usize, virtual_address);
             });
