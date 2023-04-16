@@ -115,22 +115,36 @@ impl Elf<'_> {
             .collect()
     }
 
-    pub fn run(
-        &self,
-        image: handle::Handle<'static>,
-        system: &system::System,
-        physical_page_present_bit_map: &[u8],
-        memory_map: &memory_allocation::PassedMap,
-        serial: &serial::Serial
-    ) {
+    pub fn run(&self, kernel_arguments: KernelArguments) {
         serial_println!("Elf.run()");
-        self.header.run(
+        self.header.run(kernel_arguments)
+    }
+}
+
+#[allow(dead_code)]
+pub struct KernelArguments<'a> {
+    image: handle::Handle<'static>,
+    system: &'a system::System<'a>,
+    physical_page_present_bit_map: &'a [u8],
+    memory_map: &'a memory_allocation::PassedMap<'a>,
+    serial: &'a serial::Serial,
+}
+
+impl<'a> KernelArguments<'a> {
+    pub fn new(
+        image: handle::Handle<'static>,
+        system: &'a system::System<'a>,
+        physical_page_present_bit_map: &'a [u8],
+        memory_map: &'a memory_allocation::PassedMap,
+        serial: &'a serial::Serial,
+    ) -> Self {
+        Self {
             image,
             system,
             physical_page_present_bit_map,
             memory_map,
-            serial
-        )
+            serial,
+        }
     }
 }
 

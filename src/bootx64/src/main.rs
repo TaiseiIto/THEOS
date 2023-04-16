@@ -123,19 +123,20 @@ impl Kernel<'_> {
         serial: &serial::Serial
     ) {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
+        let kernel_arguments = elf::KernelArguments::new(
+            image,
+            system,
+            physical_page_present_bit_map,
+            memory_map,
+            serial,
+        );
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         asm::set_cr3(self.paging.get_cr3());
         self.gdt.set();
         serial_println!("Kernel.run()");
-        self.elf.run(
-            image,
-            system,
-            physical_page_present_bit_map,
-            memory_map,
-            serial
-        )
+        self.elf.run(kernel_arguments)
     }
 }
 

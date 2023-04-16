@@ -15,17 +15,7 @@ use {
         serial_print,
         serial_println,
     },
-    super::super::{
-        serial,
-        uefi::{
-            services::boot::memory_allocation,
-            tables::system,
-            types::{
-                handle,
-                void,
-            },
-        },
-    },
+    super::KernelArguments,
 };
 
 #[allow(dead_code)]
@@ -89,37 +79,18 @@ const E_SHSTRNDX_LENGTH: usize = mem::size_of::<u16>();
 const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 
 impl Header {
-    pub fn run(
-        &self,
-        image: handle::Handle<'static>,
-        system: &system::System,
-        physical_page_present_bit_map: &[u8],
-        memory_map: &memory_allocation::PassedMap,
-        serial: &serial::Serial
-    ) {
+    pub fn run(&self, kernel_arguments: KernelArguments) {
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
-        let image: *const void::Void = image as *const void::Void;
-        let image: usize = image as usize;
-        let system: *const system::System = system as *const system::System;
-        let system: usize = system as usize;
-        let physical_page_present_bit_map: &&[u8] = &physical_page_present_bit_map;
-        let physical_page_present_bit_map: *const &[u8] = physical_page_present_bit_map as *const &[u8];
-        let physical_page_present_bit_map: usize = physical_page_present_bit_map as usize;
-        let memory_map: *const memory_allocation::PassedMap = memory_map as *const memory_allocation::PassedMap;
-        let memory_map: usize = memory_map as usize;
-        let serial: *const serial::Serial = serial as *const serial::Serial;
-        let serial: usize = serial as usize;
+        let kernel_arguments: &KernelArguments = &kernel_arguments;
+        let kernel_arguments: *const KernelArguments = kernel_arguments as *const KernelArguments;
+        let kernel_arguments: usize = kernel_arguments as usize;
         unsafe {
             asm!(
                 "xor rsp, rsp",
                 "call rax",
                 in("rax") self.e_entry,
-                in("rdi") image,
-                in("rsi") system,
-                in("rdx") physical_page_present_bit_map,
-                in("rcx") memory_map,
-                in("r8") serial,
+                in("rdi") kernel_arguments,
             );
         }
     }
