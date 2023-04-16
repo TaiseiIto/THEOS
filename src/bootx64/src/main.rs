@@ -59,6 +59,9 @@ struct Kernel<'a> {
     paging: paging::State<'a>,
     stack: memory::Pages<'a>,
     cr0: control::register0::Cr0,
+    cr2: control::register2::Cr2,
+    cr3: control::register3::Cr3,
+    cr4: control::register4::Cr4,
 }
 
 impl Kernel<'_> {
@@ -79,7 +82,7 @@ impl Kernel<'_> {
         uefi_println!("supports_5_level_paging = {:?}", supports_5_level_paging);
         let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
         let cr0 = control::register0::Cr0::get();
-        let _cr2 = control::register2::Cr2::get();
+        let cr2 = control::register2::Cr2::get();
         let cr3 = control::register3::Cr3::get();
         let cr4 = control::register4::Cr4::get();
         let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
@@ -114,6 +117,9 @@ impl Kernel<'_> {
             paging,
             stack,
             cr0,
+            cr2,
+            cr3,
+            cr4,
         }
     }
 
@@ -126,12 +132,18 @@ impl Kernel<'_> {
     ) {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
         let cr0: &control::register0::Cr0 = &(self.cr0);
+        let cr2: &control::register2::Cr2 = &(self.cr2);
+        let cr3: &control::register3::Cr3 = &(self.cr3);
+        let cr4: &control::register4::Cr4 = &(self.cr4);
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
             physical_page_present_bit_map,
             memory_map,
             cr0,
+            cr2,
+            cr3,
+            cr4,
             serial,
         );
         self.page_map

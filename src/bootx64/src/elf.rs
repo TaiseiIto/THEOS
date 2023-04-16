@@ -129,6 +129,9 @@ pub struct KernelArguments<'a> {
     physical_page_present_bit_map: &'a [u8],
     memory_map: &'a memory_allocation::PassedMap<'a>,
     cr0: &'a control::register0::Cr0,
+    cr2: &'a control::register2::Cr2,
+    cr3: &'a control::register3::Cr3,
+    cr4: &'a control::register4::Cr4,
     serial: &'a serial::Serial,
 }
 
@@ -139,6 +142,9 @@ impl<'a> KernelArguments<'a> {
         physical_page_present_bit_map: &'a [u8],
         memory_map: &'a memory_allocation::PassedMap,
         cr0: &'a control::register0::Cr0,
+        cr2: &'a control::register2::Cr2,
+        cr3: &'a control::register3::Cr3,
+        cr4: &'a control::register4::Cr4,
         serial: &'a serial::Serial,
     ) -> Self {
         Self {
@@ -147,6 +153,9 @@ impl<'a> KernelArguments<'a> {
             physical_page_present_bit_map,
             memory_map,
             cr0,
+            cr2,
+            cr3,
+            cr4,
             serial,
         }
     }
