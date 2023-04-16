@@ -58,6 +58,7 @@ struct Kernel<'a> {
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
     stack: memory::Pages<'a>,
+    cr0: control::register0::Cr0,
 }
 
 impl Kernel<'_> {
@@ -112,6 +113,7 @@ impl Kernel<'_> {
             page_map,
             paging,
             stack,
+            cr0,
         }
     }
 
@@ -123,11 +125,13 @@ impl Kernel<'_> {
         serial: &serial::Serial
     ) {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
+        let cr0: &control::register0::Cr0 = &(self.cr0);
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
             physical_page_present_bit_map,
             memory_map,
+            cr0,
             serial,
         );
         self.page_map

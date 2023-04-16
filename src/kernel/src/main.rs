@@ -7,6 +7,7 @@ mod serial;
 mod uefi;
 
 use {
+    asm::control,
     core::panic::PanicInfo,
     memory::physical_page,
     uefi::{
@@ -26,6 +27,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
         system,
         physical_page_present_bit_map,
         memory_map,
+        cr0,
         serial,
     } = kernel_arguments;
     serial::Serial::init_com1(serial);
@@ -40,6 +42,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
     let memory_map: memory_allocation::MemoryDescriptors = (*memory_map).into();
     physical_page::Manager::init(physical_page_present_bit_map, &memory_map);
+    serial_println!("cr0 = {:#x?}", cr0);
     loop {
         asm::hlt();
     }
@@ -50,6 +53,7 @@ pub struct KernelArguments<'a> {
     system: &'a mut system::System<'a>,
     physical_page_present_bit_map: &'a mut [u8],
     memory_map: &'a memory_allocation::Map<'a>,
+    cr0: &'a control::register0::Cr0,
     serial: &'a serial::Serial,
 }
 

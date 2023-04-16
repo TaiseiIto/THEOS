@@ -19,6 +19,7 @@ use {
         serial_println,
     },
     super::{
+        asm::control,
         memory,
         serial,
         uefi::{
@@ -127,6 +128,7 @@ pub struct KernelArguments<'a> {
     system: &'a system::System<'a>,
     physical_page_present_bit_map: &'a [u8],
     memory_map: &'a memory_allocation::PassedMap<'a>,
+    cr0: &'a control::register0::Cr0,
     serial: &'a serial::Serial,
 }
 
@@ -136,6 +138,7 @@ impl<'a> KernelArguments<'a> {
         system: &'a system::System<'a>,
         physical_page_present_bit_map: &'a [u8],
         memory_map: &'a memory_allocation::PassedMap,
+        cr0: &'a control::register0::Cr0,
         serial: &'a serial::Serial,
     ) -> Self {
         Self {
@@ -143,6 +146,7 @@ impl<'a> KernelArguments<'a> {
             system,
             physical_page_present_bit_map,
             memory_map,
+            cr0,
             serial,
         }
     }

@@ -1,6 +1,8 @@
 // References
 // Intel 64 an IA-32 Architectures Software Developer's Manual
 
+pub mod control;
+
 use core::arch::asm;
 
 pub type Port = u16;
