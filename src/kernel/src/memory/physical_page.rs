@@ -1,5 +1,12 @@
 use {
-    core::cmp,
+    core::{
+        cmp,
+        iter::{
+            Chain,
+            StepBy,
+        },
+        ops::RangeInclusive,
+    },
     crate::{
         serial_print,
         serial_println,
@@ -33,6 +40,29 @@ impl Manager<'static> {
 }
 
 impl<'a> Manager<'a> {
+    pub fn alloc(
+        &mut self,
+        request: &Request,
+    ) -> Chunk {
+        let pages: usize = request.size;
+        let align: usize = request.align;
+        let start_page_candidate_first_range_start: usize = ((self.search_point + align - 1) / align) * align;
+        let start_page_candidate_first_range_end: usize = ((self.pages - request.size) / align) * align;
+        let start_page_candidate_first_range: StepBy<RangeInclusive<usize>> = (start_page_candidate_first_range_start..=start_page_candidate_first_range_end).step_by(align);
+        let start_page_candidate_second_range_start: usize = 0;
+        let start_page_candidate_second_range_end: usize = (self.search_point / align) * align;
+        let start_page_candidate_second_range: StepBy<RangeInclusive<usize>> = (start_page_candidate_second_range_start..=start_page_candidate_second_range_end).step_by(align);
+        let mut start_page_candidates: Chain<StepBy<RangeInclusive<usize>>, StepBy<RangeInclusive<usize>>> = start_page_candidate_first_range.chain(start_page_candidate_second_range);
+        let start_page: usize = start_page_candidates
+            .find(|start_page_candidate| self.pages_are_available(*start_page_candidate, pages))
+            .expect("Can't allocate physical pages!");
+        self.alloc_pages(start_page, pages);
+        Chunk {
+            start_page,
+            pages,
+        }
+    }
+
     fn new(
         present_bit_map: &'a mut [u8],
         map: &memory_allocation::MemoryDescriptors,
@@ -69,6 +99,32 @@ impl<'a> Manager<'a> {
         }
     }
 
+    fn page_is_available(&self, page: usize) -> bool {
+        let index: usize = page / 8;
+        let offset: usize = page % 8;
+        let mask: u8 = 0x01u8 << offset;
+        self.present_bit_map[index] & mask == 0
+    }
+
+    fn pages_are_available(&self, start_page: usize, pages: usize) -> bool {
+        (start_page..start_page + pages)
+            .all(|page| self.page_is_available(page))
+    }
+
+    fn alloc_page(&mut self, page: usize) {
+        let index: usize = page / 8;
+        let offset: usize = page % 8;
+        let mask: u8 = 0x01u8 << offset;
+        self.present_bit_map[index] |= mask;
+    }
+
+    fn alloc_pages(&mut self, start_page: usize, pages: usize) {
+        (start_page..start_page + pages)
+            .for_each(|page| {
+                self.alloc_page(page);
+            });
+    }
+
     fn used_pages(&self) -> usize {
         self.present_bit_map
             .iter()
@@ -89,21 +145,12 @@ pub struct Chunk {
     pages: usize,
 }
 
-impl Chunk {
-    pub fn new(start_page: usize, pages: usize) -> Self {
-        Self {
-            start_page,
-            pages,
-        }
-    }
-}
-
-pub struct AllocateRequest {
+pub struct Request {
     size: usize,
     align: usize,
 }
 
-impl AllocateRequest {
+impl Request {
     pub fn new(size: usize, align: usize) -> Self {
         match align.count_ones() {
             1 => Self {
