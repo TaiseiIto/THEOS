@@ -8,6 +8,7 @@ mod uefi;
 
 use {
     core::panic::PanicInfo,
+    memory::physical_page,
     uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -36,9 +37,8 @@ pub extern "C" fn main(
     serial_println!("image = {:#x}", image);
     serial_println!("system = {:#x?}", system::system());
     let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
-    serial_println!("memory_map = {:#x?}", memory_map);
     let memory_map: memory_allocation::MemoryDescriptors = memory_map.into();
-    memory::PhysicalPagePresentBitMap::init(physical_page_present_bit_map, &memory_map);
+    physical_page::PresentBitMap::init(physical_page_present_bit_map, &memory_map);
     loop {
         asm::hlt();
     }
