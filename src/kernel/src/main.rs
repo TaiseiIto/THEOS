@@ -22,7 +22,7 @@ use {
 pub extern "C" fn main(
     image: handle::Handle<'static>,
     system: &'static mut system::System,
-    physical_page_present_bit_map: &'static &'static [u8],
+    physical_page_present_bit_map: &'static mut &'static mut [u8],
     memory_map: &memory_allocation::Map,
     serial: &serial::Serial
 ) -> ! {
@@ -35,20 +35,10 @@ pub extern "C" fn main(
     let image: usize = image as usize;
     serial_println!("image = {:#x}", image);
     serial_println!("system = {:#x?}", system::system());
-    let physical_page_present_bit_map: &[u8] = *physical_page_present_bit_map;
-    let physical_page_present_bit_map_len: usize = physical_page_present_bit_map.len();
-    serial_println!("physical_page_present_bit_map_len = {:#x}", physical_page_present_bit_map_len);
-    let physical_page_present_bit_map_max: u8 = physical_page_present_bit_map
-        .iter()
-        .max()
-        .expect("Can't get a physical page present bit map max byte!")
-        .clone();
-    serial_println!("physical_page_present_bit_map_max = {:#x}", physical_page_present_bit_map_max);
+    let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
     serial_println!("memory_map = {:#x?}", memory_map);
     let memory_map: memory_allocation::MemoryDescriptors = memory_map.into();
-    memory_map.for_each(|memory_descriptor| {
-        serial_println!("memory_descriptor = {:#x?}", memory_descriptor);
-    });
+    memory::PhysicalPagePresentBitMap::init(physical_page_present_bit_map, &memory_map);
     loop {
         asm::hlt();
     }

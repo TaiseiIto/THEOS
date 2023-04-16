@@ -1,6 +1,19 @@
 use super::uefi::services::boot::memory_allocation;
 
+static mut PHYSICAL_PAGE_PRESENT_BIT_MAP: PhysicalPagePresentBitMap<'static> = PhysicalPagePresentBitMap::<'static>(&mut []);
+
 pub struct PhysicalPagePresentBitMap<'a>(&'a mut [u8]);
+
+impl PhysicalPagePresentBitMap<'static> {
+    pub fn init(
+        physical_page_present_bit_map: &'static mut [u8],
+        map: &memory_allocation::MemoryDescriptors,
+    ) {
+        unsafe {
+            PHYSICAL_PAGE_PRESENT_BIT_MAP = Self::new(physical_page_present_bit_map, map);
+        }
+    }
+}
 
 impl<'a> PhysicalPagePresentBitMap<'a> {
     pub fn new(
