@@ -54,6 +54,7 @@ struct Kernel<'a> {
     elf: elf::Elf<'a>,
     cpuid: Option<cpuid::Cpuid>,
     gdt: gdt::Gdt,
+    physical_page_present_bit_map: memory::PhysicalPagePresentBitMap,
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
     stack: memory::Pages<'a>,
@@ -68,8 +69,7 @@ impl Kernel<'_> {
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
         let memory_size = memory_size as usize;
         let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
-        uefi_println!("memory_map = {:#x?}", memory_map);
-        uefi_println!("memory_size = {:#x}", memory_size);
+        let physical_page_present_bit_map: memory::PhysicalPagePresentBitMap = (&memory_map).into();
         let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
         let supports_5_level_paging: bool = match cpuid {
             Some(ref cpuid) => cpuid.supports_5_level_paging(),
@@ -108,20 +108,34 @@ impl Kernel<'_> {
             elf,
             cpuid,
             gdt,
+            physical_page_present_bit_map,
             page_map,
             paging,
             stack,
         }
     }
 
-    fn run(&mut self, image: handle::Handle<'static>, system: &system::System, memory_map: &memory_allocation::PassedMap, serial: &serial::Serial) {
+    fn run(
+        &mut self,
+        image: handle::Handle<'static>,
+        system: &system::System,
+        memory_map: &memory_allocation::PassedMap,
+        serial: &serial::Serial
+    ) {
+        let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         asm::set_cr3(self.paging.get_cr3());
         self.gdt.set();
         serial_println!("Kernel.run()");
-        self.elf.run(image, system, memory_map, serial)
+        self.elf.run(
+            image,
+            system,
+            physical_page_present_bit_map,
+            memory_map,
+            serial
+        )
     }
 }
 

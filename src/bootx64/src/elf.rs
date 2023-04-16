@@ -115,9 +115,22 @@ impl Elf<'_> {
             .collect()
     }
 
-    pub fn run(&self, image: handle::Handle<'static>, system: &system::System, memory_map: &memory_allocation::PassedMap, serial: &serial::Serial) {
+    pub fn run(
+        &self,
+        image: handle::Handle<'static>,
+        system: &system::System,
+        physical_page_present_bit_map: &[u8],
+        memory_map: &memory_allocation::PassedMap,
+        serial: &serial::Serial
+    ) {
         serial_println!("Elf.run()");
-        self.header.run(image, system, memory_map, serial)
+        self.header.run(
+            image,
+            system,
+            physical_page_present_bit_map,
+            memory_map,
+            serial
+        )
     }
 }
 
