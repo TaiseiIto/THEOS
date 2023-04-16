@@ -38,7 +38,7 @@ pub extern "C" fn main(
     serial_println!("system = {:#x?}", system::system());
     let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
     let memory_map: memory_allocation::MemoryDescriptors = memory_map.into();
-    physical_page::PresentBitMap::init(physical_page_present_bit_map, &memory_map);
+    physical_page::Manager::init(physical_page_present_bit_map, &memory_map);
     loop {
         asm::hlt();
     }

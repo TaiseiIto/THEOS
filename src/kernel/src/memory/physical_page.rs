@@ -6,26 +6,30 @@ use {
     super::super::uefi::services::boot::memory_allocation,
 };
 
-static mut PRESENT_BIT_MAP: PresentBitMap<'static> = PresentBitMap::<'static>(&mut []);
+static mut MANAGER: Manager<'static> = Manager::<'static> {
+    present_bit_map: &mut [],
+};
 
-pub struct PresentBitMap<'a>(&'a mut [u8]);
+pub struct Manager<'a> {
+    present_bit_map: &'a mut [u8],
+}
 
-impl PresentBitMap<'static> {
+impl Manager<'static> {
     pub fn init(
-        physical_page_present_bit_map: &'static mut [u8],
+        present_bit_map: &'static mut [u8],
         map: &memory_allocation::MemoryDescriptors,
     ) {
         unsafe {
-            PRESENT_BIT_MAP = Self::new(physical_page_present_bit_map, map);
-            serial_println!("Number of used pages = {:#x}", PRESENT_BIT_MAP.used_pages());
-            serial_println!("Number of unused pages = {:#x}", PRESENT_BIT_MAP.unused_pages());
+            MANAGER = Self::new(present_bit_map, map);
+            serial_println!("Number of used pages = {:#x}", MANAGER.used_pages());
+            serial_println!("Number of unused pages = {:#x}", MANAGER.unused_pages());
         }
     }
 }
 
-impl<'a> PresentBitMap<'a> {
+impl<'a> Manager<'a> {
     fn new(
-        physical_page_present_bit_map: &'a mut [u8],
+        present_bit_map: &'a mut [u8],
         map: &memory_allocation::MemoryDescriptors,
     ) -> Self {
         map
@@ -40,7 +44,7 @@ impl<'a> PresentBitMap<'a> {
                     .for_each(|page| {
                         let bit_map_index: usize = page / 8;
                         let bit_map_offset: usize = page % 8;
-                        let byte: &mut u8 = &mut physical_page_present_bit_map[bit_map_index];
+                        let byte: &mut u8 = &mut present_bit_map[bit_map_index];
                         let mask: u8 = 0x01u8 << bit_map_offset;
                         match memory_type {
                             memory_allocation::MemoryType::BootServicesCode
@@ -50,18 +54,20 @@ impl<'a> PresentBitMap<'a> {
                         }
                     });
             });
-        Self(physical_page_present_bit_map)
+        Self{
+            present_bit_map,
+        }
     }
 
     fn used_pages(&self) -> usize {
-        self.0
+        self.present_bit_map
             .iter()
             .map(|byte| byte.count_ones() as usize)
             .sum()
     }
 
     fn unused_pages(&self) -> usize {
-        self.0
+        self.present_bit_map
             .iter()
             .map(|byte| byte.count_zeros() as usize)
             .sum()
