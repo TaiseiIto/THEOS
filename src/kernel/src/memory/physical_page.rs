@@ -1,4 +1,5 @@
 use {
+    core::cmp,
     crate::{
         serial_print,
         serial_println,
@@ -7,11 +8,15 @@ use {
 };
 
 static mut MANAGER: Manager<'static> = Manager::<'static> {
+    pages: 0,
     present_bit_map: &mut [],
+    search_point: 0,
 };
 
 pub struct Manager<'a> {
+    pages: usize,
     present_bit_map: &'a mut [u8],
+    search_point: usize,
 }
 
 impl Manager<'static> {
@@ -32,6 +37,7 @@ impl<'a> Manager<'a> {
         present_bit_map: &'a mut [u8],
         map: &memory_allocation::MemoryDescriptors,
     ) -> Self {
+        let mut pages: usize = 0;
         map
             .clone()
             .for_each(|descriptor| {
@@ -39,6 +45,7 @@ impl<'a> Manager<'a> {
                 let physical_page_start: usize = physical_start / memory_allocation::PAGE_SIZE;
                 let physical_end: usize = descriptor.physical_end() as usize;
                 let physical_page_end: usize = physical_end / memory_allocation::PAGE_SIZE;
+                pages = cmp::max(pages, physical_page_end);
                 let memory_type: memory_allocation::MemoryType = descriptor.memory_type();
                 (physical_page_start..physical_page_end)
                     .for_each(|page| {
@@ -54,8 +61,11 @@ impl<'a> Manager<'a> {
                         }
                     });
             });
+        let search_point: usize = 0;
         Self{
+            pages,
             present_bit_map,
+            search_point,
         }
     }
 
@@ -71,6 +81,37 @@ impl<'a> Manager<'a> {
             .iter()
             .map(|byte| byte.count_zeros() as usize)
             .sum()
+    }
+}
+
+pub struct Chunk {
+    start_page: usize,
+    pages: usize,
+}
+
+impl Chunk {
+    pub fn new(start_page: usize, pages: usize) -> Self {
+        Self {
+            start_page,
+            pages,
+        }
+    }
+}
+
+pub struct AllocateRequest {
+    size: usize,
+    align: usize,
+}
+
+impl AllocateRequest {
+    pub fn new(size: usize, align: usize) -> Self {
+        match align.count_ones() {
+            1 => Self {
+                size,
+                align,
+            },
+            _ => panic!("Can't create an allocate request!"),
+        }
     }
 }
 
