@@ -7,7 +7,10 @@ mod serial;
 mod uefi;
 
 use {
-    asm::control,
+    asm::{
+        control,
+        msr::architectural::ia32_efer,
+    },
     core::panic::PanicInfo,
     memory::physical_page,
     uefi::{
@@ -31,6 +34,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
         cr2,
         cr3,
         cr4,
+        ia32_efer,
         serial,
     } = kernel_arguments;
     serial::Serial::init_com1(serial);
@@ -49,6 +53,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("cr2 = {:#x?}", cr2);
     serial_println!("cr3 = {:#x?}", cr3);
     serial_println!("cr4 = {:#x?}", cr4);
+    serial_println!("ia32_efer = {:#x?}", ia32_efer);
     loop {
         asm::hlt();
     }
@@ -63,6 +68,7 @@ pub struct KernelArguments<'a> {
     cr2: &'a control::register2::Cr2,
     cr3: &'a control::register3::Cr3,
     cr4: &'a control::register4::Cr4,
+    ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
     serial: &'a serial::Serial,
 }
 

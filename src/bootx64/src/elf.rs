@@ -19,7 +19,10 @@ use {
         serial_println,
     },
     super::{
-        asm::control,
+        asm::{
+            control,
+            msr::architectural::ia32_efer,
+        },
         memory,
         serial,
         uefi::{
@@ -132,6 +135,7 @@ pub struct KernelArguments<'a> {
     cr2: &'a control::register2::Cr2,
     cr3: &'a control::register3::Cr3,
     cr4: &'a control::register4::Cr4,
+    ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
     serial: &'a serial::Serial,
 }
 
@@ -145,6 +149,7 @@ impl<'a> KernelArguments<'a> {
         cr2: &'a control::register2::Cr2,
         cr3: &'a control::register3::Cr3,
         cr4: &'a control::register4::Cr4,
+        ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
         serial: &'a serial::Serial,
     ) -> Self {
         Self {
@@ -156,6 +161,7 @@ impl<'a> KernelArguments<'a> {
             cr2,
             cr3,
             cr4,
+            ia32_efer,
             serial,
         }
     }

@@ -62,6 +62,7 @@ struct Kernel<'a> {
     cr2: control::register2::Cr2,
     cr3: control::register3::Cr3,
     cr4: control::register4::Cr4,
+    ia32_efer: Option<ia32_efer::Ia32Efer>,
 }
 
 impl Kernel<'_> {
@@ -120,6 +121,7 @@ impl Kernel<'_> {
             cr2,
             cr3,
             cr4,
+            ia32_efer,
         }
     }
 
@@ -134,6 +136,7 @@ impl Kernel<'_> {
         let cr0: &control::register0::Cr0 = &(self.cr0);
         let cr2: &control::register2::Cr2 = &(self.cr2);
         let cr4: &control::register4::Cr4 = &(self.cr4);
+        let ia32_efer: &Option<ia32_efer::Ia32Efer> = &(self.ia32_efer);
         self.page_map
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
@@ -147,6 +150,7 @@ impl Kernel<'_> {
             cr2,
             cr3,
             cr4,
+            ia32_efer,
             serial,
         );
         self.gdt.set();

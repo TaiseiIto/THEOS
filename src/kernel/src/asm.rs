@@ -2,6 +2,7 @@
 // Intel 64 an IA-32 Architectures Software Developer's Manual
 
 pub mod control;
+pub mod msr;
 
 use core::arch::asm;
 
