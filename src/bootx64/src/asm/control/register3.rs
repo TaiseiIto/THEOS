@@ -18,6 +18,16 @@ impl Cr3 {
         }
         Self(cr3)
     }
+
+    pub fn set(cr3: u64) -> Self {
+        unsafe {
+            asm!(
+                "mov cr3, rcx",
+                in("rcx") cr3,
+            );
+        }
+        Self(cr3)
+    }
 }
 
 impl Into<u64> for &Cr3 {

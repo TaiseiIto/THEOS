@@ -133,8 +133,11 @@ impl Kernel<'_> {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
         let cr0: &control::register0::Cr0 = &(self.cr0);
         let cr2: &control::register2::Cr2 = &(self.cr2);
-        let cr3: &control::register3::Cr3 = &(self.cr3);
         let cr4: &control::register4::Cr4 = &(self.cr4);
+        self.page_map
+            .iter()
+            .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
+        let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
@@ -146,10 +149,6 @@ impl Kernel<'_> {
             cr4,
             serial,
         );
-        self.page_map
-            .iter()
-            .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
-        asm::set_cr3(self.paging.get_cr3());
         self.gdt.set();
         serial_println!("Kernel.run()");
         self.elf.run(kernel_arguments)
