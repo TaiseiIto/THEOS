@@ -2,6 +2,7 @@
 #![no_main]
 
 mod asm;
+mod memory;
 mod serial;
 mod uefi;
 

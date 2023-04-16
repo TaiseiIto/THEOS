@@ -112,8 +112,16 @@ pub struct MemoryDescriptor {
 pub const PAGE_SIZE: usize = 0x1000;
 
 impl MemoryDescriptor {
+    pub fn physical_start(&self) -> PhysicalAddress {
+        self.physical_start
+    }
+
     pub fn physical_end(&self) -> PhysicalAddress {
         self.physical_start + (self.number_of_pages as PhysicalAddress) * (PAGE_SIZE as PhysicalAddress)
+    }
+
+    pub fn memory_type(&self) -> MemoryType {
+        self.memory_type.into()
     }
 }
 
