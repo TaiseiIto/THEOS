@@ -42,7 +42,7 @@ impl Manager<'static> {
 impl<'a> Manager<'a> {
     pub fn alloc(
         &mut self,
-        request: &Request,
+        request: Request,
     ) -> Chunk {
         let pages: usize = request.size;
         let align: usize = request.align;
@@ -57,10 +57,25 @@ impl<'a> Manager<'a> {
             .find(|start_page_candidate| self.pages_are_available(*start_page_candidate, pages))
             .expect("Can't allocate physical pages!");
         self.alloc_pages(start_page, pages);
+        self.search_point = start_page + pages;
         Chunk {
             start_page,
             pages,
         }
+    }
+
+    pub fn dealloc(
+        &mut self,
+        chunk: Chunk,
+    ) {
+        let start_pages: usize = chunk.start_page;
+        let pages: usize = chunk.pages;
+        self.dealloc_pages(start_pages, pages);
+        self.search_point = (0..=self.search_point)
+            .rev()
+            .chain((self.search_point + 1..self.pages).rev())
+            .find(|search_point| *search_point == 0 || (0 < *search_point && self.page_is_available(*search_point) && !self.page_is_available(*search_point - 1)))
+            .expect("Can't deallocate physical pages!");
     }
 
     fn new(
@@ -122,6 +137,20 @@ impl<'a> Manager<'a> {
         (start_page..start_page + pages)
             .for_each(|page| {
                 self.alloc_page(page);
+            });
+    }
+
+    fn dealloc_page(&mut self, page: usize) {
+        let index: usize = page / 8;
+        let offset: usize = page % 8;
+        let mask: u8 = 0x01u8 << offset;
+        self.present_bit_map[index] &= !mask;
+    }
+
+    fn dealloc_pages(&mut self, start_page: usize, pages: usize) {
+        (start_page..start_page + pages)
+            .for_each(|page| {
+                self.dealloc_page(page);
             });
     }
 
