@@ -60,7 +60,6 @@ pub fn image() -> handle::Handle<'static> {
 }
 
 pub fn init_system(image: handle::Handle<'static>, system: &'static mut System<'static>) {
-    system.con_out.reset(false).expect("Can't initialize a system table!");
     unsafe {
         SYSTEM = Some(system);
         IMAGE = Some(image);
