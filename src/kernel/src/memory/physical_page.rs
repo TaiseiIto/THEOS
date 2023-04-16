@@ -66,7 +66,7 @@ impl<'a> Manager<'a> {
 
     pub fn dealloc(
         &mut self,
-        chunk: Chunk,
+        chunk: &mut Chunk,
     ) {
         let start_pages: usize = chunk.start_page;
         let pages: usize = chunk.pages;
@@ -172,6 +172,22 @@ impl<'a> Manager<'a> {
 pub struct Chunk {
     start_page: usize,
     pages: usize,
+}
+
+impl From<Request> for Chunk {
+    fn from(request: Request) -> Self {
+        unsafe {
+            MANAGER.alloc(request)
+        }
+    }
+}
+
+impl Drop for Chunk {
+    fn drop(&mut self) {
+        unsafe {
+            MANAGER.dealloc(self)
+        }
+    }
 }
 
 pub struct Request {
