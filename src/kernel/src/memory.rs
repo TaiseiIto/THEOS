@@ -1,4 +1,10 @@
-use super::uefi::services::boot::memory_allocation;
+use {
+    crate::{
+        serial_print,
+        serial_println,
+    },
+    super::uefi::services::boot::memory_allocation,
+};
 
 static mut PHYSICAL_PAGE_PRESENT_BIT_MAP: PhysicalPagePresentBitMap<'static> = PhysicalPagePresentBitMap::<'static>(&mut []);
 
@@ -11,12 +17,14 @@ impl PhysicalPagePresentBitMap<'static> {
     ) {
         unsafe {
             PHYSICAL_PAGE_PRESENT_BIT_MAP = Self::new(physical_page_present_bit_map, map);
+            serial_println!("Number of used pages = {:#x}", PHYSICAL_PAGE_PRESENT_BIT_MAP.used_pages());
+            serial_println!("Number of unused pages = {:#x}", PHYSICAL_PAGE_PRESENT_BIT_MAP.unused_pages());
         }
     }
 }
 
 impl<'a> PhysicalPagePresentBitMap<'a> {
-    pub fn new(
+    fn new(
         physical_page_present_bit_map: &'a mut [u8],
         map: &memory_allocation::MemoryDescriptors,
     ) -> Self {
@@ -44,4 +52,19 @@ impl<'a> PhysicalPagePresentBitMap<'a> {
             });
         Self(physical_page_present_bit_map)
     }
+
+    fn used_pages(&self) -> usize {
+        self.0
+            .iter()
+            .map(|byte| byte.count_ones() as usize)
+            .sum()
+    }
+
+    fn unused_pages(&self) -> usize {
+        self.0
+            .iter()
+            .map(|byte| byte.count_zeros() as usize)
+            .sum()
+    }
 }
+
