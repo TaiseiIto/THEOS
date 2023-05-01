@@ -96,7 +96,12 @@ RUN apt install dejagnu -y
 RUN apt install libexpat-dev -y
 RUN apt install iasl -y
 RUN apt install libmpfr-dev -y
+RUN apt install texinfo -y
+RUN apt install bison -y
+RUN apt install flex -y
 RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN make
+RUN make install
 RUN cp /root/THEOS/.gdb/.conf /root/.gdbinit
 
 # bash settings.
