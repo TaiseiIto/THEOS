@@ -15,6 +15,8 @@ THEOS_OPTION = -drive file=$(THEOS),format=raw,id=theos,if=none -device ide-hd,d
 SERIAL_LOG = ../serial.log
 SERIAL_OPTION = -serial stdio
 VNC_OPTION = -vnc :0
+DEBUG_PORT = 2159
+DEBUG_OPTION = -S -gdb tcp::$(DEBUG_PORT)
 
 # Run THEOS on QEMU.
 run:
@@ -23,4 +25,8 @@ run:
 # Stop THEOS on QEMU.
 stop:
 	for i in $$(ps ax | grep $(QEMU) | grep -v grep | awk '{print $$1}'); do kill $$i; done
+
+# Debug THEOS on QEMU.
+debug:
+	$(QEMU) $(ENABLE_5_LEVEL_PAGING) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) $(DEBUG_OPTION) | tee $(SERIAL_LOG)
 

@@ -64,13 +64,13 @@ RUN apt install vim -y
 
 # Clone this repository.
 WORKDIR /root
-RUN git clone --branch $branch --recursive https://github.com/TaiseiIto/THEOS.git
+RUN git clone --single-branch --branch $branch --depth 1 --recursive --shallow-submodules https://github.com/TaiseiIto/THEOS.git
 
 # Clone MikanOS for reference.
-RUN git clone https://github.com/uchan-nos/mikanos.git
-RUN git clone https://github.com/uchan-nos/mikanos-build.git
+RUN git clone --single-branch --branch master --depth 1 https://github.com/uchan-nos/mikanos.git
+RUN git clone --single-branch --branch master --depth 1 https://github.com/uchan-nos/mikanos-build.git
 
-# Build EDK2
+# Build EDK2.
 RUN apt install acpica-tools -y
 RUN apt install nasm -y
 RUN apt install python3 -y
@@ -79,7 +79,7 @@ WORKDIR /root/THEOS/qemu/roms/edk2
 RUN ./OvmfPkg/build.sh -a X64
 RUN rm Conf/target.txt
 
-# Install qemu.
+# Install QEMU.
 RUN apt install libglib2.0-dev -y
 RUN apt install libpixman-1-dev -y
 RUN apt install ninja-build -y
@@ -88,6 +88,16 @@ WORKDIR /root/THEOS/qemu
 RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
 RUN make install
+
+# Install GDB.
+WORKDIR /root/THEOS/gdb
+RUN apt install libgmp-dev -y
+RUN apt install dejagnu -y
+RUN apt install libexpat-dev -y
+RUN apt install iasl -y
+RUN apt install libmpfr-dev -y
+RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN cp /root/THEOS/.gdb/.conf /root/.gdbinit
 
 # bash settings.
 WORKDIR /root/THEOS
