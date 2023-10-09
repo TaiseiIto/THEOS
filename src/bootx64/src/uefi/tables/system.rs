@@ -13,10 +13,10 @@ use {
                 simple_text_input,
                 simple_text_output,
             },
+            services::boot::memory_allocation,
             types::{
                 char16,
                 handle,
-                status,
             },
         },
     },
@@ -24,17 +24,59 @@ use {
 
 #[macro_export]
 macro_rules! uefi_print {
-    ($system:expr, $($arg:tt)*) => ($crate::uefi::tables::system::print($system, format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::uefi::tables::system::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
 macro_rules! uefi_println {
-    ($system:expr, $fmt:expr) => (uefi_print!($system, concat!($fmt, "\n")));
-    ($system:expr, $fmt:expr, $($arg:tt)*) => (uefi_print!($system, concat!($fmt, "\n"), $($arg)*));
+    ($fmt:expr) => (uefi_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (uefi_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-pub fn print(system: &mut System<'_>, args: fmt::Arguments) {
-    system.write_fmt(args).expect("Can't output to the screen!");
+pub fn print(args: fmt::Arguments) {
+    system()
+        .write_fmt(args)
+        .expect("Can't output to the screen!");
+}
+
+pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
+        let memory_map = memory_allocation::Map::new();
+        let memory_map_key: usize = memory_map.key();
+        let image: handle::Handle = image();
+        system()
+            .boot_services
+            .exit_boot_services(image, memory_map_key)
+            .expect("Can't exit boot services!");
+        memory_map
+}
+
+static mut SYSTEM: Option<&'static mut System<'static>> = None;
+static mut IMAGE: Option<handle::Handle<'static>> = None;
+
+pub fn system() -> &'static mut System<'static> {
+    unsafe {
+        match &mut SYSTEM {
+            Some(system) => *system,
+            None => panic!("Can't get a system table!"),
+        }
+    }
+}
+
+pub fn image() -> handle::Handle<'static> {
+    unsafe {
+        match &mut IMAGE {
+            Some(image) => *image,
+            None => panic!("Can't get a image handle!"),
+        }
+    }
+}
+
+pub fn init_system(image: handle::Handle<'static>, system: &'static mut System<'static>) {
+    system.con_out.reset(false).expect("Can't initialize a system table!");
+    unsafe {
+        SYSTEM = Some(system);
+        IMAGE = Some(image);
+    }
 }
 
 // References
@@ -87,10 +129,7 @@ impl<'a> Into<configuration::Configurations<'a>> for &System<'a> {
 
 impl Write for System<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        match self.con_out.print(s) {
-            status::SUCCESS => Ok(()),
-            _ => Err(fmt::Error),
-        }
+        self.con_out.print(s).map_err(|_| fmt::Error)
     }
 }
 

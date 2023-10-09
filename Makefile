@@ -6,6 +6,8 @@ FAT_BOOT_SECTOR=$(FAT12_BOOT_SECTOR),$(FAT16_BOOT_SECTOR),$(FAT32_BOOT_SECTOR)
 BOOT_SECTOR=$(FAT_BOOT_SECTOR)
 BOOT_SOURCE=src/bootx64/target/x86_64-unknown-uefi/debug/bootx64.efi
 BOOT=$(THEOS_ROOT)/EFI/BOOT/BOOTX64.EFI
+KERNEL_SOURCE=src/kernel/target/x86_64-theos/debug/kernel
+KERNEL=$(THEOS_ROOT)/kernel.elf
 COPY=.bash/copy.sh
 IMAGER=imager/target/release/imager
 IMAGER_LOG=imager.log
@@ -14,13 +16,16 @@ THEOS_ROOT=root
 HAS_VOLUME_GUID=false
 
 # Build THEOS
-all:
+all: $(THEOS)
+
+$(THEOS):
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
-	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $(THEOS) 2> $(IMAGER_LOG)
-	$(IMAGER) -i $(THEOS) >> $(IMAGER_LOG)
-	cat $(IMAGER_LOG)
+	$(COPY) $(KERNEL_SOURCE) $(KERNEL)
+	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $@ 2> $(IMAGER_LOG)
+	# $(IMAGER) -i $@ >> $(IMAGER_LOG)
+	# cat $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
@@ -37,21 +42,24 @@ clean_docker:
 rebuild_docker:
 	make rebuild -C .docker
 
-# Run THEOS on QEMU.
-# Usage: $ make run
-run: all
-	-make run_qemu -C .tmux
-
-# Stop THEOS on QEMU.
-# Usage: $ make stop
-stop:
-	make stop_qemu -C .tmux
-
 # Get permission to develop THEOS.
 # Only developers can execute it and users don't have to do it.
 # Usage: $ make permission GITHUB=<A path of ssh key to push to github.com> GITGPG=<A path of .gnupg directory to verify git commitment> CRATESIO=<A path of API key to log in crates.io>
 permission:
 	make permission -C .docker GITHUB=$(realpath $(GITHUB)) GITGPG=$(realpath $(GITGPG)) CRATESIO=$(realpath $(CRATESIO))
+
+# Run THEOS on QEMU.
+# Usage: $ make run
+run: $(THEOS)
+	make run -C .tmux
+
+# Stop THEOS on QEMU.
+# Usage: $ make stop
+stop:
+	make stop -C .tmux
+
+debug: $(THEOS) stop
+	make debug -C .tmux
 
 # Developers have to execute this before commitment to adjust source files in the repository.
 # Usage: $ make adjust

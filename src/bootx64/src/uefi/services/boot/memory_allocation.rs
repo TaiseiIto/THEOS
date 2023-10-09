@@ -3,11 +3,13 @@
 // 7.2 Memory Allocation Services
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
     },
     super::super::super::{
+        super::allocator,
         tables::system,
         types::{
             status,
@@ -102,6 +104,14 @@ pub struct MemoryDescriptor {
     attribute: u64,
 }
 
+pub const PAGE_SIZE: usize = 0x1000;
+
+impl MemoryDescriptor {
+    pub fn physical_end(&self) -> PhysicalAddress {
+        self.physical_start + (self.number_of_pages as PhysicalAddress) * (PAGE_SIZE as PhysicalAddress)
+    }
+}
+
 impl fmt::Debug for MemoryDescriptor {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         let memory_type: MemoryType = self.memory_type.into();
@@ -191,52 +201,141 @@ pub struct AllocatePool(pub extern "efiapi" fn(MemoryType, usize, &mut &void::Vo
 #[repr(C)]
 pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
 
-#[derive(Clone)]
 pub struct Map<'a> {
-    buffer: &'a [u8],
+    buffer: allocator::Allocated<'a>,
     key: usize,
+    descriptors: usize,
     descriptor_size: usize,
     descriptor_version: u32,
 }
 
 impl<'a> Map<'a> {
-    pub fn new(buffer: &'a mut [u8], system: &system::System<'_>) -> Self {
-        let mut buffer_size: usize = buffer.len();
-        let buffer_address: &mut u8 = &mut buffer[0];
+    pub fn new() -> Self {
+        let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_map_buffer_size();
+        buffer_size *= 2;
+        let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
         let mut key: usize = 0;
-        let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
-        system.boot_services.get_memory_map(&mut buffer_size, buffer_address, &mut key, &mut descriptor_size, &mut descriptor_version);
-        let buffer: &[u8] = &buffer[..buffer_size];
+        let buffer_slice: &mut [u8] = buffer.get_mut();
+        let buffer_address: &mut u8 = &mut buffer_slice[0];
+        system::system()
+            .boot_services
+            .get_memory_map(
+                &mut buffer_size,
+                buffer_address,
+                &mut key,
+                &mut descriptor_size,
+                &mut descriptor_version
+            )
+            .expect("Can't get memory map!");
+        let descriptors: usize = buffer_size / descriptor_size;
         Self {
             buffer,
             key,
+            descriptors,
             descriptor_size,
             descriptor_version,
         }
+    }
+
+    pub fn key(&self) -> usize {
+        self.key
+    }
+
+    pub fn get_memory_size(&self) -> PhysicalAddress {
+        self
+            .iter()
+            .map(|memory_descriptor| memory_descriptor.physical_end())
+            .max()
+            .expect("Can't get memory size!")
+    }
+
+    fn get_map_buffer_size() -> (usize, usize) {
+        let mut size: usize = 0;
+        let mut buffer: u8 = 0;
+        let mut map_key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        match system::system()
+            .boot_services
+            .get_memory_map(
+                &mut size,
+                &mut buffer,
+                &mut map_key,
+                &mut descriptor_size,
+                &mut descriptor_version,
+            ) {
+            _ => (),
+        }
+        (size, descriptor_size)
+    }
+
+    fn iter(&self) -> MemoryDescriptors {
+        self.into()
     }
 }
 
 impl fmt::Debug for Map<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        let memory_descriptors: MemoryDescriptors = self.into();
         formatter
             .debug_struct("Map")
             .field("key", &self.key)
             .field("descriptor_size", &self.descriptor_size)
             .field("descriptor_version", &self.descriptor_version)
-            .field("descriptors", &memory_descriptors)
+            .field("descriptors", &self.iter())
             .finish()
     }
 }
 
-impl<'a> Into<MemoryDescriptors<'a>> for &Map<'a> {
+impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
     fn into(self) -> MemoryDescriptors<'a> {
-        let buffer: &[u8] = self.buffer;
+        let buffer: &[u8] = self.buffer.get_ref();
+        let descriptors: usize = self.descriptors;
         let descriptor_size: usize = self.descriptor_size;
         MemoryDescriptors {
             buffer,
+            descriptors,
             descriptor_size,
+        }
+    }
+}
+
+impl Into<Vec<MemoryDescriptor>> for &Map<'_> {
+    fn into(self) -> Vec<MemoryDescriptor> {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        memory_descriptors.collect()
+    }
+}
+
+#[allow(dead_code)]
+pub struct PassedMap<'a> {
+    buffer: &'a [u8],
+    key: usize,
+    descriptors: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
+impl<'a> From<&'a Map<'a>> for PassedMap<'a> {
+    fn from(map: &'a Map<'a>) -> Self {
+        let Map {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        } = map;
+        let buffer: &[u8] = buffer.get_ref();
+        let key: usize = *key;
+        let descriptors: usize = *descriptors;
+        let descriptor_size: usize = *descriptor_size;
+        let descriptor_version: u32 = *descriptor_version;
+        Self {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
         }
     }
 }
@@ -244,6 +343,7 @@ impl<'a> Into<MemoryDescriptors<'a>> for &Map<'a> {
 #[derive(Clone)]
 pub struct MemoryDescriptors<'a> {
     buffer: &'a [u8],
+    descriptors: usize,
     descriptor_size: usize,
 }
 
@@ -260,15 +360,16 @@ impl Iterator for MemoryDescriptors<'_> {
     type Item = MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.buffer.len() {
+        match self.descriptors {
             0 => None,
             _ => {
-                let mut memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = [0; MEMORY_DESCRIPTOR_SIZE];
-                for (i, byte) in self.buffer[..MEMORY_DESCRIPTOR_SIZE].iter().enumerate() {
-                    memory_descriptor[i] = *byte;
-                }
+                let memory_descriptor: [u8; MEMORY_DESCRIPTOR_SIZE] = self
+                    .buffer[..MEMORY_DESCRIPTOR_SIZE]
+                    .try_into()
+                    .expect("Can't get a memory descriptor!");
                 let memory_descriptor: MemoryDescriptor = memory_descriptor.into();
                 self.buffer = &self.buffer[self.descriptor_size..];
+                self.descriptors -= 1;
                 Some(memory_descriptor)
             },
         }

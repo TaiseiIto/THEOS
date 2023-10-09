@@ -1,6 +1,36 @@
+// References
+// Intel 64 an IA-32 Architectures Software Developer's Manual
+
+pub mod control;
+pub mod cpuid;
+pub mod msr;
+pub mod rflags;
+
 use core::arch::asm;
 
 pub type Port = u16;
+
+fn get_rflags() -> u64 {
+    let mut rflags: u64;
+    unsafe {
+        asm!(
+            "pushfq",
+            "pop rax",
+            out("rax") rflags,
+        );
+    }
+    rflags
+}
+
+fn set_rflags(rflags: u64) {
+    unsafe {
+        asm!(
+            "push rcx",
+            "popfq",
+            in("rcx") rflags,
+        );
+    }
+}
 
 pub fn hlt() {
     unsafe {
