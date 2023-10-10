@@ -3,20 +3,21 @@
 // 12.9 Graphics Output Protocol
 
 use {
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
     super::super::super::{
         services::boot::protocol_handler,
         tables::system,
-        types::void,
+        types::{
+            status,
+            void,
+        },
     },
+    wrapped_function::WrappedFunction,
 };
 
 #[derive(Debug)]
 #[repr(C)]
 pub struct GraphicsOutput {
+    query_mode: QueryMode,
 }
 
 impl GraphicsOutput {
@@ -48,11 +49,22 @@ impl GraphicsOutput {
             .expect("Can't get a graphics output protocol!");
         let graphics_output: *const void::Void = &*graphics_output;
         let graphics_output: usize = graphics_output as usize;
-        uefi_println!("graphics_output = {:#x?}", graphics_output);
         let graphics_output: *const Self = graphics_output as *const Self;
         unsafe {
             &*graphics_output
         }
     }
 }
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct ModeInformation {
+    version: u32,
+    horizontal_resolution: u32,
+    vertical_resolution: u32,
+}
+
+#[derive(WrappedFunction)]
+#[repr(C)]
+struct QueryMode(pub extern "efiapi" fn(&GraphicsOutput, u32, &usize, &mut &ModeInformation) -> status::Status);
 

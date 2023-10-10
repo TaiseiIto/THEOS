@@ -114,6 +114,7 @@ impl Kernel<'_> {
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
         // Get a graphic output protocol.
         let graphics_output = graphics_output::GraphicsOutput::new();
+        uefi_println!("graphics_output = {:#x?}", graphics_output);
         Self {
             elf,
             cpuid,
