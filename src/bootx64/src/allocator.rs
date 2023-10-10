@@ -7,10 +7,6 @@ use {
         cell,
         slice,
     },
-    crate::{
-        uefi_print,
-        uefi_println,
-    },
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -74,6 +70,7 @@ pub struct Allocator {
 }
 
 impl Allocator {
+    #[allow(dead_code)]
     fn remaining_pairs(&self) -> usize {
         unsafe {
             self.address_map
@@ -88,17 +85,14 @@ impl Allocator {
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let requested_size: usize = layout.size();
-        uefi_println!("alloc.requested_size = {:#x}", requested_size);
         let align: usize = layout.align();
         let align: usize = if align <= 8 {
             1
         } else {
             align
         };
-        uefi_println!("alloc.align = {:#x}", align);
         let memory_type = memory_allocation::MemoryType::LoaderData;
         let allocated_size: usize = align + requested_size - 1;
-        uefi_println!("alloc.allocated_size = {:#x}", allocated_size);
         let allocated = void::Void::new();
         let mut allocated = &allocated;
         system::system()
@@ -111,29 +105,24 @@ unsafe impl GlobalAlloc for Allocator {
             .expect("Can't allocate memory!");
         let allocated = allocated as *const void::Void;
         let allocated = allocated as usize;
-        uefi_println!("alloc.allocated = {:#x}", allocated);
         let provided = ((allocated + align - 1) / align) * align;
-        uefi_println!("alloc.provided = {:#x}", provided);
         self.address_map
             .get()
             .as_mut()
             .expect("Can't allocate memory!")
             .insert(allocated, provided);
-        uefi_println!("alloc.remaining_pairs = {:#x}", self.remaining_pairs());
         let provided = provided as *mut u8;
         provided
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
         let provided = pointer as usize;
-        uefi_println!("dealloc.provided = {:#x}", provided);
         let allocated: usize = self.address_map
             .get()
             .as_ref()
             .expect("Can't free memory!")
             .find(provided)
             .expect("Can't free memory!");
-        uefi_println!("dealloc.allocated = {:#x}", allocated);
         let allocated = allocated as *const void::Void;
         let allocated = &*allocated;
         system::system()
@@ -145,7 +134,6 @@ unsafe impl GlobalAlloc for Allocator {
             .as_mut()
             .expect("Can't free memory!")
             .delete(provided);
-        uefi_println!("dealloc.remaining_pairs = {:#x}", self.remaining_pairs());
     }
 }
 
