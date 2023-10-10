@@ -26,7 +26,10 @@ use {
     core::panic::PanicInfo,
     memory::paging,
     uefi::{
-        protocols::media_access::simple_file_system,
+        protocols::{
+            console_support::graphics_output,
+            media_access::simple_file_system,
+        },
         services::boot::memory_allocation,
         tables::system,
         types::{
@@ -109,6 +112,8 @@ impl Kernel<'_> {
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
+        // Get a graphic output protocol.
+        let graphics_output = graphics_output::GraphicsOutput::new();
         Self {
             elf,
             cpuid,
