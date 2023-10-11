@@ -16,13 +16,14 @@ use {
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct GraphicsOutput {
+pub struct GraphicsOutput<'a> {
     query_mode: QueryMode,
     set_mode: SetMode,
     blt: Blt,
+    mode: &'a Mode,
 }
 
-impl GraphicsOutput {
+impl GraphicsOutput<'_> {
     pub fn new() -> &'static Self {
         let guid = protocol_handler::Guid::new(
             0x9042a9de,
@@ -119,5 +120,11 @@ pub enum BltOperation {
     BufferToVideo,
     VideoToVideo,
     Max,
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct Mode {
+    max_mode: u32,
 }
 
