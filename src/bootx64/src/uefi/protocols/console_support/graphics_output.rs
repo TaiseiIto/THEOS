@@ -4,7 +4,10 @@
 
 use {
     super::super::super::{
-        services::boot::protocol_handler,
+        services::boot::{
+            memory_allocation,
+            protocol_handler,
+        },
         tables::system,
         types::{
             status,
@@ -20,7 +23,7 @@ pub struct GraphicsOutput<'a> {
     query_mode: QueryMode,
     set_mode: SetMode,
     blt: Blt,
-    mode: &'a Mode,
+    mode: &'a Mode<'a>,
 }
 
 impl GraphicsOutput<'_> {
@@ -124,7 +127,11 @@ pub enum BltOperation {
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct Mode {
+pub struct Mode<'a> {
     max_mode: u32,
+    info: &'a ModeInformation,
+    size_of_info: usize,
+    frame_buffer_base: memory_allocation::PhysicalAddress,
+    frame_buffer_size: usize,
 }
 
