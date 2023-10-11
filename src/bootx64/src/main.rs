@@ -115,6 +115,7 @@ impl Kernel<'_> {
         // Get a graphic output protocol.
         let graphics_output = graphics_output::GraphicsOutput::new();
         uefi_println!("graphics_output = {:#x?}", graphics_output);
+        graphics_output.test();
         Self {
             elf,
             cpuid,

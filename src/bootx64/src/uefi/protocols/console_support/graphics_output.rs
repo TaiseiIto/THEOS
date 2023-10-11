@@ -3,6 +3,7 @@
 // 12.9 Graphics Output Protocol
 
 use {
+    core::slice,
     super::super::super::{
         services::boot::{
             memory_allocation,
@@ -59,6 +60,18 @@ impl GraphicsOutput<'_> {
         unsafe {
             &*graphics_output
         }
+    }
+
+    pub fn test(&self) {
+        let frame_buffer_base: usize = self.mode.frame_buffer_base as usize;
+        let frame_buffer_base: *mut u8 = frame_buffer_base as *mut u8;
+        let frame_buffer_size: usize = self.mode.frame_buffer_size;
+        let frame_buffer: &mut [u8] = unsafe {
+            slice::from_raw_parts_mut(frame_buffer_base, frame_buffer_size)
+        };
+        frame_buffer
+            .iter_mut()
+            .for_each(|byte| *byte = 0xff);
     }
 }
 
