@@ -18,6 +18,8 @@ use {
 #[repr(C)]
 pub struct GraphicsOutput {
     query_mode: QueryMode,
+    set_mode: SetMode,
+    blt: Blt,
 }
 
 impl GraphicsOutput {
@@ -89,5 +91,33 @@ pub struct PixelBitMask {
     green_mask: u32,
     blue_mask: u32,
     reserved_mask: u32,
+}
+
+#[derive(WrappedFunction)]
+#[repr(C)]
+struct SetMode(pub extern "efiapi" fn(&GraphicsOutput, u32) -> status::Status);
+
+#[derive(WrappedFunction)]
+#[repr(C)]
+struct Blt(pub extern "efiapi" fn(&GraphicsOutput, &BltPixel, BltOperation, usize, usize, usize, usize, usize, usize, usize) -> status::Status);
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct BltPixel {
+    blue: u8,
+    green: u8,
+    red: u8,
+    reserved: u8,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[repr(C)]
+pub enum BltOperation {
+    VideoFill,
+    VideoToBltBuffer,
+    BufferToVideo,
+    VideoToVideo,
+    Max,
 }
 
