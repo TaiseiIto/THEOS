@@ -56,15 +56,38 @@ impl GraphicsOutput {
     }
 }
 
+#[derive(WrappedFunction)]
+#[repr(C)]
+struct QueryMode(pub extern "efiapi" fn(&GraphicsOutput, u32, &usize, &mut &ModeInformation) -> status::Status);
+
 #[derive(Debug)]
 #[repr(C)]
 pub struct ModeInformation {
     version: u32,
     horizontal_resolution: u32,
     vertical_resolution: u32,
+    pixel_format: PixelFormat,
+    pixel_information: PixelBitMask,
+    pixels_per_scan_line: u32,
 }
 
-#[derive(WrappedFunction)]
+#[allow(dead_code)]
+#[derive(Debug)]
 #[repr(C)]
-struct QueryMode(pub extern "efiapi" fn(&GraphicsOutput, u32, &usize, &mut &ModeInformation) -> status::Status);
+pub enum PixelFormat {
+    RedGreenBlueReserved8BitPerColor,
+    BlueGreenRedReserved8BitPerColor,
+    PixelBitMask,
+    PixelBltOnly,
+    PixelFormatMax,
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct PixelBitMask {
+    red_mask: u32,
+    green_mask: u32,
+    blue_mask: u32,
+    reserved_mask: u32,
+}
 
