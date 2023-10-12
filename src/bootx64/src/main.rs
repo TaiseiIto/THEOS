@@ -66,6 +66,7 @@ struct Kernel<'a> {
     cr3: control::register3::Cr3,
     cr4: control::register4::Cr4,
     ia32_efer: Option<ia32_efer::Ia32Efer>,
+    graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
 impl Kernel<'_> {
@@ -113,9 +114,7 @@ impl Kernel<'_> {
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
         // Get a graphic output protocol.
-        let graphics_output = graphics_output::GraphicsOutput::new();
-        uefi_println!("graphics_output = {:#x?}", graphics_output);
-        graphics_output.test();
+        let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         Self {
             elf,
             cpuid,
@@ -129,6 +128,7 @@ impl Kernel<'_> {
             cr3,
             cr4,
             ia32_efer,
+            graphics_output,
         }
     }
 
@@ -148,6 +148,7 @@ impl Kernel<'_> {
             .iter()
             .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
+        let graphics_output = self.graphics_output;
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
@@ -159,6 +160,7 @@ impl Kernel<'_> {
             cr4,
             ia32_efer,
             serial,
+            graphics_output,
         );
         self.gdt.set();
         serial_println!("Kernel.run()");

@@ -14,6 +14,7 @@ use {
     core::panic::PanicInfo,
     memory::physical_page,
     uefi::{
+        protocols::console_support::graphics_output,
         services::boot::memory_allocation,
         tables::system,
         types::{
@@ -36,6 +37,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
         cr4,
         ia32_efer,
         serial,
+        graphics_output,
     } = kernel_arguments;
     serial::Serial::init_com1(serial);
     serial_println!("Hello, kernel.elf!");
@@ -54,6 +56,8 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("cr3 = {:#x?}", cr3);
     serial_println!("cr4 = {:#x?}", cr4);
     serial_println!("ia32_efer = {:#x?}", ia32_efer);
+    serial_println!("graphics_output = {:#x?}", graphics_output);
+    graphics_output.test();
     loop {
         asm::hlt();
     }
@@ -70,6 +74,7 @@ pub struct KernelArguments<'a> {
     cr4: &'a control::register4::Cr4,
     ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
     serial: &'a serial::Serial,
+    graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
 #[panic_handler]

@@ -26,6 +26,7 @@ use {
         memory,
         serial,
         uefi::{
+            protocols::console_support::graphics_output,
             services::boot::memory_allocation,
             tables::system,
             types::handle,
@@ -137,6 +138,7 @@ pub struct KernelArguments<'a> {
     cr4: &'a control::register4::Cr4,
     ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
     serial: &'a serial::Serial,
+    graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
 impl<'a> KernelArguments<'a> {
@@ -151,6 +153,7 @@ impl<'a> KernelArguments<'a> {
         cr4: &'a control::register4::Cr4,
         ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
         serial: &'a serial::Serial,
+        graphics_output: &'a graphics_output::GraphicsOutput<'a>,
     ) -> Self {
         Self {
             image,
@@ -163,6 +166,7 @@ impl<'a> KernelArguments<'a> {
             cr4,
             ia32_efer,
             serial,
+            graphics_output,
         }
     }
 }
