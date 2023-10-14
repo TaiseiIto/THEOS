@@ -247,7 +247,7 @@ impl Descriptor {
         let limit: u32 = 0xffffffff;
         let accessed: bool = false;
         let readable: bool = true;
-        let conforming: bool = false;
+        let conforming: bool = true;
         let segment_type = SegmentType::Code {
             accessed,
             readable,
@@ -258,7 +258,7 @@ impl Descriptor {
         let p: bool = true;
         let avl: bool = false;
         let l: bool = true;
-        let db: bool = false;
+        let db: bool = true;
         Self::new(
             base,
             limit,
