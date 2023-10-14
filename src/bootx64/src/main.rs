@@ -71,9 +71,9 @@ struct Kernel<'a> {
 
 impl Kernel<'_> {
     fn new() -> Self {
-        uefi_println!("Hello, World!");
-        uefi_println!("image_handle = {:#x?}", system::image());
-        uefi_println!("system_table = {:#x?}", system::system());
+        serial_println!("Hello, World!");
+        serial_println!("image_handle = {:#x?}", system::image());
+        serial_println!("system_table = {:#x?}", system::system());
         let memory_map = memory_allocation::Map::new();
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
         let memory_size = memory_size as usize;
@@ -84,7 +84,7 @@ impl Kernel<'_> {
             Some(ref cpuid) => cpuid.supports_5_level_paging(),
             None => false,
         };
-        uefi_println!("supports_5_level_paging = {:?}", supports_5_level_paging);
+        serial_println!("supports_5_level_paging = {:?}", supports_5_level_paging);
         let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
         let cr0 = control::register0::Cr0::get();
         let cr2 = control::register2::Cr2::get();
@@ -96,9 +96,9 @@ impl Kernel<'_> {
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
         let elf = elf::Elf::new(&elf[..]);
         let gdt: Vec<gdt::Descriptor> = gdt::Register::get().into();
-        uefi_println!("old gdt = {:#x?}", gdt);
+        serial_println!("old gdt = {:#x?}", gdt);
         let gdt = gdt::Gdt::new();
-        uefi_println!("new gdt = {:#x?}", gdt);
+        serial_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
@@ -109,7 +109,7 @@ impl Kernel<'_> {
             .for_each(|(virtual_address, physical_address)| {
                 page_map.insert(physical_address as usize, virtual_address);
             });
-        uefi_println!("page_map = {:#x?}", page_map);
+        serial_println!("page_map = {:#x?}", page_map);
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
@@ -162,7 +162,7 @@ impl Kernel<'_> {
             serial,
             graphics_output,
         );
-        self.gdt.set();
+        // self.gdt.set();
         serial_println!("Kernel.run()");
         self.elf.run(kernel_arguments)
     }
