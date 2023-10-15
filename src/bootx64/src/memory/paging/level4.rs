@@ -87,7 +87,8 @@ impl fmt::Debug for Cr3<'_> {
         formatter
             .debug_struct("Cr3")
             .field("pwt", &self.pwt)
-            .field("pwt", &self.pwt)
+            .field("pcd", &self.pcd)
+            .field("page_map_level_4_entries", &self.page_map_level_4_entries)
             .finish()
     }
 }
@@ -136,7 +137,6 @@ impl Into<u64> for &Cr3<'_> {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageMapLevel4Entry<'a> {
     present: bool,
     virtual_address: usize,
@@ -443,6 +443,24 @@ impl<'a> PageMapLevel4Entry<'a> {
         } else {
             panic!("Can't set a physical address!")
         }
+    }
+}
+
+impl fmt::Debug for PageMapLevel4Entry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageMapLevel4Entry")
+            .field("present", &self.present)
+            .field("virtual_address", &self.virtual_address)
+            .field("page_map_level_4_entry", &self.page_map_level_4_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("restart", &self.restart)
+            .field("execute_disable", &self.execute_disable)
+            .finish()
     }
 }
 
