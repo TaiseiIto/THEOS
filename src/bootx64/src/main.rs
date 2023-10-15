@@ -46,6 +46,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     system::init_system(image_handle, system_table);
     let mut kernel = Kernel::new();
     let memory_map: &memory_allocation::Map = &system::exit_boot_services();
+    serial_println!("memory_map = {:#x?}", memory_map);
     let memory_map: memory_allocation::PassedMap = memory_map.into();
     kernel.run(system::image(), system::system(), &memory_map, serial::Serial::com1());
     panic!("Can't run the kernel!");
@@ -91,6 +92,7 @@ impl Kernel<'_> {
         let cr3 = control::register3::Cr3::get();
         let cr4 = control::register4::Cr4::get();
         let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
+        serial_println!("paging = {:#x?}", paging);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");

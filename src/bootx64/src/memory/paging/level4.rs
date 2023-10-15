@@ -3,7 +3,10 @@
 
 use {
     alloc::vec::Vec,
-    core::slice,
+    core::{
+        slice,
+        fmt,
+    },
     super::super::Pages,
 };
 
@@ -16,7 +19,6 @@ fn cannonicalize(virtual_address: usize) -> usize {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 pub struct Cr3<'a> {
     pwt: bool,
     pcd: bool,
@@ -77,6 +79,16 @@ impl Cr3<'_> {
             .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
             .expect("Can't set a physical address!")
             .set_physical_address(virtual_address, physical_address);
+    }
+}
+
+impl fmt::Debug for Cr3<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("Cr3")
+            .field("pwt", &self.pwt)
+            .field("pwt", &self.pwt)
+            .finish()
     }
 }
 
