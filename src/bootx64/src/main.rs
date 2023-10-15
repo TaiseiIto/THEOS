@@ -162,7 +162,7 @@ impl Kernel<'_> {
             serial,
             graphics_output,
         );
-        // self.gdt.set();
+        self.gdt.set();
         serial_println!("Kernel.run()");
         self.elf.run(kernel_arguments)
     }
