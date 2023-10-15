@@ -219,7 +219,7 @@ impl<'a> PageMapLevel4Entry<'a> {
         } else {
             None
         };
-        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
+        let mut page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
             Some(page_directory_pointer_table) => page_directory_pointer_table
                 .into_iter()
                 .enumerate()
@@ -228,6 +228,10 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .collect(),
             None => Vec::<PageDirectoryPointerEntry>::new(),
         };
+        page_directory_pointer_entries
+            .iter_mut()
+            .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present)
+            .for_each(|page_directory_pointer_entry| page_directory_pointer_entry.divide());
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
         } else {
