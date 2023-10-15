@@ -1428,12 +1428,12 @@ impl fmt::Debug for PageDirectoryEntry<'_> {
             .field("page_2_mib_physical_address", &self.page_2_mib_physical_address)
             .field("protection_key", &self.protection_key)
             .field("execute_disable", &self.execute_disable)
+            .field("page_entries", &self.page_entries)
             .finish()
     }
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageEntry<'a> {
     virtual_address: usize,
     page_entry: &'a mut u64,
@@ -1625,6 +1625,28 @@ impl<'a> PageEntry<'a> {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
+    }
+}
+
+impl fmt::Debug for PageEntry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageEntry")
+            .field("virtual_address", &self.virtual_address)
+            .field("page_entry", &self.page_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("dirty", &self.dirty)
+            .field("page_attribute_table", &self.page_attribute_table)
+            .field("global", &self.global)
+            .field("restart", &self.restart)
+            .field("physical_address", &self.physical_address)
+            .field("protection_key", &self.protection_key)
+            .field("execute_disable", &self.execute_disable)
+            .finish()
     }
 }
 
