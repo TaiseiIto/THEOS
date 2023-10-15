@@ -1041,12 +1041,12 @@ impl fmt::Debug for PageDirectoryPointerEntry<'_> {
             .field("page_1_gib_physical_address", &self.page_1_gib_physical_address)
             .field("protection_key", &self.protection_key)
             .field("execute_disable", &self.execute_disable)
+            .field("page_directory_entries", &self.page_directory_entries)
             .finish()
     }
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageDirectoryEntry<'a> {
     virtual_address: usize,
     page_directory_entry: &'a mut u64,
@@ -1406,6 +1406,29 @@ impl<'a> PageDirectoryEntry<'a> {
         } else {
             panic!("Can't set a physical address!")
         }
+    }
+}
+
+impl fmt::Debug for PageDirectoryEntry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageDirectoryEntry")
+            .field("virtual_address", &self.virtual_address)
+            .field("page_directory_entry", &self.page_directory_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("dirty", &self.dirty)
+            .field("page_size_2_mib", &self.page_size_2_mib)
+            .field("global", &self.global)
+            .field("restart", &self.restart)
+            .field("page_attribute_table", &self.page_attribute_table)
+            .field("page_2_mib_physical_address", &self.page_2_mib_physical_address)
+            .field("protection_key", &self.protection_key)
+            .field("execute_disable", &self.execute_disable)
+            .finish()
     }
 }
 
