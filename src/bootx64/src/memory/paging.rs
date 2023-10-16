@@ -3,13 +3,19 @@
 
 pub mod level4;
 
-use super::super::asm::{
-    control::{
-        register0::Cr0,
-        register3::Cr3,
-        register4::Cr4,
+use {
+    crate::{
+        serial_print,
+        serial_println,
     },
-    msr::architectural::ia32_efer::Ia32Efer,
+    super::super::asm::{
+        control::{
+            register0::Cr0,
+            register3::Cr3,
+            register4::Cr4,
+        },
+        msr::architectural::ia32_efer::Ia32Efer,
+    },
 };
 
 #[derive(Debug)]
@@ -117,6 +123,26 @@ impl State<'_> {
                 cr3,
             } => {
                 cr3.set_physical_address(virtual_address, physical_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
+    pub fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("Paging state at address {:#x?}", virtual_address);
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                serial_println!("Paging level 4");
+                cr3.print_state_at_address(virtual_address);
             },
             Self::Level5 => {
             },

@@ -90,10 +90,12 @@ impl Kernel<'_> {
         let cr2 = control::register2::Cr2::get();
         let cr3 = control::register3::Cr3::get();
         let cr4 = control::register4::Cr4::get();
+        let gdt_set_address = gdt::Gdt::set as *const() as usize;
+        serial_println!("gdt_set_address = {:#x?}", gdt_set_address);
         let paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
-        serial_println!("old paging = {:#x?}", paging);
+        paging.print_state_at_address(gdt_set_address);
         let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
-        serial_println!("new paging = {:#x?}", paging);
+        paging.print_state_at_address(gdt_set_address);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");

@@ -2,6 +2,10 @@
 // Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 3 System Programming Guide, Chapter 4 Paging, Section 5 4-Level Paging And 5-Level Paging
 
 use {
+    crate::{
+        serial_print,
+        serial_println,
+    },
     alloc::vec::Vec,
     core::{
         slice,
@@ -79,6 +83,11 @@ impl Cr3<'_> {
             .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
             .expect("Can't set a physical address!")
             .set_physical_address(virtual_address, physical_address);
+    }
+
+    pub fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("pwt = {:#x?}", &self.pwt);
+        serial_println!("pcd = {:#x?}", &self.pcd);
     }
 }
 
