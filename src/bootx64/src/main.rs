@@ -42,8 +42,10 @@ use {
 #[no_mangle]
 fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut system::System<'static>) -> status::Status {
     serial::Serial::init_com1();
-    serial_println!("Hello, World!");
     system::init_system(image_handle, system_table);
+    uefi_println!("Hello, World!");
+    uefi_println!("image_handle = {:#x?}", system::image());
+    uefi_println!("system_table = {:#x?}", system::system());
     let mut kernel = Kernel::new();
     let memory_map: &memory_allocation::Map = &system::exit_boot_services();
     serial_println!("memory_map = {:#x?}", memory_map);
@@ -72,9 +74,6 @@ struct Kernel<'a> {
 
 impl Kernel<'_> {
     fn new() -> Self {
-        serial_println!("Hello, World!");
-        serial_println!("image_handle = {:#x?}", system::image());
-        serial_println!("system_table = {:#x?}", system::system());
         let memory_map = memory_allocation::Map::new();
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
         let memory_size = memory_size as usize;
