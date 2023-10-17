@@ -86,8 +86,13 @@ impl Cr3<'_> {
     }
 
     pub fn print_state_at_address(&self, virtual_address: usize) {
-        serial_println!("pwt = {:#x?}", &self.pwt);
-        serial_println!("pcd = {:#x?}", &self.pcd);
+        serial_println!("cr3.pwt = {:#x?}", &self.pwt);
+        serial_println!("cr3.pcd = {:#x?}", &self.pcd);
+        if let Some(page_map_level_4_entry) = self.page_map_level_4_entries
+            .iter()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN)) {
+            page_map_level_4_entry.print_state_at_address(virtual_address);
+        }
     }
 }
 
@@ -458,6 +463,24 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_map_level_4_entry.present = {:#x?}", &self.present);
+        serial_println!("page_map_level_4_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_map_level_4_entry.page_map_level_4_entry = {:#x?}", &self.page_map_level_4_entry);
+        serial_println!("page_map_level_4_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_map_level_4_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_map_level_4_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_map_level_4_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_map_level_4_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_map_level_4_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_map_level_4_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_directory_pointer_entry) = self.page_directory_pointer_entries
+            .iter()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)) {
+            page_directory_pointer_entry.print_state_at_address(virtual_address);
         }
     }
 }
@@ -1032,6 +1055,32 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_directory_pointer_entry.present = {:#x?}", &self.present);
+        serial_println!("page_directory_pointer_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_directory_pointer_entry.page_directory_pointer_entry = {:#x?}", &self.page_directory_pointer_entry);
+        serial_println!("page_directory_pointer_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_directory_pointer_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_directory_pointer_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_directory_pointer_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_directory_pointer_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_directory_pointer_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_directory_pointer_entry.page_size_1_gib = {:#x?}", &self.page_size_1_gib);
+        serial_println!("page_directory_pointer_entry.global = {:#x?}", &self.global);
+        serial_println!("page_directory_pointer_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_directory_pointer_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_directory_pointer_entry.page_1_gib_physical_address = {:#x?}", &self.page_1_gib_physical_address);
+        serial_println!("page_directory_pointer_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_directory_pointer_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_directory_entry) = self.page_directory_entries
+            .as_ref()
+            .and_then(|page_directory_entries| page_directory_entries
+                .iter()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))) {
+            page_directory_entry.print_state_at_address(virtual_address);
+        }
+    }
 }
 
 impl fmt::Debug for PageDirectoryPointerEntry<'_> {
@@ -1420,6 +1469,31 @@ impl<'a> PageDirectoryEntry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+    
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_directory_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_directory_entry.page_directory_entry = {:#x?}", &self.page_directory_entry);
+        serial_println!("page_directory_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_directory_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_directory_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_directory_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_directory_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_directory_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_directory_entry.page_size_2_mib = {:#x?}", &self.page_size_2_mib);
+        serial_println!("page_directory_entry.global = {:#x?}", &self.global);
+        serial_println!("page_directory_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_directory_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_directory_entry.page_2_mib_physical_address = {:#x?}", &self.page_2_mib_physical_address);
+        serial_println!("page_directory_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_directory_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_entry) = self.page_entries
+            .as_ref()
+            .and_then(|page_entries| page_entries
+                .iter()
+                .find(|page_entry| page_entry.virtual_address == virtual_address & (usize::MAX << PageEntry::INDEX_SHIFT_BEGIN))) {
+                page_entry.print_state_at_address();
+            }
+    }
 }
 
 impl fmt::Debug for PageDirectoryEntry<'_> {
@@ -1638,6 +1712,23 @@ impl<'a> PageEntry<'a> {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
+    }
+
+    fn print_state_at_address(&self) {
+        serial_println!("page_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_entry.page_entry = {:#x?}", &self.page_entry);
+        serial_println!("page_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_entry.global = {:#x?}", &self.global);
+        serial_println!("page_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_entry.physical_address = {:#x?}", &self.physical_address);
+        serial_println!("page_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_entry.execute_disable = {:#x?}", &self.execute_disable);
     }
 }
 

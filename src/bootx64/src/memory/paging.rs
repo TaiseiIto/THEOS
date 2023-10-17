@@ -130,7 +130,7 @@ impl State<'_> {
     }
 
     pub fn print_state_at_address(&self, virtual_address: usize) {
-        serial_println!("Paging state at address {:#x?}", virtual_address);
+        serial_println!("Paging state at address {:#x?} begin.", virtual_address);
         match self {
             Self::Disable => {
             },
@@ -147,6 +147,7 @@ impl State<'_> {
             Self::Level5 => {
             },
         }
+        serial_println!("Paging state at address {:#x?} end.", virtual_address);
     }
 }
 

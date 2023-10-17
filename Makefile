@@ -19,7 +19,7 @@ HAS_VOLUME_GUID=false
 all: $(THEOS)
 
 clean:
-	rm $(THEOS)
+	rm -f $(THEOS)
 
 rebuild:
 	make clean
