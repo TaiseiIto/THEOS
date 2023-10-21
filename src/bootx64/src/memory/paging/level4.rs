@@ -149,19 +149,23 @@ impl Cr3<'_> {
         restart: bool,
         protection_key: u8,
         execute_disable: bool) {
-        serial_println!("set_page");
-        serial_println!("virtual_address = {:#x?}", virtual_address);
-        serial_println!("physical_address = {:#x?}", physical_address);
-        serial_println!("page_size = {:#x?}", page_size);
-        serial_println!("writable = {:#x?}", writable);
-        serial_println!("user_mode_access = {:#x?}", user_mode_access);
-        serial_println!("page_write_through = {:#x?}", page_write_through);
-        serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
-        serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
-        serial_println!("global = {:#x?}", global);
-        serial_println!("restart = {:#x?}", restart);
-        serial_println!("protection_key = {:#x?}", protection_key);
-        serial_println!("execute_disable = {:#x?}", execute_disable);
+        self.page_map_level_4_entries
+            .iter_mut()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a page!")
+            .set_page(
+                virtual_address,
+                physical_address,
+                page_size,
+                writable,
+                user_mode_access,
+                page_write_through,
+                page_cache_disable,
+                page_attribute_table,
+                global,
+                restart,
+                protection_key,
+                execute_disable);
     }
 
     pub fn print_state_at_address(&self, virtual_address: usize) {
@@ -431,98 +435,102 @@ impl<'a> PageMapLevel4Entry<'a> {
         }
     }
 
+    fn enable(&mut self) {
+        if !self.present {
+            let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
+            let page_directory_pointer_table_address: Option<u64> = page_directory_pointer_table_page
+                .as_ref()
+                .map(|page| page.physical_address());
+            let mut page_directory_pointer_table: Option<&mut [u8]> = page_directory_pointer_table_page
+                .as_mut()
+                .map(|page| page.bytes());
+            let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table
+                .as_ref()
+                .map(|page_directory_pointer_table| page_directory_pointer_table.len());
+            let page_directory_pointer_table: Option<*mut u8> = page_directory_pointer_table
+                .as_mut()
+                .map(|page_directory_pointer_table| page_directory_pointer_table.as_mut_ptr());
+            let page_directory_pointer_table: Option<*mut u64> = page_directory_pointer_table
+                .as_ref()
+                .map(|page_directory_pointer_table| *page_directory_pointer_table as *mut u64);
+            let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table_len
+                .as_ref()
+                .map(|page_directory_pointer_table_len| page_directory_pointer_table_len / 8);
+            let page_directory_pointer_table: Option<&mut [u64]> = if let (Some(page_directory_pointer_table), Some(page_directory_pointer_table_len)) = (page_directory_pointer_table, page_directory_pointer_table_len) {
+                Some(unsafe {
+                    slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
+                })
+            } else {
+                None
+            };
+            let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
+                Some(page_directory_pointer_table) => page_directory_pointer_table
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, page_directory_pointer_entry)| (cannonicalize(self.virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
+                    .map(|(virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::add(virtual_address, page_directory_pointer_entry))
+                    .collect(),
+                None => Vec::<PageDirectoryPointerEntry>::new(),
+            };
+            self.present = true;
+            self.page_directory_pointer_table_page = page_directory_pointer_table_page;
+            self.page_directory_pointer_entries = page_directory_pointer_entries;
+            let present_in_entry: u64 = if self.present {
+                Self::PRESENT_MASK
+            } else {
+                0
+            };
+            let writable_in_entry: u64 = if self.writable {
+                Self::WRITABLE_MASK
+            } else {
+                0
+            };
+            let user_mode_access_in_entry: u64 = if self.user_mode_access {
+                Self::USER_MODE_ACCESS_MASK
+            } else {
+                0
+            };
+            let page_write_through_in_entry: u64 = if self.page_write_through {
+                Self::PAGE_WRITE_THROUGH_MASK
+            } else {
+                0
+            };
+            let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+                Self::PAGE_CACHE_DISABLE_MASK
+            } else {
+                0
+            };
+            let accessed_in_entry: u64 = if self.accessed {
+                Self::ACCESSED_MASK
+            } else {
+                0
+            };
+            let restart_in_entry: u64 = if self.restart {
+                Self::RESTART_MASK
+            } else {
+                0
+            };
+            let execute_disable_in_entry: u64 = if self.execute_disable {
+                Self::EXECUTE_DISABLE_MASK
+            } else {
+                0
+            };
+            *self.page_map_level_4_entry = 
+                present_in_entry
+                | writable_in_entry
+                | user_mode_access_in_entry
+                | page_write_through_in_entry
+                | page_cache_disable_in_entry
+                | accessed_in_entry
+                | restart_in_entry
+                | page_directory_pointer_table_address.unwrap_or(0)
+                | execute_disable_in_entry;
+        }
+    }
+
     fn divide_child(&mut self, virtual_address: usize) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if !self.present {
-                let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
-                let page_directory_pointer_table_address: Option<u64> = page_directory_pointer_table_page
-                    .as_ref()
-                    .map(|page| page.physical_address());
-                let mut page_directory_pointer_table: Option<&mut [u8]> = page_directory_pointer_table_page
-                    .as_mut()
-                    .map(|page| page.bytes());
-                let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table
-                    .as_ref()
-                    .map(|page_directory_pointer_table| page_directory_pointer_table.len());
-                let page_directory_pointer_table: Option<*mut u8> = page_directory_pointer_table
-                    .as_mut()
-                    .map(|page_directory_pointer_table| page_directory_pointer_table.as_mut_ptr());
-                let page_directory_pointer_table: Option<*mut u64> = page_directory_pointer_table
-                    .as_ref()
-                    .map(|page_directory_pointer_table| *page_directory_pointer_table as *mut u64);
-                let page_directory_pointer_table_len: Option<usize> = page_directory_pointer_table_len
-                    .as_ref()
-                    .map(|page_directory_pointer_table_len| page_directory_pointer_table_len / 8);
-                let page_directory_pointer_table: Option<&mut [u64]> = if let (Some(page_directory_pointer_table), Some(page_directory_pointer_table_len)) = (page_directory_pointer_table, page_directory_pointer_table_len) {
-                    Some(unsafe {
-                        slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
-                    })
-                } else {
-                    None
-                };
-                let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
-                    Some(page_directory_pointer_table) => page_directory_pointer_table
-                        .into_iter()
-                        .enumerate()
-                        .map(|(index, page_directory_pointer_entry)| (cannonicalize(self.virtual_address + (index << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)), page_directory_pointer_entry))
-                        .map(|(virtual_address, page_directory_pointer_entry)| PageDirectoryPointerEntry::add(virtual_address, page_directory_pointer_entry))
-                        .collect(),
-                    None => Vec::<PageDirectoryPointerEntry>::new(),
-                };
-                self.present = true;
-                self.page_directory_pointer_table_page = page_directory_pointer_table_page;
-                self.page_directory_pointer_entries = page_directory_pointer_entries;
-                let present_in_entry: u64 = if self.present {
-                    Self::PRESENT_MASK
-                } else {
-                    0
-                };
-                let writable_in_entry: u64 = if self.writable {
-                    Self::WRITABLE_MASK
-                } else {
-                    0
-                };
-                let user_mode_access_in_entry: u64 = if self.user_mode_access {
-                    Self::USER_MODE_ACCESS_MASK
-                } else {
-                    0
-                };
-                let page_write_through_in_entry: u64 = if self.page_write_through {
-                    Self::PAGE_WRITE_THROUGH_MASK
-                } else {
-                    0
-                };
-                let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
-                    Self::PAGE_CACHE_DISABLE_MASK
-                } else {
-                    0
-                };
-                let accessed_in_entry: u64 = if self.accessed {
-                    Self::ACCESSED_MASK
-                } else {
-                    0
-                };
-                let restart_in_entry: u64 = if self.restart {
-                    Self::RESTART_MASK
-                } else {
-                    0
-                };
-                let execute_disable_in_entry: u64 = if self.execute_disable {
-                    Self::EXECUTE_DISABLE_MASK
-                } else {
-                    0
-                };
-                *self.page_map_level_4_entry = 
-                    present_in_entry
-                    | writable_in_entry
-                    | user_mode_access_in_entry
-                    | page_write_through_in_entry
-                    | page_cache_disable_in_entry
-                    | accessed_in_entry
-                    | restart_in_entry
-                    | page_directory_pointer_table_address.unwrap_or(0)
-                    | execute_disable_in_entry;
-            }
+            self.enable();
             self.page_directory_pointer_entries
                 .iter_mut()
                 .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
@@ -542,6 +550,39 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_page(
+        &mut self, 
+        virtual_address: usize,
+        physical_address: usize,
+        page_size: PageSize,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        page_attribute_table: bool,
+        global: bool,
+        restart: bool,
+        protection_key: u8,
+        execute_disable: bool) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.enable();
+            serial_println!("virtual_address = {:#x?}", virtual_address);
+            serial_println!("physical_address = {:#x?}", physical_address);
+            serial_println!("page_size = {:#x?}", page_size);
+            serial_println!("writable = {:#x?}", writable);
+            serial_println!("user_mode_access = {:#x?}", user_mode_access);
+            serial_println!("page_write_through = {:#x?}", page_write_through);
+            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
+            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
+            serial_println!("global = {:#x?}", global);
+            serial_println!("restart = {:#x?}", restart);
+            serial_println!("protection_key = {:#x?}", protection_key);
+            serial_println!("execute_disable = {:#x?}", execute_disable);
+        } else {
+            panic!("Can't set a page!")
         }
     }
 
