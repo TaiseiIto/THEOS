@@ -79,6 +79,7 @@ impl Kernel<'_> {
         let memory_map = memory_allocation::Map::new();
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
         let memory_size = memory_size as usize;
+        serial_println!("memory_size = {:#x?}", memory_size);
         let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
         let physical_page_present_bit_map: memory::PhysicalPagePresentBitMap = (&memory_map).into();
         let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
@@ -103,13 +104,14 @@ impl Kernel<'_> {
         let gdt = gdt::Gdt::new();
         serial_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
-        let stack_floor = usize::MAX - memory_size;
+        let stack_floor = usize::MAX - (memory_size - 1);
+        serial_println!("stack_floor = {:#x?}", stack_floor);
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
         stack
             .physical_addresses()
             .enumerate()
-            .map(|(i, physical_address)| (stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE + 1, physical_address))
+            .map(|(i, physical_address)| (stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE, physical_address))
             .for_each(|(virtual_address, physical_address)| {
                 page_map.insert(physical_address as usize, virtual_address);
             });
