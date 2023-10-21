@@ -106,10 +106,21 @@ impl Cr3<'_> {
             .zip(physical_addresses.into_iter())
             .collect();
         serial_println!("virtual_address2physical_address = {:#x?}", virtual_address2physical_address);
+        virtual_address2physical_address
+            .iter()
+            .for_each(|(virtual_address, physical_address)| self.set_1gib_page(*virtual_address, *physical_address));
         // Set 2 MiB pages.
         // let page_size: usize = 0x100000;
         // Set 4 KiB pages.
         // let page_size: usize = 0x400;
+    }
+
+    pub fn set_1gib_page(&self, virtual_address: usize, physical_address: usize) {
+        self.page_map_level_4_entries
+            .iter()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a 1Gib page!")
+            .set_1gib_page(virtual_address, physical_address);
     }
 
     pub fn print_state_at_address(&self, virtual_address: usize) {
@@ -490,6 +501,14 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_1gib_page(&self, virtual_address: usize, physical_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            serial_println!("set_1gib_page(virtual_address = {:#x?}, physical_address = {:#x?})", virtual_address, physical_address);
+        } else {
+            panic!("Can't set a 1GiB page!")
         }
     }
 
