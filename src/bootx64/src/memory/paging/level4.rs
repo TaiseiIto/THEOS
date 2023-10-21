@@ -597,18 +597,23 @@ impl<'a> PageMapLevel4Entry<'a> {
                 page_cache_disable,
                 restart,
                 execute_disable);
-            serial_println!("virtual_address = {:#x?}", virtual_address);
-            serial_println!("physical_address = {:#x?}", physical_address);
-            serial_println!("page_size = {:#x?}", page_size);
-            serial_println!("writable = {:#x?}", writable);
-            serial_println!("user_mode_access = {:#x?}", user_mode_access);
-            serial_println!("page_write_through = {:#x?}", page_write_through);
-            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
-            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
-            serial_println!("global = {:#x?}", global);
-            serial_println!("restart = {:#x?}", restart);
-            serial_println!("protection_key = {:#x?}", protection_key);
-            serial_println!("execute_disable = {:#x?}", execute_disable);
+            self.page_directory_pointer_entries
+                .iter_mut()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a page!")
+                .set_page(
+                    virtual_address,
+                    physical_address,
+                    page_size,
+                    writable,
+                    user_mode_access,
+                    page_write_through,
+                    page_cache_disable,
+                    page_attribute_table,
+                    global,
+                    restart,
+                    protection_key,
+                    execute_disable);
         } else {
             panic!("Can't set a page!")
         }
@@ -1199,6 +1204,38 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
                 .expect("Can't set a physical address!")
                 .set_physical_address(virtual_address, physical_address);
+        } else {
+            panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_page(
+        &mut self, 
+        virtual_address: usize,
+        physical_address: usize,
+        page_size: PageSize,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        page_attribute_table: bool,
+        global: bool,
+        restart: bool,
+        protection_key: u8,
+        execute_disable: bool) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            serial_println!("virtual_address = {:#x?}", virtual_address);
+            serial_println!("physical_address = {:#x?}", physical_address);
+            serial_println!("page_size = {:#x?}", page_size);
+            serial_println!("writable = {:#x?}", writable);
+            serial_println!("user_mode_access = {:#x?}", user_mode_access);
+            serial_println!("page_write_through = {:#x?}", page_write_through);
+            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
+            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
+            serial_println!("global = {:#x?}", global);
+            serial_println!("restart = {:#x?}", restart);
+            serial_println!("protection_key = {:#x?}", protection_key);
+            serial_println!("execute_disable = {:#x?}", execute_disable);
         } else {
             panic!("Can't set a physical address!")
         }
