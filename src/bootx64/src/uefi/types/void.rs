@@ -15,19 +15,30 @@ impl Void {
     }
 
     pub fn null<'a>() -> &'a Self {
-        let null: usize = 0;
-        let null: *const Self = null as *const Self;
-        unsafe {
-            &*null
-        }
+        0usize.into()
     }
 }
 
 impl fmt::Debug for Void {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let void = self as *const Void;
-        let void = void as usize;
+        let void: usize = self.into();
         write!(f, "{:#x}", void)
+    }
+}
+
+impl From<usize> for &Void {
+    fn from(virtual_address: usize) -> Self {
+        let virtual_address: *const Void = virtual_address as *const Void;
+        unsafe {
+            &*virtual_address
+        }
+    }
+}
+
+impl Into<usize> for &Void {
+    fn into(self) -> usize {
+        let virtual_address = self as *const Void;
+        virtual_address as usize
     }
 }
 

@@ -35,6 +35,7 @@ use {
         types::{
             handle,
             status,
+            void,
         },
     },
 };
@@ -64,6 +65,7 @@ struct Kernel<'a> {
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
     stack: memory::Pages<'a>,
+    stack_floor: &'a void::Void,
     cr0: control::register0::Cr0,
     cr2: control::register2::Cr2,
     cr3: control::register3::Cr3,
@@ -90,12 +92,8 @@ impl Kernel<'_> {
         let cr2 = control::register2::Cr2::get();
         let cr3 = control::register3::Cr3::get();
         let cr4 = control::register4::Cr4::get();
-        let gdt_set_address = gdt::Gdt::set as *const() as usize;
-        serial_println!("gdt_set_address = {:#x?}", gdt_set_address);
         let paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
-        paging.print_state_at_address(gdt_set_address);
         let mut paging = paging::State::new(&cr0, &cr3, &cr4, &ia32_efer, memory_size);
-        paging.print_state_at_address(gdt_set_address);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
@@ -105,15 +103,17 @@ impl Kernel<'_> {
         let gdt = gdt::Gdt::new();
         serial_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
+        let stack_floor = usize::MAX - memory_size;
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
         stack
             .physical_addresses()
             .enumerate()
-            .map(|(i, physical_address)| (usize::MAX - (stack_pages - i) * memory_allocation::PAGE_SIZE + 1, physical_address))
+            .map(|(i, physical_address)| (stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE + 1, physical_address))
             .for_each(|(virtual_address, physical_address)| {
                 page_map.insert(physical_address as usize, virtual_address);
             });
+        let stack_floor: &void::Void = stack_floor.into();
         serial_println!("page_map = {:#x?}", page_map);
         page_map
             .values()
@@ -128,6 +128,7 @@ impl Kernel<'_> {
             page_map,
             paging,
             stack,
+            stack_floor,
             cr0,
             cr2,
             cr3,
@@ -145,6 +146,7 @@ impl Kernel<'_> {
         serial: &serial::Serial
     ) {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
+        let stack_floor: &void::Void = self.stack_floor;
         let cr0: &control::register0::Cr0 = &(self.cr0);
         let cr2: &control::register2::Cr2 = &(self.cr2);
         let cr4: &control::register4::Cr4 = &(self.cr4);
@@ -159,6 +161,7 @@ impl Kernel<'_> {
             system,
             physical_page_present_bit_map,
             memory_map,
+            stack_floor,
             cr0,
             cr2,
             cr3,
