@@ -7,10 +7,7 @@ use {
         serial_println,
     },
     alloc::{
-        collections::{
-            btree_map::BTreeMap,
-            btree_set::BTreeSet,
-        },
+        collections::btree_map::BTreeMap,
         vec::Vec,
     },
     core::{
@@ -435,7 +432,14 @@ impl<'a> PageMapLevel4Entry<'a> {
         }
     }
 
-    fn enable(&mut self) {
+    fn enable(
+        &mut self,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        restart: bool,
+        execute_disable: bool) {
         if !self.present {
             let mut page_directory_pointer_table_page: Option<Pages> = Some(Pages::new(1));
             let page_directory_pointer_table_address: Option<u64> = page_directory_pointer_table_page
@@ -473,6 +477,12 @@ impl<'a> PageMapLevel4Entry<'a> {
                 None => Vec::<PageDirectoryPointerEntry>::new(),
             };
             self.present = true;
+            self.writable = writable;
+            self.user_mode_access = user_mode_access;
+            self.page_write_through = page_write_through;
+            self.page_cache_disable = page_cache_disable;
+            self.restart = restart;
+            self.execute_disable = execute_disable;
             self.page_directory_pointer_table_page = page_directory_pointer_table_page;
             self.page_directory_pointer_entries = page_directory_pointer_entries;
             let present_in_entry: u64 = if self.present {
@@ -530,7 +540,19 @@ impl<'a> PageMapLevel4Entry<'a> {
 
     fn divide_child(&mut self, virtual_address: usize) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.enable();
+            let writable: bool = true;
+            let user_mode_access: bool = false;
+            let page_write_through: bool = false;
+            let page_cache_disable: bool = false;
+            let restart: bool = false;
+            let execute_disable: bool = false;
+            self.enable(
+                writable,
+                user_mode_access,
+                page_write_through,
+                page_cache_disable,
+                restart,
+                execute_disable);
             self.page_directory_pointer_entries
                 .iter_mut()
                 .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
@@ -568,7 +590,13 @@ impl<'a> PageMapLevel4Entry<'a> {
         protection_key: u8,
         execute_disable: bool) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.enable();
+            self.enable(
+                writable,
+                user_mode_access,
+                page_write_through,
+                page_cache_disable,
+                restart,
+                execute_disable);
             serial_println!("virtual_address = {:#x?}", virtual_address);
             serial_println!("physical_address = {:#x?}", physical_address);
             serial_println!("page_size = {:#x?}", page_size);
