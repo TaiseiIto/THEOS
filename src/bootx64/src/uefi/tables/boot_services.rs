@@ -178,6 +178,22 @@ impl BootServices<'_> {
         }
     }
 
+    pub fn locate_protocol(
+        &self,
+        protocol: &protocol_handler::Guid,
+        registration: &void::Void,
+        interface: &mut &void::Void,
+    ) -> Result<(), status::Status> {
+        match self.locate_protocol.0(
+            protocol,
+            registration,
+            interface,
+        ) {
+            status::SUCCESS => Ok(()),
+            error => Err(error),
+        }
+    }
+
     pub fn open_protocol(
         &self,
         handle: handle::Handle,

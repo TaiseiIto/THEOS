@@ -2,8 +2,15 @@
 // Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 3 System Programming Guide, Chapter 4 Paging, Section 5 4-Level Paging And 5-Level Paging
 
 use {
+    crate::{
+        serial_print,
+        serial_println,
+    },
     alloc::vec::Vec,
-    core::slice,
+    core::{
+        slice,
+        fmt,
+    },
     super::super::Pages,
 };
 
@@ -16,7 +23,6 @@ fn cannonicalize(virtual_address: usize) -> usize {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 pub struct Cr3<'a> {
     pwt: bool,
     pcd: bool,
@@ -78,6 +84,30 @@ impl Cr3<'_> {
             .expect("Can't set a physical address!")
             .set_physical_address(virtual_address, physical_address);
     }
+
+    pub fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("cr3.pwt = {:#x?}", &self.pwt);
+        serial_println!("cr3.pcd = {:#x?}", &self.pcd);
+        if let Some(page_map_level_4_entry) = self.page_map_level_4_entries
+            .iter()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN)) {
+            page_map_level_4_entry.print_state_at_address(virtual_address);
+        }
+    }
+}
+
+impl fmt::Debug for Cr3<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("Cr3")
+            .field("pwt", &self.pwt)
+            .field("pcd", &self.pcd)
+            .field("page_map_level_4_entries", &self.page_map_level_4_entries
+                .iter()
+                .filter(|page_map_level_4_entry| page_map_level_4_entry.present)
+                .collect::<Vec<&PageMapLevel4Entry>>())
+            .finish()
+    }
 }
 
 impl From<u64> for Cr3<'_> {
@@ -124,7 +154,6 @@ impl Into<u64> for &Cr3<'_> {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageMapLevel4Entry<'a> {
     present: bool,
     virtual_address: usize,
@@ -204,7 +233,7 @@ impl<'a> PageMapLevel4Entry<'a> {
         } else {
             None
         };
-        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
+        let mut page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = match page_directory_pointer_table {
             Some(page_directory_pointer_table) => page_directory_pointer_table
                 .into_iter()
                 .enumerate()
@@ -213,6 +242,10 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .collect(),
             None => Vec::<PageDirectoryPointerEntry>::new(),
         };
+        page_directory_pointer_entries
+            .iter_mut()
+            .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present)
+            .for_each(|page_directory_pointer_entry| page_directory_pointer_entry.divide());
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
         } else {
@@ -432,10 +465,49 @@ impl<'a> PageMapLevel4Entry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_map_level_4_entry.present = {:#x?}", &self.present);
+        serial_println!("page_map_level_4_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_map_level_4_entry.page_map_level_4_entry = {:#x?}", &self.page_map_level_4_entry);
+        serial_println!("page_map_level_4_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_map_level_4_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_map_level_4_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_map_level_4_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_map_level_4_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_map_level_4_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_map_level_4_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_directory_pointer_entry) = self.page_directory_pointer_entries
+            .iter()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN)) {
+            page_directory_pointer_entry.print_state_at_address(virtual_address);
+        }
+    }
+}
+
+impl fmt::Debug for PageMapLevel4Entry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageMapLevel4Entry")
+            .field("present", &self.present)
+            .field("virtual_address", &self.virtual_address)
+            .field("page_map_level_4_entry", &self.page_map_level_4_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("restart", &self.restart)
+            .field("execute_disable", &self.execute_disable)
+            .field("page_directory_pointer_entries", &self.page_directory_pointer_entries
+                .iter()
+                .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present)
+                .collect::<Vec<&PageDirectoryPointerEntry>>())
+            .finish()
+    }
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageDirectoryPointerEntry<'a> {
     present: bool,
     virtual_address: usize,
@@ -983,10 +1055,60 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_directory_pointer_entry.present = {:#x?}", &self.present);
+        serial_println!("page_directory_pointer_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_directory_pointer_entry.page_directory_pointer_entry = {:#x?}", &self.page_directory_pointer_entry);
+        serial_println!("page_directory_pointer_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_directory_pointer_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_directory_pointer_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_directory_pointer_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_directory_pointer_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_directory_pointer_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_directory_pointer_entry.page_size_1_gib = {:#x?}", &self.page_size_1_gib);
+        serial_println!("page_directory_pointer_entry.global = {:#x?}", &self.global);
+        serial_println!("page_directory_pointer_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_directory_pointer_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_directory_pointer_entry.page_1_gib_physical_address = {:#x?}", &self.page_1_gib_physical_address);
+        serial_println!("page_directory_pointer_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_directory_pointer_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_directory_entry) = self.page_directory_entries
+            .as_ref()
+            .and_then(|page_directory_entries| page_directory_entries
+                .iter()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))) {
+            page_directory_entry.print_state_at_address(virtual_address);
+        }
+    }
+}
+
+impl fmt::Debug for PageDirectoryPointerEntry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageDirectoryPointerEntry")
+            .field("present", &self.present)
+            .field("virtual_address", &self.virtual_address)
+            .field("page_directory_pointer_entry", &self.page_directory_pointer_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("dirty", &self.dirty)
+            .field("page_size_1_gib", &self.page_size_1_gib)
+            .field("global", &self.global)
+            .field("restart", &self.restart)
+            .field("page_attribute_table", &self.page_attribute_table)
+            .field("page_1_gib_physical_address", &self.page_1_gib_physical_address)
+            .field("protection_key", &self.protection_key)
+            .field("execute_disable", &self.execute_disable)
+            .field("page_directory_entries", &self.page_directory_entries)
+            .finish()
+    }
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageDirectoryEntry<'a> {
     virtual_address: usize,
     page_directory_entry: &'a mut u64,
@@ -1347,10 +1469,58 @@ impl<'a> PageDirectoryEntry<'a> {
             panic!("Can't set a physical address!")
         }
     }
+    
+    fn print_state_at_address(&self, virtual_address: usize) {
+        serial_println!("page_directory_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_directory_entry.page_directory_entry = {:#x?}", &self.page_directory_entry);
+        serial_println!("page_directory_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_directory_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_directory_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_directory_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_directory_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_directory_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_directory_entry.page_size_2_mib = {:#x?}", &self.page_size_2_mib);
+        serial_println!("page_directory_entry.global = {:#x?}", &self.global);
+        serial_println!("page_directory_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_directory_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_directory_entry.page_2_mib_physical_address = {:#x?}", &self.page_2_mib_physical_address);
+        serial_println!("page_directory_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_directory_entry.execute_disable = {:#x?}", &self.execute_disable);
+        if let Some(page_entry) = self.page_entries
+            .as_ref()
+            .and_then(|page_entries| page_entries
+                .iter()
+                .find(|page_entry| page_entry.virtual_address == virtual_address & (usize::MAX << PageEntry::INDEX_SHIFT_BEGIN))) {
+                page_entry.print_state_at_address();
+            }
+    }
+}
+
+impl fmt::Debug for PageDirectoryEntry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageDirectoryEntry")
+            .field("virtual_address", &self.virtual_address)
+            .field("page_directory_entry", &self.page_directory_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("dirty", &self.dirty)
+            .field("page_size_2_mib", &self.page_size_2_mib)
+            .field("global", &self.global)
+            .field("restart", &self.restart)
+            .field("page_attribute_table", &self.page_attribute_table)
+            .field("page_2_mib_physical_address", &self.page_2_mib_physical_address)
+            .field("protection_key", &self.protection_key)
+            .field("execute_disable", &self.execute_disable)
+            .field("page_entries", &self.page_entries)
+            .finish()
+    }
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 struct PageEntry<'a> {
     virtual_address: usize,
     page_entry: &'a mut u64,
@@ -1542,6 +1712,45 @@ impl<'a> PageEntry<'a> {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
+    }
+
+    fn print_state_at_address(&self) {
+        serial_println!("page_entry.virtual_address = {:#x?}", &self.virtual_address);
+        serial_println!("page_entry.page_entry = {:#x?}", &self.page_entry);
+        serial_println!("page_entry.writable = {:#x?}", &self.writable);
+        serial_println!("page_entry.user_mode_access = {:#x?}", &self.user_mode_access);
+        serial_println!("page_entry.page_write_through = {:#x?}", &self.page_write_through);
+        serial_println!("page_entry.page_cache_disable = {:#x?}", &self.page_cache_disable);
+        serial_println!("page_entry.accessed = {:#x?}", &self.accessed);
+        serial_println!("page_entry.dirty = {:#x?}", &self.dirty);
+        serial_println!("page_entry.page_attribute_table = {:#x?}", &self.page_attribute_table);
+        serial_println!("page_entry.global = {:#x?}", &self.global);
+        serial_println!("page_entry.restart = {:#x?}", &self.restart);
+        serial_println!("page_entry.physical_address = {:#x?}", &self.physical_address);
+        serial_println!("page_entry.protection_key = {:#x?}", &self.protection_key);
+        serial_println!("page_entry.execute_disable = {:#x?}", &self.execute_disable);
+    }
+}
+
+impl fmt::Debug for PageEntry<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("PageEntry")
+            .field("virtual_address", &self.virtual_address)
+            .field("page_entry", &self.page_entry)
+            .field("writable", &self.writable)
+            .field("user_mode_access", &self.user_mode_access)
+            .field("page_write_through", &self.page_write_through)
+            .field("page_cache_disable", &self.page_cache_disable)
+            .field("accessed", &self.accessed)
+            .field("dirty", &self.dirty)
+            .field("page_attribute_table", &self.page_attribute_table)
+            .field("global", &self.global)
+            .field("restart", &self.restart)
+            .field("physical_address", &self.physical_address)
+            .field("protection_key", &self.protection_key)
+            .field("execute_disable", &self.execute_disable)
+            .finish()
     }
 }
 

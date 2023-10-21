@@ -146,7 +146,7 @@ impl Gdt {
     }
 
     pub fn set(&self) {
-        serial_println!("new gdt = {:#x?}", self);
+        serial_println!("gdt.set begin");
         self.register.set();
         unsafe {
             asm!(
@@ -163,7 +163,7 @@ impl Gdt {
             );
             asm!(
                 "movzx rax, ax",
-                "lea rbx, 0f",
+                "lea rbx, [rip + 0f]",
                 "push rax",
                 "push rbx",
                 "retfq",
@@ -171,6 +171,7 @@ impl Gdt {
                 in("ax") self.cs,
             );
         }
+        serial_println!("gdt.set end");
     }
 }
 

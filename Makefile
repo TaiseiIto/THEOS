@@ -18,14 +18,19 @@ HAS_VOLUME_GUID=false
 # Build THEOS
 all: $(THEOS)
 
+clean:
+	rm -f $(THEOS)
+
+rebuild:
+	make clean
+	make $(THEOS)
+
 $(THEOS):
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
 	$(COPY) $(KERNEL_SOURCE) $(KERNEL)
 	$(IMAGER) -b $(BOOT_SECTOR) -r $(THEOS_ROOT) -v $(HAS_VOLUME_GUID) > $@ 2> $(IMAGER_LOG)
-	# $(IMAGER) -i $@ >> $(IMAGER_LOG)
-	# cat $(IMAGER_LOG)
 
 # Prepare a development environment on Docker and enter it.
 # Usage: $ make docker
@@ -50,7 +55,7 @@ permission:
 
 # Run THEOS on QEMU.
 # Usage: $ make run
-run: $(THEOS)
+run: rebuild
 	make run -C .tmux
 
 # Stop THEOS on QEMU.
