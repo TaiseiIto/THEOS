@@ -7,7 +7,10 @@ use {
         serial_println,
     },
     alloc::{
-        collections::btree_map::BTreeMap,
+        collections::{
+            btree_map::BTreeMap,
+            btree_set::BTreeSet,
+        },
         vec::Vec,
     },
     core::{
@@ -88,10 +91,9 @@ impl Cr3<'_> {
             .set_physical_address(virtual_address, physical_address);
     }
 
-    pub fn map_highest_parallel(&self, memory_size: usize) {
+    pub fn map_highest_parallel(&mut self, memory_size: usize) {
         serial_println!("map_highest_parallel(memory_size = {:#x?})", memory_size);
-        // Set 1 GiB pages.
-        let page_size: usize = 0x40000000;
+        let page_size: usize = 0x100000;
         let pages: usize = (memory_size + page_size - 1) / page_size;
         let virtual_addresses: Vec<usize> = (0..pages)
             .map(|page| usize::MAX - (memory_size - 1) + page * page_size)
@@ -101,26 +103,64 @@ impl Cr3<'_> {
             .collect();
         serial_println!("virtual_addresses = {:#x?}", virtual_addresses);
         serial_println!("physical_addresses = {:#x?}", physical_addresses);
+        let writable: bool = true;
+        let user_mode_access: bool = false;
+        let page_write_through: bool = false;
+        let page_cache_disable: bool = false;
+        let page_attribute_table: bool = false;
+        let global: bool = false;
+        let restart: bool = false;
+        let protection_key: u8 = 0;
+        let execute_disable: bool = true;
         let virtual_address2physical_address: BTreeMap<usize, usize> = virtual_addresses
             .into_iter()
             .zip(physical_addresses.into_iter())
             .collect();
         serial_println!("virtual_address2physical_address = {:#x?}", virtual_address2physical_address);
         virtual_address2physical_address
-            .iter()
-            .for_each(|(virtual_address, physical_address)| self.set_1gib_page(*virtual_address, *physical_address));
-        // Set 2 MiB pages.
-        // let page_size: usize = 0x100000;
-        // Set 4 KiB pages.
-        // let page_size: usize = 0x400;
+            .into_iter()
+            .for_each(|(virtual_address, physical_address)| self.set_page(
+                virtual_address,
+                physical_address,
+                page_size,
+                writable,
+                user_mode_access,
+                page_write_through,
+                page_cache_disable,
+                page_attribute_table,
+                global,
+                restart,
+                protection_key,
+                execute_disable));
     }
 
-    pub fn set_1gib_page(&self, virtual_address: usize, physical_address: usize) {
-        self.page_map_level_4_entries
-            .iter()
-            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
-            .expect("Can't set a 1Gib page!")
-            .set_1gib_page(virtual_address, physical_address);
+    pub fn set_page(
+        &mut self, 
+        virtual_address: usize,
+        physical_address: usize,
+        page_size: usize,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        page_attribute_table: bool,
+        global: bool,
+        restart: bool,
+        protection_key: u8,
+        execute_disable: bool) {
+        serial_println!("set_page");
+        serial_println!("virtual_address = {:#x?}", virtual_address);
+        serial_println!("physical_address = {:#x?}", physical_address);
+        serial_println!("page_size = {:#x?}", page_size);
+        serial_println!("writable = {:#x?}", writable);
+        serial_println!("user_mode_access = {:#x?}", user_mode_access);
+        serial_println!("page_write_through = {:#x?}", page_write_through);
+        serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
+        serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
+        serial_println!("global = {:#x?}", global);
+        serial_println!("restart = {:#x?}", restart);
+        serial_println!("protection_key = {:#x?}", protection_key);
+        serial_println!("execute_disable = {:#x?}", execute_disable);
     }
 
     pub fn print_state_at_address(&self, virtual_address: usize) {
@@ -501,14 +541,6 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
-        }
-    }
-
-    fn set_1gib_page(&self, virtual_address: usize, physical_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            serial_println!("set_1gib_page(virtual_address = {:#x?}, physical_address = {:#x?})", virtual_address, physical_address);
-        } else {
-            panic!("Can't set a 1GiB page!")
         }
     }
 

@@ -129,7 +129,7 @@ impl State<'_> {
         }
     }
 
-    pub fn map_highest_parallel(&self, memory_size: usize) {
+    pub fn map_highest_parallel(&mut self, memory_size: usize) {
         match self {
             Self::Disable => {
             },
