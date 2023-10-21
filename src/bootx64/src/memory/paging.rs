@@ -129,6 +129,24 @@ impl State<'_> {
         }
     }
 
+    pub fn map_highest_parallel(&self, memory_size: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.map_highest_parallel(memory_size);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
     pub fn print_state_at_address(&self, virtual_address: usize) {
         serial_println!("Paging state at address {:#x?} begin.", virtual_address);
         match self {

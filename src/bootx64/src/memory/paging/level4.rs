@@ -85,6 +85,21 @@ impl Cr3<'_> {
             .set_physical_address(virtual_address, physical_address);
     }
 
+    pub fn map_highest_parallel(&self, memory_size: usize) {
+        serial_println!("map_highest_parallel(memory_size = {:#x?})", memory_size);
+        // Set 1 GiB pages.
+        let page_size: usize = 0x40000000;
+        let pages: usize = (memory_size + page_size - 1) / page_size;
+        let virtual_addresses: Vec<usize> = (0..pages)
+            .map(|page| usize::MAX - (memory_size - 1) + page * page_size)
+            .collect();
+        serial_println!("virtual_addresses = {:#x?}", virtual_addresses);
+        // Set 2 MiB pages.
+        // let page_size: usize = 0x100000;
+        // Set 4 KiB pages.
+        // let page_size: usize = 0x400;
+    }
+
     pub fn print_state_at_address(&self, virtual_address: usize) {
         serial_println!("cr3.pwt = {:#x?}", &self.pwt);
         serial_println!("cr3.pcd = {:#x?}", &self.pcd);
