@@ -93,13 +93,14 @@ impl Cr3<'_> {
 
     pub fn map_highest_parallel(&mut self, memory_size: usize) {
         serial_println!("map_highest_parallel(memory_size = {:#x?})", memory_size);
-        let page_size: usize = 0x100000;
-        let pages: usize = (memory_size + page_size - 1) / page_size;
+        let page_size = PageSize::PageSize2MiB;
+        let page_size_usize: usize = (&page_size).into();
+        let pages: usize = (memory_size + page_size_usize - 1) / page_size_usize;
         let virtual_addresses: Vec<usize> = (0..pages)
-            .map(|page| usize::MAX - (memory_size - 1) + page * page_size)
+            .map(|page| usize::MAX - (memory_size - 1) + page * page_size_usize)
             .collect();
         let physical_addresses: Vec<usize> = (0..pages)
-            .map(|page| page * page_size)
+            .map(|page| page * page_size_usize)
             .collect();
         serial_println!("virtual_addresses = {:#x?}", virtual_addresses);
         serial_println!("physical_addresses = {:#x?}", physical_addresses);
@@ -134,11 +135,11 @@ impl Cr3<'_> {
                 execute_disable));
     }
 
-    pub fn set_page(
+    fn set_page(
         &mut self, 
         virtual_address: usize,
         physical_address: usize,
-        page_size: usize,
+        page_size: PageSize,
         writable: bool,
         user_mode_access: bool,
         page_write_through: bool,
@@ -1829,6 +1830,34 @@ impl fmt::Debug for PageEntry<'_> {
             .field("protection_key", &self.protection_key)
             .field("execute_disable", &self.execute_disable)
             .finish()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum PageSize {
+    PageSize4KiB,
+    PageSize2MiB,
+    PageSize1GiB,
+}
+
+impl From<usize> for PageSize {
+    fn from(page_size: usize) -> PageSize {
+        match page_size {
+            0x0000000000001000 => PageSize::PageSize4KiB,
+            0x0000000000200000 => PageSize::PageSize2MiB,
+            0x0000000040000000 => PageSize::PageSize1GiB,
+            _ => panic!("Invalid page size! page_size = {:#x?}", page_size),
+        }
+    }
+}
+
+impl Into<usize> for &PageSize {
+    fn into(self) -> usize {
+        match self {
+            PageSize::PageSize4KiB => 0x0000000000001000,
+            PageSize::PageSize2MiB => 0x0000000000200000,
+            PageSize::PageSize1GiB => 0x0000000040000000,
+        }
     }
 }
 
