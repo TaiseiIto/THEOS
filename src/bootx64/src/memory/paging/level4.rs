@@ -6,7 +6,10 @@ use {
         serial_print,
         serial_println,
     },
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     core::{
         slice,
         fmt,
@@ -93,7 +96,16 @@ impl Cr3<'_> {
         let virtual_addresses: Vec<usize> = (0..pages)
             .map(|page| usize::MAX - (memory_size - 1) + page * page_size)
             .collect();
+        let physical_addresses: Vec<usize> = (0..pages)
+            .map(|page| page * page_size)
+            .collect();
         serial_println!("virtual_addresses = {:#x?}", virtual_addresses);
+        serial_println!("physical_addresses = {:#x?}", physical_addresses);
+        let virtual_address2physical_address: BTreeMap<usize, usize> = virtual_addresses
+            .into_iter()
+            .zip(physical_addresses.into_iter())
+            .collect();
+        serial_println!("virtual_address2physical_address = {:#x?}", virtual_address2physical_address);
         // Set 2 MiB pages.
         // let page_size: usize = 0x100000;
         // Set 4 KiB pages.
