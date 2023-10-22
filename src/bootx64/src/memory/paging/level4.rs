@@ -178,9 +178,7 @@ impl fmt::Debug for Cr3<'_> {
             .debug_struct("Cr3")
             .field("pwt", &self.pwt)
             .field("pcd", &self.pcd)
-            .field("page_map_level_4_entries", &self.page_map_level_4_entries
-                .iter()
-                .filter(|page_map_level_4_entry| page_map_level_4_entry.present))
+            .field("page_map_level_4_entries", &self.page_map_level_4_entries)
             .finish()
     }
 }
@@ -647,9 +645,7 @@ impl fmt::Debug for PageMapLevel4Entry<'_> {
             .field("accessed", &self.accessed)
             .field("restart", &self.restart)
             .field("execute_disable", &self.execute_disable)
-            .field("page_directory_pointer_entries", &self.page_directory_pointer_entries
-                .iter()
-                .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present))
+            .field("page_directory_pointer_entries", &self.page_directory_pointer_entries)
             .finish()
     }
 }
@@ -1790,7 +1786,7 @@ impl<'a> PageDirectoryEntry<'a> {
                     self.page_entries = None;
                     self.page_2_mib_physical_address = Some(physical_address);
                     self.protection_key = Some(protection_key);
-                    self.page_attribute_table = Some(page_attribute_table);
+                    self.execute_disable = execute_disable;
                     let present_in_entry: u64 = Self::PRESENT_MASK;
                     let writable_in_entry: u64 = if self.writable {
                         Self::WRITABLE_MASK
