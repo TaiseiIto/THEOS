@@ -1880,7 +1880,6 @@ impl<'a> PageDirectoryEntry<'a> {
                         .set_page(
                             virtual_address,
                             physical_address,
-                            page_size,
                             writable,
                             user_mode_access,
                             page_write_through,
@@ -2145,7 +2144,6 @@ impl<'a> PageEntry<'a> {
         &mut self, 
         virtual_address: usize,
         physical_address: usize,
-        page_size: PageSize,
         writable: bool,
         user_mode_access: bool,
         page_write_through: bool,
@@ -2156,18 +2154,85 @@ impl<'a> PageEntry<'a> {
         protection_key: u8,
         execute_disable: bool) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            serial_println!("virtual_address = {:#x?}", virtual_address);
-            serial_println!("physical_address = {:#x?}", physical_address);
-            serial_println!("page_size = {:#x?}", page_size);
-            serial_println!("writable = {:#x?}", writable);
-            serial_println!("user_mode_access = {:#x?}", user_mode_access);
-            serial_println!("page_write_through = {:#x?}", page_write_through);
-            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
-            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
-            serial_println!("global = {:#x?}", global);
-            serial_println!("restart = {:#x?}", restart);
-            serial_println!("protection_key = {:#x?}", protection_key);
-            serial_println!("execute_disable = {:#x?}", execute_disable);
+            self.writable = writable;
+            self.user_mode_access = user_mode_access;
+            self.page_write_through = page_write_through;
+            self.page_cache_disable = page_cache_disable;
+            self.accessed = false;
+            self.dirty = false;
+            self.page_attribute_table = page_attribute_table;
+            self.global = global;
+            self.restart = restart;
+            self.physical_address = physical_address;
+            self.protection_key = protection_key;
+            self.execute_disable = execute_disable;
+            let present_in_entry: u64 = Self::PRESENT_MASK;
+            let writable_in_entry: u64 = if self.writable {
+                Self::WRITABLE_MASK
+            } else {
+                0
+            };
+            let user_mode_access_in_entry: u64 = if self.user_mode_access {
+                Self::USER_MODE_ACCESS_MASK
+            } else {
+                0
+            };
+            let page_write_through_in_entry: u64 = if self.page_write_through {
+                Self::PAGE_WRITE_THROUGH_MASK
+            } else {
+                0
+            };
+            let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+                Self::PAGE_CACHE_DISABLE_MASK
+            } else {
+                0
+            };
+            let accessed_in_entry: u64 = if self.accessed {
+                Self::ACCESSED_MASK
+            } else {
+                0
+            };
+            let dirty_in_entry: u64 = if self.dirty {
+                Self::DIRTY_MASK
+            } else {
+                0
+            };
+            let page_attribute_table_in_entry: u64 = if self.page_attribute_table {
+                Self::PAGE_ATTRIBUTE_TABLE_MASK
+            } else {
+                0
+            };
+            let global_in_entry: u64 = if self.global {
+                Self::PAGE_ATTRIBUTE_TABLE_MASK
+            } else {
+                0
+            };
+            let restart_in_entry: u64 = if self.restart {
+                Self::RESTART_MASK
+            } else {
+                0
+            };
+            let physical_address_in_entry: u64 = self.physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
+            let protection_key_in_entry: u64 = (self.protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+            let execute_disable_in_entry: u64 = if self.execute_disable {
+                Self::EXECUTE_DISABLE_MASK
+            } else {
+                0
+            };
+            *(self.page_entry) =
+                present_in_entry
+                | writable_in_entry
+                | user_mode_access_in_entry
+                | page_write_through_in_entry
+                | page_cache_disable_in_entry
+                | accessed_in_entry
+                | dirty_in_entry
+                | page_attribute_table_in_entry
+                | global_in_entry
+                | restart_in_entry
+                | physical_address_in_entry
+                | protection_key_in_entry
+                | execute_disable_in_entry;
         } else {
             panic!("Can't set a page!")
         }
