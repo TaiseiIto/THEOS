@@ -180,8 +180,7 @@ impl fmt::Debug for Cr3<'_> {
             .field("pcd", &self.pcd)
             .field("page_map_level_4_entries", &self.page_map_level_4_entries
                 .iter()
-                .filter(|page_map_level_4_entry| page_map_level_4_entry.present)
-                .collect::<Vec<&PageMapLevel4Entry>>())
+                .filter(|page_map_level_4_entry| page_map_level_4_entry.present))
             .finish()
     }
 }
@@ -650,8 +649,7 @@ impl fmt::Debug for PageMapLevel4Entry<'_> {
             .field("execute_disable", &self.execute_disable)
             .field("page_directory_pointer_entries", &self.page_directory_pointer_entries
                 .iter()
-                .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present)
-                .collect::<Vec<&PageDirectoryPointerEntry>>())
+                .filter(|page_directory_pointer_entry| page_directory_pointer_entry.present))
             .finish()
     }
 }
@@ -1373,8 +1371,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
 
 impl fmt::Debug for PageDirectoryPointerEntry<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter
-            .debug_struct("PageDirectoryPointerEntry")
+        let mut formatter = formatter.debug_struct("PageDirectoryPointerEntry");
+        let formatter = formatter
             .field("present", &self.present)
             .field("virtual_address", &self.virtual_address)
             .field("page_directory_pointer_entry", &self.page_directory_pointer_entry)
@@ -1390,9 +1388,11 @@ impl fmt::Debug for PageDirectoryPointerEntry<'_> {
             .field("page_attribute_table", &self.page_attribute_table)
             .field("page_1_gib_physical_address", &self.page_1_gib_physical_address)
             .field("protection_key", &self.protection_key)
-            .field("execute_disable", &self.execute_disable)
-            .field("page_directory_entries", &self.page_directory_entries)
-            .finish()
+            .field("execute_disable", &self.execute_disable);
+        match &self.page_directory_entries {
+            Some(page_directory_entries) => formatter.field("page_directory_entries", page_directory_entries),
+            None => formatter,
+        }.finish()
     }
 }
 
@@ -1920,8 +1920,8 @@ impl<'a> PageDirectoryEntry<'a> {
 
 impl fmt::Debug for PageDirectoryEntry<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter
-            .debug_struct("PageDirectoryEntry")
+        let mut formatter = formatter.debug_struct("PageDirectoryEntry");
+        let formatter = formatter
             .field("virtual_address", &self.virtual_address)
             .field("page_directory_entry", &self.page_directory_entry)
             .field("writable", &self.writable)
@@ -1936,9 +1936,11 @@ impl fmt::Debug for PageDirectoryEntry<'_> {
             .field("page_attribute_table", &self.page_attribute_table)
             .field("page_2_mib_physical_address", &self.page_2_mib_physical_address)
             .field("protection_key", &self.protection_key)
-            .field("execute_disable", &self.execute_disable)
-            .field("page_entries", &self.page_entries)
-            .finish()
+            .field("execute_disable", &self.execute_disable);
+        match &self.page_entries {
+            Some(page_entries) => formatter.field("page_entries", page_entries),
+            None => formatter,
+        }.finish()
     }
 }
 
