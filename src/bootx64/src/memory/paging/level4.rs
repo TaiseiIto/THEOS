@@ -1224,20 +1224,127 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         protection_key: u8,
         execute_disable: bool) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            serial_println!("virtual_address = {:#x?}", virtual_address);
-            serial_println!("physical_address = {:#x?}", physical_address);
-            serial_println!("page_size = {:#x?}", page_size);
-            serial_println!("writable = {:#x?}", writable);
-            serial_println!("user_mode_access = {:#x?}", user_mode_access);
-            serial_println!("page_write_through = {:#x?}", page_write_through);
-            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
-            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
-            serial_println!("global = {:#x?}", global);
-            serial_println!("restart = {:#x?}", restart);
-            serial_println!("protection_key = {:#x?}", protection_key);
-            serial_println!("execute_disable = {:#x?}", execute_disable);
+            match page_size {
+                PageSize::PageSize1GiB => {
+                    self.present = true;
+                    self.writable = writable;
+                    self.user_mode_access = user_mode_access;
+                    self.page_write_through = page_write_through;
+                    self.page_cache_disable = page_cache_disable;
+                    self.accessed = false;
+                    self.dirty = false;
+                    self.page_size_1_gib = true;
+                    self.global = Some(global);
+                    self.restart = restart;
+                    self.page_attribute_table = Some(page_attribute_table);
+                    self.page_1_gib_physical_address = Some(physical_address);
+                    self.protection_key = Some(protection_key);
+                    self.execute_disable = execute_disable;
+                    let present_in_entry: u64 = if self.present {
+                        Self::PRESENT_MASK
+                    } else {
+                        0
+                    };
+                    let writable_in_entry: u64 = if writable {
+                        Self::WRITABLE_MASK
+                    } else {
+                        0
+                    };
+                    let user_mode_access_in_entry: u64 = if user_mode_access {
+                        Self::USER_MODE_ACCESS_MASK
+                    } else {
+                        0
+                    };
+                    let page_write_through_in_entry: u64 = if page_write_through {
+                        Self::PAGE_WRITE_THROUGH_MASK
+                    } else {
+                        0
+                    };
+                    let page_cache_disable_in_entry: u64 = if page_cache_disable {
+                        Self::PAGE_CACHE_DISABLE_MASK
+                    } else {
+                        0
+                    };
+                    let accessed_in_entry: u64 = if self.accessed {
+                        Self::ACCESSED_MASK
+                    } else {
+                        0
+                    };
+                    let dirty_in_entry: u64 = if self.dirty {
+                        Self::DIRTY_MASK
+                    } else {
+                        0
+                    };
+                    let page_size_1_gib_in_entry: u64 = if self.page_size_1_gib {
+                        Self::PAGE_SIZE_1_GIB_MASK
+                    } else {
+                        0
+                    };
+                    let global_in_entry: u64 = if global {
+                        Self::GLOBAL_MASK
+                    } else {
+                        0
+                    };
+                    let restart_in_entry: u64 = if restart {
+                        Self::RESTART_MASK
+                    } else {
+                        0
+                    };
+                    let page_attribute_table_in_entry: u64 = if page_attribute_table {
+                        Self::PAGE_ATTRIBUTE_TABLE_MASK
+                    } else {
+                        0
+                    };
+                    let page_1_gib_physical_address_in_entry: u64 = physical_address as u64 & Self::PAGE_1_GIB_MASK;
+                    let protection_key_in_entry: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+                    let execute_disable_in_entry: u64 = if execute_disable {
+                        Self::EXECUTE_DISABLE_MASK
+                    } else {
+                        0
+                    };
+                    *(self.page_directory_pointer_entry) =
+                        present_in_entry           
+                        | writable_in_entry
+                        | user_mode_access_in_entry
+                        | page_write_through_in_entry
+                        | page_cache_disable_in_entry
+                        | accessed_in_entry
+                        | dirty_in_entry
+                        | page_size_1_gib_in_entry
+                        | global_in_entry
+                        | restart_in_entry
+                        | page_attribute_table_in_entry
+                        | page_1_gib_physical_address_in_entry
+                        | protection_key_in_entry
+                        | execute_disable_in_entry;
+                },
+                page_size => {
+                    if !self.divided() {
+                        self.divide();
+                    }
+                    self.page_directory_entries
+                        .as_mut()
+                        .expect("Can't set a page!")
+                        .iter_mut()
+                        .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                        .expect("Can't set a page!")
+                        .set_page(
+                            virtual_address,
+                            physical_address,
+                            page_size,
+                            writable,
+                            user_mode_access,
+                            page_write_through,
+                            page_cache_disable,
+                            page_attribute_table,
+                            global,
+                            restart,
+                            protection_key,
+                            execute_disable);
+                },
+            }
         } else {
-            panic!("Can't set a physical address!")
+            panic!("Can't set a page!")
         }
     }
 
@@ -1652,6 +1759,38 @@ impl<'a> PageDirectoryEntry<'a> {
                 .set_physical_address(physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_page(
+        &mut self, 
+        virtual_address: usize,
+        physical_address: usize,
+        page_size: PageSize,
+        writable: bool,
+        user_mode_access: bool,
+        page_write_through: bool,
+        page_cache_disable: bool,
+        page_attribute_table: bool,
+        global: bool,
+        restart: bool,
+        protection_key: u8,
+        execute_disable: bool) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            serial_println!("virtual_address = {:#x?}", virtual_address);
+            serial_println!("physical_address = {:#x?}", physical_address);
+            serial_println!("page_size = {:#x?}", page_size);
+            serial_println!("writable = {:#x?}", writable);
+            serial_println!("user_mode_access = {:#x?}", user_mode_access);
+            serial_println!("page_write_through = {:#x?}", page_write_through);
+            serial_println!("page_cache_disable = {:#x?}", page_cache_disable);
+            serial_println!("page_attribute_table = {:#x?}", page_attribute_table);
+            serial_println!("global = {:#x?}", global);
+            serial_println!("restart = {:#x?}", restart);
+            serial_println!("protection_key = {:#x?}", protection_key);
+            serial_println!("execute_disable = {:#x?}", execute_disable);
+        } else {
+            panic!("Can't set a page!")
         }
     }
     
