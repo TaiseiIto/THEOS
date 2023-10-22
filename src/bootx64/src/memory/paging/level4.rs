@@ -89,7 +89,6 @@ impl Cr3<'_> {
     }
 
     pub fn map_highest_parallel(&mut self, memory_size: usize) {
-        serial_println!("map_highest_parallel(memory_size = {:#x?})", memory_size);
         let page_size = PageSize::PageSize2MiB;
         let page_size_usize: usize = (&page_size).into();
         let pages: usize = (memory_size + page_size_usize - 1) / page_size_usize;
@@ -99,8 +98,6 @@ impl Cr3<'_> {
         let physical_addresses: Vec<usize> = (0..pages)
             .map(|page| page * page_size_usize)
             .collect();
-        serial_println!("virtual_addresses = {:#x?}", virtual_addresses);
-        serial_println!("physical_addresses = {:#x?}", physical_addresses);
         let writable: bool = true;
         let user_mode_access: bool = false;
         let page_write_through: bool = false;
@@ -114,7 +111,6 @@ impl Cr3<'_> {
             .into_iter()
             .zip(physical_addresses.into_iter())
             .collect();
-        serial_println!("virtual_address2physical_address = {:#x?}", virtual_address2physical_address);
         virtual_address2physical_address
             .into_iter()
             .for_each(|(virtual_address, physical_address)| self.set_page(

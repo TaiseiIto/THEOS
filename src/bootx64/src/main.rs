@@ -105,7 +105,6 @@ impl Kernel<'_> {
         serial_println!("new gdt = {:#x?}", gdt);
         let mut page_map: BTreeMap<usize, usize> = elf.page_map();
         let stack_floor = usize::MAX - (memory_size - 1);
-        serial_println!("stack_floor = {:#x?}", stack_floor);
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
         stack
@@ -116,10 +115,12 @@ impl Kernel<'_> {
                 page_map.insert(physical_address as usize, virtual_address);
             });
         let stack_floor: &void::Void = stack_floor.into();
-        serial_println!("page_map = {:#x?}", page_map);
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
+        page_map
+            .iter()
+            .for_each(|(physical_address, virtual_address)| paging.set_physical_address(*virtual_address, *physical_address));
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         Self {
@@ -153,9 +154,6 @@ impl Kernel<'_> {
         let cr2: &control::register2::Cr2 = &(self.cr2);
         let cr4: &control::register4::Cr4 = &(self.cr4);
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &(self.ia32_efer);
-        self.page_map
-            .iter()
-            .for_each(|(physical_address, virtual_address)| self.paging.set_physical_address(*virtual_address, *physical_address));
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
         let graphics_output = self.graphics_output;
         let kernel_arguments = elf::KernelArguments::new(
