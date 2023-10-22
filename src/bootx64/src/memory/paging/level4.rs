@@ -1247,22 +1247,22 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                     } else {
                         0
                     };
-                    let writable_in_entry: u64 = if writable {
+                    let writable_in_entry: u64 = if self.writable {
                         Self::WRITABLE_MASK
                     } else {
                         0
                     };
-                    let user_mode_access_in_entry: u64 = if user_mode_access {
+                    let user_mode_access_in_entry: u64 = if self.user_mode_access {
                         Self::USER_MODE_ACCESS_MASK
                     } else {
                         0
                     };
-                    let page_write_through_in_entry: u64 = if page_write_through {
+                    let page_write_through_in_entry: u64 = if self.page_write_through {
                         Self::PAGE_WRITE_THROUGH_MASK
                     } else {
                         0
                     };
-                    let page_cache_disable_in_entry: u64 = if page_cache_disable {
+                    let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
                         Self::PAGE_CACHE_DISABLE_MASK
                     } else {
                         0
@@ -1282,24 +1282,22 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                     } else {
                         0
                     };
-                    let global_in_entry: u64 = if global {
-                        Self::GLOBAL_MASK
-                    } else {
-                        0
+                    let global_in_entry: u64 = match self.global {
+                        Some(true) => Self::GLOBAL_MASK,
+                        _ => 0,
                     };
-                    let restart_in_entry: u64 = if restart {
+                    let restart_in_entry: u64 = if self.restart {
                         Self::RESTART_MASK
                     } else {
                         0
                     };
-                    let page_attribute_table_in_entry: u64 = if page_attribute_table {
-                        Self::PAGE_ATTRIBUTE_TABLE_MASK
-                    } else {
-                        0
+                    let page_attribute_table_in_entry: u64 = match self.page_attribute_table {
+                        Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
+                        _ => 0,
                     };
-                    let page_1_gib_physical_address_in_entry: u64 = physical_address as u64 & Self::PAGE_1_GIB_MASK;
-                    let protection_key_in_entry: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
-                    let execute_disable_in_entry: u64 = if execute_disable {
+                    let page_1_gib_physical_address_in_entry: u64 = (self.page_1_gib_physical_address.unwrap_or(0) as u64) & Self::PAGE_1_GIB_MASK;
+                    let protection_key_in_entry: u64 = (self.protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+                    let execute_disable_in_entry: u64 = if self.execute_disable {
                         Self::EXECUTE_DISABLE_MASK
                     } else {
                         0
