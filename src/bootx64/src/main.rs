@@ -155,6 +155,7 @@ impl Kernel<'_> {
         let cr4: &control::register4::Cr4 = &(self.cr4);
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &(self.ia32_efer);
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
+        serial_println!("self.paging = {:#x?}", self.paging);
         let graphics_output = self.graphics_output;
         let kernel_arguments = elf::KernelArguments::new(
             image,
