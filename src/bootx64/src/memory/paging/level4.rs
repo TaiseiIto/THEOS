@@ -89,11 +89,19 @@ impl Cr3<'_> {
     }
 
     pub fn set_code_page(&mut self, virtual_address: usize) {
-        serial_println!("set_code_page(virtual_address = {:#x?})", virtual_address);
+        self.page_map_level_4_entries
+            .iter_mut()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a code page!")
+            .set_code_page(virtual_address);
     }
 
     pub fn set_data_page(&mut self, virtual_address: usize) {
-        serial_println!("set_data_page(virtual_address = {:#x?})", virtual_address);
+        self.page_map_level_4_entries
+            .iter_mut()
+            .find(|page_map_level_4_entry| page_map_level_4_entry.virtual_address == virtual_address & (usize::MAX << PageMapLevel4Entry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a data page!")
+            .set_data_page(virtual_address);
     }
 
     pub fn map_highest_parallel(&mut self, memory_size: usize) {
@@ -573,6 +581,30 @@ impl<'a> PageMapLevel4Entry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_code_page(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_pointer_entries
+                .iter_mut()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a code page!")
+                .set_code_page(virtual_address);
+        } else {
+            panic!("Can't set a code page!")
+        }
+    }
+
+    fn set_data_page(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            self.page_directory_pointer_entries
+                .iter_mut()
+                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a data page!")
+                .set_data_page(virtual_address);
+        } else {
+            panic!("Can't set a data page!")
         }
     }
 
@@ -1204,6 +1236,22 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 .set_physical_address(virtual_address, physical_address);
         } else {
             panic!("Can't set a physical address!")
+        }
+    }
+
+    fn set_code_page(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            serial_println!("set_code_page(virtual_address = {:#x?})", virtual_address);
+        } else {
+            panic!("Can't set a code page!")
+        }
+    }
+
+    fn set_data_page(&mut self, virtual_address: usize) {
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            serial_println!("set_data_page(virtual_address = {:#x?})", virtual_address);
+        } else {
+            panic!("Can't set a data page!")
         }
     }
 
