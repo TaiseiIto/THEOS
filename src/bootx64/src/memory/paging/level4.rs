@@ -1244,7 +1244,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             if self.page_size_1_gib {
                 self.writable = false;
                 self.execute_disable = false;
-                *self.page_directory_pointer_entry &= !(Self::WRITABLE_MASK & Self::EXECUTE_DISABLE_MASK);
+                *self.page_directory_pointer_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
             } else {
                 self.page_directory_entries
                     .as_mut()
@@ -1262,9 +1262,9 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     fn set_data_page(&mut self, virtual_address: usize) {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             if self.page_size_1_gib {
-                self.writable = false;
-                self.execute_disable = false;
-                *self.page_directory_pointer_entry &= !(Self::WRITABLE_MASK & Self::EXECUTE_DISABLE_MASK);
+                self.writable = true;
+                self.execute_disable = true;
+                *self.page_directory_pointer_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
             } else {
                 self.page_directory_entries
                     .as_mut()
@@ -1835,11 +1835,43 @@ impl<'a> PageDirectoryEntry<'a> {
     }
 
     fn set_code_page(&mut self, virtual_address: usize) {
-        serial_println!("set_code_page(virtual_address = {:#x?})", virtual_address);
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            if self.page_size_2_mib {
+                self.writable = false;
+                self.execute_disable = false;
+                *self.page_directory_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
+            } else {
+                self.page_entries
+                    .as_mut()
+                    .expect("Can't set a code page!")
+                    .iter_mut()
+                    .find(|page_entry| page_entry.virtual_address == virtual_address)
+                    .expect("Can't set a code page!")
+                    .set_code_page();
+            }
+        } else {
+            panic!("Can't set a code page!")
+        }
     }
 
     fn set_data_page(&mut self, virtual_address: usize) {
-        serial_println!("set_data_page(virtual_address = {:#x?})", virtual_address);
+        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
+            if self.page_size_2_mib {
+                self.writable = true;
+                self.execute_disable = true;
+                *self.page_directory_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
+            } else {
+                self.page_entries
+                    .as_mut()
+                    .expect("Can't set a data page!")
+                    .iter_mut()
+                    .find(|page_entry| page_entry.virtual_address == virtual_address)
+                    .expect("Can't set a data page!")
+                    .set_data_page();
+            }
+        } else {
+            panic!("Can't set a data page!")
+        }
     }
 
     fn set_page(
@@ -2220,6 +2252,14 @@ impl<'a> PageEntry<'a> {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
         self.physical_address = physical_address;
+    }
+
+    fn set_code_page(&mut self) {
+        serial_println!("set_code_page(virtual_address = {:#x?})", &self.virtual_address);
+    }
+
+    fn set_data_page(&mut self) {
+        serial_println!("set_data_page(virtual_address = {:#x?})", &self.virtual_address);
     }
 
     fn set_page(
