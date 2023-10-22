@@ -103,18 +103,27 @@ impl Kernel<'_> {
         serial_println!("old gdt = {:#x?}", gdt);
         let gdt = gdt::Gdt::new();
         serial_println!("new gdt = {:#x?}", gdt);
-        let mut page_map: BTreeMap<usize, usize> = elf.page_map();
+        let code_page_map: BTreeMap<usize, usize> = elf.page_map();
         let stack_floor = usize::MAX - (memory_size - 1);
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
-        stack
+        let stack_page_map: BTreeMap<usize, usize> = stack
             .physical_addresses()
             .enumerate()
-            .map(|(i, physical_address)| (stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE, physical_address))
-            .for_each(|(virtual_address, physical_address)| {
-                page_map.insert(physical_address as usize, virtual_address);
-            });
+            .map(|(i, physical_address)| (physical_address, stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE))
+            .collect();
         let stack_floor: &void::Void = stack_floor.into();
+        let mut page_map: BTreeMap<usize, usize> = BTreeMap::<usize, usize>::new();
+        code_page_map
+            .iter()
+            .for_each(|(physical_address, virtual_address)| {
+                page_map.insert(*physical_address, *virtual_address);
+            });
+        stack_page_map
+            .iter()
+            .for_each(|(physical_address, virtual_address)| {
+                page_map.insert(*physical_address, *virtual_address);
+            });
         page_map
             .values()
             .for_each(|virtual_address| paging.divide_page(*virtual_address));
