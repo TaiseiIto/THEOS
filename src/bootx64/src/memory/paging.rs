@@ -129,6 +129,42 @@ impl State<'_> {
         }
     }
 
+    pub fn set_code_page(&mut self, virtual_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.set_code_page(virtual_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
+    pub fn set_data_page(&mut self, virtual_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.set_data_page(virtual_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
     pub fn map_highest_parallel(&mut self, memory_size: usize) {
         match self {
             Self::Disable => {

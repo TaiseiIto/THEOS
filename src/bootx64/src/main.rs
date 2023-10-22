@@ -125,11 +125,17 @@ impl Kernel<'_> {
                 page_map.insert(*physical_address, *virtual_address);
             });
         page_map
-            .values()
-            .for_each(|virtual_address| paging.divide_page(*virtual_address));
-        page_map
             .iter()
-            .for_each(|(physical_address, virtual_address)| paging.set_physical_address(*virtual_address, *physical_address));
+            .for_each(|(physical_address, virtual_address)| {
+                paging.divide_page(*virtual_address);
+                paging.set_physical_address(*virtual_address, *physical_address);
+            });
+        code_page_map
+            .values()
+            .for_each(|virtual_address| paging.set_code_page(*virtual_address));
+        stack_page_map
+            .values()
+            .for_each(|virtual_address| paging.set_data_page(*virtual_address));
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         Self {

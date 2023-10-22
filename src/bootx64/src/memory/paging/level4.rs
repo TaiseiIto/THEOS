@@ -88,6 +88,14 @@ impl Cr3<'_> {
             .set_physical_address(virtual_address, physical_address);
     }
 
+    pub fn set_code_page(&mut self, virtual_address: usize) {
+        serial_println!("set_code_page(virtual_address = {:#x?})", virtual_address);
+    }
+
+    pub fn set_data_page(&mut self, virtual_address: usize) {
+        serial_println!("set_data_page(virtual_address = {:#x?})", virtual_address);
+    }
+
     pub fn map_highest_parallel(&mut self, memory_size: usize) {
         let page_size = PageSize::PageSize2MiB;
         let page_size_usize: usize = (&page_size).into();
