@@ -2255,11 +2255,15 @@ impl<'a> PageEntry<'a> {
     }
 
     fn set_code_page(&mut self) {
-        serial_println!("set_code_page(virtual_address = {:#x?})", &self.virtual_address);
+        self.writable = false;
+        self.execute_disable = false;
+        *self.page_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
     }
 
     fn set_data_page(&mut self) {
-        serial_println!("set_data_page(virtual_address = {:#x?})", &self.virtual_address);
+        self.writable = true;
+        self.execute_disable = true;
+        *self.page_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
     }
 
     fn set_page(
