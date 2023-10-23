@@ -2255,9 +2255,10 @@ impl<'a> PageEntry<'a> {
     }
 
     fn set_code_page(&mut self) {
-        self.writable = false;
+        self.writable = true;
         self.execute_disable = false;
-        *self.page_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
+        *self.page_entry |= Self::WRITABLE_MASK;
+        *self.page_entry &= !Self::EXECUTE_DISABLE_MASK;
     }
 
     fn set_data_page(&mut self) {
