@@ -141,7 +141,8 @@ pub struct KernelArguments<'a> {
     cr3: &'a control::register3::Cr3,
     cr4: &'a control::register4::Cr4,
     ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
-    serial: &'a serial::Serial,
+    com1: &'a serial::Serial,
+    com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
@@ -157,7 +158,8 @@ impl<'a> KernelArguments<'a> {
         cr3: &'a control::register3::Cr3,
         cr4: &'a control::register4::Cr4,
         ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
-        serial: &'a serial::Serial,
+        com1: &'a serial::Serial,
+        com2: &'a serial::Serial,
         graphics_output: &'a graphics_output::GraphicsOutput<'a>,
     ) -> Self {
         Self {
@@ -171,7 +173,8 @@ impl<'a> KernelArguments<'a> {
             cr3,
             cr4,
             ia32_efer,
-            serial,
+            com1,
+            com2,
             graphics_output,
         }
     }

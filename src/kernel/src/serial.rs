@@ -18,7 +18,7 @@ use {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($($arg:tt)*) => ($crate::serial::print($crate::serial::Serial::com1(), format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::serial::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
@@ -27,8 +27,9 @@ macro_rules! serial_println {
     ($fmt:expr, $($arg:tt)*) => (serial_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-pub fn print(serial: &mut Serial, args: fmt::Arguments) {
-    serial.write_fmt(args).expect("Can't output to serial port!");
+pub fn print(args: fmt::Arguments) {
+    Serial::com1().write_fmt(args).expect("Can't print to COM1!");
+    Serial::com2().write_fmt(args).expect("Can't print to COM2!");
 }
 
 #[derive(Clone)]
@@ -37,6 +38,7 @@ pub struct Serial {
 }
 
 static mut COM1: Option<Serial> = None;
+static mut COM2: Option<Serial> = None;
 const FREQUENCY: u32 = 115200;
 
 impl Serial {
@@ -49,9 +51,24 @@ impl Serial {
         }
     }
 
+    pub fn com2<'a>() -> &'a mut Self {
+        unsafe {
+            match COM2 {
+                Some(ref mut com2) => com2,
+                None => panic!("Can't get a serial port COM2!"),
+            }
+        }
+    }
+
     pub fn init_com1(serial: &Serial) {
         unsafe {
             COM1 = Some(serial.clone());
+        }
+    }
+
+    pub fn init_com2(serial: &Serial) {
+        unsafe {
+            COM2 = Some(serial.clone());
         }
     }
 

@@ -42,6 +42,7 @@ use {
 
 #[no_mangle]
 fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut system::System<'static>) -> status::Status {
+    serial::Serial::init_com1();
     serial::Serial::init_com2();
     system::init_system(image_handle, system_table);
     uefi_println!("Hello, World!");
@@ -49,7 +50,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     let memory_map: &memory_allocation::Map = &system::exit_boot_services();
     serial_println!("memory_map = {:#x?}", memory_map);
     let memory_map: memory_allocation::PassedMap = memory_map.into();
-    kernel.run(system::image(), system::system(), &memory_map, serial::Serial::com2());
+    kernel.run(system::image(), system::system(), &memory_map, serial::Serial::com1(), serial::Serial::com2());
     panic!("Can't run the kernel!");
 }
 
@@ -159,7 +160,8 @@ impl Kernel<'_> {
         image: handle::Handle<'static>,
         system: &system::System,
         memory_map: &memory_allocation::PassedMap,
-        serial: &serial::Serial
+        com1: &serial::Serial,
+        com2: &serial::Serial,
     ) {
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
         let stack_floor: &void::Void = self.stack_floor;
@@ -181,7 +183,8 @@ impl Kernel<'_> {
             cr3,
             cr4,
             ia32_efer,
-            serial,
+            com1,
+            com2,
             graphics_output,
         );
         self.gdt.set();

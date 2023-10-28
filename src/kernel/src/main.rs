@@ -37,10 +37,12 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
         cr3,
         cr4,
         ia32_efer,
-        serial,
+        com1,
+        com2,
         graphics_output,
     } = kernel_arguments;
-    serial::Serial::init_com1(serial);
+    serial::Serial::init_com1(com1);
+    serial::Serial::init_com2(com2);
     serial_println!("Hello, kernel.elf!");
     serial_println!("RSP = {:#x}", asm::get_rsp());
     system::init_system(image, *system);
@@ -75,7 +77,8 @@ pub struct KernelArguments<'a> {
     cr3: &'a control::register3::Cr3,
     cr4: &'a control::register4::Cr4,
     ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
-    serial: &'a serial::Serial,
+    com1: &'a serial::Serial,
+    com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
