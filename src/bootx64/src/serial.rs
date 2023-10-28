@@ -18,7 +18,7 @@ use {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($($arg:tt)*) => ($crate::serial::print($crate::serial::Serial::com1(), format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::serial::print($crate::serial::Serial::com2(), format_args!($($arg)*)));
 }
 
 #[macro_export]
@@ -35,24 +35,24 @@ pub struct Serial {
     port: asm::Port,
 }
 
-static mut COM1: Option<Serial> = None;
-const COM1PORT: asm::Port = 0x03f8;
+static mut COM2: Option<Serial> = None;
+const COM2PORT: asm::Port = 0x02f8;
 const BAUD: u32 = 9600;
 const FREQUENCY: u32 = 115200;
 
 impl Serial {
-    pub fn com1<'a>() -> &'a mut Self {
+    pub fn com2<'a>() -> &'a mut Self {
         unsafe {
-            match COM1 {
-                Some(ref mut com1) => com1,
-                None => panic!("Can't get a serial port COM1!"),
+            match COM2 {
+                Some(ref mut com2) => com2,
+                None => panic!("Can't get a serial port COM2!"),
             }
         }
     }
 
-    pub fn init_com1() {
+    pub fn init_com2() {
         unsafe {
-            COM1 = Some(Self::new(COM1PORT, BAUD));
+            COM2 = Some(Self::new(COM2PORT, BAUD));
         }
     }
 
