@@ -203,8 +203,7 @@ impl<'a> KernelArguments<'a> {
             com2,
             graphics_output,
         } = self;
-        serial_println!("Move kernel arguments to higher half");
-        serial_println!("highest parallel offset = {:#x?}", highest_parallel_offset);
+        let image = image.move_to_higher_half(highest_parallel_offset);
         Self {
             image,
             system,
