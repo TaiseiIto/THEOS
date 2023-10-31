@@ -223,5 +223,12 @@ impl<'a> KernelArguments<'a> {
             graphics_output,
         }
     }
+
+    pub fn higher_address(self) -> usize {
+        let lower_address: &Self = &self;
+        let lower_address: *const Self = lower_address as *const Self;
+        let lower_address: usize = lower_address as usize;
+        self.highest_parallel_offset + lower_address
+    }
 }
 

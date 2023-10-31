@@ -81,12 +81,11 @@ const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 impl Header {
     pub fn run(&self, kernel_arguments: KernelArguments) {
         let stack_floor: usize = kernel_arguments.stack_floor.into();
-        let kernel_arguments: &KernelArguments = &kernel_arguments;
-        let kernel_arguments: *const KernelArguments = kernel_arguments as *const KernelArguments;
-        let kernel_arguments: usize = kernel_arguments as usize;
+        let kernel_arguments = kernel_arguments.higher_address();
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
         serial_println!("stack_floor = {:#x}", stack_floor);
+        serial_println!("kernel_arguments = {:#x}", kernel_arguments);
         unsafe {
             asm!(
                 "mov rsp, rcx",
