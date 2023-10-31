@@ -61,6 +61,7 @@ struct Kernel<'a> {
     cpuid: Option<cpuid::Cpuid>,
     gdt: gdt::Gdt,
     memory_size: usize,
+    highest_parallel_offset: usize,
     physical_page_present_bit_map: memory::PhysicalPagePresentBitMap,
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
@@ -79,6 +80,7 @@ impl Kernel<'_> {
         let memory_map = memory_allocation::Map::new();
         let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
         let memory_size = memory_size as usize;
+        let highest_parallel_offset: usize = usize::MAX - (memory_size - 1);
         serial_println!("memory_size = {:#x?}", memory_size);
         let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
         let physical_page_present_bit_map: memory::PhysicalPagePresentBitMap = (&memory_map).into();
@@ -104,7 +106,7 @@ impl Kernel<'_> {
         let gdt = gdt::Gdt::new();
         serial_println!("new gdt = {:#x?}", gdt);
         let code_page_map: BTreeMap<usize, usize> = elf.page_map();
-        let stack_floor = usize::MAX - (memory_size - 1);
+        let stack_floor = highest_parallel_offset;
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
         let stack_page_map: BTreeMap<usize, usize> = stack
@@ -143,6 +145,7 @@ impl Kernel<'_> {
             cpuid,
             gdt,
             memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             page_map,
             paging,
@@ -165,6 +168,8 @@ impl Kernel<'_> {
         com1: &serial::Serial,
         com2: &serial::Serial,
     ) {
+        let memory_size: usize = self.memory_size;
+        let highest_parallel_offset: usize = self.highest_parallel_offset;
         let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
         let stack_floor: &void::Void = self.stack_floor;
         let cr0: &control::register0::Cr0 = &(self.cr0);
@@ -176,6 +181,8 @@ impl Kernel<'_> {
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
+            memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
             stack_floor,
@@ -187,7 +194,7 @@ impl Kernel<'_> {
             com1,
             com2,
             graphics_output,
-        ).move_to_higher_half(self.memory_size);
+        ).move_to_higher_half(self.highest_parallel_offset);
         self.gdt.set();
         serial_println!("Kernel.run()");
         serial_println!("kernel.page_map = {:#x?}", self.page_map);

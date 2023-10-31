@@ -133,6 +133,8 @@ impl Elf<'_> {
 pub struct KernelArguments<'a> {
     image: handle::Handle<'static>,
     system: &'a system::System<'a>,
+    memory_size: usize,
+    highest_parallel_offset: usize,
     physical_page_present_bit_map: &'a [u8],
     memory_map: &'a memory_allocation::PassedMap<'a>,
     stack_floor: &'a void::Void,
@@ -150,6 +152,8 @@ impl<'a> KernelArguments<'a> {
     pub fn new(
         image: handle::Handle<'static>,
         system: &'a system::System<'a>,
+        memory_size: usize,
+        highest_parallel_offset: usize,
         physical_page_present_bit_map: &'a [u8],
         memory_map: &'a memory_allocation::PassedMap,
         stack_floor: &'a void::Void,
@@ -165,6 +169,8 @@ impl<'a> KernelArguments<'a> {
         Self {
             image,
             system,
+            memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
             stack_floor,
@@ -179,10 +185,12 @@ impl<'a> KernelArguments<'a> {
         }
     }
 
-    pub fn move_to_higher_half(self, memory_size: usize) -> Self {
+    pub fn move_to_higher_half(self, highest_parallel_offset: usize) -> Self {
         let Self {
             image,
             system,
+            memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
             stack_floor,
@@ -196,10 +204,12 @@ impl<'a> KernelArguments<'a> {
             graphics_output,
         } = self;
         serial_println!("Move kernel arguments to higher half");
-        serial_println!("memory size = {:#x?}", memory_size);
+        serial_println!("highest parallel offset = {:#x?}", highest_parallel_offset);
         Self {
             image,
             system,
+            memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
             stack_floor,
