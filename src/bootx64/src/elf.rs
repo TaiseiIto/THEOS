@@ -185,7 +185,7 @@ impl<'a> KernelArguments<'a> {
         }
     }
 
-    pub fn move_to_higher_half(self, highest_parallel_offset: usize) -> Self {
+    pub fn move_to_higher_half(self) -> Self {
         let Self {
             image,
             system,
@@ -204,6 +204,7 @@ impl<'a> KernelArguments<'a> {
             graphics_output,
         } = self;
         let image = image.move_to_higher_half(highest_parallel_offset);
+        let system = system.move_to_higher_half(highest_parallel_offset);
         Self {
             image,
             system,
