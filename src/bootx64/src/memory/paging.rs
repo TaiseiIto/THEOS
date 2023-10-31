@@ -30,7 +30,8 @@ pub enum State<'a> {
 }
 
 impl State<'_> {
-    pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>, memory_size: usize) -> Self {
+    #[allow(dead_code)]
+    pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
         if cr0.pg() {
             if cr4.pae() {
                 if ia32_efer

@@ -8,10 +8,6 @@ use {
         mem,
         slice,
     },
-    crate::{
-        serial_print,
-        serial_println,
-    },
 };
 
 #[derive(Debug)]
