@@ -122,7 +122,7 @@ impl Cr3<'_> {
         let global: bool = false;
         let restart: bool = false;
         let protection_key: u8 = 0;
-        let execute_disable: bool = true;
+        let execute_disable: bool = false;
         let virtual_address2physical_address: BTreeMap<usize, usize> = virtual_addresses
             .into_iter()
             .zip(physical_addresses.into_iter())
@@ -1263,8 +1263,9 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             if self.page_size_1_gib {
                 self.writable = true;
-                self.execute_disable = true;
-                *self.page_directory_pointer_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
+                self.execute_disable = false;
+                *self.page_directory_pointer_entry |= Self::WRITABLE_MASK;
+                *self.page_directory_pointer_entry &= !Self::EXECUTE_DISABLE_MASK;
             } else {
                 self.page_directory_entries
                     .as_mut()
@@ -1858,8 +1859,9 @@ impl<'a> PageDirectoryEntry<'a> {
         if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
             if self.page_size_2_mib {
                 self.writable = true;
-                self.execute_disable = true;
-                *self.page_directory_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
+                self.execute_disable = false;
+                *self.page_directory_entry |= Self::WRITABLE_MASK;
+                *self.page_directory_entry &= !Self::EXECUTE_DISABLE_MASK;
             } else {
                 self.page_entries
                     .as_mut()
@@ -2263,8 +2265,9 @@ impl<'a> PageEntry<'a> {
 
     fn set_data_page(&mut self) {
         self.writable = true;
-        self.execute_disable = true;
-        *self.page_entry |= Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK;
+        self.execute_disable = false;
+        *self.page_entry |= Self::WRITABLE_MASK;
+        *self.page_entry &= !Self::EXECUTE_DISABLE_MASK;
     }
 
     fn set_page(
