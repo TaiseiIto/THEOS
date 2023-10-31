@@ -1941,7 +1941,7 @@ impl<'a> PageDirectoryEntry<'a> {
                         0
                     };
                     let page_size_2_mib_in_entry: u64 = if self.page_size_2_mib {
-                        Self::PAGE_2_MIB_MASK
+                        Self::PAGE_SIZE_2_MIB_MASK
                     } else {
                         0
                     };
