@@ -60,6 +60,7 @@ struct Kernel<'a> {
     elf: elf::Elf<'a>,
     cpuid: Option<cpuid::Cpuid>,
     gdt: gdt::Gdt,
+    memory_size: usize,
     physical_page_present_bit_map: memory::PhysicalPagePresentBitMap,
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
@@ -141,6 +142,7 @@ impl Kernel<'_> {
             elf,
             cpuid,
             gdt,
+            memory_size,
             physical_page_present_bit_map,
             page_map,
             paging,
@@ -185,7 +187,7 @@ impl Kernel<'_> {
             com1,
             com2,
             graphics_output,
-        );
+        ).move_to_higher_half(self.memory_size);
         self.gdt.set();
         serial_println!("Kernel.run()");
         serial_println!("kernel.page_map = {:#x?}", self.page_map);

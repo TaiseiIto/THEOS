@@ -178,5 +178,40 @@ impl<'a> KernelArguments<'a> {
             graphics_output,
         }
     }
+
+    pub fn move_to_higher_half(self, memory_size: usize) -> Self {
+        let Self {
+            image,
+            system,
+            physical_page_present_bit_map,
+            memory_map,
+            stack_floor,
+            cr0,
+            cr2,
+            cr3,
+            cr4,
+            ia32_efer,
+            com1,
+            com2,
+            graphics_output,
+        } = self;
+        serial_println!("Move kernel arguments to higher half");
+        serial_println!("memory size = {:#x?}", memory_size);
+        Self {
+            image,
+            system,
+            physical_page_present_bit_map,
+            memory_map,
+            stack_floor,
+            cr0,
+            cr2,
+            cr3,
+            cr4,
+            ia32_efer,
+            com1,
+            com2,
+            graphics_output,
+        }
+    }
 }
 
