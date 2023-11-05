@@ -3,6 +3,10 @@
 // 12.9 Graphics Output Protocol
 
 use {
+    crate::{
+        serial_print,
+        serial_println,
+    },
     core::slice,
     super::super::super::{
         services::boot::{
@@ -62,16 +66,8 @@ impl GraphicsOutput<'_> {
         }
     }
 
-    pub fn test(&self) {
-        let frame_buffer_base: usize = self.mode.frame_buffer_base as usize;
-        let frame_buffer_base: *mut u8 = frame_buffer_base as *mut u8;
-        let frame_buffer_size: usize = self.mode.frame_buffer_size;
-        let frame_buffer: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(frame_buffer_base, frame_buffer_size)
-        };
-        frame_buffer
-            .iter_mut()
-            .for_each(|byte| *byte = 0xff);
+    pub fn write_pixel(&self, x: u32, y: u32, red: u8, green: u8, blue: u8) {
+        serial_println!("write_pixel({:#x?}, {:#x?}, {:#x?}, {:#x?}, {:#x?})", x, y, red, green, blue);
     }
 }
 
