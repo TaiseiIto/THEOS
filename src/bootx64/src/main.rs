@@ -194,7 +194,7 @@ impl Kernel<'_> {
             com1,
             com2,
             graphics_output,
-        ).move_to_higher_half();
+        );
         self.gdt.set();
         serial_println!("Kernel.run()");
         serial_println!("kernel.page_map = {:#x?}", self.page_map);

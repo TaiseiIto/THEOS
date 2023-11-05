@@ -81,7 +81,7 @@ const E_SHSTRNDX_END: usize = E_SHSTRNDX_BEGIN + E_SHSTRNDX_LENGTH;
 impl Header {
     pub fn run(&self, kernel_arguments: KernelArguments) {
         let stack_floor: usize = kernel_arguments.stack_floor.into();
-        let kernel_arguments = kernel_arguments.higher_address();
+        let kernel_arguments: usize = kernel_arguments.move_to_higher_half();
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
         serial_println!("stack_floor = {:#x}", stack_floor);

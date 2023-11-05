@@ -185,46 +185,9 @@ impl<'a> KernelArguments<'a> {
         }
     }
 
-    pub fn move_to_higher_half(self) -> Self {
-        let Self {
-            image,
-            system,
-            memory_size,
-            highest_parallel_offset,
-            physical_page_present_bit_map,
-            memory_map,
-            stack_floor,
-            cr0,
-            cr2,
-            cr3,
-            cr4,
-            ia32_efer,
-            com1,
-            com2,
-            graphics_output,
-        } = self;
-        let image = image.move_to_higher_half(highest_parallel_offset);
-        let system = system.move_to_higher_half(highest_parallel_offset);
-        Self {
-            image,
-            system,
-            memory_size,
-            highest_parallel_offset,
-            physical_page_present_bit_map,
-            memory_map,
-            stack_floor,
-            cr0,
-            cr2,
-            cr3,
-            cr4,
-            ia32_efer,
-            com1,
-            com2,
-            graphics_output,
-        }
-    }
-
-    pub fn higher_address(self) -> usize {
+    pub fn move_to_higher_half(mut self) -> usize {
+        self.image = self.image.move_to_higher_half(self.highest_parallel_offset);
+        self.system = self.system.move_to_higher_half(self.highest_parallel_offset);
         let lower_address: &Self = &self;
         let lower_address: *const Self = lower_address as *const Self;
         let lower_address: usize = lower_address as usize;
