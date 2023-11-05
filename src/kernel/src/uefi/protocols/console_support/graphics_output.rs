@@ -7,7 +7,10 @@ use {
         serial_print,
         serial_println,
     },
-    core::slice,
+    core::{
+        mem,
+        slice,
+    },
     super::super::super::{
         services::boot::{
             memory_allocation,
@@ -67,7 +70,7 @@ impl GraphicsOutput<'_> {
     }
 
     pub fn write_pixel(&self, x: u32, y: u32, red: u8, green: u8, blue: u8) {
-        serial_println!("write_pixel({:#x?}, {:#x?}, {:#x?}, {:#x?}, {:#x?})", x, y, red, green, blue);
+        self.mode.write_pixel(x, y, red, green, blue);
     }
 }
 
@@ -77,7 +80,7 @@ struct QueryMode(pub extern "efiapi" fn(&GraphicsOutput, u32, &usize, &mut &Mode
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct ModeInformation {
+struct ModeInformation {
     version: u32,
     horizontal_resolution: u32,
     vertical_resolution: u32,
@@ -86,10 +89,20 @@ pub struct ModeInformation {
     pixels_per_scan_line: u32,
 }
 
+impl ModeInformation {
+    fn write_pixel(&self, frame_buffer: &mut [u32], x: u32, y: u32, red: u8, green: u8, blue: u8) {
+        let offset: u32 = x + y * self.pixels_per_scan_line;
+        let offset: usize = offset as usize;
+        *frame_buffer
+            .get_mut(offset)
+            .expect("Cant write pixel!") = 0xffffffff;
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub enum PixelFormat {
+enum PixelFormat {
     RedGreenBlueReserved8BitPerColor,
     BlueGreenRedReserved8BitPerColor,
     PixelBitMask,
@@ -99,7 +112,7 @@ pub enum PixelFormat {
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct PixelBitMask {
+struct PixelBitMask {
     red_mask: u32,
     green_mask: u32,
     blue_mask: u32,
@@ -116,7 +129,7 @@ struct Blt(pub extern "efiapi" fn(&GraphicsOutput, &BltPixel, BltOperation, usiz
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct BltPixel {
+struct BltPixel {
     blue: u8,
     green: u8,
     red: u8,
@@ -126,7 +139,7 @@ pub struct BltPixel {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub enum BltOperation {
+enum BltOperation {
     VideoFill,
     VideoToBltBuffer,
     BufferToVideo,
@@ -136,11 +149,26 @@ pub enum BltOperation {
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct Mode<'a> {
+struct Mode<'a> {
     max_mode: u32,
     info: &'a ModeInformation,
     size_of_info: usize,
     frame_buffer_base: memory_allocation::PhysicalAddress,
     frame_buffer_size: usize,
+}
+
+impl Mode<'_> {
+    fn frame_buffer(&self) -> &mut [u32] {
+        let frame_buffer_base: usize = self.frame_buffer_base as usize;
+        let frame_buffer_base: *mut u32 = frame_buffer_base as *mut u32;
+        let frame_buffer_size: usize = self.frame_buffer_size / (mem::size_of::<u32>() / mem::size_of::<u8>());
+        unsafe {
+            slice::from_raw_parts_mut(frame_buffer_base, frame_buffer_size)
+        }
+    }
+
+    fn write_pixel(&self, x: u32, y: u32, red: u8, green: u8, blue: u8) {
+        self.info.write_pixel(self.frame_buffer(), x, y, red, green, blue);
+    }
 }
 

@@ -64,8 +64,8 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("cr4 = {:#x?}", cr4);
     serial_println!("ia32_efer = {:#x?}", ia32_efer);
     serial_println!("graphics_output = {:#x?}", graphics_output);
-    for red in (0x00u8..0xffu8) {
-        for green in (0x00u8..0xffu8) {
+    for red in 0x00u8..0xffu8 {
+        for green in 0x00u8..0xffu8 {
             let blue = 0x00u8;
             let x = red as u32;
             let y = green as u32;
