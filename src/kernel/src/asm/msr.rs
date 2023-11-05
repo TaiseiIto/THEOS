@@ -5,6 +5,7 @@ pub mod architectural;
 
 use core::arch::asm;
 
+#[allow(dead_code)]
 fn rdmsr(address: u32) -> u64 {
     let ecx: u32 = address;
     let mut eax: u32;

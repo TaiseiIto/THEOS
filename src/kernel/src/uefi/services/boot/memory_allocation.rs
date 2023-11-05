@@ -234,10 +234,10 @@ impl<'a> From<&'a Map<'a>> for MemoryDescriptors<'a> {
     fn from(map: &Map<'a>) -> Self {
         let Map {
             buffer,
-            key,
+            key: _,
             descriptors,
             descriptor_size,
-            descriptor_version,
+            descriptor_version: _,
         } = map;
         let buffer: &[u8] = *buffer;
         let descriptors: usize = *descriptors;

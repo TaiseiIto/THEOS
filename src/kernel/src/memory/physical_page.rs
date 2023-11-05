@@ -196,6 +196,7 @@ pub struct Request {
 }
 
 impl Request {
+    #[allow(dead_code)]
     pub fn new(size: usize, align: usize) -> Self {
         match align.count_ones() {
             1 => Self {

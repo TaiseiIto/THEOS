@@ -29,7 +29,10 @@ use {
             protocols::console_support::graphics_output,
             services::boot::memory_allocation,
             tables::system,
-            types::handle,
+            types::{
+                handle,
+                void,
+            },
         },
     },
 };
@@ -130,14 +133,18 @@ impl Elf<'_> {
 pub struct KernelArguments<'a> {
     image: handle::Handle<'static>,
     system: &'a system::System<'a>,
+    memory_size: usize,
+    highest_parallel_offset: usize,
     physical_page_present_bit_map: &'a [u8],
     memory_map: &'a memory_allocation::PassedMap<'a>,
+    stack_floor: &'a void::Void,
     cr0: &'a control::register0::Cr0,
     cr2: &'a control::register2::Cr2,
     cr3: &'a control::register3::Cr3,
     cr4: &'a control::register4::Cr4,
     ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
-    serial: &'a serial::Serial,
+    com1: &'a serial::Serial,
+    com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
 }
 
@@ -145,29 +152,46 @@ impl<'a> KernelArguments<'a> {
     pub fn new(
         image: handle::Handle<'static>,
         system: &'a system::System<'a>,
+        memory_size: usize,
+        highest_parallel_offset: usize,
         physical_page_present_bit_map: &'a [u8],
         memory_map: &'a memory_allocation::PassedMap,
+        stack_floor: &'a void::Void,
         cr0: &'a control::register0::Cr0,
         cr2: &'a control::register2::Cr2,
         cr3: &'a control::register3::Cr3,
         cr4: &'a control::register4::Cr4,
         ia32_efer: &'a Option<ia32_efer::Ia32Efer>,
-        serial: &'a serial::Serial,
+        com1: &'a serial::Serial,
+        com2: &'a serial::Serial,
         graphics_output: &'a graphics_output::GraphicsOutput<'a>,
     ) -> Self {
         Self {
             image,
             system,
+            memory_size,
+            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
+            stack_floor,
             cr0,
             cr2,
             cr3,
             cr4,
             ia32_efer,
-            serial,
+            com1,
+            com2,
             graphics_output,
         }
+    }
+
+    pub fn move_to_higher_half(mut self) -> usize {
+        self.image = self.image.move_to_higher_half(self.highest_parallel_offset);
+        self.system = self.system.move_to_higher_half(self.highest_parallel_offset);
+        let lower_address: &Self = &self;
+        let lower_address: *const Self = lower_address as *const Self;
+        let lower_address: usize = lower_address as usize;
+        self.highest_parallel_offset + lower_address
     }
 }
 

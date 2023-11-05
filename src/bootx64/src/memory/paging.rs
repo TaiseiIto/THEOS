@@ -30,7 +30,8 @@ pub enum State<'a> {
 }
 
 impl State<'_> {
-    pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>, memory_size: usize) -> Self {
+    #[allow(dead_code)]
+    pub fn get(cr0: &Cr0, cr3: &Cr3, cr4: &Cr4, ia32_efer: &Option<Ia32Efer>) -> Self {
         if cr0.pg() {
             if cr4.pae() {
                 if ia32_efer
@@ -123,6 +124,60 @@ impl State<'_> {
                 cr3,
             } => {
                 cr3.set_physical_address(virtual_address, physical_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
+    pub fn set_code_page(&mut self, virtual_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.set_code_page(virtual_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
+    pub fn set_data_page(&mut self, virtual_address: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.set_data_page(virtual_address);
+            },
+            Self::Level5 => {
+            },
+        }
+    }
+
+    pub fn map_highest_parallel(&mut self, memory_size: usize) {
+        match self {
+            Self::Disable => {
+            },
+            Self::Bit32 => {
+            },
+            Self::Pae => {
+            },
+            Self::Level4 {
+                cr3,
+            } => {
+                cr3.map_highest_parallel(memory_size);
             },
             Self::Level5 => {
             },

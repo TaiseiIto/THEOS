@@ -8,6 +8,7 @@ pub struct Ia32Efer {
 }
 
 impl Ia32Efer {
+    #[allow(dead_code)]
     pub fn lme(&self) -> bool {
         self.lme
     }

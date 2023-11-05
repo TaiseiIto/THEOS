@@ -100,6 +100,18 @@ pub struct System<'a> {
     configuration_table: &'a configuration::Configuration<'a>,
 }
 
+impl<'a> System<'a> {
+    pub fn move_to_higher_half(&'a self, highest_parallel_offset: usize) -> &'a Self {
+        let system: *const Self = self as *const Self;
+        let system: usize = system as usize;
+        let system: usize = highest_parallel_offset + system;
+        let system: *const Self = system as *const Self;
+        unsafe {
+            &*system
+        }
+    }
+}
+
 impl fmt::Debug for System<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         let configuration_tables: configuration::Configurations = self.into();

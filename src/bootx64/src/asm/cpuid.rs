@@ -18,10 +18,6 @@ pub mod processor_brand_string;
 
 use {
     core::arch::asm,
-    crate::{
-        serial_print,
-        serial_println,
-    },
     super::rflags,
 };
 
@@ -132,13 +128,6 @@ impl CpuidOutRegisters {
                 lateout("ecx") ecx,
             );
         }
-        serial_println!("CPUID instruction!");
-        serial_println!("in eax = {:#?}", eax_input);
-        serial_println!("in ecx = {:#?}", ecx_input);
-        serial_println!("out eax = {:#?}", eax);
-        serial_println!("out ebx = {:#?}", ebx);
-        serial_println!("out edx = {:#?}", edx);
-        serial_println!("out ecx = {:#?}", ecx);
         Self {
             eax,
             ebx,

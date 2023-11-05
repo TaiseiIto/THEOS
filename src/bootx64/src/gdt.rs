@@ -8,10 +8,6 @@ use {
         mem,
         slice,
     },
-    crate::{
-        serial_print,
-        serial_println,
-    },
 };
 
 #[derive(Debug)]
@@ -146,7 +142,6 @@ impl Gdt {
     }
 
     pub fn set(&self) {
-        serial_println!("gdt.set begin");
         self.register.set();
         unsafe {
             asm!(
@@ -171,7 +166,6 @@ impl Gdt {
                 in("ax") self.cs,
             );
         }
-        serial_println!("gdt.set end");
     }
 }
 

@@ -44,6 +44,7 @@ impl Cr0 {
     const CD_MASK: u64 = 1 << Self::CD_SHIFT;
     const PG_MASK: u64 = 1 << Self::PG_SHIFT;
 
+    #[allow(dead_code)]
     pub fn get() -> Self {
         let mut cr0: u64;
         unsafe {
@@ -78,6 +79,7 @@ impl Cr0 {
         }
     }
 
+    #[allow(dead_code)]
     pub fn pg(&self) -> bool {
         self.pg
     }
