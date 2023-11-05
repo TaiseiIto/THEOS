@@ -91,11 +91,34 @@ struct ModeInformation {
 
 impl ModeInformation {
     fn write_pixel(&self, frame_buffer: &mut [u32], x: u32, y: u32, red: u8, green: u8, blue: u8) {
+        let red: u32 = red as u32;
+        let green: u32 = green as u32;
+        let blue: u32 = blue as u32;
+        let color: u32 = match &self.pixel_format {
+            PixelFormat::RedGreenBlueReserved8BitPerColor => red + (green << 8) + (blue << 16),
+            PixelFormat::BlueGreenRedReserved8BitPerColor => blue + (green << 8) + (red << 16),
+            PixelFormat::PixelBitMask => {
+                let red_shift: usize = (0usize..32usize)
+                    .filter(|shift| (red >> shift) << shift == red)
+                    .max()
+                    .expect("Can't write pixel!");
+                let green_shift: usize = (0usize..32usize)
+                    .filter(|shift| (green >> shift) << shift == green)
+                    .max()
+                    .expect("Can't write pixel!");
+                let blue_shift: usize = (0usize..32usize)
+                    .filter(|shift| (blue >> shift) << shift == blue)
+                    .max()
+                    .expect("Can't write pixel!");
+                (red << red_shift) + (green << green_shift) + (blue << blue_shift)
+            },
+            PixelFormat::PixelBltOnly => 0x00000000, // Unimplemented
+        };
         let offset: u32 = x + y * self.pixels_per_scan_line;
         let offset: usize = offset as usize;
         *frame_buffer
             .get_mut(offset)
-            .expect("Cant write pixel!") = 0xffffffff;
+            .expect("Cant write pixel!") = color;
     }
 }
 
@@ -107,7 +130,6 @@ enum PixelFormat {
     BlueGreenRedReserved8BitPerColor,
     PixelBitMask,
     PixelBltOnly,
-    PixelFormatMax,
 }
 
 #[derive(Debug)]
