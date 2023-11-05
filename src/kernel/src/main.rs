@@ -2,6 +2,7 @@
 #![no_main]
 
 mod asm;
+mod display;
 mod memory;
 mod serial;
 mod uefi;
@@ -64,12 +65,15 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("cr4 = {:#x?}", cr4);
     serial_println!("ia32_efer = {:#x?}", ia32_efer);
     serial_println!("graphics_output = {:#x?}", graphics_output);
+    let display: display::Display = display::Display::new(graphics_output);
     for red in 0x00u8..0xffu8 {
         for green in 0x00u8..0xffu8 {
             let blue = 0x00u8;
             let x = red as u32;
             let y = green as u32;
-            graphics_output.write_pixel(x, y, red, green, blue);
+            let coordinates = display::Coordinates::new(x, y);
+            let color = display::Color::new(red, green, blue);
+            display.write_pixel(&coordinates, &color);
         }
     }
     loop {

@@ -3,10 +3,6 @@
 // 12.9 Graphics Output Protocol
 
 use {
-    crate::{
-        serial_print,
-        serial_println,
-    },
     core::{
         mem,
         slice,
