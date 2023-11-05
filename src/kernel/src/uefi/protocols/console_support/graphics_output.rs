@@ -31,6 +31,7 @@ pub struct GraphicsOutput<'a> {
 }
 
 impl GraphicsOutput<'_> {
+    #[allow(dead_code)]
     pub fn new() -> &'static Self {
         let guid = protocol_handler::Guid::new(
             0x9042a9de,

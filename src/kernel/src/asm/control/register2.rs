@@ -10,6 +10,7 @@ pub struct Cr2 {
 }
 
 impl Cr2 {
+    #[allow(dead_code)]
     pub fn get() -> Self {
         let mut cr2: u64;
         unsafe {

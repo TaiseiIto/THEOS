@@ -47,12 +47,13 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial::Serial::init_com1(com1);
     serial::Serial::init_com2(com2);
     serial_println!("Hello, kernel.elf!");
-    serial_println!("RSP = {:#x}", asm::get_rsp());
+    serial_println!("stack_floor = {:#x?}", stack_floor);
+    serial_println!("RSP = {:#x?}", asm::get_rsp());
     system::init_system(image, *system);
     let image: handle::Handle = system::image();
     let image: *const void::Void = image as *const void::Void;
     let image: usize = image as usize;
-    serial_println!("image = {:#x}", image);
+    serial_println!("image = {:#x?}", image);
     serial_println!("system = {:#x?}", system::system());
     serial_println!("memory_size = {:#x?}", memory_size);
     serial_println!("highest_parallel_offset = {:#x?}", highest_parallel_offset);

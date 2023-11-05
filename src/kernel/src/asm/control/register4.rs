@@ -83,6 +83,7 @@ impl Cr4 {
     const CET_MASK: u64 = 1 << Self::CET_SHIFT;
     const PKS_MASK: u64 = 1 << Self::PKS_SHIFT;
 
+    #[allow(dead_code)]
     pub fn get() -> Self {
         let mut cr4: u64;
         unsafe {
@@ -143,10 +144,12 @@ impl Cr4 {
         }
     }
 
+    #[allow(dead_code)]
     pub fn la57(&self) -> bool {
         self.la57
     }
 
+    #[allow(dead_code)]
     pub fn pae(&self) -> bool {
         self.pae
     }

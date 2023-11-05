@@ -32,6 +32,7 @@ macro_rules! uefi_println {
     ($fmt:expr, $($arg:tt)*) => (uefi_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
+#[allow(dead_code)]
 pub fn print(args: fmt::Arguments) {
     system()
         .write_fmt(args)

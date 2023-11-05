@@ -28,6 +28,7 @@ pub struct SimpleFileSystem {
 }
 
 impl SimpleFileSystem {
+    #[allow(dead_code)]
     pub fn new<'a>() -> &'a Self {
         let guid = protocol_handler::Guid::new(
             0x964e5b22,
@@ -65,6 +66,7 @@ impl SimpleFileSystem {
         }
     }
     
+    #[allow(dead_code)]
     pub fn open_volume<'a>(&self) -> &'a file_protocol::FileProtocol {
         let volume = void::Void::new();
         let volume: &void::Void = &volume;
