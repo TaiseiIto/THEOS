@@ -9,10 +9,10 @@ use {
         StringId,
         super::{
             super::{
-                Char8,
                 services::boot::protocol_handler,
                 tables::system,
                 types::{
+                    char8,
                     char16,
                     status,
                     void,
@@ -29,6 +29,7 @@ use {
 pub struct Font {
     string_to_image: StringToImage,
     string_id_to_image: StringIdToImage,
+    get_glyph: GetGlyph,
 }
 
 impl Font {
@@ -73,7 +74,11 @@ struct StringToImage(pub extern "efiapi" fn(&Font, OutFlags, char16::String, &fo
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct StringIdToImage(pub extern "efiapi" fn(&Font, OutFlags, database::Handle, StringId, &Char8, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
+struct StringIdToImage(pub extern "efiapi" fn(&Font, OutFlags, database::Handle, StringId, &char8::Char8, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
+
+#[derive(WrappedFunction)]
+#[repr(C)]
+struct GetGlyph(pub extern "efiapi" fn(&Font, char16::Char16, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, &mut usize) -> status::Status);
 
 // EFI_HII_OUT_FLAGS
 pub type OutFlags = u32;
