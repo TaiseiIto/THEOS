@@ -6,3 +6,7 @@ pub mod services;
 pub mod tables;
 pub mod types;
 
+// 2.3.1 Data Types
+// Char8
+pub type Char8 = u8;
+

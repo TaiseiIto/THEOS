@@ -3,20 +3,22 @@
 // 34.1 Font Protocol
 
 use {
-    core::fmt,
-    super::super::{
+    super::{
+        database,
+        font_ex,
+        StringId,
         super::{
-            services::boot::{
-                protocol_handler,
-            },
-            tables::system,
-            types::{
-                char16,
-                status,
-                void,
+            super::{
+                Char8,
+                services::boot::protocol_handler,
+                tables::system,
+                types::{
+                    char16,
+                    status,
+                    void,
+                },
             },
         },
-        console_support::graphics_output,
     },
     wrapped_function::WrappedFunction,
 };
@@ -26,6 +28,7 @@ use {
 #[repr(C)]
 pub struct Font {
     string_to_image: StringToImage,
+    string_id_to_image: StringIdToImage,
 }
 
 impl Font {
@@ -66,53 +69,11 @@ impl Font {
 
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct StringToImage(pub extern "efiapi" fn(&Font, OutFlags, char16::String, &FontDisplayInfo, &mut &ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
+struct StringToImage(pub extern "efiapi" fn(&Font, OutFlags, char16::String, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
 
-// EFI_FONT_DISPLAY_INFO
-#[derive(Debug)]
+#[derive(WrappedFunction)]
 #[repr(C)]
-pub struct FontDisplayInfo<'a> {
-    forground_color: graphics_output::BltPixel,
-    background_color: graphics_output::BltPixel,
-    font_info_mask: FontInfoMask,
-    font_info: FontInfo<'a>,
-}
-
-// EFI_FONT_INFO
-#[derive(Debug)]
-#[repr(C)]
-pub struct FontInfo<'a> {
-    font_style: FontStyle,
-    font_size: u16,
-    font_name: char16::String<'a>,
-}
-
-// EFI_FONT_INFO_MASK
-pub type FontInfoMask = u32;
-
-// EFI_HII_FONT_STYLE
-pub type FontStyle = u32;
-
-// EFI_IMAGE_OUTPUT
-#[derive(Debug)]
-#[repr(C)]
-pub struct ImageOutput<'a> {
-    width: u16,
-    height: u16,
-    bitmap_or_screen: ImageOutputUnion<'a>,
-}
-
-#[allow(dead_code)]
-pub union ImageOutputUnion<'a> {
-    bitmap: &'a graphics_output::BltPixel,
-    screen: &'a graphics_output::GraphicsOutput<'a>,
-}
-
-impl fmt::Debug for ImageOutputUnion<'_> {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(formatter, "ImageOutputUnion")
-    }
-}
+struct StringIdToImage(pub extern "efiapi" fn(&Font, OutFlags, database::Handle, StringId, &Char8, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
 
 // EFI_HII_OUT_FLAGS
 pub type OutFlags = u32;
