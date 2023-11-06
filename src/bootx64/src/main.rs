@@ -28,6 +28,7 @@ use {
     uefi::{
         protocols::{
             console_support::graphics_output,
+            human_interface_infrastructure::font,
             media_access::simple_file_system,
         },
         services::boot::memory_allocation,
@@ -140,6 +141,9 @@ impl Kernel<'_> {
             .for_each(|virtual_address| paging.set_data_page(*virtual_address));
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
+        // Get a font protocol.
+        let font: &font::Font = font::Font::new();
+        serial_println!("font = {:#x?}", font);
         Self {
             elf,
             cpuid,

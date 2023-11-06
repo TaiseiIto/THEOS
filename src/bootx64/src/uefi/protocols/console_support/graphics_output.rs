@@ -105,6 +105,7 @@ struct SetMode(pub extern "efiapi" fn(&GraphicsOutput, u32) -> status::Status);
 #[repr(C)]
 struct Blt(pub extern "efiapi" fn(&GraphicsOutput, &BltPixel, BltOperation, usize, usize, usize, usize, usize, usize, usize) -> status::Status);
 
+// EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 #[derive(Debug)]
 #[repr(C)]
 pub struct BltPixel {
