@@ -11,10 +11,9 @@ use {
 };
 
 // EFI_FONT_DISPLAY_INFO
-#[derive(Debug)]
 #[repr(C)]
 pub struct FontDisplayInfo<'a> {
-    forground_color: graphics_output::BltPixel,
+    foreground_color: graphics_output::BltPixel,
     background_color: graphics_output::BltPixel,
     font_info_mask: FontInfoMask,
     font_info: string::FontInfo<'a>,
@@ -30,8 +29,54 @@ impl<'a> FontDisplayInfo<'a> {
     }
 }
 
+impl fmt::Debug for FontDisplayInfo<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let mut formatter = formatter
+            .debug_struct("FontDisplayInfo");
+        let formatter = formatter
+            .field("foreground_color", &self.foreground_color)
+            .field("background_color", &self.background_color)
+            .field("font_info_mask", &self.font_info_mask);
+        let formatter = if self.font_info_mask.sys_font() {
+            formatter
+        } else {
+            formatter.field("font_info.font_name", self.font_info.font_name())
+        };
+        let formatter = if self.font_info_mask.sys_size() {
+            formatter
+        } else {
+            formatter.field("font_info.font_size", self.font_info.font_size())
+        };
+        let formatter = if self.font_info_mask.sys_style() {
+            formatter
+        } else {
+            formatter.field("font_info.font_style", self.font_info.font_style())
+        };
+        formatter.finish()
+    }
+}
+
 // EFI_FONT_INFO_MASK
-pub type FontInfoMask = u32;
+#[derive(Debug)]
+pub struct FontInfoMask(u32);
+
+impl FontInfoMask {
+    const SYS_FONT: u32 = 0x00000001;
+    const SYS_SIZE: u32 = 0x00000002;
+    const SYS_STYLE: u32 = 0x00000004;
+
+    pub fn sys_font(&self) -> bool {
+        self.0 & Self::SYS_FONT != 0
+    }
+
+    pub fn sys_size(&self) -> bool {
+        self.0 & Self::SYS_SIZE != 0
+    }
+
+    pub fn sys_style(&self) -> bool {
+        self.0 & Self::SYS_STYLE != 0
+    }
+}
 
 // EFI_IMAGE_OUTPUT
 #[derive(Debug)]

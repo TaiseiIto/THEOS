@@ -8,11 +8,24 @@ use super::{
 };
 
 // EFI_FONT_INFO
-#[derive(Debug)]
 #[repr(C)]
 pub struct FontInfo<'a> {
     font_style: FontStyle,
     font_size: u16,
     font_name: char16::String<'a>,
+}
+
+impl<'a> FontInfo<'a> {
+    pub fn font_style(&'a self) -> &'a FontStyle {
+        &self.font_style
+    }
+
+    pub fn font_size(&'a self) -> &'a u16 {
+        &self.font_size
+    }
+
+    pub fn font_name(&'a self) -> &'a char16::String<'a> {
+        &self.font_name
+    }
 }
 

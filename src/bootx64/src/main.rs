@@ -148,7 +148,7 @@ impl Kernel<'_> {
         let fonts: Vec<&font_ex::FontDisplayInfo> = font::Font::new()
             .iter()
             .collect::<Vec<&font_ex::FontDisplayInfo>>();
-        serial_println!("font = {:#x?}", fonts);
+        serial_println!("fonts = {:#x?}", fonts);
         Self {
             elf,
             cpuid,
