@@ -28,7 +28,10 @@ use {
     uefi::{
         protocols::{
             console_support::graphics_output,
-            human_interface_infrastructure::font,
+            human_interface_infrastructure::{
+                font,
+                font_ex,
+            },
             media_access::simple_file_system,
         },
         services::boot::memory_allocation,
@@ -142,8 +145,10 @@ impl Kernel<'_> {
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         // Get a font protocol.
-        let font: &font::Font = font::Font::new();
-        serial_println!("font = {:#x?}", font);
+        let fonts: Vec<&font_ex::FontDisplayInfo> = font::Font::new()
+            .iter()
+            .collect::<Vec<&font_ex::FontDisplayInfo>>();
+        serial_println!("font = {:#x?}", fonts);
         Self {
             elf,
             cpuid,
