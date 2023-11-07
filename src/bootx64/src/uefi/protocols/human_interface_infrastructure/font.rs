@@ -67,6 +67,43 @@ impl Font {
             &*font
         }
     }
+
+    pub fn iter<'a>(&'a self) -> FontIterator<'a> {
+        let protocol: &Self = self;
+        let handle: FontHandle<'a> = void::Void::null();
+        FontIterator {
+            protocol,
+            handle,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct FontIterator<'a> {
+    protocol: &'a Font,
+    handle: FontHandle<'a>,
+}
+
+impl<'a> Iterator for FontIterator<'a> {
+    type Item = &'a font_ex::FontDisplayInfo<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let input_font_display_info: &'a font_ex::FontDisplayInfo = font_ex::FontDisplayInfo::null();
+        let mut output_font_display_info: &'a font_ex::FontDisplayInfo = font_ex::FontDisplayInfo::null();
+        self.protocol.get_font_info.0(
+            self.protocol,
+            &mut self.handle,
+            input_font_display_info,
+            &mut output_font_display_info,
+            char16::String::null(),
+        );
+        let output_checker: *const font_ex::FontDisplayInfo = output_font_display_info as *const font_ex::FontDisplayInfo;
+        let output_checker: usize = output_checker as usize;
+        match output_checker {
+            0 => None,
+            _ => Some(output_font_display_info),
+        }
+    }
 }
 
 // EFI_HII_STRING_TO_IMAGE

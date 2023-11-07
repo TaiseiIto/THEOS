@@ -24,6 +24,15 @@ impl<'a> String<'a> {
     pub fn new(string: &'a Char16) -> Self {
         Self(string)
     }
+
+    pub fn null() -> Self {
+        let null: usize = 0;
+        let null: *const Char16 = null as *const Char16;
+        let null: &Char16 = unsafe {
+            &*null
+        };
+        Self(null)
+    }
 }
 
 impl Into<string::String> for String<'_> {

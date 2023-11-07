@@ -106,7 +106,7 @@ impl FileProtocol {
 impl<'a> Iterator for &'a FileProtocol {
     type Item = FileInformation<'a>;
 
-    fn next(&mut self) -> Option<FileInformation<'a>> {
+    fn next(&mut self) -> Option<Self::Item> {
         let mut buffer = void::Void::new();
         let mut buffer_size: usize = 0;
         self.read.0(

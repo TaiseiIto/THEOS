@@ -20,6 +20,16 @@ pub struct FontDisplayInfo<'a> {
     font_info: string::FontInfo<'a>,
 }
 
+impl<'a> FontDisplayInfo<'a> {
+    pub fn null() -> &'a Self {
+        let null: usize = 0;
+        let null: *const Self = null as *const Self;
+        unsafe {
+            &*null
+        }
+    }
+}
+
 // EFI_FONT_INFO_MASK
 pub type FontInfoMask = u32;
 
