@@ -3,7 +3,7 @@
 // 34.1 Font Protocol
 
 use {
-    alloc::collections::btree_map,
+    alloc::collections::btree_map::BTreeMap,
     super::{
         database,
         font_ex,
@@ -70,7 +70,7 @@ impl Font {
         }
     }
 
-    pub fn get_glyph(&self, font: &font_ex::FontDisplayInfo<'_>, character: char) -> btree_map::BTreeMap<Coordinates, bool> {
+    pub fn get_glyph(&self, font: &font_ex::FontDisplayInfo<'_>, character: char) -> BTreeMap<Coordinates, bool> {
         let character: u32 = character as u32;
         let character: char16::Char16 = character
             .try_into()

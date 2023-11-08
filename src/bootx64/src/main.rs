@@ -145,14 +145,17 @@ impl Kernel<'_> {
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         // Get a font protocol.
-        let fonts: Vec<&font_ex::FontDisplayInfo> = font::Font::new()
+        let font_protocol = font::Font::new();
+        let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
             .iter()
             .collect::<Vec<&font_ex::FontDisplayInfo>>();
         let font: &font_ex::FontDisplayInfo = fonts
             .into_iter()
             .next()
             .expect("Can't get a font!");
+        let a_glyph: BTreeMap<font::Coordinates, bool> = font_protocol.get_glyph(font, 'A');
         serial_println!("font = {:#x?}", font);
+        serial_println!("a_glyph = {:#x?}", a_glyph);
         Self {
             elf,
             cpuid,
