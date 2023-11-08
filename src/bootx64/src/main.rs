@@ -145,6 +145,7 @@ impl Kernel<'_> {
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         // Get a font protocol.
+        let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
         let font_protocol = font::Font::new();
         let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
             .iter()
@@ -153,9 +154,11 @@ impl Kernel<'_> {
             .into_iter()
             .next()
             .expect("Can't get a font!");
-        let a_glyph: BTreeMap<font::Coordinates, bool> = font_protocol.get_glyph(font, 'A');
+        let font: BTreeMap<char, BTreeMap<font::Coordinates, bool>> = characters
+            .chars()
+            .map(|character| (character, font_protocol.get_glyph(font, character)))
+            .collect();
         serial_println!("font = {:#x?}", font);
-        serial_println!("a_glyph = {:#x?}", a_glyph);
         Self {
             elf,
             cpuid,
