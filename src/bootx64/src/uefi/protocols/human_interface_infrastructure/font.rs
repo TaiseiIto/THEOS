@@ -3,11 +3,13 @@
 // 34.1 Font Protocol
 
 use {
+    alloc::collections::btree_map,
     super::{
         database,
         font_ex,
         StringId,
         super::{
+            console_support::graphics_output,
             super::{
                 services::boot::protocol_handler,
                 tables::system,
@@ -66,6 +68,37 @@ impl Font {
         unsafe {
             &*font
         }
+    }
+
+    pub fn get_glyph(&self, font: &font_ex::FontDisplayInfo<'_>, character: char) -> btree_map::BTreeMap<Coordinates, bool> {
+        let character: u32 = character as u32;
+        let character: char16::Char16 = character
+            .try_into()
+            .expect("Can't get a glyph");
+        let blt: usize = 0;
+        let blt: *const font_ex::ImageOutput = blt as *const font_ex::ImageOutput;
+        let mut blt: &font_ex::ImageOutput = unsafe {
+            &*blt
+        };
+        let baseline: usize = 0;
+        let baseline: *mut usize = baseline as *mut usize;
+        let baseline: &mut usize = unsafe {
+            &mut *baseline
+        };
+        self.get_glyph.0(
+            self,
+            character,
+            font,
+            &mut blt,
+            baseline,
+        );
+        let width: u16 = blt.width();
+        let height: u16 = blt.height();
+        let bitmap: &[graphics_output::BltPixel] = blt.bitmap();
+        (0..width)
+            .flat_map(|x| (0..height)
+                .map(move |y| (Coordinates::new(x, y), bitmap.get((x + y * width) as usize) == Some(font.foreground_color()))))
+            .collect()
     }
 
     pub fn iter<'a>(&'a self) -> FontIterator<'a> {
@@ -141,5 +174,20 @@ pub struct RowInfo {
     line_height: usize,
     line_width: usize,
     base_line_offset: usize,
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Coordinates {
+    x: u16,
+    y: u16,
+}
+
+impl Coordinates {
+    pub fn new(x: u16, y: u16) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
 }
 

@@ -115,6 +115,12 @@ pub struct BltPixel {
     reserved: u8,
 }
 
+impl PartialEq for BltPixel {
+    fn eq(&self, other: &Self) -> bool {
+        self.blue == other.blue && self.green == other.green && self.red == other.red
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]

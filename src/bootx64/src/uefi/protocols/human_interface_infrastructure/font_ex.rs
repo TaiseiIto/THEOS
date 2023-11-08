@@ -3,7 +3,10 @@
 // 34.2 EFI HII Font Ex Protoxol
 
 use {
-    core::fmt,
+    core::{
+        fmt,
+        slice,
+    },
     super::{
         string,
         super::console_support::graphics_output,
@@ -26,6 +29,10 @@ impl<'a> FontDisplayInfo<'a> {
         unsafe {
             &*null
         }
+    }
+
+    pub fn foreground_color(&self) -> &graphics_output::BltPixel {
+        &self.foreground_color
     }
 }
 
@@ -85,6 +92,27 @@ pub struct ImageOutput<'a> {
     width: u16,
     height: u16,
     bitmap_or_screen: ImageOutputUnion<'a>,
+}
+
+impl ImageOutput<'_> {
+    pub fn width(&self) -> u16 {
+        self.width
+    }
+
+    pub fn height(&self) -> u16 {
+        self.height
+    }
+
+    pub fn bitmap(&self) -> &[graphics_output::BltPixel] {
+        let bitmap: &graphics_output::BltPixel = unsafe {
+            self.bitmap_or_screen.bitmap
+        };
+        let size: u16 = self.width * self.height;
+        let size: usize = size as usize;
+        unsafe {
+            slice::from_raw_parts(bitmap, size)
+        }
+    }
 }
 
 #[allow(dead_code)]
