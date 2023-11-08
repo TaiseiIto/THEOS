@@ -141,7 +141,7 @@ struct AddressMap {
     pairs: [Option<AddressPair>; ADDRESS_PAIRS],
 }
 
-const ADDRESS_PAIRS: usize = 0x400;
+const ADDRESS_PAIRS: usize = 0x1000;
 const INITIAL_ADDRESS_MAP: AddressMap = AddressMap {
     pairs: [None; ADDRESS_PAIRS],
 };
