@@ -28,14 +28,14 @@ use {
 // EFI_HII_FONT_PROTOCOL
 #[derive(Debug)]
 #[repr(C)]
-pub struct Font {
+pub struct FontProtocol {
     string_to_image: StringToImage,
     string_id_to_image: StringIdToImage,
     get_glyph: GetGlyph,
     get_font_info: GetFontInfo,
 }
 
-impl Font {
+impl FontProtocol {
     pub fn new() -> &'static Self {
         let guid = protocol_handler::Guid::new(
             0xe9ca4775,
@@ -113,7 +113,7 @@ impl Font {
 
 #[derive(Debug)]
 pub struct FontIterator<'a> {
-    protocol: &'a Font,
+    protocol: &'a FontProtocol,
     handle: FontHandle<'a>,
 }
 
@@ -142,22 +142,22 @@ impl<'a> Iterator for FontIterator<'a> {
 // EFI_HII_STRING_TO_IMAGE
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct StringToImage(pub extern "efiapi" fn(&Font, OutFlags, char16::String, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
+struct StringToImage(pub extern "efiapi" fn(&FontProtocol, OutFlags, char16::String, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
 
 // EFI_HII_STRING_ID_TO_IMAGE
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct StringIdToImage(pub extern "efiapi" fn(&Font, OutFlags, database::Handle, StringId, &char8::Char8, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
+struct StringIdToImage(pub extern "efiapi" fn(&FontProtocol, OutFlags, database::Handle, StringId, &char8::Char8, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, usize, usize, &mut &RowInfo, &mut usize, &mut usize) -> status::Status);
 
 // EFI_HII_GET_GLYPH
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct GetGlyph(pub extern "efiapi" fn(&Font, char16::Char16, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, &mut usize) -> status::Status);
+struct GetGlyph(pub extern "efiapi" fn(&FontProtocol, char16::Char16, &font_ex::FontDisplayInfo, &mut &font_ex::ImageOutput, &mut usize) -> status::Status);
 
 // EFI_HII_GET_FONT_INFO
 #[derive(WrappedFunction)]
 #[repr(C)]
-struct GetFontInfo(pub extern "efiapi" fn(&Font, &mut FontHandle<'_>, &font_ex::FontDisplayInfo, &mut &font_ex::FontDisplayInfo, char16::String) -> status::Status);
+struct GetFontInfo(pub extern "efiapi" fn(&FontProtocol, &mut FontHandle<'_>, &font_ex::FontDisplayInfo, &mut &font_ex::FontDisplayInfo, char16::String) -> status::Status);
 
 // EFI_FONT_HANDLE
 pub type FontHandle<'a> = &'a void::Void;

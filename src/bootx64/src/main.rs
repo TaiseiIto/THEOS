@@ -146,7 +146,7 @@ impl Kernel<'_> {
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         // Get a font protocol.
         let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-        let font_protocol = font::Font::new();
+        let font_protocol = font::FontProtocol::new();
         let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
             .iter()
             .collect::<Vec<&font_ex::FontDisplayInfo>>();
