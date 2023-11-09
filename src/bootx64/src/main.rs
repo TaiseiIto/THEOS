@@ -28,10 +28,7 @@ use {
     uefi::{
         protocols::{
             console_support::graphics_output,
-            human_interface_infrastructure::{
-                font,
-                font_ex,
-            },
+            human_interface_infrastructure::font,
             media_access::simple_file_system,
         },
         services::boot::memory_allocation,
@@ -144,20 +141,8 @@ impl Kernel<'_> {
             .for_each(|virtual_address| paging.set_data_page(*virtual_address));
         // Get a graphic output protocol.
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
-        // Get a font protocol.
-        let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-        let font_protocol = font::FontProtocol::new();
-        let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
-            .iter()
-            .collect::<Vec<&font_ex::FontDisplayInfo>>();
-        let font: &font_ex::FontDisplayInfo = fonts
-            .into_iter()
-            .next()
-            .expect("Can't get a font!");
-        let font: BTreeMap<char, BTreeMap<font::Coordinates, bool>> = characters
-            .chars()
-            .map(|character| (character, font_protocol.get_glyph(font, character)))
-            .collect();
+        // Get a font.
+        let font = font::Font::new();
         serial_println!("font = {:#x?}", font);
         Self {
             elf,

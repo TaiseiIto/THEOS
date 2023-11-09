@@ -3,7 +3,10 @@
 // 34.1 Font Protocol
 
 use {
-    alloc::collections::btree_map::BTreeMap,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     super::{
         database,
         font_ex,
@@ -25,12 +28,59 @@ use {
     wrapped_function::WrappedFunction,
 };
 
+#[derive(Debug)]
+pub struct Font {
+    max_width: u16,
+    max_height: u16,
+    character2glyph: BTreeMap<char, Glyph>,
+}
+
+impl Font {
+    pub fn new() -> Self {
+        let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+        let font_protocol = FontProtocol::new();
+        let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
+            .iter()
+            .collect();
+        let font: &font_ex::FontDisplayInfo = fonts
+            .into_iter()
+            .next()
+            .expect("Can't get a font!");
+        let character2glyph: BTreeMap<char, Glyph> = characters
+            .chars()
+            .map(|character| (character, font_protocol.get_glyph(font, character)))
+            .collect();
+        let max_width: u16 = character2glyph
+            .values()
+            .map(|glyph| glyph.width)
+            .max()
+            .expect("Can't get font max width!");
+        let max_height: u16 = character2glyph
+            .values()
+            .map(|glyph| glyph.height)
+            .max()
+            .expect("Can't get font max height!");
+        Self {
+            max_width,
+            max_height,
+            character2glyph,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Glyph {
+    width: u16,
+    height: u16,
+    image: BTreeMap<Coordinates, bool>,
+}
+
 // EFI_HII_FONT_PROTOCOL
 #[derive(Debug)]
 #[repr(C)]
 pub struct FontProtocol {
-    string_to_image: StringToImage,
-    string_id_to_image: StringIdToImage,
+    string2image: StringToImage,
+    string_id2image: StringIdToImage,
     get_glyph: GetGlyph,
     get_font_info: GetFontInfo,
 }
@@ -70,7 +120,7 @@ impl FontProtocol {
         }
     }
 
-    pub fn get_glyph(&self, font: &font_ex::FontDisplayInfo<'_>, character: char) -> BTreeMap<Coordinates, bool> {
+    pub fn get_glyph(&self, font: &font_ex::FontDisplayInfo<'_>, character: char) -> Glyph {
         let character: u32 = character as u32;
         let character: char16::Char16 = character
             .try_into()
@@ -95,10 +145,15 @@ impl FontProtocol {
         let width: u16 = blt.width();
         let height: u16 = blt.height();
         let bitmap: &[graphics_output::BltPixel] = blt.bitmap();
-        (0..width)
+        let image: BTreeMap<Coordinates, bool> = (0..width)
             .flat_map(|x| (0..height)
                 .map(move |y| (Coordinates::new(x, y), bitmap.get((x + y * width) as usize) == Some(font.foreground_color()))))
-            .collect()
+            .collect();
+        Glyph {
+            width,
+            height,
+            image,
+        }
     }
 
     pub fn iter<'a>(&'a self) -> FontIterator<'a> {
