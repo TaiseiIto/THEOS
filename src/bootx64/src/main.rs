@@ -74,6 +74,7 @@ struct Kernel<'a> {
     cr4: control::register4::Cr4,
     ia32_efer: Option<ia32_efer::Ia32Efer>,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
+    font: font::Font,
 }
 
 impl Kernel<'_> {
@@ -143,7 +144,6 @@ impl Kernel<'_> {
         let graphics_output: &graphics_output::GraphicsOutput = graphics_output::GraphicsOutput::new();
         // Get a font.
         let font = font::Font::new();
-        serial_println!("font = {:#x?}", font);
         Self {
             elf,
             cpuid,
@@ -161,6 +161,7 @@ impl Kernel<'_> {
             cr4,
             ia32_efer,
             graphics_output,
+            font,
         }
     }
 

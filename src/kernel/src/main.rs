@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+mod allocator;
 mod asm;
 mod display;
 mod memory;
