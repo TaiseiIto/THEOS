@@ -2,14 +2,21 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 7.2 Memory Allocation Services
 
+extern crate alloc;
+
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
     },
-    super::super::super::types::{
-        status,
-        void,
+    super::super::super::{
+        super::allocator,
+        tables::system,
+        types::{
+            status,
+            void,
+        },
     },
     wrapped_function::WrappedFunction,
 };
@@ -89,16 +96,6 @@ pub struct FreePages(pub extern "efiapi" fn(PhysicalAddress, usize) -> status::S
 #[derive(WrappedFunction)]
 #[repr(C)]
 pub struct GetMemoryMap(pub extern "efiapi" fn(&mut usize, &mut u8, &mut usize, &mut usize, &mut u32) -> status::Status);
-
-#[allow(dead_code)]
-#[derive(Debug)]
-pub struct Map<'a> {
-    buffer: &'a [u8],
-    key: usize,
-    descriptors: usize,
-    descriptor_size: usize,
-    descriptor_version: u32,
-}
 
 #[repr(C)]
 pub struct MemoryDescriptor {
@@ -214,6 +211,145 @@ pub struct AllocatePool(pub extern "efiapi" fn(MemoryType, usize, &mut &void::Vo
 #[repr(C)]
 pub struct FreePool(pub extern "efiapi" fn(&void::Void) -> status::Status);
 
+pub struct Map<'a> {
+    buffer: allocator::Allocated<'a>,
+    key: usize,
+    descriptors: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
+impl<'a> Map<'a> {
+    pub fn new() -> Self {
+        let (mut buffer_size, mut descriptor_size): (usize, usize) = Self::get_map_buffer_size();
+        buffer_size *= 2;
+        let mut buffer = allocator::Allocated::new(buffer_size, descriptor_size);
+        let mut key: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        let buffer_slice: &mut [u8] = buffer.get_mut();
+        let buffer_address: &mut u8 = &mut buffer_slice[0];
+        system::system()
+            .boot_services
+            .get_memory_map(
+                &mut buffer_size,
+                buffer_address,
+                &mut key,
+                &mut descriptor_size,
+                &mut descriptor_version
+            )
+            .expect("Can't get memory map!");
+        let descriptors: usize = buffer_size / descriptor_size;
+        Self {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        }
+    }
+
+    pub fn key(&self) -> usize {
+        self.key
+    }
+
+    pub fn get_memory_size(&self) -> PhysicalAddress {
+        self
+            .iter()
+            .map(|memory_descriptor| memory_descriptor.physical_end())
+            .max()
+            .expect("Can't get memory size!")
+    }
+
+    fn get_map_buffer_size() -> (usize, usize) {
+        let mut size: usize = 0;
+        let mut buffer: u8 = 0;
+        let mut map_key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        match system::system()
+            .boot_services
+            .get_memory_map(
+                &mut size,
+                &mut buffer,
+                &mut map_key,
+                &mut descriptor_size,
+                &mut descriptor_version,
+            ) {
+            _ => (),
+        }
+        (size, descriptor_size)
+    }
+
+    fn iter(&self) -> MemoryDescriptors {
+        self.into()
+    }
+}
+
+impl fmt::Debug for Map<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter
+            .debug_struct("Map")
+            .field("key", &self.key)
+            .field("descriptor_size", &self.descriptor_size)
+            .field("descriptor_version", &self.descriptor_version)
+            .field("descriptors", &self.iter())
+            .finish()
+    }
+}
+
+impl<'a> Into<MemoryDescriptors<'a>> for &'a Map<'a> {
+    fn into(self) -> MemoryDescriptors<'a> {
+        let buffer: &[u8] = self.buffer.get_ref();
+        let descriptors: usize = self.descriptors;
+        let descriptor_size: usize = self.descriptor_size;
+        MemoryDescriptors {
+            buffer,
+            descriptors,
+            descriptor_size,
+        }
+    }
+}
+
+impl Into<Vec<MemoryDescriptor>> for &Map<'_> {
+    fn into(self) -> Vec<MemoryDescriptor> {
+        let memory_descriptors: MemoryDescriptors = self.into();
+        memory_descriptors.collect()
+    }
+}
+
+#[allow(dead_code)]
+pub struct PassedMap<'a> {
+    buffer: &'a [u8],
+    key: usize,
+    descriptors: usize,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
+impl<'a> From<&'a Map<'a>> for PassedMap<'a> {
+    fn from(map: &'a Map<'a>) -> Self {
+        let Map {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        } = map;
+        let buffer: &[u8] = buffer.get_ref();
+        let key: usize = *key;
+        let descriptors: usize = *descriptors;
+        let descriptor_size: usize = *descriptor_size;
+        let descriptor_version: u32 = *descriptor_version;
+        Self {
+            buffer,
+            key,
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct MemoryDescriptors<'a> {
     buffer: &'a [u8],
@@ -227,26 +363,6 @@ impl fmt::Debug for MemoryDescriptors<'_> {
             .debug_list()
             .entries(self.clone())
             .finish()
-    }
-}
-
-impl<'a> From<&'a Map<'a>> for MemoryDescriptors<'a> {
-    fn from(map: &Map<'a>) -> Self {
-        let Map {
-            buffer,
-            key: _,
-            descriptors,
-            descriptor_size,
-            descriptor_version: _,
-        } = map;
-        let buffer: &[u8] = *buffer;
-        let descriptors: usize = *descriptors;
-        let descriptor_size: usize = *descriptor_size;
-        MemoryDescriptors {
-            buffer,
-            descriptors,
-            descriptor_size,
-        }
     }
 }
 

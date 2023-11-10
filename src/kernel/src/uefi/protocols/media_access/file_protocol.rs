@@ -2,17 +2,28 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 13.5 File Protocol
 
+extern crate alloc;
+
 use {
-    super::super::super::{
-        services::{
-            boot::protocol_handler,
-            runtime::time,
-        },
-        types::{
-            char16,
-            event,
-            status,
-            void,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
+    core::fmt,
+    super::{
+        simple_file_system,
+        super::super::{
+            services::{
+                boot::protocol_handler,
+                runtime::time,
+            },
+            super::allocator,
+            types::{
+                char16,
+                event,
+                status,
+                void,
+            },
         },
     },
     wrapped_function::WrappedFunction,
@@ -36,6 +47,110 @@ pub struct FileProtocol {
     read_ex: FileReadEx,
     write_ex: FileWriteEx,
     flush_ex: FileFlushEx,
+}
+
+impl FileProtocol {
+    pub fn open_child(
+        &self,
+        file_information: &FileInformation,
+        open_mode: &OpenMode,
+        attributes: &Attributes
+    ) -> Result<&Self, status::Status> {
+        let file_protocol = void::Void::new();
+        let file_protocol: &void::Void = &file_protocol;
+        let file_protocol: *const void::Void = &*file_protocol;
+        let file_protocol: usize = file_protocol as usize;
+        let file_protocol: *const Self = file_protocol as *const Self;
+        let mut file_protocol: &Self = unsafe {
+            &*file_protocol
+        };
+        let file_name = char16::String::new(&(file_information.file_info.file_name));
+        let open_mode: u64 = open_mode.into();
+        let attributes: u64 = attributes.into();
+        match self.open.0(
+            self,
+            &mut file_protocol,
+            file_name,
+            open_mode.into(),
+            attributes.into(),
+        ) {
+            status::SUCCESS => Ok(file_protocol),
+            error => Err(error),
+        }
+    }
+
+    pub fn read(
+        &self,
+        file_information: &FileInformation,
+    ) -> Vec<u8> {
+        let mut buffer_size: usize = file_information.file_size();
+        let mut allocated = allocator::Allocated::new(buffer_size, 1);
+        let buffer: &mut [u8] = allocated.get_mut();
+        let buffer_pointer: &mut u8 = &mut buffer[0];
+        let buffer_pointer: *mut u8 = &mut *buffer_pointer;
+        let buffer_pointer: usize = buffer_pointer as usize;
+        let buffer_pointer: *mut void::Void = buffer_pointer as *mut void::Void;
+        let buffer_pointer: &mut void::Void = unsafe {
+            &mut *buffer_pointer
+        };
+        match self.read.0(
+            self,
+            &mut buffer_size,
+            buffer_pointer,
+        ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't read a file!"),
+        }
+        buffer.to_vec()
+    }
+}
+
+impl<'a> Iterator for &'a FileProtocol {
+    type Item = FileInformation<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut buffer = void::Void::new();
+        let mut buffer_size: usize = 0;
+        self.read.0(
+            self,
+            &mut buffer_size,
+            &mut buffer,
+        );
+        match buffer_size {
+            0 => None,
+            mut buffer_size => {
+                let mut allocated = allocator::Allocated::new(buffer_size, 1);
+                let buffer: &mut [u8] = allocated.get_mut();
+                let buffer: &mut u8 = &mut buffer[0];
+                let buffer: *mut u8 = &mut *buffer;
+                let buffer: usize = buffer as usize;
+                let buffer: *mut void::Void = buffer as *mut void::Void;
+                let buffer: &mut void::Void = unsafe {
+                    &mut *buffer
+                };
+                match self.read.0(
+                    self,
+                    &mut buffer_size,
+                    buffer,
+                ) {
+                    status::SUCCESS => (),
+                    _ => panic!("Can't read a file protocol!"),
+                }
+                let buffer: *const void::Void = &*buffer;
+                let buffer: usize = buffer as usize;
+                let file_info: *const FileInfo = buffer as *const FileInfo;
+                let file_info: &FileInfo = unsafe {
+                    &*file_info
+                };
+                let file_name: String = char16::String::new(&(file_info.file_name)).into();
+                Some(FileInformation {
+                    allocated,
+                    file_name,
+                    file_info,
+                })
+            },
+        }
+    }
 }
 
 impl Drop for FileProtocol {
@@ -220,5 +335,114 @@ pub struct FileInfo {
     modification_time: time::Time,
     attribute: u64,
     file_name: u16,
+}
+
+#[allow(dead_code)]
+pub struct FileInformation<'a> {
+    allocated: allocator::Allocated<'a>,
+    file_name: String,
+    file_info: &'a FileInfo,
+}
+
+impl FileInformation<'_> {
+    pub fn file_name(&self) -> String {
+        self.file_name.clone()
+    }
+
+    pub fn file_size(&self) -> usize {
+        self.file_info.file_size as usize
+    }
+}
+
+impl<'a> fmt::Debug for FileInformation<'a> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("FileInformation")
+            .field("file_name", &self.file_name)
+            .field("file_info", &self.file_info)
+            .finish()
+    }
+}
+
+pub struct Node<'a> {
+    information: FileInformation<'a>,
+    protocol: &'a FileProtocol,
+}
+
+impl Node<'_> {
+    pub fn child(mut self, name: &str) -> Self {
+        let information: FileInformation = self.protocol
+            .find(|information| information.file_name().as_str() == name)
+            .expect("A child is nou found!");
+        let read = true;
+        let write = false;
+        let create = false;
+        let open_mode = OpenMode::new(
+            read,
+            write,
+            create,
+        );
+        let read_only: bool = false;
+        let hidden: bool = false;
+        let system: bool = false;
+        let reserved: bool = false;
+        let directory: bool = false;
+        let archive: bool = false;
+        let attributes = Attributes::new(
+            read_only,
+            hidden,
+            system,
+            reserved,
+            directory,
+            archive,
+        );
+        let protocol: &FileProtocol = self.protocol
+            .open_child(&information, &open_mode, &attributes)
+            .expect("Can't open a root child!");
+        Self {
+            information,
+            protocol,
+        }
+    }
+
+    pub fn read_file(self) -> Vec<u8> {
+        self.protocol.read(&self.information)
+    }
+
+    pub fn root_child(file_system: &simple_file_system::SimpleFileSystem, name: &str) -> Self {
+        let mut root: &FileProtocol = file_system.open_volume();
+        let information: FileInformation = root
+            .find(|information| information.file_name().as_str() == name)
+            .expect("A root child is nou found!");
+        let read = true;
+        let write = false;
+        let create = false;
+        let open_mode = OpenMode::new(
+            read,
+            write,
+            create,
+        );
+        let read_only: bool = false;
+        let hidden: bool = false;
+        let system: bool = false;
+        let reserved: bool = false;
+        let directory: bool = false;
+        let archive: bool = false;
+        let attributes = Attributes::new(
+            read_only,
+            hidden,
+            system,
+            reserved,
+            directory,
+            archive,
+        );
+        let protocol: &FileProtocol = root
+            .open_child(&information, &open_mode, &attributes)
+            .expect("Can't open a root child!");
+        Self {
+            information,
+            protocol,
+        }
+    }
 }
 

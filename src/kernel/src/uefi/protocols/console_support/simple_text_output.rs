@@ -1,4 +1,11 @@
+// References
+// https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
+// 12.4 Simple Text Output Protocol
+
+extern crate alloc;
+
 use {
+    alloc::vec::Vec,
     super::super::super::types::{
         char16,
         status,
@@ -6,9 +13,6 @@ use {
     wrapped_function::WrappedFunction,
 };
 
-// References
-// https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
-// 12.4 Simple Text Output Protocol
 #[derive(Debug)]
 #[repr(C)]
 pub struct SimpleTextOutput<'a> {
@@ -33,23 +37,13 @@ impl SimpleTextOutput<'_> {
     }
 
     pub fn print(&self, string: &str) -> Result<(), status::Status> {
-        string
+        let mut string: Vec<u16> = string
+            .replace("\n", "\r\n")
             .chars()
-            .for_each(|character|
-                self
-                    .put_char(character)
-                    .expect("Can't print a character!")
-            );
-        Ok(())
-    }
-
-    fn put_char(&self, character: char) -> Result<(), status::Status> {
-        if character == '\n' {
-            self.put_char('\r')?;
-        }
-        let mut buffer: [u16; 3] = [0x0000; 3];
-        character.clone().encode_utf16(&mut buffer[..]);
-        let string = char16::String::new(&buffer[0]);
+            .filter_map(|c| (c as u32).try_into().ok())
+            .collect();
+        string.push(0);
+        let string = char16::String::new(&string[0]);
         match self.output_string.0(self, string) {
             status::SUCCESS => Ok(()),
             error => Err(error),

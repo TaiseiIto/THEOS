@@ -2,7 +2,11 @@
 // https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf
 // 13.4 Simple File System Protocol
 
+extern crate alloc;
+
 use {
+    alloc::vec::Vec,
+    core::str,
     super::{
         file_protocol,
         super::{
@@ -66,7 +70,6 @@ impl SimpleFileSystem {
         }
     }
     
-    #[allow(dead_code)]
     pub fn open_volume<'a>(&self) -> &'a file_protocol::FileProtocol {
         let volume = void::Void::new();
         let volume: &void::Void = &volume;
@@ -80,6 +83,19 @@ impl SimpleFileSystem {
             status::SUCCESS => volume,
             _ => panic!("Can't open the volume!"),
         }
+    }
+
+    #[allow(dead_code)]
+    pub fn read_file(&self, path: &str) -> Vec<u8> {
+        let mut path: str::Split<char> = path.split('/');
+        path.next().expect("Can't read a file!");
+        let name: &str = path.next().expect("Can't read a file!");
+        path
+            .fold(
+                file_protocol::Node::root_child(self, name),
+                |node, name| node.child(name)
+            )
+            .read_file()
     }
 }
 
