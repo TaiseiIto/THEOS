@@ -366,6 +366,26 @@ impl fmt::Debug for MemoryDescriptors<'_> {
     }
 }
 
+impl<'a> From<&'a PassedMap<'a>> for MemoryDescriptors<'a> {
+    fn from(map: &PassedMap<'a>) -> Self {
+        let PassedMap {
+            buffer,
+            key: _,
+            descriptors,
+            descriptor_size,
+            descriptor_version: _,
+        } = map;
+        let buffer: &[u8] = *buffer;
+        let descriptors: usize = *descriptors;
+        let descriptor_size: usize = *descriptor_size;
+        MemoryDescriptors {
+            buffer,
+            descriptors,
+            descriptor_size,
+        }
+    }
+}
+
 impl Iterator for MemoryDescriptors<'_> {
     type Item = MemoryDescriptor;
 

@@ -91,7 +91,7 @@ pub struct KernelArguments<'a> {
     memory_size: usize,
     highest_parallel_offset: usize,
     physical_page_present_bit_map: &'a mut [u8],
-    memory_map: &'a memory_allocation::Map<'a>,
+    memory_map: &'a memory_allocation::PassedMap<'a>,
     stack_floor: &'a void::Void,
     cr0: &'a control::register0::Cr0,
     cr2: &'a control::register2::Cr2,
