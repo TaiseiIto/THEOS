@@ -59,7 +59,9 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("memory_size = {:#x?}", memory_size);
     serial_println!("highest_parallel_offset = {:#x?}", highest_parallel_offset);
     let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
+    serial_println!("physical_page_present_bit_map");
     let memory_map: memory_allocation::MemoryDescriptors = (*memory_map).into();
+    serial_println!("memory_map");
     physical_page::Manager::init(physical_page_present_bit_map, &memory_map);
     serial_println!("cr0 = {:#x?}", cr0);
     serial_println!("cr2 = {:#x?}", cr2);
