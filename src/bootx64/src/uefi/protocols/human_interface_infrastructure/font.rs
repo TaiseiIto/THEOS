@@ -28,7 +28,7 @@ use {
     wrapped_function::WrappedFunction,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Font {
     max_width: u16,
     max_height: u16,
@@ -69,7 +69,7 @@ impl Font {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Glyph {
     width: u16,
     height: u16,
@@ -232,7 +232,7 @@ pub struct RowInfo {
     base_line_offset: usize,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Coordinates {
     x: u16,
     y: u16,

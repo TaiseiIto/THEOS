@@ -166,24 +166,38 @@ impl Kernel<'_> {
     }
 
     fn run(
-        &mut self,
+        self,
         image: handle::Handle<'static>,
         system: &system::System,
         memory_map: &memory_allocation::PassedMap,
         com1: &serial::Serial,
         com2: &serial::Serial,
     ) {
-        let memory_size: usize = self.memory_size;
-        let highest_parallel_offset: usize = self.highest_parallel_offset;
-        let physical_page_present_bit_map: &[u8] = (&self.physical_page_present_bit_map).into();
-        let stack_floor: &void::Void = self.stack_floor;
-        let cr0: &control::register0::Cr0 = &(self.cr0);
-        let cr2: &control::register2::Cr2 = &(self.cr2);
-        let cr4: &control::register4::Cr4 = &(self.cr4);
-        let ia32_efer: &Option<ia32_efer::Ia32Efer> = &(self.ia32_efer);
-        let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
-        let graphics_output = self.graphics_output;
-        let font = self.font.clone();
+        let Self {
+            elf,
+            cpuid,
+            gdt,
+            memory_size,
+            highest_parallel_offset,
+            physical_page_present_bit_map,
+            page_map,
+            paging,
+            stack,
+            stack_floor,
+            cr0,
+            cr2,
+            cr3,
+            cr4,
+            ia32_efer,
+            graphics_output,
+            font,
+        } = self;
+        let physical_page_present_bit_map: &[u8] = (&physical_page_present_bit_map).into();
+        let cr0: &control::register0::Cr0 = &cr0;
+        let cr2: &control::register2::Cr2 = &cr2;
+        let cr4: &control::register4::Cr4 = &cr4;
+        let ia32_efer: &Option<ia32_efer::Ia32Efer> = &ia32_efer;
+        let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(paging.get_cr3());
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
@@ -202,13 +216,13 @@ impl Kernel<'_> {
             graphics_output,
             font,
         );
-        self.gdt.set();
+        gdt.set();
         serial_println!("Kernel.run()");
-        serial_println!("kernel.page_map = {:#x?}", self.page_map);
-        self.page_map
+        serial_println!("kernel.page_map = {:#x?}", &page_map);
+        page_map
             .values()
-            .for_each(|virtual_address| self.paging.print_state_at_address(*virtual_address));
-        self.elf.run(kernel_arguments)
+            .for_each(|virtual_address| paging.print_state_at_address(*virtual_address));
+        elf.run(kernel_arguments)
     }
 }
 
