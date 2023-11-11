@@ -12,6 +12,8 @@ pub struct Display<'a> {
 }
 
 impl<'a> Display<'a> {
+    const TAB_LENGTH: usize = 4;
+
     pub fn new(frame_buffer: &'a graphics_output::GraphicsOutput<'a>, font: &'a font::Font) -> Self {
         Self {
             frame_buffer,
@@ -53,6 +55,46 @@ impl<'a> Display<'a> {
                         };
                         self.write_pixel(&coordinates, color);
                     }));
+    }
+
+    pub fn print(
+        &self,
+        coordinates: &Coordinates,
+        background_color: &Color,
+        foreground_color: &Color,
+        string: &str) {
+        let mut x: usize = 0;
+        let mut y: usize = 0;
+        string
+            .chars()
+            .for_each(|character| {
+                match character {
+                    ' ' => {
+                        x += 1;
+                    },
+                    '\n' => {
+                        x = 0;
+                        y += 1;
+                    },
+                    '\t' => {
+                        x = (x / Self::TAB_LENGTH + 1) * Self::TAB_LENGTH;
+                    },
+                    '\r' => {
+                        x = 0;
+                    },
+                    character => {
+                        let max_width: u16 = self.font.max_width();
+                        let max_width: u32 = max_width as u32;
+                        let max_height: u16 = self.font.max_height();
+                        let max_height: u32 = max_height as u32;
+                        let character_x: u32 = x as u32 * max_width;
+                        let character_y: u32 = y as u32 * max_height;
+                        let character_coordinates: Coordinates = coordinates + &Coordinates::new(character_x, character_y);
+                        self.put_char(&character_coordinates, background_color, foreground_color, character);
+                        x += 1;
+                    },
+                }
+            });
     }
 }
 
