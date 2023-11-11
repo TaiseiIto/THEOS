@@ -86,10 +86,15 @@ impl<'a> Manager<'a> {
         map
             .clone()
             .for_each(|descriptor| {
+                serial_println!("memory descriptor = {:#x?}", descriptor);
                 let physical_start: usize = descriptor.physical_start() as usize;
+                serial_println!("physical_start = {:#x?}", physical_start);
                 let physical_page_start: usize = physical_start / memory_allocation::PAGE_SIZE;
+                serial_println!("physical_page_start = {:#x?}", physical_page_start);
                 let physical_end: usize = descriptor.physical_end() as usize;
+                serial_println!("physical_end = {:#x?}", physical_end);
                 let physical_page_end: usize = physical_end / memory_allocation::PAGE_SIZE;
+                serial_println!("physical_page_end = {:#x?}", physical_page_end);
                 pages = cmp::max(pages, physical_page_end);
                 let memory_type: memory_allocation::MemoryType = descriptor.memory_type();
                 (physical_page_start..physical_page_end)

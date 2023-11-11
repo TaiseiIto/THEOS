@@ -105,6 +105,7 @@ struct SetMode(pub extern "efiapi" fn(&GraphicsOutput, u32) -> status::Status);
 #[repr(C)]
 struct Blt(pub extern "efiapi" fn(&GraphicsOutput, &BltPixel, BltOperation, usize, usize, usize, usize, usize, usize, usize) -> status::Status);
 
+// EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 #[derive(Debug)]
 #[repr(C)]
 pub struct BltPixel {
@@ -112,6 +113,12 @@ pub struct BltPixel {
     green: u8,
     red: u8,
     reserved: u8,
+}
+
+impl PartialEq for BltPixel {
+    fn eq(&self, other: &Self) -> bool {
+        self.blue == other.blue && self.green == other.green && self.red == other.red
+    }
 }
 
 #[allow(dead_code)]

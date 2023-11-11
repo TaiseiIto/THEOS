@@ -13,9 +13,11 @@
 // 19 Compression Algorithm Specification
 // 20 ACPI Protocols
 // 21 String Services
+// 34 HII (Human INterface Infrastructure) Protocols
 
 pub mod console_support;
 pub mod efi_loaded_image;
+pub mod human_interface_infrastructure;
 pub mod device_path;
 pub mod media_access;
 

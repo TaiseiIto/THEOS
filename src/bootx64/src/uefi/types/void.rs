@@ -18,6 +18,10 @@ impl Void {
         0usize.into()
     }
 
+    pub fn mut_null<'a>() -> &'a mut Self {
+        0usize.into()
+    }
+
     pub fn move_to_higher_half<'a>(&self, highest_parallel_offset: usize) -> &'a Self {
         let address: usize = self.into();
         (highest_parallel_offset + address).into()
@@ -36,6 +40,15 @@ impl From<usize> for &Void {
         let virtual_address: *const Void = virtual_address as *const Void;
         unsafe {
             &*virtual_address
+        }
+    }
+}
+
+impl From<usize> for &mut Void {
+    fn from(virtual_address: usize) -> Self {
+        let virtual_address: *mut Void = virtual_address as *mut Void;
+        unsafe {
+            &mut *virtual_address
         }
     }
 }

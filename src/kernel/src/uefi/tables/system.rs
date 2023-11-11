@@ -13,6 +13,7 @@ use {
                 simple_text_input,
                 simple_text_output,
             },
+            services::boot::memory_allocation,
             types::{
                 char16,
                 handle,
@@ -37,6 +38,18 @@ pub fn print(args: fmt::Arguments) {
     system()
         .write_fmt(args)
         .expect("Can't output to the screen!");
+}
+
+#[allow(dead_code)]
+pub fn exit_boot_services<'a>() -> memory_allocation::Map<'a> {
+        let memory_map = memory_allocation::Map::new();
+        let memory_map_key: usize = memory_map.key();
+        let image: handle::Handle = image();
+        system()
+            .boot_services
+            .exit_boot_services(image, memory_map_key)
+            .expect("Can't exit boot services!");
+        memory_map
 }
 
 static mut SYSTEM: Option<&'static mut System<'static>> = None;
@@ -86,6 +99,18 @@ pub struct System<'a> {
     pub boot_services: &'a boot_services::BootServices<'a>,
     number_of_table_entries: usize,
     configuration_table: &'a configuration::Configuration<'a>,
+}
+
+impl<'a> System<'a> {
+    pub fn move_to_higher_half(&'a self, highest_parallel_offset: usize) -> &'a Self {
+        let system: *const Self = self as *const Self;
+        let system: usize = system as usize;
+        let system: usize = highest_parallel_offset + system;
+        let system: *const Self = system as *const Self;
+        unsafe {
+            &*system
+        }
+    }
 }
 
 impl fmt::Debug for System<'_> {

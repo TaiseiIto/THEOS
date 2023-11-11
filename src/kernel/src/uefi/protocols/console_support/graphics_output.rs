@@ -77,7 +77,7 @@ struct QueryMode(pub extern "efiapi" fn(&GraphicsOutput, u32, &usize, &mut &Mode
 
 #[derive(Debug)]
 #[repr(C)]
-struct ModeInformation {
+pub struct ModeInformation {
     version: u32,
     horizontal_resolution: u32,
     vertical_resolution: u32,
@@ -122,7 +122,7 @@ impl ModeInformation {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-enum PixelFormat {
+pub enum PixelFormat {
     RedGreenBlueReserved8BitPerColor,
     BlueGreenRedReserved8BitPerColor,
     PixelBitMask,
@@ -131,7 +131,7 @@ enum PixelFormat {
 
 #[derive(Debug)]
 #[repr(C)]
-struct PixelBitMask {
+pub struct PixelBitMask {
     red_mask: u32,
     green_mask: u32,
     blue_mask: u32,
@@ -146,19 +146,26 @@ struct SetMode(pub extern "efiapi" fn(&GraphicsOutput, u32) -> status::Status);
 #[repr(C)]
 struct Blt(pub extern "efiapi" fn(&GraphicsOutput, &BltPixel, BltOperation, usize, usize, usize, usize, usize, usize, usize) -> status::Status);
 
+// EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 #[derive(Debug)]
 #[repr(C)]
-struct BltPixel {
+pub struct BltPixel {
     blue: u8,
     green: u8,
     red: u8,
     reserved: u8,
 }
 
+impl PartialEq for BltPixel {
+    fn eq(&self, other: &Self) -> bool {
+        self.blue == other.blue && self.green == other.green && self.red == other.red
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-enum BltOperation {
+pub enum BltOperation {
     VideoFill,
     VideoToBltBuffer,
     BufferToVideo,
@@ -168,7 +175,7 @@ enum BltOperation {
 
 #[derive(Debug)]
 #[repr(C)]
-struct Mode<'a> {
+pub struct Mode<'a> {
     max_mode: u32,
     info: &'a ModeInformation,
     size_of_info: usize,
