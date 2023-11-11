@@ -37,8 +37,7 @@ pub struct Font {
 
 impl Font {
     pub fn new() -> Self {
-        // let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-        let characters: &str = "ABC";
+        let characters: &str = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
         let font_protocol = FontProtocol::new();
         let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
             .iter()

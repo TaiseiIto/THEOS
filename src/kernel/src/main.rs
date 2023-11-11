@@ -73,18 +73,19 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial_println!("cr4 = {:#x?}", cr4);
     serial_println!("ia32_efer = {:#x?}", ia32_efer);
     serial_println!("graphics_output = {:#x?}", graphics_output);
-    let display: display::Display = display::Display::new(graphics_output);
-    for red in 0x00u8..0xffu8 {
-        for green in 0x00u8..0xffu8 {
-            let blue = 0x00u8;
-            let x = red as u32;
-            let y = green as u32;
-            let coordinates = display::Coordinates::new(x, y);
-            let color = display::Color::new(red, green, blue);
-            display.write_pixel(&coordinates, &color);
-        }
-    }
-    serial_println!("font = {:#x?}", font);
+    let display: display::Display = display::Display::new(graphics_output, font);
+    let x: u32 = 0;
+    let y: u32 = 0;
+    let coordinates = display::Coordinates::new(x, y);
+    let background_color_red: u8 = 0;
+    let background_color_green: u8 = 0;
+    let background_color_blue: u8 = 0;
+    let background_color = display::Color::new(background_color_red, background_color_green, background_color_blue);
+    let foreground_color_red: u8 = 0xff;
+    let foreground_color_green: u8 = 0xff;
+    let foreground_color_blue: u8 = 0xff;
+    let foreground_color = display::Color::new(foreground_color_red, foreground_color_green, foreground_color_blue);
+    display.put_char(&coordinates, &background_color, &foreground_color, 'A');
     loop {
         asm::hlt();
     }

@@ -69,6 +69,18 @@ impl Font {
             character2glyph,
         }
     }
+
+    pub fn max_width(&self) -> u16 {
+        self.max_width
+    }
+
+    pub fn max_height(&self) -> u16 {
+        self.max_height
+    }
+
+    pub fn glyph(&self, character: char) -> Option<&Glyph> {
+        self.character2glyph.get(&character)
+    }
 }
 
 #[derive(Debug)]
@@ -76,6 +88,20 @@ pub struct Glyph {
     width: u16,
     height: u16,
     image: BTreeMap<Coordinates, bool>,
+}
+
+impl Glyph {
+    pub fn width(&self) -> u16 {
+        self.width
+    }
+
+    pub fn height(&self) -> u16 {
+        self.height
+    }
+
+    pub fn image(&self) -> &BTreeMap<Coordinates, bool> {
+        &(self.image)
+    }
 }
 
 // EFI_HII_FONT_PROTOCOL
@@ -250,6 +276,14 @@ impl Coordinates {
             x,
             y,
         }
+    }
+
+    pub fn x(&self) -> u16 {
+        self.x
+    }
+
+    pub fn y(&self) -> u16 {
+        self.y
     }
 }
 
