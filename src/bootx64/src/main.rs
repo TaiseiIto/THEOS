@@ -183,6 +183,7 @@ impl Kernel<'_> {
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &(self.ia32_efer);
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(self.paging.get_cr3());
         let graphics_output = self.graphics_output;
+        let font = self.font.clone();
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
@@ -199,6 +200,7 @@ impl Kernel<'_> {
             com1,
             com2,
             graphics_output,
+            font,
         );
         self.gdt.set();
         serial_println!("Kernel.run()");

@@ -16,7 +16,10 @@ use {
     core::panic::PanicInfo,
     memory::physical_page,
     uefi::{
-        protocols::console_support::graphics_output,
+        protocols::{
+            console_support::graphics_output,
+            human_interface_infrastructure::font,
+        },
         services::boot::memory_allocation,
         tables::system,
         types::{
@@ -44,6 +47,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
         com1,
         com2,
         graphics_output,
+        font,
     } = kernel_arguments;
     serial::Serial::init_com1(com1);
     serial::Serial::init_com2(com2);
@@ -80,6 +84,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
             display.write_pixel(&coordinates, &color);
         }
     }
+    serial_println!("font = {:#x?}", font);
     loop {
         asm::hlt();
     }
@@ -101,6 +106,7 @@ pub struct KernelArguments<'a> {
     com1: &'a serial::Serial,
     com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
+    font: font::Font,
 }
 
 #[panic_handler]

@@ -28,7 +28,7 @@ use {
     wrapped_function::WrappedFunction,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Font {
     max_width: u16,
     max_height: u16,
@@ -37,7 +37,8 @@ pub struct Font {
 
 impl Font {
     pub fn new() -> Self {
-        let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+        // let characters: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+        let characters: &str = "ABC";
         let font_protocol = FontProtocol::new();
         let fonts: Vec<&font_ex::FontDisplayInfo> = font_protocol
             .iter()
@@ -68,7 +69,7 @@ impl Font {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Glyph {
     width: u16,
     height: u16,
@@ -231,7 +232,7 @@ pub struct RowInfo {
     base_line_offset: usize,
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Coordinates {
     x: u16,
     y: u16,
