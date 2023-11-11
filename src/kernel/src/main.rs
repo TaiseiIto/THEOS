@@ -106,7 +106,7 @@ pub struct KernelArguments<'a> {
     com1: &'a serial::Serial,
     com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
-    font: font::Font,
+    font: &'a font::Font,
 }
 
 #[panic_handler]

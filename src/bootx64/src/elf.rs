@@ -149,7 +149,7 @@ pub struct KernelArguments<'a> {
     com1: &'a serial::Serial,
     com2: &'a serial::Serial,
     graphics_output: &'a graphics_output::GraphicsOutput<'a>,
-    font: font::Font,
+    font: &'a font::Font,
 }
 
 impl<'a> KernelArguments<'a> {
@@ -169,7 +169,7 @@ impl<'a> KernelArguments<'a> {
         com1: &'a serial::Serial,
         com2: &'a serial::Serial,
         graphics_output: &'a graphics_output::GraphicsOutput<'a>,
-        font: font::Font,
+        font: &'a font::Font,
     ) -> Self {
         Self {
             image,
@@ -198,6 +198,13 @@ impl<'a> KernelArguments<'a> {
         let lower_address: *const Self = lower_address as *const Self;
         let lower_address: usize = lower_address as usize;
         self.highest_parallel_offset + lower_address
+    }
+}
+
+impl Into<usize> for &KernelArguments<'_> {
+    fn into(self) -> usize {
+        let kernel_arguments: *const KernelArguments = self as *const KernelArguments;
+        kernel_arguments as usize
     }
 }
 

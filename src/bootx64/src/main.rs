@@ -198,6 +198,7 @@ impl Kernel<'_> {
         let cr4: &control::register4::Cr4 = &cr4;
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &ia32_efer;
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(paging.get_cr3());
+        let font: &font::Font = &font;
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
