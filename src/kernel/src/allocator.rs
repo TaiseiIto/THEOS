@@ -74,7 +74,7 @@ unsafe impl GlobalAlloc for Allocator {
 pub struct ChunkList<'a> {
     previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
-    chunk: [Chunk<'a>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Chunk>()],
+    chunk: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
 }
 
 pub struct Chunk<'a> {
