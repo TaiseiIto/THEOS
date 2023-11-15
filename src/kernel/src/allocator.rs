@@ -8,7 +8,10 @@ use {
         mem,
         slice,
     },
-    super::uefi::services::boot::memory_allocation,
+    super::{
+        memory::physical_page,
+        uefi::services::boot::memory_allocation,
+    },
 };
 
 pub struct Allocated<'a> {
@@ -85,13 +88,18 @@ unsafe impl GlobalAlloc for Allocator<'_> {
 }
 
 pub struct ChunkList<'a> {
+    page: physical_page::Chunk,
+    chunks: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
     previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
-    chunks: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
 }
 
 impl<'a> ChunkList<'a> {
     pub fn new() -> &'a mut Self {
+        let page_size: usize = 1;
+        let page_align: usize = 1;
+        let page: physical_page::Chunk = physical_page::Request::new(page_size, page_align).into();
+        let page: &mut [u8] = page.get_mut();
         panic!("Unimplemented!");
     }
 }

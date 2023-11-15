@@ -6,6 +6,7 @@ use {
             StepBy,
         },
         ops::RangeInclusive,
+        slice,
     },
     crate::{
         serial_print,
@@ -179,6 +180,17 @@ pub struct Chunk {
     pages: usize,
 }
 
+impl Chunk {
+    pub fn get_mut(&self) -> &mut [u8] {
+        let address: usize = self.start_page * memory_allocation::PAGE_SIZE;
+        let address: *mut u8 = address as *mut u8;
+        let size: usize = self.pages * memory_allocation::PAGE_SIZE;
+        unsafe {
+            slice::from_raw_parts_mut(address, size)
+        }
+    }
+}
+
 impl From<Request> for Chunk {
     fn from(request: Request) -> Self {
         unsafe {
@@ -201,7 +213,6 @@ pub struct Request {
 }
 
 impl Request {
-    #[allow(dead_code)]
     pub fn new(size: usize, align: usize) -> Self {
         match align.count_ones() {
             1 => Self {
