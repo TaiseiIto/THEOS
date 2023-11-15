@@ -4,6 +4,7 @@ use {
     alloc::alloc::Layout,
     core::{
         alloc::GlobalAlloc,
+        cell,
         mem,
         slice,
     },
@@ -57,12 +58,24 @@ impl<'a> Drop for Allocated<'a> {
 }
 
 #[global_allocator]
-static mut ALLOCATOR: Allocator = Allocator {};
+static mut ALLOCATOR: Allocator<'static> = Allocator {
+    chunk_list: cell::UnsafeCell::new(None),
+};
 
-pub struct Allocator {}
+pub struct Allocator<'a> {
+    chunk_list: cell::UnsafeCell<Option<&'a mut ChunkList<'a>>>,
+}
 
-unsafe impl GlobalAlloc for Allocator {
+unsafe impl GlobalAlloc for Allocator<'_> {
     unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
+        let chunk_list: &mut Option<&mut ChunkList> = &mut *self.chunk_list.get();
+        match chunk_list {
+            Some(chunk_list) => {
+            },
+            None => {
+                *chunk_list = Some(ChunkList::new());
+            },
+        }
         panic!("The global allocator is unimplemented!");
     }
 
@@ -74,7 +87,13 @@ unsafe impl GlobalAlloc for Allocator {
 pub struct ChunkList<'a> {
     previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
-    chunk: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
+    chunks: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
+}
+
+impl<'a> ChunkList<'a> {
+    pub fn new() -> &'a mut Self {
+        panic!("Unimplemented!");
+    }
 }
 
 pub struct Chunk<'a> {
