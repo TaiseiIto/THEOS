@@ -65,7 +65,7 @@ static mut ALLOCATOR: Allocator<'static> = Allocator {
     chunk_list: cell::UnsafeCell::new(None),
 };
 
-pub struct Allocator<'a> {
+struct Allocator<'a> {
     chunk_list: cell::UnsafeCell<Option<&'a mut ChunkList<'a>>>,
 }
 
@@ -88,7 +88,7 @@ unsafe impl GlobalAlloc for Allocator<'_> {
 
 const CHUNK_LIST_CAPACITY: usize = (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>();
 
-pub struct ChunkList<'a> {
+struct ChunkList<'a> {
     page: physical_page::Chunk,
     chunks: [Option<Chunk<'a>>; CHUNK_LIST_CAPACITY],
     previous: Option<&'a mut Self>,
@@ -96,7 +96,7 @@ pub struct ChunkList<'a> {
 }
 
 impl<'a> ChunkList<'a> {
-    pub fn new() -> &'a mut Self {
+    fn new() -> &'a mut Self {
         let page_size: usize = 1;
         let page_align: usize = 1;
         let page: physical_page::Chunk = physical_page::Request::new(page_size, page_align).into();
@@ -115,7 +115,11 @@ impl<'a> ChunkList<'a> {
         panic!("Unimplemented!");
     }
 
-    pub fn find_available_chunk(&mut self, layout: &Layout) -> Option<&mut Chunk> {
+    fn find_available_chunk(&mut self, layout: &Layout) -> Option<&mut Chunk> {
+        let chunk: Option<&mut Chunk> = self.chunks
+            .iter_mut()
+            .filter_map(|chunk| chunk.as_mut())
+            .find(|chunk| chunk.available_for(layout));
         panic!("Unimplemented!");
     }
 }
@@ -125,5 +129,25 @@ pub struct Chunk<'a> {
     allocated: bool,
     previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
+}
+
+impl<'a> Chunk<'a> {
+    fn address(&self) -> usize {
+        self.slice.as_ptr() as usize
+    }
+
+    fn size(&self) -> usize {
+        self.slice.len()
+    }
+
+    fn available_for(&self, layout: &Layout) -> bool {
+        let my_begin: usize = self.address();
+        let my_end: usize = my_begin + self.size();
+        let requested_size: usize = layout.size();
+        let requested_align: usize = layout.align();
+        let requested_begin: usize = ((my_begin + requested_align - 1) / requested_align) * requested_align;
+        let requested_end: usize = requested_begin + requested_size;
+        requested_end <= my_end
+    }
 }
 
