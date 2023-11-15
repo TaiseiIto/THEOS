@@ -13,7 +13,10 @@ use {
         control,
         msr::architectural::ia32_efer,
     },
-    core::panic::PanicInfo,
+    core::{
+        panic::PanicInfo,
+        mem,
+    },
     memory::physical_page,
     uefi::{
         protocols::{
@@ -86,6 +89,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let foreground_color_blue: u8 = 0xff;
     let foreground_color = display::Color::new(foreground_color_red, foreground_color_green, foreground_color_blue);
     display.print(&coordinates, &background_color, &foreground_color, "Hello, World!");
+    serial_println!("size of ChunkList = {:#x?}", mem::size_of::<allocator::ChunkList>());
     loop {
         asm::hlt();
     }

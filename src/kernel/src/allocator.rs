@@ -4,8 +4,10 @@ use {
     alloc::alloc::Layout,
     core::{
         alloc::GlobalAlloc,
+        mem,
         slice,
     },
+    super::uefi::services::boot::memory_allocation,
 };
 
 pub struct Allocated<'a> {
@@ -34,7 +36,7 @@ impl<'a> Allocated<'a> {
     }
 
     fn align(align: usize) -> usize {
-        let mut fixed_align = 1;
+        let mut fixed_align: usize = 1;
         while fixed_align < align {
             fixed_align *= 2;
         }
@@ -67,5 +69,18 @@ unsafe impl GlobalAlloc for Allocator {
     unsafe fn dealloc(&self, _pointer: *mut u8, _: Layout) {
         panic!("The global allocator is unimplemented!");
     }
+}
+
+pub struct ChunkList<'a> {
+    previous: Option<&'a mut Self>,
+    next: Option<&'a mut Self>,
+    chunk: [Chunk<'a>; (memory_allocation::PAGE_SIZE - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Chunk>()],
+}
+
+pub struct Chunk<'a> {
+    slice: &'a mut [u8],
+    allocated: bool,
+    previous: Option<&'a mut Self>,
+    next: Option<&'a mut Self>,
 }
 
