@@ -72,24 +72,13 @@ struct Allocator<'a> {
 unsafe impl GlobalAlloc for Allocator<'_> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let chunk_list: &mut Option<&mut ChunkList> = &mut *self.chunk_list.get();
-        if let None = chunk_list {
-            *chunk_list = Some(ChunkList::new());
-        }
         match chunk_list {
-            Some(chunk_list) => {
-                match chunk_list.find_available_chunk(&layout) {
-                    Some(chunk) => {
-                        panic!("Unimplemented!")
-                    },
-                    None => {
-                        // Allocate new physical pages.
-                        panic!("Unimplemented!")
-                    },
-                }
-            },
-            None => panic!("Can't allocate memory!"),
+            Some(chunk_list) => chunk_list.alloc(layout),
+            None => {
+                *chunk_list = Some(ChunkList::new());
+                self.alloc(layout)
+            }
         }
-        panic!("The global allocator is unimplemented!");
     }
 
     unsafe fn dealloc(&self, _pointer: *mut u8, _: Layout) {
@@ -126,7 +115,12 @@ impl<'a> ChunkList<'a> {
         panic!("Unimplemented!");
     }
 
-    fn find_available_chunk(&'a mut self, layout: &Layout) -> Option<&mut Chunk> {
+    fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
+        let available_chunk: Option<&mut Chunk> = self.get_available_chunk(&layout);
+        panic!("The global allocator is unimplemented!")
+    }
+
+    fn get_available_chunk(&'a mut self, layout: &Layout) -> Option<&mut Chunk> {
         self.chunks
             .iter_mut()
             .filter_map(|chunk| chunk.as_mut())
@@ -134,7 +128,7 @@ impl<'a> ChunkList<'a> {
             .or(self.next
                 .as_mut()
                 .map(|next| next
-                    .find_available_chunk(layout))
+                    .get_available_chunk(layout))
                 .flatten())
     }
 }
