@@ -87,9 +87,11 @@ unsafe impl GlobalAlloc for Allocator<'_> {
     }
 }
 
+const CHUNK_LIST_CAPACITY: usize = (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>();
+
 pub struct ChunkList<'a> {
     page: physical_page::Chunk,
-    chunks: [Option<Chunk<'a>>; (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>()],
+    chunks: [Option<Chunk<'a>>; CHUNK_LIST_CAPACITY],
     previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
 }
@@ -99,7 +101,18 @@ impl<'a> ChunkList<'a> {
         let page_size: usize = 1;
         let page_align: usize = 1;
         let page: physical_page::Chunk = physical_page::Request::new(page_size, page_align).into();
-        let page: &mut [u8] = page.get_mut();
+        let chunk_list: &mut [u8] = page.get_mut();
+        let chunk_list: &mut Self = unsafe {
+            mem::transmute(&mut chunk_list[0])
+        };
+        chunk_list.page = page;
+        chunk_list.chunks
+            .iter_mut()
+            .for_each(|chunk| {
+                *chunk = None;
+            });
+        chunk_list.previous = None;
+        chunk_list.next = None;
         panic!("Unimplemented!");
     }
 }
