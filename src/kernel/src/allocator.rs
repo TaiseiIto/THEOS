@@ -75,8 +75,11 @@ unsafe impl GlobalAlloc for Allocator<'_> {
         if let None = chunk_list {
             *chunk_list = Some(ChunkList::new());
         }
-        if let Some(chunk_list) = chunk_list.as_mut() {
-            let chunk: Option<&mut Chunk> = chunk_list.find_available_chunk(&layout);
+        match chunk_list {
+            Some(chunk_list) => {
+                let chunk: Option<&mut Chunk> = chunk_list.find_available_chunk(&layout);
+            },
+            None => panic!("Can't allocate memory!"),
         }
         panic!("The global allocator is unimplemented!");
     }
@@ -115,12 +118,16 @@ impl<'a> ChunkList<'a> {
         panic!("Unimplemented!");
     }
 
-    fn find_available_chunk(&mut self, layout: &Layout) -> Option<&mut Chunk> {
-        let chunk: Option<&mut Chunk> = self.chunks
+    fn find_available_chunk(&'a mut self, layout: &Layout) -> Option<&mut Chunk> {
+        self.chunks
             .iter_mut()
             .filter_map(|chunk| chunk.as_mut())
-            .find(|chunk| chunk.available_for(layout));
-        panic!("Unimplemented!");
+            .find(|chunk| chunk.available_for(layout))
+            .or(self.next
+                .as_mut()
+                .map(|next| next
+                    .find_available_chunk(layout))
+                .flatten())
     }
 }
 
