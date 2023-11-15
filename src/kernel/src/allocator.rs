@@ -77,7 +77,15 @@ unsafe impl GlobalAlloc for Allocator<'_> {
         }
         match chunk_list {
             Some(chunk_list) => {
-                let chunk: Option<&mut Chunk> = chunk_list.find_available_chunk(&layout);
+                match chunk_list.find_available_chunk(&layout) {
+                    Some(chunk) => {
+                        panic!("Unimplemented!")
+                    },
+                    None => {
+                        // Allocate new physical pages.
+                        panic!("Unimplemented!")
+                    },
+                }
             },
             None => panic!("Can't allocate memory!"),
         }
@@ -154,7 +162,7 @@ impl<'a> Chunk<'a> {
         let requested_align: usize = layout.align();
         let requested_begin: usize = ((my_begin + requested_align - 1) / requested_align) * requested_align;
         let requested_end: usize = requested_begin + requested_size;
-        requested_end <= my_end
+        !self.allocated && requested_end <= my_end
     }
 }
 
