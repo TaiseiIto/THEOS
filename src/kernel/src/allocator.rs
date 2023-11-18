@@ -5,8 +5,13 @@ use {
     core::{
         alloc::GlobalAlloc,
         cell,
+        fmt,
         mem,
         slice,
+    },
+    crate::{
+        serial_print,
+        serial_println,
     },
     super::{
         memory::physical_page,
@@ -48,7 +53,7 @@ impl<'a> Allocated<'a> {
     }
 }
 
-impl<'a> Drop for Allocated<'a> {
+impl Drop for Allocated<'_> {
     fn drop(&mut self) {
         let layout: Layout = self.layout;
         let slice: &mut [u8] = self.slice;
@@ -57,6 +62,19 @@ impl<'a> Drop for Allocated<'a> {
         unsafe {
             ALLOCATOR.dealloc(pointer, layout)
         }
+    }
+}
+
+impl fmt::Debug for Allocated<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let address: *const u8 = self.slice.as_ptr();
+        let address: usize = address as usize;
+        formatter
+            .debug_struct("Allocated")
+            .field("address", &address)
+            .field("size", &self.slice.len())
+            .field("layout", &self.layout)
+            .finish()
     }
 }
 
@@ -117,6 +135,9 @@ impl<'a> ChunkList<'a> {
 
     fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
         let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_available_chunk(&layout, None, None, None);
+        serial_println!("available_chunk = {:#x?}", available_chunk);
+        serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
+        serial_println!("next_free_chunk = {:#x?}", next_free_chunk);
         panic!("The global allocator is unimplemented!")
     }
 
@@ -169,6 +190,20 @@ impl<'a> Chunk<'a> {
         let requested_begin: usize = ((my_begin + requested_align - 1) / requested_align) * requested_align;
         let requested_end: usize = requested_begin + requested_size;
         !self.allocated && requested_end <= my_end
+    }
+}
+
+impl fmt::Debug for Chunk<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let address: *const u8 = self.slice.as_ptr();
+        let address: usize = address as usize;
+        formatter
+            .debug_struct("Chunk")
+            .field("address", &address)
+            .field("size", &self.slice.len())
+            .field("allocated", &self.allocated)
+            .field("next", &self.next)
+            .finish()
     }
 }
 
