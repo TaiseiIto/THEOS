@@ -116,30 +116,31 @@ impl<'a> ChunkList<'a> {
     }
 
     fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
-        let available_chunk: Option<&mut Chunk> = self.get_available_chunk(&layout);
+        let (available_chunk, free_chunk_a, free_chunk_b): (Option<&mut Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_available_chunk(&layout, None, None, None);
         panic!("The global allocator is unimplemented!")
     }
 
-    fn get_available_chunk(&'a mut self, layout: &Layout) -> Option<&mut Chunk> {
-        self.chunks
+    fn get_available_chunk(&'a mut self, layout: &Layout, available_chunk: Option<&'a mut Chunk<'a>>, free_chunk_a: Option<&'a mut Option<Chunk<'a>>>, free_chunk_b: Option<&'a mut Option<Chunk<'a>>>) -> (Option<&mut Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
+        let (available_chunk, free_chunk_a, free_chunk_b): (Option<&mut Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.chunks
             .iter_mut()
-            .filter_map(|chunk| chunk.as_mut())
-            .find(|chunk| chunk.available_for(layout))
-            .or(self.next
-                .as_mut()
-                .map(|next| next
-                    .get_available_chunk(layout))
-                .flatten())
-    }
-
-    fn get_free_chunk(&'a mut self) -> Option<&mut Option<Chunk>> {
-        self.chunks
-            .iter_mut()
-            .find(|chunk| chunk.is_none())
-            .or(self.next
-                .as_mut()
-                .map(|next| next.get_free_chunk())
-                .flatten())
+            .fold((available_chunk, free_chunk_a, free_chunk_b), |(available_chunk, free_chunk_a, free_chunk_b), chunk| match chunk {
+                Some(chunk) => if chunk.available_for(layout) {
+                    (Some(chunk), free_chunk_a, free_chunk_b)
+                } else {
+                    (available_chunk, free_chunk_a, free_chunk_b)
+                },
+                None => match free_chunk_a {
+                    Some(_) => match free_chunk_b {
+                        Some(_) => (available_chunk, free_chunk_a, free_chunk_b),
+                        None => (available_chunk, free_chunk_a, Some(chunk)),
+                    },
+                    None => (available_chunk, Some(chunk), free_chunk_b),
+                },
+            });
+        match self.next.as_mut() {
+            Some(next) => next.get_available_chunk(layout, available_chunk, free_chunk_a, free_chunk_b),
+            None => (available_chunk, free_chunk_a, free_chunk_b),
+        }
     }
 }
 
