@@ -131,6 +131,16 @@ impl<'a> ChunkList<'a> {
                     .get_available_chunk(layout))
                 .flatten())
     }
+
+    fn get_free_chunk(&'a mut self) -> Option<&mut Option<Chunk>> {
+        self.chunks
+            .iter_mut()
+            .find(|chunk| chunk.is_none())
+            .or(self.next
+                .as_mut()
+                .map(|next| next.get_free_chunk())
+                .flatten())
+    }
 }
 
 pub struct Chunk<'a> {
