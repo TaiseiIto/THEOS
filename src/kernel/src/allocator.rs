@@ -92,15 +92,11 @@ struct Allocator<'a> {
 
 unsafe impl GlobalAlloc for Allocator<'_> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        serial_println!("Allocator.alloc");
         let chunk_list: &mut Option<&mut ChunkList> = &mut *self.chunk_list.get();
-        serial_println!("Got a chunk list");
         match chunk_list {
             Some(chunk_list) => chunk_list.alloc(layout),
             None => {
-                serial_println!("Create a new chunk list");
                 *chunk_list = Some(ChunkList::new());
-                serial_println!("Created a new chunk list");
                 self.alloc(layout)
             }
         }
@@ -122,15 +118,10 @@ struct ChunkList<'a> {
 
 impl<'a> ChunkList<'a> {
     fn new() -> &'a mut Self {
-        serial_println!("ChunkList.new");
         let page_size: usize = 1;
-        serial_println!("page_size = {:#x?}", page_size);
         let page_align: usize = 1;
-        serial_println!("page_align = {:#x?}", page_align);
         let page: physical_page::Chunk = physical_page::Request::new(page_size, page_align).into();
-        serial_println!("page = {:#x?}", page);
         let chunk_list: &mut [u8] = page.get_mut();
-        serial_println!("got chunk list slice");
         let chunk_list: &mut Self = unsafe {
             mem::transmute(&mut chunk_list[0])
         };
@@ -142,11 +133,10 @@ impl<'a> ChunkList<'a> {
             });
         chunk_list.previous = None;
         chunk_list.next = None;
-        panic!("Unimplemented!");
+        chunk_list
     }
 
     fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
-        serial_println!("ChunkList.alloc");
         let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_available_chunk(&layout, None, None, None);
         serial_println!("available_chunk = {:#x?}", available_chunk);
         serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
