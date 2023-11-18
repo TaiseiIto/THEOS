@@ -7,7 +7,7 @@ use {
         cell,
         fmt,
         mem,
-        slice,
+        ptr,
     },
     crate::{
         serial_print,
@@ -27,8 +27,11 @@ pub struct Allocated<'a> {
 impl<'a> Allocated<'a> {
     pub fn new(size: usize, align: usize) -> Self {
         let layout = Layout::from_size_align(size, Self::align(align)).expect("Can't allocate memory!");
+        let slice: *mut [u8] = ptr::slice_from_raw_parts_mut(unsafe {
+            ALLOCATOR.alloc(layout)
+        }, size);
         let slice: &'a mut [u8] = unsafe {
-            slice::from_raw_parts_mut(ALLOCATOR.alloc(layout), size)
+            &mut *slice
         };
         Self {
             slice,

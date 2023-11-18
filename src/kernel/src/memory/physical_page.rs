@@ -6,7 +6,7 @@ use {
             StepBy,
         },
         ops::RangeInclusive,
-        slice,
+        ptr,
     },
     crate::{
         serial_print,
@@ -186,8 +186,9 @@ impl Chunk {
         let address: usize = self.start_page * memory_allocation::PAGE_SIZE;
         let address: *mut u8 = address as *mut u8;
         let size: usize = self.pages * memory_allocation::PAGE_SIZE;
+        let slice: *mut [u8] = ptr::slice_from_raw_parts_mut(address, size);
         unsafe {
-            slice::from_raw_parts_mut(address, size)
+            &mut *slice
         }
     }
 }
