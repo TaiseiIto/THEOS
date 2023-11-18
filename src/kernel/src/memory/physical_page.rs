@@ -175,6 +175,7 @@ impl<'a> Manager<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct Chunk {
     start_page: usize,
     pages: usize,
