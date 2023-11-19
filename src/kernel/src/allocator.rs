@@ -92,10 +92,9 @@ struct Allocator<'a> {
 
 unsafe impl GlobalAlloc for Allocator<'_> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let chunk_list: &mut Option<&mut ChunkList> = &mut *self.chunk_list.get();
-        match chunk_list {
+        match &mut *self.chunk_list.get() {
             Some(chunk_list) => chunk_list.alloc(layout),
-            None => {
+            chunk_list @ None => {
                 *chunk_list = Some(ChunkList::new());
                 self.alloc(layout)
             }
