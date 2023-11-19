@@ -101,8 +101,11 @@ unsafe impl GlobalAlloc for Allocator<'_> {
         }
     }
 
-    unsafe fn dealloc(&self, _pointer: *mut u8, _: Layout) {
-        panic!("The global allocator is unimplemented!");
+    unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
+        match &mut *self.chunk_list.get() {
+            Some(chunk_list) => chunk_list.dealloc(pointer as usize),
+            None => panic!("Can't dealloc memory!"),
+        }
     }
 }
 
@@ -218,6 +221,11 @@ impl<'a> ChunkList<'a> {
                 chunks @ (Some(Some(_)), Some(_), Some(_)) => chunks,
             },
         }
+    }
+
+    fn dealloc(&'a mut self, pointer: usize) {
+        serial_println!("pointer = {:#x?}", pointer);
+        panic!("ChunkList.dealloc is not implemented!");
     }
 }
 
