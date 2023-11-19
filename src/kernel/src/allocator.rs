@@ -169,10 +169,7 @@ impl<'a> ChunkList<'a> {
                 allocated: false,
             })
         };
-        serial_println!("available_chunk = {:#x?}", available_chunk);
-        serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
-        serial_println!("next_free_chunk = {:#x?}", next_free_chunk);
-        panic!("The global allocator is unimplemented!")
+        allocated_chunk_address as *mut u8
     }
 
     fn get_available_chunk(&'a mut self, layout: &Layout) -> (&mut Chunk, &mut Option<Chunk>, &mut Option<Chunk>) {
