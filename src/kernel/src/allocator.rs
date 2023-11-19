@@ -168,12 +168,17 @@ impl<'a> ChunkList<'a> {
                 (available_chunk, previous_free_chunk, None, chunk @ None) => (available_chunk, previous_free_chunk, Some(chunk)),
                 (available_chunk, previous_free_chunk, next_free_chunk, _) => (available_chunk, previous_free_chunk, next_free_chunk),
             });
-        match self.next.as_mut() {
+        match &mut self.next {
             Some(next) => next.scan_available_chunk(layout, available_chunk, previous_free_chunk, next_free_chunk),
-            None => match (available_chunk, previous_free_chunk, next_free_chunk) {
-                (None, _, _) |
-                (_, None, _) |
-                (_, _, None) => panic!("Add a new chunk list!"),
+            mut next @ None => match (available_chunk, previous_free_chunk, next_free_chunk) {
+                (available_chunk @ None, previous_chunk, next_chunk) |
+                (available_chunk , previous_chunk @ None, next_chunk) |
+                (available_chunk , previous_chunk, next_chunk @ None) => {
+                    *next = Some(ChunkList::<'a>::new());
+                    next.as_mut()
+                        .expect("Can't scan available chunk!")
+                        .scan_available_chunk(layout, available_chunk, previous_chunk, next_chunk)
+                },
                 (Some(available_chunk @ None), Some(previous_free_chunk), Some(next_free_chunk)) => {
                     *available_chunk = Some(Chunk::new(layout));
                     (Some(available_chunk), Some(previous_free_chunk), Some(next_free_chunk))
