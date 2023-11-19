@@ -137,14 +137,22 @@ impl<'a> ChunkList<'a> {
     }
 
     fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
-        let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_available_chunk(&layout, None, None, None);
+        let (available_chunk, previous_free_chunk, next_free_chunk): (&mut Option<Chunk>, &mut Option<Chunk>, &mut Option<Chunk>) = self.get_available_chunk(&layout);
         serial_println!("available_chunk = {:#x?}", available_chunk);
         serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
         serial_println!("next_free_chunk = {:#x?}", next_free_chunk);
         panic!("The global allocator is unimplemented!")
     }
 
-    fn get_available_chunk(&'a mut self, layout: &Layout, available_chunk: Option<&'a mut Option<Chunk<'a>>>, previous_free_chunk: Option<&'a mut Option<Chunk<'a>>>, next_free_chunk: Option<&'a mut Option<Chunk<'a>>>) -> (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
+    fn get_available_chunk(&'a mut self, layout: &Layout) -> (&mut Option<Chunk>, &mut Option<Chunk>, &mut Option<Chunk>) {
+        let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.scan_available_chunk(layout, None, None, None);
+        let available_chunk: &mut Option<Chunk> = available_chunk.expect("Can't find an available chunk!");
+        let previous_free_chunk: &mut Option<Chunk> = previous_free_chunk.expect("Can't find a previous free chunk!");
+        let next_free_chunk: &mut Option<Chunk> = next_free_chunk.expect("Can't find a next free chunk!");
+        (available_chunk, previous_free_chunk, next_free_chunk)
+    }
+
+    fn scan_available_chunk(&'a mut self, layout: &Layout, available_chunk: Option<&'a mut Option<Chunk<'a>>>, previous_free_chunk: Option<&'a mut Option<Chunk<'a>>>, next_free_chunk: Option<&'a mut Option<Chunk<'a>>>) -> (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
         let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.chunks
             .iter_mut()
             .fold((available_chunk, previous_free_chunk, next_free_chunk), |(available_chunk, previous_free_chunk, next_free_chunk), chunk| match (available_chunk, previous_free_chunk, next_free_chunk, chunk) {
@@ -163,7 +171,7 @@ impl<'a> ChunkList<'a> {
                 (available_chunk, previous_free_chunk, next_free_chunk, _) => (available_chunk, previous_free_chunk, next_free_chunk),
             });
         match self.next.as_mut() {
-            Some(next) => next.get_available_chunk(layout, available_chunk, previous_free_chunk, next_free_chunk),
+            Some(next) => next.scan_available_chunk(layout, available_chunk, previous_free_chunk, next_free_chunk),
             None => (available_chunk, previous_free_chunk, next_free_chunk),
         }
     }
