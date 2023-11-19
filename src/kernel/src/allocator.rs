@@ -1,7 +1,10 @@
 extern crate alloc;
 
 use {
-    alloc::alloc::Layout,
+    alloc::{
+        alloc::Layout,
+        rc,
+    },
     core::{
         alloc::GlobalAlloc,
         cell,
@@ -177,11 +180,7 @@ impl<'a> ChunkList<'a> {
                 (_, None, _) |
                 (_, _, None) => panic!("Add a new chunk list!"),
                 (Some(available_chunk @ None), Some(previous_free_chunk), Some(next_free_chunk)) => {
-                    let size = layout.size();
-                    let align = layout.align();
-                    let num_pages = (size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
-                    let page_align = (align + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
-                    let pages: physical_page::Chunk = physical_page::Request::new(num_pages, page_align).into();
+                    *available_chunk = Some(Chunk::new(layout));
                     panic!("Add a new chunk!")
                 },
                 chunks @ (Some(Some(_)), Some(_), Some(_)) => chunks,
@@ -191,6 +190,7 @@ impl<'a> ChunkList<'a> {
 }
 
 pub struct Chunk<'a> {
+    pages: rc::Rc<physical_page::Chunk>,
     slice: &'a mut [u8],
     allocated: bool,
     previous: Option<&'a mut Self>,
@@ -198,6 +198,15 @@ pub struct Chunk<'a> {
 }
 
 impl<'a> Chunk<'a> {
+    fn new(layout: &Layout) -> Self {
+        let size = layout.size();
+        let align = layout.align();
+        let num_pages = (size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
+        let page_align = (align + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
+        let pages: rc::Rc<physical_page::Chunk> = rc::Rc::new(physical_page::Request::new(num_pages, page_align).into());
+        panic!("Create a new chunk!")
+    }
+
     fn address(&self) -> usize {
         self.slice.as_ptr() as usize
     }
