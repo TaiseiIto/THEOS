@@ -176,7 +176,14 @@ impl<'a> ChunkList<'a> {
                 (None, _, _) |
                 (_, None, _) |
                 (_, _, None) => panic!("Add a new chunk list!"),
-                (Some(None), Some(_), Some(_)) => panic!("Add a new chunk!"),
+                (Some(available_chunk @ None), Some(previous_free_chunk), Some(next_free_chunk)) => {
+                    let size = layout.size();
+                    let align = layout.align();
+                    let num_pages = (size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
+                    let page_align = (align + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
+                    let pages: physical_page::Chunk = physical_page::Request::new(num_pages, page_align).into();
+                    panic!("Add a new chunk!")
+                },
                 chunks @ (Some(Some(_)), Some(_), Some(_)) => chunks,
             },
         }
