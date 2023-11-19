@@ -111,7 +111,7 @@ const CHUNK_LIST_CAPACITY: usize = (memory_allocation::PAGE_SIZE - mem::size_of:
 
 struct ChunkList<'a> {
     page: physical_page::Chunk,
-    chunks: [Option<Chunk<'a>>; CHUNK_LIST_CAPACITY],
+    chunks: [Option<Chunk>; CHUNK_LIST_CAPACITY],
     next: Option<&'a mut Self>,
 }
 
@@ -150,7 +150,7 @@ impl<'a> ChunkList<'a> {
         (available_chunk, previous_free_chunk, next_free_chunk)
     }
 
-    fn scan_available_chunk(&'a mut self, layout: &Layout, available_chunk: Option<&'a mut Option<Chunk<'a>>>, previous_free_chunk: Option<&'a mut Option<Chunk<'a>>>, next_free_chunk: Option<&'a mut Option<Chunk<'a>>>) -> (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
+    fn scan_available_chunk(&'a mut self, layout: &Layout, available_chunk: Option<&'a mut Option<Chunk>>, previous_free_chunk: Option<&'a mut Option<Chunk>>, next_free_chunk: Option<&'a mut Option<Chunk>>) -> (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
         let (available_chunk, previous_free_chunk, next_free_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.chunks
             .iter_mut()
             .fold((available_chunk, previous_free_chunk, next_free_chunk), |(available_chunk, previous_free_chunk, next_free_chunk), chunk| match (available_chunk, previous_free_chunk, next_free_chunk, chunk) {
@@ -184,15 +184,14 @@ impl<'a> ChunkList<'a> {
     }
 }
 
-pub struct Chunk<'a> {
+pub struct Chunk {
     pages: Option<physical_page::Chunk>,
     address: usize,
     size: usize,
     allocated: bool,
-    next: Option<&'a mut Self>,
 }
 
-impl<'a> Chunk<'a> {
+impl Chunk {
     fn new(layout: &Layout) -> Self {
         let size = layout.size();
         let align = layout.align();
@@ -203,13 +202,11 @@ impl<'a> Chunk<'a> {
         let size: usize = pages.size();
         let pages: Option<physical_page::Chunk> = Some(pages);
         let allocated: bool = false;
-        let next: Option<&mut Self> = None;
         Self {
             pages,
             address,
             size,
             allocated,
-            next,
         }
     }
 
@@ -224,14 +221,13 @@ impl<'a> Chunk<'a> {
     }
 }
 
-impl fmt::Debug for Chunk<'_> {
+impl fmt::Debug for Chunk {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Chunk")
             .field("address", &self.address)
             .field("size", &self.size)
             .field("allocated", &self.allocated)
-            .field("next", &self.next)
             .finish()
     }
 }
