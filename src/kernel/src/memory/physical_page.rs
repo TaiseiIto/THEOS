@@ -124,7 +124,7 @@ impl<'a> Manager<'a> {
         let index: usize = page / 8;
         let offset: usize = page % 8;
         let mask: u8 = 0x01u8 << offset;
-        self.present_bit_map[index] & mask == 0
+        page != 0 && self.present_bit_map[index] & mask == 0
     }
 
     fn pages_are_available(&self, start_page: usize, pages: usize) -> bool {
