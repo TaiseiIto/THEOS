@@ -176,7 +176,7 @@ impl<'a> ChunkList<'a> {
                 (_, _, None) => panic!("Add a new chunk list!"),
                 (Some(available_chunk @ None), Some(previous_free_chunk), Some(next_free_chunk)) => {
                     *available_chunk = Some(Chunk::new(layout));
-                    panic!("Add a new chunk!")
+                    (Some(available_chunk), Some(previous_free_chunk), Some(next_free_chunk))
                 },
                 chunks @ (Some(Some(_)), Some(_), Some(_)) => chunks,
             },
