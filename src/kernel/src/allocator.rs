@@ -136,9 +136,6 @@ impl<'a> ChunkList<'a> {
 
     fn alloc(&'a mut self, layout: Layout) -> *mut u8 {
         let (available_chunk, previous_free_chunk, next_free_chunk): (&mut Chunk, &mut Option<Chunk>, &mut Option<Chunk>) = self.get_available_chunk(&layout);
-        serial_println!("available_chunk = {:#x?}", available_chunk);
-        serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
-        serial_println!("next_free_chunk = {:#x?}", next_free_chunk);
         let available_chunk_address: usize = available_chunk.address;
         let available_chunk_size: usize = available_chunk.size;
         let requested_size: usize = layout.size();
@@ -149,13 +146,32 @@ impl<'a> ChunkList<'a> {
         let previous_free_chunk_size: usize = allocated_chunk_address - previous_free_chunk_address;
         let next_free_chunk_address: usize = allocated_chunk_address + allocated_chunk_size;
         let next_free_chunk_size: usize = available_chunk_size - previous_free_chunk_size - allocated_chunk_size;
-        serial_println!("previous_free_chunk_address = {:#x?}", previous_free_chunk_address);
-        serial_println!("previous_free_chunk_size = {:#x?}", previous_free_chunk_size);
-        serial_println!("allocated_chunk_address = {:#x?}", allocated_chunk_address);
-        serial_println!("allocated_chunk_size = {:#x?}", allocated_chunk_size);
-        serial_println!("next_free_chunk_address = {:#x?}", next_free_chunk_address);
-        serial_println!("next_free_chunk_size = {:#x?}", next_free_chunk_size);
+        available_chunk.address = allocated_chunk_address;
+        available_chunk.size = allocated_chunk_size;
         available_chunk.allocated = true;
+        *previous_free_chunk = if previous_free_chunk_size == 0 {
+            None
+        } else {
+            Some(Chunk {
+                pages: None,
+                address: previous_free_chunk_address,
+                size: previous_free_chunk_size,
+                allocated: false,
+            })
+        };
+        *next_free_chunk = if next_free_chunk_size == 0 {
+            None
+        } else {
+            Some(Chunk {
+                pages: None,
+                address: next_free_chunk_address,
+                size: next_free_chunk_size,
+                allocated: false,
+            })
+        };
+        serial_println!("available_chunk = {:#x?}", available_chunk);
+        serial_println!("previous_free_chunk = {:#x?}", previous_free_chunk);
+        serial_println!("next_free_chunk = {:#x?}", next_free_chunk);
         panic!("The global allocator is unimplemented!")
     }
 
