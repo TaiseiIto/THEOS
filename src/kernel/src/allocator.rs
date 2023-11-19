@@ -107,12 +107,11 @@ unsafe impl GlobalAlloc for Allocator<'_> {
     }
 }
 
-const CHUNK_LIST_CAPACITY: usize = (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - 2 * mem::size_of::<Option<usize>>()) / mem::size_of::<Option<Chunk>>();
+const CHUNK_LIST_CAPACITY: usize = (memory_allocation::PAGE_SIZE - mem::size_of::<physical_page::Chunk>() - mem::size_of::<Option<&mut ChunkList>>()) / mem::size_of::<Option<Chunk>>();
 
 struct ChunkList<'a> {
     page: physical_page::Chunk,
     chunks: [Option<Chunk<'a>>; CHUNK_LIST_CAPACITY],
-    previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
 }
 
@@ -131,7 +130,6 @@ impl<'a> ChunkList<'a> {
             .for_each(|chunk| {
                 *chunk = None;
             });
-        chunk_list.previous = None;
         chunk_list.next = None;
         chunk_list
     }
@@ -187,9 +185,10 @@ impl<'a> ChunkList<'a> {
 }
 
 pub struct Chunk<'a> {
-    slice: &'a mut [u8],
+    pages: Option<physical_page::Chunk>,
+    address: usize,
+    size: usize,
     allocated: bool,
-    previous: Option<&'a mut Self>,
     next: Option<&'a mut Self>,
 }
 
@@ -200,20 +199,23 @@ impl<'a> Chunk<'a> {
         let num_pages = (size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
         let page_align = (align + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
         let pages: physical_page::Chunk = physical_page::Request::new(num_pages, page_align).into();
-        panic!("Create a new chunk!")
-    }
-
-    fn address(&self) -> usize {
-        self.slice.as_ptr() as usize
-    }
-
-    fn size(&self) -> usize {
-        self.slice.len()
+        let address: usize = pages.address();
+        let size: usize = pages.size();
+        let pages: Option<physical_page::Chunk> = Some(pages);
+        let allocated: bool = false;
+        let next: Option<&mut Self> = None;
+        Self {
+            pages,
+            address,
+            size,
+            allocated,
+            next,
+        }
     }
 
     fn available_for(&self, layout: &Layout) -> bool {
-        let my_begin: usize = self.address();
-        let my_end: usize = my_begin + self.size();
+        let my_begin: usize = self.address;
+        let my_end: usize = my_begin + self.size;
         let requested_size: usize = layout.size();
         let requested_align: usize = layout.align();
         let requested_begin: usize = ((my_begin + requested_align - 1) / requested_align) * requested_align;
@@ -224,12 +226,10 @@ impl<'a> Chunk<'a> {
 
 impl fmt::Debug for Chunk<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let address: *const u8 = self.slice.as_ptr();
-        let address: usize = address as usize;
         formatter
             .debug_struct("Chunk")
-            .field("address", &address)
-            .field("size", &self.slice.len())
+            .field("address", &self.address)
+            .field("size", &self.size)
             .field("allocated", &self.allocated)
             .field("next", &self.next)
             .finish()

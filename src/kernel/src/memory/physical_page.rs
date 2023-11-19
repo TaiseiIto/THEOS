@@ -182,11 +182,16 @@ pub struct Chunk {
 }
 
 impl Chunk {
+    pub fn address(&self) -> usize {
+        self.start_page * memory_allocation::PAGE_SIZE
+    }
+
+    pub fn size(&self) -> usize {
+        self.pages * memory_allocation::PAGE_SIZE
+    }
+
     pub fn get_mut(&self) -> &mut [u8] {
-        let address: usize = self.start_page * memory_allocation::PAGE_SIZE;
-        let address: *mut u8 = address as *mut u8;
-        let size: usize = self.pages * memory_allocation::PAGE_SIZE;
-        let slice: *mut [u8] = ptr::slice_from_raw_parts_mut(address, size);
+        let slice: *mut [u8] = ptr::slice_from_raw_parts_mut(self.address() as *mut u8, self.size());
         unsafe {
             &mut *slice
         }
