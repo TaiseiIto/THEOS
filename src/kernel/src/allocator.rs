@@ -172,7 +172,13 @@ impl<'a> ChunkList<'a> {
             });
         match self.next.as_mut() {
             Some(next) => next.scan_available_chunk(layout, available_chunk, previous_free_chunk, next_free_chunk),
-            None => (available_chunk, previous_free_chunk, next_free_chunk),
+            None => match (available_chunk, previous_free_chunk, next_free_chunk) {
+                (None, _, _) |
+                (_, None, _) |
+                (_, _, None) => panic!("Add a new chunk list!"),
+                (Some(None), Some(_), Some(_)) => panic!("Add a new chunk!"),
+                chunks @ (Some(Some(_)), Some(_), Some(_)) => chunks,
+            },
         }
     }
 }
