@@ -1,10 +1,7 @@
 extern crate alloc;
 
 use {
-    alloc::{
-        alloc::Layout,
-        rc,
-    },
+    alloc::alloc::Layout,
     core::{
         alloc::GlobalAlloc,
         cell,
@@ -190,7 +187,6 @@ impl<'a> ChunkList<'a> {
 }
 
 pub struct Chunk<'a> {
-    pages: rc::Rc<physical_page::Chunk>,
     slice: &'a mut [u8],
     allocated: bool,
     previous: Option<&'a mut Self>,
@@ -203,7 +199,7 @@ impl<'a> Chunk<'a> {
         let align = layout.align();
         let num_pages = (size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
         let page_align = (align + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
-        let pages: rc::Rc<physical_page::Chunk> = rc::Rc::new(physical_page::Request::new(num_pages, page_align).into());
+        let pages: physical_page::Chunk = physical_page::Request::new(num_pages, page_align).into();
         panic!("Create a new chunk!")
     }
 
