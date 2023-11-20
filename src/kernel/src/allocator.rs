@@ -228,6 +228,16 @@ impl<'a> ChunkList<'a> {
         match deallocated_chunk {
             Some(deallocated_chunk) => {
                 deallocated_chunk.allocated = false;
+                if let Some(previous_chunk) = &previous_chunk {
+                    if let Some(previous_chunk) = previous_chunk {
+                        serial_println!("previous_chunk = {:#x?}", previous_chunk);
+                    }
+                }
+                if let Some(next_chunk) = &next_chunk {
+                    if let Some(next_chunk) = next_chunk {
+                        serial_println!("next_chunk = {:#x?}", next_chunk);
+                    }
+                }
             },
             None => panic!("Can't deallocate memory!"),
         }
