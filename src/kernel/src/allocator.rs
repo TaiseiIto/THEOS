@@ -223,9 +223,57 @@ impl<'a> ChunkList<'a> {
         }
     }
 
-    fn dealloc(&'a mut self, pointer: usize) {
-        serial_println!("pointer = {:#x?}", pointer);
+    fn dealloc(&'a mut self, address: usize) {
+        let (deallocated_chunk, previous_chunk, next_chunk): (&mut Chunk, Option<&mut Chunk>, Option<&mut Chunk>) = self.get_deallocated_chunk(address);
+        serial_println!("deallocated_chunk = {:#x?}", deallocated_chunk);
+        serial_println!("previous_chunk = {:#x?}", previous_chunk);
+        serial_println!("next_chunk = {:#x?}", next_chunk);
         panic!("ChunkList.dealloc is not implemented!");
+    }
+
+    fn get_deallocated_chunk(&'a mut self, address: usize) -> (&mut Chunk, Option<&mut Chunk>, Option<&mut Chunk>) {
+        let (deallocated_chunk, previous_chunk, next_chunk) = self.scan_deallocated_chunk(address, None, None, None);
+        let deallocated_chunk: &mut Chunk = deallocated_chunk
+            .expect("Can't find the deallocated chunk!")
+            .as_mut()
+            .expect("Can't find the deallocated chunk!");
+        let previous_chunk: Option<&mut Chunk> = previous_chunk
+            .expect("Can't find a previous free chunk!")
+            .as_mut();
+        let next_chunk: Option<&mut Chunk> = next_chunk
+            .expect("Can't find a next free chunk!")
+            .as_mut();
+        (deallocated_chunk, previous_chunk, next_chunk)
+    }
+
+    fn scan_deallocated_chunk(&'a mut self, address: usize, deallocated_chunk: Option<&'a mut Option<Chunk>>, previous_chunk: Option<&'a mut Option<Chunk>>, next_chunk: Option<&'a mut Option<Chunk>>) -> (Option<&'a mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
+        let (deallocated_chunk, previous_chunk, next_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.chunks
+            .iter_mut()
+            .fold((deallocated_chunk, previous_chunk, next_chunk), |(deallocated_chunk, previous_chunk, next_chunk), chunk| match chunk {
+                mut chunk @ Some(inner_chunk) => if inner_chunk.address == address {
+                        (Some(chunk), previous_chunk, next_chunk)
+                    } else if inner_chunk.address + inner_chunk.size == address {
+                        (deallocated_chunk, Some(chunk), next_chunk)
+                    } else {
+                        match deallocated_chunk {
+                            Some(inner_deallocated_chunk) => match inner_deallocated_chunk {
+                                Some(inner_deallocated_chunk) => if inner_deallocated_chunk.address + inner_deallocated_chunk.size == inner_chunk.address {
+                                        (deallocated_chunk, previous_chunk, Some(chunk))
+                                    } else {
+                                        (deallocated_chunk, previous_chunk, next_chunk)
+                                    },
+                                None => (deallocated_chunk, previous_chunk, next_chunk),
+                            },
+
+                            None => (deallocated_chunk, previous_chunk, next_chunk),
+                        }
+                    },
+                None => (deallocated_chunk, previous_chunk, next_chunk),
+            });
+        match &mut self.next {
+            Some(next) => next.scan_deallocated_chunk(address, deallocated_chunk, previous_chunk, next_chunk),
+            None => (deallocated_chunk, previous_chunk, next_chunk),
+        }
     }
 }
 
