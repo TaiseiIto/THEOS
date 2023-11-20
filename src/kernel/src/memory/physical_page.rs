@@ -217,6 +217,22 @@ impl Chunk {
             panic!("Can't merge page chunks!");
         }
     }
+
+    pub fn copy(&mut self) -> Self {
+        let Self {
+            start_page,
+            pages,
+        } = self;
+        let start_page: usize = *start_page;
+        let pages: usize = *pages;
+        let copied = Self {
+            start_page,
+            pages,
+        };
+        self.start_page = 0;
+        self.pages = 0;
+        copied
+    }
 }
 
 impl From<Request> for Chunk {

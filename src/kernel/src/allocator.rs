@@ -257,6 +257,7 @@ impl<'a> ChunkList<'a> {
                                 },
                                 (None, None) => {},
                             }
+                            next_chunk.pages = None;
                         }
                     }
                     if merge_next_chunk {
