@@ -205,7 +205,7 @@ impl<'a> ChunkList<'a> {
             });
         match &mut self.next {
             Some(next) => next.scan_available_chunk(layout, available_chunk, previous_free_chunk, next_free_chunk),
-            mut next @ None => match (available_chunk, previous_free_chunk, next_free_chunk) {
+            next @ None => match (available_chunk, previous_free_chunk, next_free_chunk) {
                 (available_chunk @ None, previous_chunk, next_chunk) |
                 (available_chunk , previous_chunk @ None, next_chunk) |
                 (available_chunk , previous_chunk, next_chunk @ None) => {
@@ -250,21 +250,20 @@ impl<'a> ChunkList<'a> {
         let (deallocated_chunk, previous_chunk, next_chunk): (Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.chunks
             .iter_mut()
             .fold((deallocated_chunk, previous_chunk, next_chunk), |(deallocated_chunk, previous_chunk, next_chunk), chunk| match chunk {
-                mut chunk @ Some(inner_chunk) => if inner_chunk.address == address {
+                Some(ref inner_chunk) => if inner_chunk.address == address {
                         (Some(chunk), previous_chunk, next_chunk)
                     } else if inner_chunk.address + inner_chunk.size == address {
                         (deallocated_chunk, Some(chunk), next_chunk)
                     } else {
                         match deallocated_chunk {
-                            Some(inner_deallocated_chunk) => match inner_deallocated_chunk {
-                                Some(inner_deallocated_chunk) => if inner_deallocated_chunk.address + inner_deallocated_chunk.size == inner_chunk.address {
-                                        (deallocated_chunk, previous_chunk, Some(chunk))
+                            Some(deallocated_chunk) => match deallocated_chunk {
+                                Some(ref inner_deallocated_chunk) => if inner_deallocated_chunk.address + inner_deallocated_chunk.size == inner_chunk.address {
+                                        (Some(deallocated_chunk), previous_chunk, Some(chunk))
                                     } else {
-                                        (deallocated_chunk, previous_chunk, next_chunk)
+                                        (Some(deallocated_chunk), previous_chunk, next_chunk)
                                     },
-                                None => (deallocated_chunk, previous_chunk, next_chunk),
+                                None => (Some(deallocated_chunk), previous_chunk, next_chunk),
                             },
-
                             None => (deallocated_chunk, previous_chunk, next_chunk),
                         }
                     },
