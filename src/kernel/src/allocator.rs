@@ -233,6 +233,8 @@ impl<'a> ChunkList<'a> {
                     if let Some(previous_chunk) = previous_chunk {
                         if !previous_chunk.allocated {
                             merge_previous_chunk = true;
+                            deallocated_chunk.address = previous_chunk.address;
+                            deallocated_chunk.size += previous_chunk.size;
                         }
                     }
                     if merge_previous_chunk {
@@ -245,6 +247,16 @@ impl<'a> ChunkList<'a> {
                         if !next_chunk.allocated {
                             merge_next_chunk = true;
                             deallocated_chunk.size += next_chunk.size;
+                            match (&mut deallocated_chunk.pages, &mut next_chunk.pages) {
+                                (Some(deallocated_chunk_pages), Some(next_chunk_pages)) => {
+                                    deallocated_chunk_pages.merge(next_chunk_pages.copy());
+                                },
+                                (Some(_), None) => {},
+                                (deallocated_chunk_pages @ None, Some(next_chunk_pages)) => {
+                                    *deallocated_chunk_pages = Some(next_chunk_pages.copy());
+                                },
+                                (None, None) => {},
+                            }
                         }
                     }
                     if merge_next_chunk {

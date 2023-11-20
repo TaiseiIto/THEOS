@@ -196,6 +196,27 @@ impl Chunk {
             &mut *slice
         }
     }
+
+    pub fn merge(&mut self, mergee: Self) {
+        let Self {
+            start_page: my_start_page,
+            pages: my_pages,
+        } = self;
+        let my_end_page: usize = *my_start_page + *my_pages;
+        let Self {
+            start_page: mergee_start_page,
+            pages: mergee_pages,
+        } = mergee;
+        let mergee_end_page: usize = mergee_start_page + mergee_pages;
+        if my_end_page == mergee_start_page {
+            *my_pages += mergee_pages;
+        } else if mergee_end_page == *my_start_page {
+            *my_start_page = mergee_start_page;
+            *my_pages += mergee_pages;
+        } else {
+            panic!("Can't merge page chunks!");
+        }
+    }
 }
 
 impl From<Request> for Chunk {
