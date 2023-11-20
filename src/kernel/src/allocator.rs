@@ -224,18 +224,31 @@ impl<'a> ChunkList<'a> {
     }
 
     fn dealloc(&'a mut self, address: usize) {
-        let (deallocated_chunk, previous_chunk, next_chunk): (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_deallocated_chunk(address);
+        let (deallocated_chunk, mut previous_chunk, mut next_chunk): (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_deallocated_chunk(address);
         match deallocated_chunk {
             Some(deallocated_chunk) => {
                 deallocated_chunk.allocated = false;
-                if let Some(previous_chunk) = &previous_chunk {
+                if let Some(previous_chunk) = &mut previous_chunk {
+                    let mut merge_previous_chunk: bool = false;
                     if let Some(previous_chunk) = previous_chunk {
-                        serial_println!("previous_chunk = {:#x?}", previous_chunk);
+                        if !previous_chunk.allocated {
+                            merge_previous_chunk = true;
+                        }
+                    }
+                    if merge_previous_chunk {
+                        **previous_chunk = None;
                     }
                 }
-                if let Some(next_chunk) = &next_chunk {
+                if let Some(next_chunk) = &mut next_chunk {
+                    let mut merge_next_chunk: bool = false;
                     if let Some(next_chunk) = next_chunk {
-                        serial_println!("next_chunk = {:#x?}", next_chunk);
+                        if !next_chunk.allocated {
+                            merge_next_chunk = true;
+                            deallocated_chunk.size += next_chunk.size;
+                        }
+                    }
+                    if merge_next_chunk {
+                        **next_chunk = None;
                     }
                 }
             },
