@@ -225,10 +225,15 @@ impl<'a> ChunkList<'a> {
 
     fn dealloc(&'a mut self, address: usize) {
         let (deallocated_chunk, previous_chunk, next_chunk): (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_deallocated_chunk(address);
+        match deallocated_chunk {
+            Some(deallocated_chunk) => {
+                deallocated_chunk.allocated = false;
+            },
+            None => panic!("Can't deallocate memory!"),
+        }
         serial_println!("deallocated_chunk = {:#x?}", deallocated_chunk);
         serial_println!("previous_chunk = {:#x?}", previous_chunk);
         serial_println!("next_chunk = {:#x?}", next_chunk);
-        panic!("ChunkList.dealloc is not implemented!");
     }
 
     fn get_deallocated_chunk(&'a mut self, address: usize) -> (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
@@ -308,6 +313,7 @@ impl fmt::Debug for Chunk {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Chunk")
+            .field("pages", &self.pages)
             .field("address", &self.address)
             .field("size", &self.size)
             .field("allocated", &self.allocated)
