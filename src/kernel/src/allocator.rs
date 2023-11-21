@@ -277,9 +277,6 @@ impl<'a> ChunkList<'a> {
         if drop_deallocated_chunk {
             *deallocated_chunk = None;
         }
-        serial_println!("deallocated_chunk = {:#x?}", deallocated_chunk);
-        serial_println!("previous_chunk = {:#x?}", previous_chunk);
-        serial_println!("next_chunk = {:#x?}", next_chunk);
     }
 
     fn get_deallocated_chunk(&'a mut self, address: usize) -> (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) {
