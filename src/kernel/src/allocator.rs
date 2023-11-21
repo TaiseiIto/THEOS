@@ -225,6 +225,7 @@ impl<'a> ChunkList<'a> {
 
     fn dealloc(&'a mut self, address: usize) {
         let (deallocated_chunk, mut previous_chunk, mut next_chunk): (&mut Option<Chunk>, Option<&mut Option<Chunk>>, Option<&mut Option<Chunk>>) = self.get_deallocated_chunk(address);
+        let mut drop_deallocated_chunk: bool = false;
         match deallocated_chunk {
             Some(deallocated_chunk) => {
                 deallocated_chunk.allocated = false;
@@ -265,10 +266,13 @@ impl<'a> ChunkList<'a> {
                     }
                 }
                 if deallocated_chunk.can_deallocate_pages() {
-                    deallocated_chunk.pages = None;
+                    drop_deallocated_chunk = true;
                 }
             },
             None => panic!("Can't deallocate memory!"),
+        }
+        if drop_deallocated_chunk {
+            *deallocated_chunk = None;
         }
         serial_println!("deallocated_chunk = {:#x?}", deallocated_chunk);
         serial_println!("previous_chunk = {:#x?}", previous_chunk);
