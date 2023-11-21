@@ -326,7 +326,10 @@ impl<'a> ChunkList<'a> {
     fn delete_unnecessary_chunk_list(&'a mut self) -> &'a mut Self {
         if self.chunks.iter().all(|chunk| chunk.is_none()) {
             match self.next {
-                Some(ref mut next) => *next,
+                Some(ref mut next) => {
+                    self.page = physical_page::Chunk::null();
+                    *next
+                },
                 None => self,
             }
         } else {

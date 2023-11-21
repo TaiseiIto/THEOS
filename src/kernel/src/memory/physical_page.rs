@@ -183,6 +183,15 @@ pub struct Chunk {
 }
 
 impl Chunk {
+    pub fn null() -> Self {
+        let start_page: usize = 0;
+        let pages: usize = 0;
+        Self {
+            start_page,
+            pages,
+        }
+    }
+
     pub fn address(&self) -> usize {
         self.start_page * memory_allocation::PAGE_SIZE
     }
