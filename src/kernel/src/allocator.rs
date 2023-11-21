@@ -106,6 +106,9 @@ unsafe impl GlobalAlloc for Allocator<'_> {
             Some(chunk_list) => chunk_list.dealloc(pointer as usize),
             None => panic!("Can't dealloc memory!"),
         }
+        if let Some(chunk_list) = &mut *self.chunk_list.get() {
+            chunk_list.delete_unnecessary_chunk_list();
+        }
     }
 }
 
@@ -312,6 +315,10 @@ impl<'a> ChunkList<'a> {
             Some(next) => next.scan_deallocated_chunk(address, deallocated_chunk, previous_chunk, next_chunk),
             None => (deallocated_chunk, previous_chunk, next_chunk),
         }
+    }
+
+    fn delete_unnecessary_chunk_list(&'a mut self) {
+        serial_println!("Delete unnecessary chunk list.");
     }
 }
 
