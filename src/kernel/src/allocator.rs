@@ -9,10 +9,6 @@ use {
         mem,
         ptr,
     },
-    crate::{
-        serial_print,
-        serial_println,
-    },
     super::{
         memory::physical_page,
         uefi::services::boot::memory_allocation,
@@ -317,6 +313,7 @@ impl<'a> ChunkList<'a> {
     fn delete_unnecessary_chunk_lists(&'a mut self) {
         if let Some(ref mut next) = self.next {
             *next = next.delete_unnecessary_chunk_list();
+            next.delete_unnecessary_chunk_lists();
         }
     }
 
