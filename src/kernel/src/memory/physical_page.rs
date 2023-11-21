@@ -6,6 +6,7 @@ use {
             StepBy,
         },
         ops::RangeInclusive,
+        ptr,
     },
     crate::{
         serial_print,
@@ -123,7 +124,7 @@ impl<'a> Manager<'a> {
         let index: usize = page / 8;
         let offset: usize = page % 8;
         let mask: u8 = 0x01u8 << offset;
-        self.present_bit_map[index] & mask == 0
+        page != 0 && self.present_bit_map[index] & mask == 0
     }
 
     fn pages_are_available(&self, start_page: usize, pages: usize) -> bool {
@@ -174,9 +175,73 @@ impl<'a> Manager<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct Chunk {
     start_page: usize,
     pages: usize,
+}
+
+impl Chunk {
+    pub fn null() -> Self {
+        let start_page: usize = 0;
+        let pages: usize = 0;
+        Self {
+            start_page,
+            pages,
+        }
+    }
+
+    pub fn address(&self) -> usize {
+        self.start_page * memory_allocation::PAGE_SIZE
+    }
+
+    pub fn size(&self) -> usize {
+        self.pages * memory_allocation::PAGE_SIZE
+    }
+
+    pub fn get_mut(&self) -> &mut [u8] {
+        let slice: *mut [u8] = ptr::slice_from_raw_parts_mut(self.address() as *mut u8, self.size());
+        unsafe {
+            &mut *slice
+        }
+    }
+
+    pub fn merge(&mut self, mergee: Self) {
+        let Self {
+            start_page: my_start_page,
+            pages: my_pages,
+        } = self;
+        let my_end_page: usize = *my_start_page + *my_pages;
+        let Self {
+            start_page: mergee_start_page,
+            pages: mergee_pages,
+        } = mergee;
+        let mergee_end_page: usize = mergee_start_page + mergee_pages;
+        if my_end_page == mergee_start_page {
+            *my_pages += mergee_pages;
+        } else if mergee_end_page == *my_start_page {
+            *my_start_page = mergee_start_page;
+            *my_pages += mergee_pages;
+        } else {
+            panic!("Can't merge page chunks!");
+        }
+    }
+
+    pub fn copy(&mut self) -> Self {
+        let Self {
+            start_page,
+            pages,
+        } = self;
+        let start_page: usize = *start_page;
+        let pages: usize = *pages;
+        let copied = Self {
+            start_page,
+            pages,
+        };
+        self.start_page = 0;
+        self.pages = 0;
+        copied
+    }
 }
 
 impl From<Request> for Chunk {
@@ -201,7 +266,6 @@ pub struct Request {
 }
 
 impl Request {
-    #[allow(dead_code)]
     pub fn new(size: usize, align: usize) -> Self {
         match align.count_ones() {
             1 => Self {
