@@ -264,6 +264,9 @@ impl<'a> ChunkList<'a> {
                         **next_chunk = None;
                     }
                 }
+                if deallocated_chunk.can_deallocate_pages() {
+                    deallocated_chunk.pages = None;
+                }
             },
             None => panic!("Can't deallocate memory!"),
         }
@@ -342,6 +345,19 @@ impl Chunk {
         let requested_begin: usize = ((my_begin + requested_align - 1) / requested_align) * requested_align;
         let requested_end: usize = requested_begin + requested_size;
         !self.allocated && requested_end <= my_end
+    }
+
+    fn can_deallocate_pages(&self) -> bool {
+        match &self.pages {
+            Some(pages) => {
+                let my_address: usize = self.address;
+                let my_size: usize = self.size;
+                let pages_address: usize = pages.address();
+                let pages_size: usize = pages.size();
+                my_address == pages_address && my_size == pages_size
+            },
+            None => false,
+        }
     }
 }
 
