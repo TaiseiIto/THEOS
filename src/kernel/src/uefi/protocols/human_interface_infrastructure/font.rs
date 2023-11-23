@@ -91,10 +91,12 @@ pub struct Glyph {
 }
 
 impl Glyph {
+    #[allow(dead_code)]
     pub fn width(&self) -> u16 {
         self.width
     }
 
+    #[allow(dead_code)]
     pub fn height(&self) -> u16 {
         self.height
     }

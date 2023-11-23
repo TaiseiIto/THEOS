@@ -37,12 +37,34 @@ pub fn inb(port: Port) -> u8 {
     value
 }
 
+pub fn inl(port: Port) -> u32 {
+    let mut value: u32;
+    unsafe {
+        asm!(
+            "in eax, dx",
+            in("dx") port,
+            out("eax") value,
+        );
+    }
+    value
+}
+
 pub fn outb(port: Port, value: u8) {
     unsafe {
         asm!(
             "out dx, al",
             in("dx") port,
             in("al") value,
+        );
+    }
+}
+
+pub fn outl(port: Port, value: u32) {
+    unsafe {
+        asm!(
+            "out dx, eax",
+            in("dx") port,
+            in("eax") value,
         );
     }
 }
