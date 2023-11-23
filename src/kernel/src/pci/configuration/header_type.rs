@@ -8,6 +8,10 @@ pub struct Register {
 impl Register {
     const MULTI_FUNCTION_DEVICE_SHIFT: usize = 7;
     const MULTI_FUNCTION_DEVICE_MASK: u8 = 1 << Self::MULTI_FUNCTION_DEVICE_SHIFT;
+
+    pub fn header_layout(&self) -> &HeaderLayout {
+        &self.header_layout
+    }
 }
 
 impl From<u8> for Register {
@@ -21,7 +25,7 @@ impl From<u8> for Register {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum HeaderLayout {
     Type0,
     Type1,

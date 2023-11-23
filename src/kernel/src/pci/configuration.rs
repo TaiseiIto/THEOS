@@ -4,6 +4,7 @@ mod bist;
 mod command;
 mod header_type;
 mod status;
+mod type_specific;
 
 use {
     alloc::vec::Vec,
@@ -108,6 +109,7 @@ pub struct Device {
     latency_timer: u8,
     header_type: header_type::Register,
     bist: bist::Register,
+    type_specific: type_specific::Registers,
     capabilities_pointer: u8,
     interrupt_line: u8,
     interrupt_pin: u8,
@@ -187,6 +189,7 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
         let latency_timer: u8 = configuration[Self::LATENCY_TIMER_OFFSET];
         let header_type: header_type::Register = configuration[Self::HEADER_TYPE_OFFSET].into();
         let bist: bist::Register = configuration[Self::BIST_OFFSET].into();
+        let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
         let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_OFFSET];
         let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_OFFSET];
         let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_OFFSET];
@@ -203,6 +206,7 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
             latency_timer,
             header_type,
             bist,
+            type_specific,
             capabilities_pointer,
             interrupt_line,
             interrupt_pin,
