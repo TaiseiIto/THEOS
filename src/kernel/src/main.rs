@@ -89,7 +89,8 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     display.print(&coordinates, &background_color, &foreground_color, "Hello, World!");
     // Global allocator test
     allocator::Allocated::new(1, 1);
-    let host_bridge = pci::Configuration::get(0, 0, 0);
+    let host_bridge = pci::ConfigurationAddress::new(0, 0, 0);
+    let host_bridge: Option<pci::Configuration> = (&host_bridge).into();
     serial_println!("host_bridge = {:#x?}", host_bridge);
     loop {
         asm::hlt();

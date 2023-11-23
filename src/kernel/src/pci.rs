@@ -33,7 +33,7 @@ impl ConfigurationAddress {
     const ADDRESS_PORT: u16 = 0x0cf8;
     const VALUE_PORT: u16 = 0x0cfc;
 
-    fn new(bus: u8, device: u8, function: u8) -> Self {
+    pub fn new(bus: u8, device: u8, function: u8) -> Self {
         if device <= Self::DEVICE_MAX && function <= Self::FUNCTION_MAX {
             Self {
                 bus,
@@ -62,7 +62,7 @@ impl ConfigurationAddress {
 
 const CONFIGURATION_SIZE: usize = 0x100;
 
-impl Into<[u8; CONFIGURATION_SIZE]> for ConfigurationAddress {
+impl Into<[u8; CONFIGURATION_SIZE]> for &ConfigurationAddress {
     fn into(self) -> [u8; CONFIGURATION_SIZE] {
         (0..CONFIGURATION_SIZE)
             .step_by(mem::size_of::<u32>())
@@ -76,10 +76,14 @@ impl Into<[u8; CONFIGURATION_SIZE]> for ConfigurationAddress {
     }
 }
 
-impl Into<Configuration> for ConfigurationAddress {
-    fn into(self) -> Configuration {
+impl Into<Option<Configuration>> for &ConfigurationAddress {
+    fn into(self) -> Option<Configuration> {
         let configuration: [u8; CONFIGURATION_SIZE] = self.into();
-        configuration.into()
+        let configuration: Configuration = configuration.into();
+        match &configuration.vendor_id {
+            0xffffu16 => None,
+            _ => Some(configuration),
+        }
     }
 }
 
@@ -136,10 +140,6 @@ impl Configuration {
     const BIST_OFFSET: usize = Self::HEADER_TYPE_END;
     const BIST_SIZE: usize = mem::size_of::<u8>();
     const BIST_END: usize = Self::BIST_OFFSET + Self::BIST_SIZE;
-
-    pub fn get(bus: u8, device: u8, function: u8) -> Self {
-        ConfigurationAddress::new(bus, device, function).into()
-    }
 }
 
 impl From<[u8; CONFIGURATION_SIZE]> for Configuration {
