@@ -116,83 +116,83 @@ pub struct Device {
 }
 
 impl Device {
-    const VENDOR_ID_OFFSET: usize = 0;
+    const VENDOR_ID_BEGIN: usize = 0;
     const VENDOR_ID_SIZE: usize = mem::size_of::<u16>();
-    const VENDOR_ID_END: usize = Self::VENDOR_ID_OFFSET + Self::VENDOR_ID_SIZE;
-    const DEVICE_ID_OFFSET: usize = Self::VENDOR_ID_END;
+    const VENDOR_ID_END: usize = Self::VENDOR_ID_BEGIN + Self::VENDOR_ID_SIZE;
+    const DEVICE_ID_BEGIN: usize = Self::VENDOR_ID_END;
     const DEVICE_ID_SIZE: usize = mem::size_of::<u16>();
-    const DEVICE_ID_END: usize = Self::DEVICE_ID_OFFSET + Self::DEVICE_ID_SIZE;
-    const COMMAND_OFFSET: usize = Self::DEVICE_ID_END;
+    const DEVICE_ID_END: usize = Self::DEVICE_ID_BEGIN + Self::DEVICE_ID_SIZE;
+    const COMMAND_BEGIN: usize = Self::DEVICE_ID_END;
     const COMMAND_SIZE: usize = mem::size_of::<u16>();
-    const COMMAND_END: usize = Self::COMMAND_OFFSET + Self::COMMAND_SIZE;
-    const STATUS_OFFSET: usize = Self::COMMAND_END;
+    const COMMAND_END: usize = Self::COMMAND_BEGIN + Self::COMMAND_SIZE;
+    const STATUS_BEGIN: usize = Self::COMMAND_END;
     const STATUS_SIZE: usize = mem::size_of::<u16>();
-    const STATUS_END: usize = Self::STATUS_OFFSET + Self::STATUS_SIZE;
-    const REVISION_ID_OFFSET: usize = Self::STATUS_END;
+    const STATUS_END: usize = Self::STATUS_BEGIN + Self::STATUS_SIZE;
+    const REVISION_ID_BEGIN: usize = Self::STATUS_END;
     const REVISION_ID_SIZE: usize = mem::size_of::<u8>();
-    const REVISION_ID_END: usize = Self::REVISION_ID_OFFSET + Self::REVISION_ID_SIZE;
-    const INTERFACE_OFFSET: usize = Self::REVISION_ID_END;
+    const REVISION_ID_END: usize = Self::REVISION_ID_BEGIN + Self::REVISION_ID_SIZE;
+    const INTERFACE_BEGIN: usize = Self::REVISION_ID_END;
     const INTERFACE_SIZE: usize = mem::size_of::<u8>();
-    const INTERFACE_END: usize = Self::INTERFACE_OFFSET + Self::INTERFACE_SIZE;
-    const SUB_CLASS_OFFSET: usize = Self::INTERFACE_END;
+    const INTERFACE_END: usize = Self::INTERFACE_BEGIN + Self::INTERFACE_SIZE;
+    const SUB_CLASS_BEGIN: usize = Self::INTERFACE_END;
     const SUB_CLASS_SIZE: usize = mem::size_of::<u8>();
-    const SUB_CLASS_END: usize = Self::SUB_CLASS_OFFSET + Self::SUB_CLASS_SIZE;
-    const BASE_CLASS_OFFSET: usize = Self::SUB_CLASS_END;
+    const SUB_CLASS_END: usize = Self::SUB_CLASS_BEGIN + Self::SUB_CLASS_SIZE;
+    const BASE_CLASS_BEGIN: usize = Self::SUB_CLASS_END;
     const BASE_CLASS_SIZE: usize = mem::size_of::<u8>();
-    const BASE_CLASS_END: usize = Self::BASE_CLASS_OFFSET + Self::BASE_CLASS_SIZE;
-    const CACHE_LINE_SIZE_OFFSET: usize = Self::BASE_CLASS_END;
+    const BASE_CLASS_END: usize = Self::BASE_CLASS_BEGIN + Self::BASE_CLASS_SIZE;
+    const CACHE_LINE_SIZE_BEGIN: usize = Self::BASE_CLASS_END;
     const CACHE_LINE_SIZE_SIZE: usize = mem::size_of::<u8>();
-    const CACHE_LINE_SIZE_END: usize = Self::CACHE_LINE_SIZE_OFFSET + Self::CACHE_LINE_SIZE_SIZE;
-    const LATENCY_TIMER_OFFSET: usize = Self::CACHE_LINE_SIZE_END;
+    const CACHE_LINE_SIZE_END: usize = Self::CACHE_LINE_SIZE_BEGIN + Self::CACHE_LINE_SIZE_SIZE;
+    const LATENCY_TIMER_BEGIN: usize = Self::CACHE_LINE_SIZE_END;
     const LATENCY_TIMER_SIZE: usize = mem::size_of::<u8>();
-    const LATENCY_TIMER_END: usize = Self::LATENCY_TIMER_OFFSET + Self::LATENCY_TIMER_SIZE;
-    const HEADER_TYPE_OFFSET: usize = Self::LATENCY_TIMER_END;
+    const LATENCY_TIMER_END: usize = Self::LATENCY_TIMER_BEGIN + Self::LATENCY_TIMER_SIZE;
+    const HEADER_TYPE_BEGIN: usize = Self::LATENCY_TIMER_END;
     const HEADER_TYPE_SIZE: usize = mem::size_of::<u8>();
-    const HEADER_TYPE_END: usize = Self::HEADER_TYPE_OFFSET + Self::HEADER_TYPE_SIZE;
-    const BIST_OFFSET: usize = Self::HEADER_TYPE_END;
+    const HEADER_TYPE_END: usize = Self::HEADER_TYPE_BEGIN + Self::HEADER_TYPE_SIZE;
+    const BIST_BEGIN: usize = Self::HEADER_TYPE_END;
     const BIST_SIZE: usize = mem::size_of::<u8>();
-    const BIST_END: usize = Self::BIST_OFFSET + Self::BIST_SIZE;
-    const CAPABILITIES_POINTER_OFFSET: usize = 0x34;
+    const BIST_END: usize = Self::BIST_BEGIN + Self::BIST_SIZE;
+    const CAPABILITIES_POINTER_BEGIN: usize = 0x34;
     const CAPABILITIES_POINTER_SIZE: usize = mem::size_of::<u8>();
-    const CAPABILITIES_POINTER_END: usize = Self::CAPABILITIES_POINTER_OFFSET + Self::CAPABILITIES_POINTER_SIZE;
-    const INTERRUPT_LINE_OFFSET: usize = 0x3c;
+    const CAPABILITIES_POINTER_END: usize = Self::CAPABILITIES_POINTER_BEGIN + Self::CAPABILITIES_POINTER_SIZE;
+    const INTERRUPT_LINE_BEGIN: usize = 0x3c;
     const INTERRUPT_LINE_SIZE: usize = mem::size_of::<u8>();
-    const INTERRUPT_LINE_END: usize = Self::INTERRUPT_LINE_OFFSET + Self::INTERRUPT_LINE_SIZE;
-    const INTERRUPT_PIN_OFFSET: usize = 0x3d;
+    const INTERRUPT_LINE_END: usize = Self::INTERRUPT_LINE_BEGIN + Self::INTERRUPT_LINE_SIZE;
+    const INTERRUPT_PIN_BEGIN: usize = 0x3d;
     const INTERRUPT_PIN_SIZE: usize = mem::size_of::<u8>();
-    const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_OFFSET + Self::INTERRUPT_PIN_SIZE;
+    const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_BEGIN + Self::INTERRUPT_PIN_SIZE;
 }
 
 impl From<[u8; CONFIGURATION_SIZE]> for Device {
     fn from(configuration: [u8; CONFIGURATION_SIZE]) -> Self {
-        let vendor_id: [u8; mem::size_of::<u16>()] = configuration[Self::VENDOR_ID_OFFSET..Self::VENDOR_ID_END]
+        let vendor_id: [u8; Self::VENDOR_ID_SIZE] = configuration[Self::VENDOR_ID_BEGIN..Self::VENDOR_ID_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
         let vendor_id: u16 = u16::from_le_bytes(vendor_id);
-        let device_id: [u8; mem::size_of::<u16>()] = configuration[Self::DEVICE_ID_OFFSET..Self::DEVICE_ID_END]
+        let device_id: [u8; Self::DEVICE_ID_SIZE] = configuration[Self::DEVICE_ID_BEGIN..Self::DEVICE_ID_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
         let device_id: u16 = u16::from_le_bytes(device_id);
-        let command: [u8; mem::size_of::<u16>()] = configuration[Self::COMMAND_OFFSET..Self::COMMAND_END]
+        let command: [u8; Self::COMMAND_SIZE] = configuration[Self::COMMAND_BEGIN..Self::COMMAND_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
         let command: command::Register = u16::from_le_bytes(command).into();
-        let status: [u8; mem::size_of::<u16>()] = configuration[Self::STATUS_OFFSET..Self::STATUS_END]
+        let status: [u8; Self::STATUS_SIZE] = configuration[Self::STATUS_BEGIN..Self::STATUS_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
         let status: status::Register = u16::from_le_bytes(status).into();
-        let revision_id: u8 = configuration[Self::REVISION_ID_OFFSET];
-        let interface: u8 = configuration[Self::INTERFACE_OFFSET];
-        let sub_class: u8 = configuration[Self::SUB_CLASS_OFFSET];
-        let base_class: u8 = configuration[Self::BASE_CLASS_OFFSET];
-        let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_OFFSET];
-        let latency_timer: u8 = configuration[Self::LATENCY_TIMER_OFFSET];
-        let header_type: header_type::Register = configuration[Self::HEADER_TYPE_OFFSET].into();
-        let bist: bist::Register = configuration[Self::BIST_OFFSET].into();
+        let revision_id: u8 = configuration[Self::REVISION_ID_BEGIN];
+        let interface: u8 = configuration[Self::INTERFACE_BEGIN];
+        let sub_class: u8 = configuration[Self::SUB_CLASS_BEGIN];
+        let base_class: u8 = configuration[Self::BASE_CLASS_BEGIN];
+        let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_BEGIN];
+        let latency_timer: u8 = configuration[Self::LATENCY_TIMER_BEGIN];
+        let header_type: header_type::Register = configuration[Self::HEADER_TYPE_BEGIN].into();
+        let bist: bist::Register = configuration[Self::BIST_BEGIN].into();
         let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
-        let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_OFFSET];
-        let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_OFFSET];
-        let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_OFFSET];
+        let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
+        let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
+        let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
         Self {
             vendor_id,
             device_id,

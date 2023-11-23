@@ -19,19 +19,31 @@ const NUM_BASE_ADDRESS_REGISTERS: usize = 6;
 pub enum Registers {
     Type0 {
         base_address_registers: [base_address::Register; NUM_BASE_ADDRESS_REGISTERS],
+        cardbus_cis_pointer: u32,
+        subsystem_vendor_id: u16,
+        subsystem_id: u16,
     },
     Type1,
     Reserved,
 }
 
 impl Registers {
-    const BASE_ADDRESS_REGISTERS_SHIFT_BEGIN: usize = 0x10;
-    const BASE_ADDRESS_REGISTERS_SHIFT_END: usize = 0x28;
+    const BASE_ADDRESS_REGISTERS_BEGIN: usize = 0x10;
+    const BASE_ADDRESS_REGISTERS_END: usize = 0x28;
+    const CARDBUS_CIS_POINTER_BEGIN: usize = Self::BASE_ADDRESS_REGISTERS_END;
+    const CARDBUS_CIS_POINTER_LENGTH: usize = mem::size_of::<u32>();
+    const CARDBUS_CIS_POINTER_END: usize = Self::CARDBUS_CIS_POINTER_BEGIN + Self::CARDBUS_CIS_POINTER_LENGTH;
+    const SUBSYSTEM_VENDOR_ID_BEGIN: usize = Self::CARDBUS_CIS_POINTER_END;
+    const SUBSYSTEM_VENDOR_ID_LENGTH: usize = mem::size_of::<u16>();
+    const SUBSYSTEM_VENDOR_ID_END: usize = Self::SUBSYSTEM_VENDOR_ID_BEGIN + Self::SUBSYSTEM_VENDOR_ID_LENGTH;
+    const SUBSYSTEM_ID_BEGIN: usize = Self::SUBSYSTEM_VENDOR_ID_END;
+    const SUBSYSTEM_ID_LENGTH: usize = mem::size_of::<u16>();
+    const SUBSYSTEM_ID_END: usize = Self::SUBSYSTEM_ID_BEGIN + Self::SUBSYSTEM_ID_LENGTH;
 
     pub fn new(header_layout: &header_type::HeaderLayout, configuration: &[u8; CONFIGURATION_SIZE]) -> Self {
         match header_layout {
             header_type::HeaderLayout::Type0 => {
-                let base_address_registers: [base_address::Register; NUM_BASE_ADDRESS_REGISTERS] = configuration[Self::BASE_ADDRESS_REGISTERS_SHIFT_BEGIN..Self::BASE_ADDRESS_REGISTERS_SHIFT_END]
+                let base_address_registers: [base_address::Register; NUM_BASE_ADDRESS_REGISTERS] = configuration[Self::BASE_ADDRESS_REGISTERS_BEGIN..Self::BASE_ADDRESS_REGISTERS_END]
                     .chunks_exact(mem::size_of::<u32>())
                     .map(|chunk| {
                         let chunk: [u8; mem::size_of::<u32>()] = chunk
@@ -42,8 +54,23 @@ impl Registers {
                     .collect::<Vec<base_address::Register>>()
                     .try_into()
                     .expect("Can't get a PCI device base address registers!");
+                let cardbus_cis_pointer: [u8; Self::CARDBUS_CIS_POINTER_LENGTH] = configuration[Self::CARDBUS_CIS_POINTER_BEGIN..Self::CARDBUS_CIS_POINTER_END]
+                    .try_into()
+                    .expect("Can't get a PCI device cardbus cis pointer!");
+                let cardbus_cis_pointer: u32 = u32::from_le_bytes(cardbus_cis_pointer);
+                let subsystem_vendor_id: [u8; Self::SUBSYSTEM_VENDOR_ID_LENGTH] = configuration[Self::SUBSYSTEM_VENDOR_ID_BEGIN..Self::SUBSYSTEM_VENDOR_ID_END]
+                    .try_into()
+                    .expect("Can't get a PCI device subsystem vendor ID!");
+                let subsystem_vendor_id: u16 = u16::from_le_bytes(subsystem_vendor_id);
+                let subsystem_id: [u8; Self::SUBSYSTEM_ID_LENGTH] = configuration[Self::SUBSYSTEM_ID_BEGIN..Self::SUBSYSTEM_ID_END]
+                    .try_into()
+                    .expect("Can't get a PCI device subsystem ID!");
+                let subsystem_id: u16 = u16::from_le_bytes(subsystem_id);
                 Self::Type0 {
                     base_address_registers,
+                    cardbus_cis_pointer,
+                    subsystem_vendor_id,
+                    subsystem_id,
                 }
             },
             header_type::HeaderLayout::Type1 => Self::Type1,
