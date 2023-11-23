@@ -108,6 +108,9 @@ pub struct Device {
     latency_timer: u8,
     header_type: header_type::Register,
     bist: bist::Register,
+    capabilities_pointer: u8,
+    interrupt_line: u8,
+    interrupt_pin: u8,
 }
 
 impl Device {
@@ -147,6 +150,15 @@ impl Device {
     const BIST_OFFSET: usize = Self::HEADER_TYPE_END;
     const BIST_SIZE: usize = mem::size_of::<u8>();
     const BIST_END: usize = Self::BIST_OFFSET + Self::BIST_SIZE;
+    const CAPABILITIES_POINTER_OFFSET: usize = 0x34;
+    const CAPABILITIES_POINTER_SIZE: usize = mem::size_of::<u8>();
+    const CAPABILITIES_POINTER_END: usize = Self::CAPABILITIES_POINTER_OFFSET + Self::CAPABILITIES_POINTER_SIZE;
+    const INTERRUPT_LINE_OFFSET: usize = 0x3c;
+    const INTERRUPT_LINE_SIZE: usize = mem::size_of::<u8>();
+    const INTERRUPT_LINE_END: usize = Self::INTERRUPT_LINE_OFFSET + Self::INTERRUPT_LINE_SIZE;
+    const INTERRUPT_PIN_OFFSET: usize = 0x3d;
+    const INTERRUPT_PIN_SIZE: usize = mem::size_of::<u8>();
+    const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_OFFSET + Self::INTERRUPT_PIN_SIZE;
 }
 
 impl From<[u8; CONFIGURATION_SIZE]> for Device {
@@ -175,6 +187,9 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
         let latency_timer: u8 = configuration[Self::LATENCY_TIMER_OFFSET];
         let header_type: header_type::Register = configuration[Self::HEADER_TYPE_OFFSET].into();
         let bist: bist::Register = configuration[Self::BIST_OFFSET].into();
+        let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_OFFSET];
+        let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_OFFSET];
+        let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_OFFSET];
         Self {
             vendor_id,
             device_id,
@@ -188,6 +203,9 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
             latency_timer,
             header_type,
             bist,
+            capabilities_pointer,
+            interrupt_line,
+            interrupt_pin,
         }
     }
 }
