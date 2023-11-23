@@ -32,7 +32,9 @@ impl Address {
     const DEVICE_SHIFT_END: usize = Self::DEVICE_SHIFT_BEGIN + Self::DEVICE_SHIFT_LENGTH;
     const DEVICE_MAX: u8 = (1 << Self::DEVICE_SHIFT_LENGTH) - 1;
     const BUS_SHIFT_BEGIN: usize = Self::DEVICE_SHIFT_END;
+    #[allow(dead_code)]
     const BUS_SHIFT_LENGTH: usize = 8;
+    #[allow(dead_code)]
     const BUS_SHIFT_END: usize = Self::BUS_SHIFT_BEGIN + Self::BUS_SHIFT_LENGTH;
     const ENABLE_BIT_SHIFT: usize = 31;
     const ENABLE_BIT: u32 = 1 << Self::ENABLE_BIT_SHIFT;
@@ -150,16 +152,24 @@ impl Device {
     const HEADER_TYPE_SIZE: usize = mem::size_of::<u8>();
     const HEADER_TYPE_END: usize = Self::HEADER_TYPE_BEGIN + Self::HEADER_TYPE_SIZE;
     const BIST_BEGIN: usize = Self::HEADER_TYPE_END;
+    #[allow(dead_code)]
     const BIST_SIZE: usize = mem::size_of::<u8>();
+    #[allow(dead_code)]
     const BIST_END: usize = Self::BIST_BEGIN + Self::BIST_SIZE;
     const CAPABILITIES_POINTER_BEGIN: usize = 0x34;
+    #[allow(dead_code)]
     const CAPABILITIES_POINTER_SIZE: usize = mem::size_of::<u8>();
+    #[allow(dead_code)]
     const CAPABILITIES_POINTER_END: usize = Self::CAPABILITIES_POINTER_BEGIN + Self::CAPABILITIES_POINTER_SIZE;
     const INTERRUPT_LINE_BEGIN: usize = 0x3c;
+    #[allow(dead_code)]
     const INTERRUPT_LINE_SIZE: usize = mem::size_of::<u8>();
+    #[allow(dead_code)]
     const INTERRUPT_LINE_END: usize = Self::INTERRUPT_LINE_BEGIN + Self::INTERRUPT_LINE_SIZE;
     const INTERRUPT_PIN_BEGIN: usize = 0x3d;
+    #[allow(dead_code)]
     const INTERRUPT_PIN_SIZE: usize = mem::size_of::<u8>();
+    #[allow(dead_code)]
     const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_BEGIN + Self::INTERRUPT_PIN_SIZE;
 }
 

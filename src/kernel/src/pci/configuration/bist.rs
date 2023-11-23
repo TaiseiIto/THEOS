@@ -1,4 +1,5 @@
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.1.10 BIST Register
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Register {
     completion_code: u8,
@@ -9,6 +10,7 @@ pub struct Register {
 impl Register {
     const COMPLETION_CODE_SHIFT_BEGIN: usize = 0;
     const COMPLETION_CODE_SHIFT_LENGTH: usize = 4;
+    #[allow(dead_code)]
     const COMPLETION_CODE_SHIFT_END: usize = Self::COMPLETION_CODE_SHIFT_BEGIN + Self::COMPLETION_CODE_SHIFT_LENGTH;
     const START_BIST_SHIFT: usize = 6;
     const BIST_CAPABLE_SHIFT: usize = 7;

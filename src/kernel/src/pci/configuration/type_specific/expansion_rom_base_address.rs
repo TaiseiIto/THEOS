@@ -1,6 +1,7 @@
 use core::mem;
 
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.2.4 Expansion ROM Base Address Register
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Register {
     enable: bool,
@@ -18,6 +19,7 @@ impl Register {
     const VALIDATION_STATUS_SHIFT_END: usize = Self::VALIDATION_STATUS_SHIFT_BEGIN + Self::VALIDATION_STATUS_SHIFT_LENGTH;
     const VALIDATION_DETAILS_SHIFT_BEGIN: usize = Self::VALIDATION_STATUS_SHIFT_END;
     const VALIDATION_DETAILS_SHIFT_LENGTH: usize = 4;
+    #[allow(dead_code)]
     const VALIDATION_DETAILS_SHIFT_END: usize = Self::VALIDATION_DETAILS_SHIFT_BEGIN + Self::VALIDATION_DETAILS_SHIFT_LENGTH;
     const BASE_ADDRESS_SHIFT_BEGIN: usize = 11;
     const BASE_ADDRESS_SHIFT_END: usize = 8 * mem::size_of::<u32>();

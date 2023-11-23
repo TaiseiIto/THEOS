@@ -1,4 +1,5 @@
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.1.9 Header Type Register
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Register {
     header_layout: HeaderLayout,
@@ -35,6 +36,7 @@ pub enum HeaderLayout {
 impl HeaderLayout {
     const SHIFT_BEGIN: usize = 0;
     const SHIFT_LENGTH:usize = 7;
+    #[allow(dead_code)]
     const SHIFT_END: usize = Self::SHIFT_BEGIN + Self::SHIFT_LENGTH;
     const MASK: u8 = ((1 << Self::SHIFT_LENGTH) - 1) << Self::SHIFT_BEGIN;
 }
