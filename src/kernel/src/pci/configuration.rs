@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod command;
+mod header_type;
 mod status;
 
 use {
@@ -104,7 +105,7 @@ pub struct Device {
     base_class: u8,
     cache_line_size: u8,
     latency_timer: u8,
-    header_type: u8,
+    header_type: header_type::Register,
     bist: u8,
 }
 
@@ -171,7 +172,7 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
         let base_class: u8 = configuration[Self::BASE_CLASS_OFFSET];
         let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_OFFSET];
         let latency_timer: u8 = configuration[Self::LATENCY_TIMER_OFFSET];
-        let header_type: u8 = configuration[Self::HEADER_TYPE_OFFSET];
+        let header_type: header_type::Register = configuration[Self::HEADER_TYPE_OFFSET].into();
         let bist: u8 = configuration[Self::BIST_OFFSET];
         Self {
             vendor_id,
