@@ -33,7 +33,7 @@ impl ConfigurationAddress {
     const ADDRESS_PORT: u16 = 0x0cf8;
     const VALUE_PORT: u16 = 0x0cfc;
 
-    pub fn new(bus: u8, device: u8, function: u8) -> Self {
+    fn new(bus: u8, device: u8, function: u8) -> Self {
         if device <= Self::DEVICE_MAX && function <= Self::FUNCTION_MAX {
             Self {
                 bus,
@@ -66,10 +66,122 @@ impl Into<[u8; CONFIGURATION_SIZE]> for ConfigurationAddress {
     fn into(self) -> [u8; CONFIGURATION_SIZE] {
         (0..CONFIGURATION_SIZE)
             .step_by(mem::size_of::<u32>())
-            .flat_map(|offset| self.read(offset as u8).to_le_bytes().into_iter())
+            .flat_map(|offset| self
+                .read(offset as u8)
+                .to_le_bytes()
+                .into_iter())
             .collect::<Vec<u8>>()
             .try_into()
             .expect("Can't get a PCI configuration!")
+    }
+}
+
+impl Into<Configuration> for ConfigurationAddress {
+    fn into(self) -> Configuration {
+        let configuration: [u8; CONFIGURATION_SIZE] = self.into();
+        configuration.into()
+    }
+}
+
+#[derive(Debug)]
+pub struct Configuration {
+    vendor_id: u16,
+    device_id: u16,
+    command: u16,
+    status: u16,
+    revision_id: u8,
+    interface: u8,
+    sub_class: u8,
+    base_class: u8,
+    cache_line_size: u8,
+    latency_timer: u8,
+    header_type: u8,
+    bist: u8,
+}
+
+impl Configuration {
+    const VENDOR_ID_OFFSET: usize = 0;
+    const VENDOR_ID_SIZE: usize = mem::size_of::<u16>();
+    const VENDOR_ID_END: usize = Self::VENDOR_ID_OFFSET + Self::VENDOR_ID_SIZE;
+    const DEVICE_ID_OFFSET: usize = Self::VENDOR_ID_END;
+    const DEVICE_ID_SIZE: usize = mem::size_of::<u16>();
+    const DEVICE_ID_END: usize = Self::DEVICE_ID_OFFSET + Self::DEVICE_ID_SIZE;
+    const COMMAND_OFFSET: usize = Self::DEVICE_ID_END;
+    const COMMAND_SIZE: usize = mem::size_of::<u16>();
+    const COMMAND_END: usize = Self::COMMAND_OFFSET + Self::COMMAND_SIZE;
+    const STATUS_OFFSET: usize = Self::COMMAND_END;
+    const STATUS_SIZE: usize = mem::size_of::<u16>();
+    const STATUS_END: usize = Self::STATUS_OFFSET + Self::STATUS_SIZE;
+    const REVISION_ID_OFFSET: usize = Self::STATUS_END;
+    const REVISION_ID_SIZE: usize = mem::size_of::<u8>();
+    const REVISION_ID_END: usize = Self::REVISION_ID_OFFSET + Self::REVISION_ID_SIZE;
+    const INTERFACE_OFFSET: usize = Self::REVISION_ID_END;
+    const INTERFACE_SIZE: usize = mem::size_of::<u8>();
+    const INTERFACE_END: usize = Self::INTERFACE_OFFSET + Self::INTERFACE_SIZE;
+    const SUB_CLASS_OFFSET: usize = Self::INTERFACE_END;
+    const SUB_CLASS_SIZE: usize = mem::size_of::<u8>();
+    const SUB_CLASS_END: usize = Self::SUB_CLASS_OFFSET + Self::SUB_CLASS_SIZE;
+    const BASE_CLASS_OFFSET: usize = Self::SUB_CLASS_END;
+    const BASE_CLASS_SIZE: usize = mem::size_of::<u8>();
+    const BASE_CLASS_END: usize = Self::BASE_CLASS_OFFSET + Self::BASE_CLASS_SIZE;
+    const CACHE_LINE_SIZE_OFFSET: usize = Self::BASE_CLASS_END;
+    const CACHE_LINE_SIZE_SIZE: usize = mem::size_of::<u8>();
+    const CACHE_LINE_SIZE_END: usize = Self::CACHE_LINE_SIZE_OFFSET + Self::CACHE_LINE_SIZE_SIZE;
+    const LATENCY_TIMER_OFFSET: usize = Self::CACHE_LINE_SIZE_END;
+    const LATENCY_TIMER_SIZE: usize = mem::size_of::<u8>();
+    const LATENCY_TIMER_END: usize = Self::LATENCY_TIMER_OFFSET + Self::LATENCY_TIMER_SIZE;
+    const HEADER_TYPE_OFFSET: usize = Self::LATENCY_TIMER_END;
+    const HEADER_TYPE_SIZE: usize = mem::size_of::<u8>();
+    const HEADER_TYPE_END: usize = Self::HEADER_TYPE_OFFSET + Self::HEADER_TYPE_SIZE;
+    const BIST_OFFSET: usize = Self::HEADER_TYPE_END;
+    const BIST_SIZE: usize = mem::size_of::<u8>();
+    const BIST_END: usize = Self::BIST_OFFSET + Self::BIST_SIZE;
+
+    pub fn get(bus: u8, device: u8, function: u8) -> Self {
+        ConfigurationAddress::new(bus, device, function).into()
+    }
+}
+
+impl From<[u8; CONFIGURATION_SIZE]> for Configuration {
+    fn from(configuration: [u8; CONFIGURATION_SIZE]) -> Self {
+        let vendor_id: [u8; mem::size_of::<u16>()] = configuration[Self::VENDOR_ID_OFFSET..Self::VENDOR_ID_END]
+            .try_into()
+            .expect("Can't get a PCI configuration!");
+        let vendor_id: u16 = u16::from_le_bytes(vendor_id);
+        let device_id: [u8; mem::size_of::<u16>()] = configuration[Self::DEVICE_ID_OFFSET..Self::DEVICE_ID_END]
+            .try_into()
+            .expect("Can't get a PCI configuration!");
+        let device_id: u16 = u16::from_le_bytes(device_id);
+        let command: [u8; mem::size_of::<u16>()] = configuration[Self::COMMAND_OFFSET..Self::COMMAND_END]
+            .try_into()
+            .expect("Can't get a PCI configuration!");
+        let command: u16 = u16::from_le_bytes(command);
+        let status: [u8; mem::size_of::<u16>()] = configuration[Self::STATUS_OFFSET..Self::STATUS_END]
+            .try_into()
+            .expect("Can't get a PCI configuration!");
+        let status: u16 = u16::from_le_bytes(status);
+        let revision_id: u8 = configuration[Self::REVISION_ID_OFFSET];
+        let interface: u8 = configuration[Self::INTERFACE_OFFSET];
+        let sub_class: u8 = configuration[Self::SUB_CLASS_OFFSET];
+        let base_class: u8 = configuration[Self::BASE_CLASS_OFFSET];
+        let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_OFFSET];
+        let latency_timer: u8 = configuration[Self::LATENCY_TIMER_OFFSET];
+        let header_type: u8 = configuration[Self::HEADER_TYPE_OFFSET];
+        let bist: u8 = configuration[Self::BIST_OFFSET];
+        Self {
+            vendor_id,
+            device_id,
+            command,
+            status,
+            revision_id,
+            interface,
+            sub_class,
+            base_class,
+            cache_line_size,
+            latency_timer,
+            header_type,
+            bist,
+        }
     }
 }
 
