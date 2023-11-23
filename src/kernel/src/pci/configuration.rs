@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod command;
+mod status;
 
 use {
     alloc::vec::Vec,
@@ -90,12 +91,13 @@ impl Into<Option<Device>> for &Address {
 }
 
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1 PCI-Compatible Configuration Registers
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Device {
     vendor_id: u16,
     device_id: u16,
-    command: command::Command,
-    status: u16,
+    command: command::Register,
+    status: status::Register,
     revision_id: u8,
     interface: u8,
     sub_class: u8,
@@ -158,11 +160,11 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
         let command: [u8; mem::size_of::<u16>()] = configuration[Self::COMMAND_OFFSET..Self::COMMAND_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
-        let command: command::Command = u16::from_le_bytes(command).into();
+        let command: command::Register = u16::from_le_bytes(command).into();
         let status: [u8; mem::size_of::<u16>()] = configuration[Self::STATUS_OFFSET..Self::STATUS_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
-        let status: u16 = u16::from_le_bytes(status);
+        let status: status::Register = u16::from_le_bytes(status).into();
         let revision_id: u8 = configuration[Self::REVISION_ID_OFFSET];
         let interface: u8 = configuration[Self::INTERFACE_OFFSET];
         let sub_class: u8 = configuration[Self::SUB_CLASS_OFFSET];

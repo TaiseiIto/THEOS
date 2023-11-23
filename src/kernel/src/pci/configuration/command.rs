@@ -1,6 +1,7 @@
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.1.3 Command Register
+#[allow(dead_code)]
 #[derive(Debug)]
-pub struct Command {
+pub struct Register {
     io_space_enable: bool,
     memory_space_enable: bool,
     bus_master_enable: bool,
@@ -14,7 +15,7 @@ pub struct Command {
     interrupt_disable: bool,
 }
 
-impl Command {
+impl Register {
     const IO_SPACE_ENABLE_SHIFT: usize = 0;
     const MEMORY_SPACE_ENABLE_SHIFT: usize = Self::IO_SPACE_ENABLE_SHIFT + 1;
     const BUS_MASTER_ENABLE_SHIFT: usize = Self::MEMORY_SPACE_ENABLE_SHIFT + 1;
@@ -40,7 +41,7 @@ impl Command {
     const INTERRUPT_DISABLE_MASK: u16 = 1 << Self::INTERRUPT_DISABLE_SHIFT;
 }
 
-impl From<u16> for Command {
+impl From<u16> for Register {
     fn from(command: u16) -> Self {
         let io_space_enable: bool = command & Self::IO_SPACE_ENABLE_MASK != 0;
         let memory_space_enable: bool = command & Self::MEMORY_SPACE_ENABLE_MASK != 0;
