@@ -1,4 +1,10 @@
-use super::asm;
+extern crate alloc;
+
+use {
+    alloc::vec::Vec,
+    core::mem,
+    super::asm,
+};
 
 #[derive(Debug)]
 pub struct ConfigurationAddress {
@@ -24,6 +30,8 @@ impl ConfigurationAddress {
     const BUS_SHIFT_END: usize = Self::BUS_SHIFT_BEGIN + Self::BUS_SHIFT_LENGTH;
     const ENABLE_BIT_SHIFT: usize = 31;
     const ENABLE_BIT: u32 = 1 << Self::ENABLE_BIT_SHIFT;
+    const ADDRESS_PORT: u16 = 0x0cf8;
+    const VALUE_PORT: u16 = 0x0cfc;
 
     pub fn new(bus: u8, device: u8, function: u8) -> Self {
         if device <= Self::DEVICE_MAX && function <= Self::FUNCTION_MAX {
@@ -37,12 +45,31 @@ impl ConfigurationAddress {
         }
     }
 
-    pub fn address(&self, offset: u8) -> u32 {
+    fn address(&self, offset: u8) -> u32 {
         let Self {
             bus,
             device,
             function
         } = self;
-        Self::ENABLE_BIT + ((*bus as u32) << Self::BUS_SHIFT_BEGIN) + ((*device as u32) << Self::DEVICE_SHIFT_BEGIN) + ((*function as u32) << Self::FUNCTION_SHIFT_BEGIN)
+        Self::ENABLE_BIT + ((*bus as u32) << Self::BUS_SHIFT_BEGIN) + ((*device as u32) << Self::DEVICE_SHIFT_BEGIN) + ((*function as u32) << Self::FUNCTION_SHIFT_BEGIN) + (offset as u32)
+    }
+
+    fn read(&self, offset: u8) -> u32 {
+        asm::outl(Self::ADDRESS_PORT, self.address(offset));
+        asm::inl(Self::VALUE_PORT)
     }
 }
+
+const CONFIGURATION_SIZE: usize = 0x100;
+
+impl Into<[u8; CONFIGURATION_SIZE]> for ConfigurationAddress {
+    fn into(self) -> [u8; CONFIGURATION_SIZE] {
+        (0..CONFIGURATION_SIZE)
+            .step_by(mem::size_of::<u32>())
+            .flat_map(|offset| self.read(offset as u8).to_le_bytes().into_iter())
+            .collect::<Vec<u8>>()
+            .try_into()
+            .expect("Can't get a PCI configuration!")
+    }
+}
+
