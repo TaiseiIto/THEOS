@@ -2,6 +2,7 @@ extern crate alloc;
 
 mod base_address;
 mod expansion_rom_base_address;
+mod secondary_status;
 
 use {
     alloc::vec::Vec,
@@ -37,7 +38,7 @@ pub enum Registers {
         secondary_latency_timer: u8,
         io_base: u8,
         io_limit: u8,
-        secondary_status: u16,
+        secondary_status: secondary_status::Register,
         memory_base: u16,
         memory_limit: u16,
         prefetchable_memory_base: u16,
@@ -194,7 +195,7 @@ impl Registers {
                 let secondary_status: [u8; Self::SECONDARY_STATUS_LENGTH] = configuration[Self::SECONDARY_STATUS_BEGIN..Self::SECONDARY_STATUS_END]
                     .try_into()
                     .expect("Can't get a PCI device!");
-                let secondary_status: u16 = u16::from_le_bytes(secondary_status);
+                let secondary_status: secondary_status::Register = u16::from_le_bytes(secondary_status).into();
                 let memory_base: [u8; Self::MEMORY_BASE_LENGTH] = configuration[Self::MEMORY_BASE_BEGIN..Self::MEMORY_BASE_END]
                     .try_into()
                     .expect("Can't get a PCI device!");
