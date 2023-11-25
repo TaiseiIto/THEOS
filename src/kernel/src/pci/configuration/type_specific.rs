@@ -8,6 +8,7 @@ use {
     core::mem,
     super::{
         CONFIGURATION_SIZE,
+        Device,
         header_type,
     },
 };
@@ -24,14 +25,18 @@ pub enum Registers {
         subsystem_vendor_id: u16,
         subsystem_id: u16,
         expansion_rom_base_address: expansion_rom_base_address::Register,
+        min_gnt: u8,
+        max_lat: u8,
     },
     Type1,
     Reserved,
 }
 
 impl Registers {
-    const BASE_ADDRESS_REGISTERS_BEGIN: usize = 0x10;
-    const BASE_ADDRESS_REGISTERS_END: usize = 0x28;
+    const BASE_ADDRESS_REGISTERS_BEGIN: usize = Device::BIST_END;
+    const BASE_ADDRESS_REGISTER_LENGTH: usize = mem::size_of::<u32>();
+    const BASE_ADDRESS_REGISTERS_LENGTH: usize = NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
+    const BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::BASE_ADDRESS_REGISTERS_LENGTH;
     const CARDBUS_CIS_POINTER_BEGIN: usize = Self::BASE_ADDRESS_REGISTERS_END;
     const CARDBUS_CIS_POINTER_LENGTH: usize = mem::size_of::<u32>();
     const CARDBUS_CIS_POINTER_END: usize = Self::CARDBUS_CIS_POINTER_BEGIN + Self::CARDBUS_CIS_POINTER_LENGTH;
@@ -44,6 +49,14 @@ impl Registers {
     const EXPANSION_ROM_BASE_ADDRESS_BEGIN: usize = Self::SUBSYSTEM_ID_END;
     const EXPANSION_ROM_BASE_ADDRESS_LENGTH: usize = mem::size_of::<u32>();
     const EXPANSION_ROM_BASE_ADDRESS_END: usize = Self::EXPANSION_ROM_BASE_ADDRESS_BEGIN + Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH;
+    const MIN_GNT_BEGIN: usize = Device::INTERRUPT_PIN_END;
+    const MIN_GNT_LENGTH: usize = mem::size_of::<u8>();
+    const MIN_GNT_END: usize = Self::MIN_GNT_BEGIN + Self::MIN_GNT_LENGTH;
+    const MAX_LAT_BEGIN: usize = Self::MIN_GNT_END;
+    #[allow(dead_code)]
+    const MAX_LAT_LENGTH: usize = mem::size_of::<u8>();
+    #[allow(dead_code)]
+    const MAX_LAT_END: usize = Self::MAX_LAT_BEGIN + Self::MAX_LAT_LENGTH;
 
     pub fn new(header_layout: &header_type::HeaderLayout, configuration: &[u8; CONFIGURATION_SIZE]) -> Self {
         match header_layout {
@@ -75,12 +88,16 @@ impl Registers {
                     .try_into()
                     .expect("Can't get a expansion ROM base address!");
                 let expansion_rom_base_address: expansion_rom_base_address::Register = u32::from_le_bytes(expansion_rom_base_address).into();
+                let min_gnt: u8 = configuration[Self::MIN_GNT_BEGIN];
+                let max_lat: u8 = configuration[Self::MAX_LAT_BEGIN];
                 Self::Type0 {
                     base_address_registers,
                     cardbus_cis_pointer,
                     subsystem_vendor_id,
                     subsystem_id,
                     expansion_rom_base_address,
+                    min_gnt,
+                    max_lat,
                 }
             },
             header_type::HeaderLayout::Type1 => Self::Type1,
