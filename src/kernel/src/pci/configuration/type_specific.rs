@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod base_address;
+mod bridge_control;
 mod expansion_rom_base_address;
 mod secondary_status;
 
@@ -48,7 +49,7 @@ pub enum Registers {
         io_base_upper_16bits: u16,
         io_base_limit_16bits: u16,
         expansion_rom_base_address: expansion_rom_base_address::Register,
-        bridge_control: u16,
+        bridge_control: bridge_control::Register,
     },
     Reserved,
 }
@@ -235,7 +236,7 @@ impl Registers {
                 let bridge_control: [u8; Self::BRIDGE_CONTROL_LENGTH] = configuration[Self::BRIDGE_CONTROL_BEGIN..Self::BRIDGE_CONTROL_END]
                     .try_into()
                     .expect("Can't get a PCI device!");
-                let bridge_control: u16 = u16::from_le_bytes(bridge_control);
+                let bridge_control: bridge_control::Register = u16::from_le_bytes(bridge_control).into();
                 Self::Type1 {
                     base_address_registers,
                     primary_bus_number,
