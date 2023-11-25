@@ -42,14 +42,11 @@ impl Address {
     const VALUE_PORT: u16 = 0x0cfc;
 
     pub fn new(bus: u8, device: u8, function: u8) -> Self {
-        if device <= Self::DEVICE_MAX && function <= Self::FUNCTION_MAX {
-            Self {
-                bus,
-                device,
-                function,
-            }
-        } else {
-            panic!("Can't create a PCI configuration address!");
+        assert!(device <= Self::DEVICE_MAX && function <= Self::FUNCTION_MAX);
+        Self {
+            bus,
+            device,
+            function,
         }
     }
 

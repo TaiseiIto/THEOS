@@ -267,12 +267,10 @@ pub struct Request {
 
 impl Request {
     pub fn new(size: usize, align: usize) -> Self {
-        match align.count_ones() {
-            1 => Self {
-                size,
-                align,
-            },
-            _ => panic!("Can't create an allocate request!"),
+        assert_eq!(align.count_ones(), 1);
+        Self {
+            size,
+            align,
         }
     }
 }

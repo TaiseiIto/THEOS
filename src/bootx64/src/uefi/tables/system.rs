@@ -55,19 +55,13 @@ static mut IMAGE: Option<handle::Handle<'static>> = None;
 
 pub fn system() -> &'static mut System<'static> {
     unsafe {
-        match &mut SYSTEM {
-            Some(system) => *system,
-            None => panic!("Can't get a system table!"),
-        }
+        (&mut SYSTEM).as_mut().expect("Can't get a system table!")
     }
 }
 
 pub fn image() -> handle::Handle<'static> {
     unsafe {
-        match &mut IMAGE {
-            Some(image) => *image,
-            None => panic!("Can't get a image handle!"),
-        }
+        (&IMAGE).as_ref().expect("Can't get a image handle!")
     }
 }
 

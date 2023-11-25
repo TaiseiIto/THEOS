@@ -98,10 +98,10 @@ unsafe impl GlobalAlloc for Allocator<'_> {
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
-        match &mut *self.chunk_list.get() {
-            Some(chunk_list) => chunk_list.dealloc(pointer as usize),
-            None => panic!("Can't dealloc memory!"),
-        }
+        (&mut *self.chunk_list.get())
+            .as_mut()
+            .expect("Can't dealloc memory!")
+            .dealloc(pointer as usize);
         if let Some(chunk_list) = &mut *self.chunk_list.get() {
             chunk_list.delete_unnecessary_chunk_lists();
         }
