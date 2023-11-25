@@ -31,6 +31,23 @@ pub enum Registers {
     },
     Type1 {
         base_address_registers: [base_address::Register; TYPE1_NUM_BASE_ADDRESS_REGISTERS],
+        primary_bus_number: u8,
+        secondary_bus_number: u8,
+        subordinate_bus_number: u8,
+        secondary_latency_timer: u8,
+        io_base: u8,
+        io_limit: u8,
+        secondary_status: u16,
+        memory_base: u16,
+        memory_limit: u16,
+        prefetchable_memory_base: u16,
+        prefetchable_memory_limit: u16,
+        prefetchable_memory_base_upper_32bits: u32,
+        prefetchable_memory_limit_upper_32bits: u32,
+        io_base_upper_16bits: u16,
+        io_base_limit_16bits: u16,
+        expansion_rom_base_address: expansion_rom_base_address::Register,
+        bridge_control: u16,
     },
     Reserved,
 }
@@ -40,8 +57,6 @@ impl Registers {
     const BASE_ADDRESS_REGISTER_LENGTH: usize = mem::size_of::<u32>();
     const TYPE0_BASE_ADDRESS_REGISTERS_LENGTH: usize = TYPE0_NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
     const TYPE0_BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::TYPE0_BASE_ADDRESS_REGISTERS_LENGTH;
-    const TYPE1_BASE_ADDRESS_REGISTERS_LENGTH: usize = TYPE1_NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
-    const TYPE1_BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::TYPE1_BASE_ADDRESS_REGISTERS_LENGTH;
     const CARDBUS_CIS_POINTER_BEGIN: usize = Self::TYPE0_BASE_ADDRESS_REGISTERS_END;
     const CARDBUS_CIS_POINTER_LENGTH: usize = mem::size_of::<u32>();
     const CARDBUS_CIS_POINTER_END: usize = Self::CARDBUS_CIS_POINTER_BEGIN + Self::CARDBUS_CIS_POINTER_LENGTH;
@@ -51,9 +66,9 @@ impl Registers {
     const SUBSYSTEM_ID_BEGIN: usize = Self::SUBSYSTEM_VENDOR_ID_END;
     const SUBSYSTEM_ID_LENGTH: usize = mem::size_of::<u16>();
     const SUBSYSTEM_ID_END: usize = Self::SUBSYSTEM_ID_BEGIN + Self::SUBSYSTEM_ID_LENGTH;
-    const EXPANSION_ROM_BASE_ADDRESS_BEGIN: usize = Self::SUBSYSTEM_ID_END;
+    const TYPE0_EXPANSION_ROM_BASE_ADDRESS_BEGIN: usize = Self::SUBSYSTEM_ID_END;
     const EXPANSION_ROM_BASE_ADDRESS_LENGTH: usize = mem::size_of::<u32>();
-    const EXPANSION_ROM_BASE_ADDRESS_END: usize = Self::EXPANSION_ROM_BASE_ADDRESS_BEGIN + Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH;
+    const TYPE0_EXPANSION_ROM_BASE_ADDRESS_END: usize = Self::TYPE0_EXPANSION_ROM_BASE_ADDRESS_BEGIN + Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH;
     const MIN_GNT_BEGIN: usize = Device::INTERRUPT_PIN_END;
     const MIN_GNT_LENGTH: usize = mem::size_of::<u8>();
     const MIN_GNT_END: usize = Self::MIN_GNT_BEGIN + Self::MIN_GNT_LENGTH;
@@ -62,6 +77,59 @@ impl Registers {
     const MAX_LAT_LENGTH: usize = mem::size_of::<u8>();
     #[allow(dead_code)]
     const MAX_LAT_END: usize = Self::MAX_LAT_BEGIN + Self::MAX_LAT_LENGTH;
+
+    const TYPE1_BASE_ADDRESS_REGISTERS_LENGTH: usize = TYPE1_NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
+    const TYPE1_BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::TYPE1_BASE_ADDRESS_REGISTERS_LENGTH;
+    const PRIMARY_BUS_NUMBER_BEGIN: usize = Self::TYPE1_BASE_ADDRESS_REGISTERS_END;
+    const PRIMARY_BUS_NUMBER_LENGTH: usize = mem::size_of::<u8>();
+    const PRIMARY_BUS_NUMBER_END: usize = Self::PRIMARY_BUS_NUMBER_BEGIN + Self::PRIMARY_BUS_NUMBER_LENGTH;
+    const SECONDARY_BUS_NUMBER_BEGIN: usize = Self::PRIMARY_BUS_NUMBER_END;
+    const SECONDARY_BUS_NUMBER_LENGTH: usize = mem::size_of::<u8>();
+    const SECONDARY_BUS_NUMBER_END: usize = Self::SECONDARY_BUS_NUMBER_BEGIN + Self::SECONDARY_BUS_NUMBER_LENGTH;
+    const SUBORDINATE_BUS_NUMBER_BEGIN: usize = Self::SECONDARY_BUS_NUMBER_END;
+    const SUBORDINATE_BUS_NUMBER_LENGTH: usize = mem::size_of::<u8>();
+    const SUBORDINATE_BUS_NUMBER_END: usize = Self::SUBORDINATE_BUS_NUMBER_BEGIN + Self::SUBORDINATE_BUS_NUMBER_LENGTH;
+    const SECONDARY_LATENCY_TIMER_BEGIN: usize = Self::SUBORDINATE_BUS_NUMBER_END;
+    const SECONDARY_LATENCY_TIMER_LENGTH: usize = mem::size_of::<u8>();
+    const SECONDARY_LATENCY_TIMER_END: usize = Self::SECONDARY_LATENCY_TIMER_BEGIN + Self::SECONDARY_LATENCY_TIMER_LENGTH;
+    const IO_BASE_BEGIN: usize = Self::SECONDARY_LATENCY_TIMER_END;
+    const IO_BASE_LENGTH: usize = mem::size_of::<u8>();
+    const IO_BASE_END: usize = Self::IO_BASE_BEGIN + Self::IO_BASE_LENGTH;
+    const IO_LIMIT_BEGIN: usize = Self::IO_BASE_END;
+    const IO_LIMIT_LENGTH: usize = mem::size_of::<u8>();
+    const IO_LIMIT_END: usize = Self::IO_LIMIT_BEGIN + Self::IO_LIMIT_LENGTH;
+    const SECONDARY_STATUS_BEGIN: usize = Self::IO_LIMIT_END;
+    const SECONDARY_STATUS_LENGTH: usize = mem::size_of::<u16>();
+    const SECONDARY_STATUS_END: usize = Self::SECONDARY_STATUS_BEGIN + Self::SECONDARY_STATUS_LENGTH;
+    const MEMORY_BASE_BEGIN: usize = Self::SECONDARY_STATUS_END;
+    const MEMORY_BASE_LENGTH: usize = mem::size_of::<u16>();
+    const MEMORY_BASE_END: usize = Self::MEMORY_BASE_BEGIN + Self::MEMORY_BASE_LENGTH;
+    const MEMORY_LIMIT_BEGIN: usize = Self::MEMORY_BASE_END;
+    const MEMORY_LIMIT_LENGTH: usize = mem::size_of::<u16>();
+    const MEMORY_LIMIT_END: usize = Self::MEMORY_LIMIT_BEGIN + Self::MEMORY_LIMIT_LENGTH;
+    const PREFETCHABLE_MEMORY_BASE_BEGIN: usize = Self::MEMORY_LIMIT_END;
+    const PREFETCHABLE_MEMORY_BASE_LENGTH: usize = mem::size_of::<u16>();
+    const PREFETCHABLE_MEMORY_BASE_END: usize = Self::PREFETCHABLE_MEMORY_BASE_BEGIN + Self::PREFETCHABLE_MEMORY_BASE_LENGTH;
+    const PREFETCHABLE_MEMORY_LIMIT_BEGIN: usize = Self::PREFETCHABLE_MEMORY_BASE_END;
+    const PREFETCHABLE_MEMORY_LIMIT_LENGTH: usize = mem::size_of::<u16>();
+    const PREFETCHABLE_MEMORY_LIMIT_END: usize = Self::PREFETCHABLE_MEMORY_LIMIT_BEGIN + Self::PREFETCHABLE_MEMORY_LIMIT_LENGTH;
+    const PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_BEGIN: usize = Self::PREFETCHABLE_MEMORY_LIMIT_END;
+    const PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_LENGTH: usize = mem::size_of::<u32>();
+    const PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_END: usize = Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_BEGIN + Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_LENGTH;
+    const PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_BEGIN: usize = Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_END;
+    const PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_LENGTH: usize = mem::size_of::<u32>();
+    const PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_END: usize = Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_BEGIN + Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_LENGTH;
+    const IO_BASE_UPPER_16BITS_BEGIN: usize = Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_END;
+    const IO_BASE_UPPER_16BITS_LENGTH: usize = mem::size_of::<u16>();
+    const IO_BASE_UPPER_16BITS_END: usize = Self::IO_BASE_UPPER_16BITS_BEGIN + Self::IO_BASE_UPPER_16BITS_LENGTH;
+    const IO_BASE_LIMIT_16BITS_BEGIN: usize = Self::IO_BASE_UPPER_16BITS_END;
+    const IO_BASE_LIMIT_16BITS_LENGTH: usize = mem::size_of::<u16>();
+    const IO_BASE_LIMIT_16BITS_END: usize = Self::IO_BASE_LIMIT_16BITS_BEGIN + Self::IO_BASE_LIMIT_16BITS_LENGTH;
+    const TYPE1_EXPANSION_ROM_BASE_ADDRESS_END: usize = Device::INTERRUPT_LINE_BEGIN;
+    const TYPE1_EXPANSION_ROM_BASE_ADDRESS_BEGIN: usize = Self::TYPE1_EXPANSION_ROM_BASE_ADDRESS_END - Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH;
+    const BRIDGE_CONTROL_BEGIN: usize = Device::INTERRUPT_PIN_END;
+    const BRIDGE_CONTROL_LENGTH: usize = mem::size_of::<u16>();
+    const BRIDGE_CONTROL_END: usize = Self::BRIDGE_CONTROL_BEGIN + Self::BRIDGE_CONTROL_LENGTH;
 
     pub fn new(header_layout: &header_type::HeaderLayout, configuration: &[u8; CONFIGURATION_SIZE]) -> Self {
         match header_layout {
@@ -89,7 +157,7 @@ impl Registers {
                     .try_into()
                     .expect("Can't get a PCI device subsystem ID!");
                 let subsystem_id: u16 = u16::from_le_bytes(subsystem_id);
-                let expansion_rom_base_address: [u8; Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH] = configuration[Self::EXPANSION_ROM_BASE_ADDRESS_BEGIN..Self::EXPANSION_ROM_BASE_ADDRESS_END]
+                let expansion_rom_base_address: [u8; Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH] = configuration[Self::TYPE0_EXPANSION_ROM_BASE_ADDRESS_BEGIN..Self::TYPE0_EXPANSION_ROM_BASE_ADDRESS_END]
                     .try_into()
                     .expect("Can't get a expansion ROM base address!");
                 let expansion_rom_base_address: expansion_rom_base_address::Register = u32::from_le_bytes(expansion_rom_base_address).into();
@@ -117,8 +185,75 @@ impl Registers {
                     .collect::<Vec<base_address::Register>>()
                     .try_into()
                     .expect("Can't get a PCI device base address registers!");
+                let primary_bus_number: u8 = configuration[Self::PRIMARY_BUS_NUMBER_BEGIN];
+                let secondary_bus_number: u8 = configuration[Self::SECONDARY_BUS_NUMBER_BEGIN];
+                let subordinate_bus_number: u8 = configuration[Self::SUBORDINATE_BUS_NUMBER_BEGIN];
+                let secondary_latency_timer: u8 = configuration[Self::SECONDARY_LATENCY_TIMER_BEGIN];
+                let io_base: u8 = configuration[Self::IO_BASE_BEGIN];
+                let io_limit: u8 = configuration[Self::IO_LIMIT_BEGIN];
+                let secondary_status: [u8; Self::SECONDARY_STATUS_LENGTH] = configuration[Self::SECONDARY_STATUS_BEGIN..Self::SECONDARY_STATUS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let secondary_status: u16 = u16::from_le_bytes(secondary_status);
+                let memory_base: [u8; Self::MEMORY_BASE_LENGTH] = configuration[Self::MEMORY_BASE_BEGIN..Self::MEMORY_BASE_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let memory_base: u16 = u16::from_le_bytes(memory_base);
+                let memory_limit: [u8; Self::MEMORY_LIMIT_LENGTH] = configuration[Self::MEMORY_LIMIT_BEGIN..Self::MEMORY_LIMIT_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let memory_limit: u16 = u16::from_le_bytes(memory_limit);
+                let prefetchable_memory_base: [u8; Self::PREFETCHABLE_MEMORY_BASE_LENGTH] = configuration[Self::PREFETCHABLE_MEMORY_BASE_BEGIN..Self::PREFETCHABLE_MEMORY_BASE_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let prefetchable_memory_base: u16 = u16::from_le_bytes(prefetchable_memory_base);
+                let prefetchable_memory_limit: [u8; Self::PREFETCHABLE_MEMORY_LIMIT_LENGTH] = configuration[Self::PREFETCHABLE_MEMORY_LIMIT_BEGIN..Self::PREFETCHABLE_MEMORY_LIMIT_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let prefetchable_memory_limit: u16 = u16::from_le_bytes(prefetchable_memory_limit);
+                let prefetchable_memory_base_upper_32bits: [u8; Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_LENGTH] = configuration[Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_BEGIN..Self::PREFETCHABLE_MEMORY_BASE_UPPER_32BITS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let prefetchable_memory_base_upper_32bits: u32 = u32::from_le_bytes(prefetchable_memory_base_upper_32bits);
+                let prefetchable_memory_limit_upper_32bits: [u8; Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_LENGTH] = configuration[Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_BEGIN..Self::PREFETCHABLE_MEMORY_LIMIT_UPPER_32BITS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let prefetchable_memory_limit_upper_32bits: u32 = u32::from_le_bytes(prefetchable_memory_limit_upper_32bits);
+                let io_base_upper_16bits: [u8; Self::IO_BASE_UPPER_16BITS_LENGTH] = configuration[Self::IO_BASE_UPPER_16BITS_BEGIN..Self::IO_BASE_UPPER_16BITS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let io_base_upper_16bits: u16 = u16::from_le_bytes(io_base_upper_16bits);
+                let io_base_limit_16bits: [u8; Self::IO_BASE_LIMIT_16BITS_LENGTH] = configuration[Self::IO_BASE_LIMIT_16BITS_BEGIN..Self::IO_BASE_LIMIT_16BITS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let io_base_limit_16bits: u16 = u16::from_le_bytes(io_base_limit_16bits);
+                let expansion_rom_base_address: [u8; Self::EXPANSION_ROM_BASE_ADDRESS_LENGTH] = configuration[Self::TYPE1_EXPANSION_ROM_BASE_ADDRESS_BEGIN..Self::TYPE1_EXPANSION_ROM_BASE_ADDRESS_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let expansion_rom_base_address: expansion_rom_base_address::Register = u32::from_le_bytes(expansion_rom_base_address).into();
+                let bridge_control: [u8; Self::BRIDGE_CONTROL_LENGTH] = configuration[Self::BRIDGE_CONTROL_BEGIN..Self::BRIDGE_CONTROL_END]
+                    .try_into()
+                    .expect("Can't get a PCI device!");
+                let bridge_control: u16 = u16::from_le_bytes(bridge_control);
                 Self::Type1 {
                     base_address_registers,
+                    primary_bus_number,
+                    secondary_bus_number,
+                    subordinate_bus_number,
+                    secondary_latency_timer,
+                    io_base,
+                    io_limit,
+                    secondary_status,
+                    memory_base,
+                    memory_limit,
+                    prefetchable_memory_base,
+                    prefetchable_memory_limit,
+                    prefetchable_memory_base_upper_32bits,
+                    prefetchable_memory_limit_upper_32bits,
+                    io_base_upper_16bits,
+                    io_base_limit_16bits,
+                    expansion_rom_base_address,
+                    bridge_control,
                 }
             },
             header_type::HeaderLayout::Reserved => Self::Reserved,
