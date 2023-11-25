@@ -222,14 +222,15 @@ impl<'a> Iterator for FontIterator<'a> {
             &mut output_font_display_info,
             char16::String::null(),
         ) {
-            status::SUCCESS => (),
-            _ => panic!("Can't get a next font!"),
-        };
-        let output_checker: *const font_ex::FontDisplayInfo = output_font_display_info as *const font_ex::FontDisplayInfo;
-        let output_checker: usize = output_checker as usize;
-        match output_checker {
-            0 => None,
-            _ => Some(output_font_display_info),
+            status::SUCCESS => {
+                let output_checker: *const font_ex::FontDisplayInfo = output_font_display_info as *const font_ex::FontDisplayInfo;
+                let output_checker: usize = output_checker as usize;
+                match output_checker {
+                    0 => None,
+                    _ => Some(output_font_display_info),
+                }
+            },
+            _ => None,
         }
     }
 }
