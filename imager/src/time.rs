@@ -180,24 +180,12 @@ impl Time {
     }
 
     pub fn new(year: i128, month: u8, day: u8, hour: u8, min: u8, sec: u8, nsec: u32) -> Self {
-        if month < FIRST_MONTH || LAST_MONTH < month {
-            panic!("month < FIRST_MONTH || LAST_MONTH < month");
-        }
-        if day < 1 || month_length(year, month) < day {
-            panic!("day < 1 || month_length(year, month) < day");
-        }
-        if HOURS_PER_DAY <= hour {
-            panic!("HOURS_PER_DAY <= hour");
-        }
-        if MINUTES_PER_HOUR <= min {
-            panic!("MINUTES_PER_HOUR <= min");
-        }
-        if SECONDS_PER_MINUTE <= sec {
-            panic!("SECONDS_PER_MINUTE <= sec");
-        }
-        if 1000000000 <= nsec {
-            panic!("1000000000 <= nsec");
-        }
+        assert!(FIRST_MONTH <= month && month <= LAST_MONTH);
+        assert!(1 <= day && day <= month_length(year, month));
+        assert!(hour < HOURS_PER_DAY);
+        assert!(min < MINUTES_PER_HOUR);
+        assert!(sec < SECONDS_PER_MINUTE);
+        assert!(nsec < 1000000000);
         Self {
             year,
             month,
