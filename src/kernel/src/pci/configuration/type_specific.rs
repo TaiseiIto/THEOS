@@ -13,14 +13,15 @@ use {
     },
 };
 
-const NUM_BASE_ADDRESS_REGISTERS: usize = 6;
+const TYPE0_NUM_BASE_ADDRESS_REGISTERS: usize = 6;
+const TYPE1_NUM_BASE_ADDRESS_REGISTERS: usize = 2;
 
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.2 Type 0 Configuration Space Header
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.3 Type 1 Configuration Space Header
 #[derive(Debug)]
 pub enum Registers {
     Type0 {
-        base_address_registers: [base_address::Register; NUM_BASE_ADDRESS_REGISTERS],
+        base_address_registers: [base_address::Register; TYPE0_NUM_BASE_ADDRESS_REGISTERS],
         cardbus_cis_pointer: u32,
         subsystem_vendor_id: u16,
         subsystem_id: u16,
@@ -28,16 +29,20 @@ pub enum Registers {
         min_gnt: u8,
         max_lat: u8,
     },
-    Type1,
+    Type1 {
+        base_address_registers: [base_address::Register; TYPE1_NUM_BASE_ADDRESS_REGISTERS],
+    },
     Reserved,
 }
 
 impl Registers {
     const BASE_ADDRESS_REGISTERS_BEGIN: usize = Device::BIST_END;
     const BASE_ADDRESS_REGISTER_LENGTH: usize = mem::size_of::<u32>();
-    const BASE_ADDRESS_REGISTERS_LENGTH: usize = NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
-    const BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::BASE_ADDRESS_REGISTERS_LENGTH;
-    const CARDBUS_CIS_POINTER_BEGIN: usize = Self::BASE_ADDRESS_REGISTERS_END;
+    const TYPE0_BASE_ADDRESS_REGISTERS_LENGTH: usize = TYPE0_NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
+    const TYPE0_BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::TYPE0_BASE_ADDRESS_REGISTERS_LENGTH;
+    const TYPE1_BASE_ADDRESS_REGISTERS_LENGTH: usize = TYPE1_NUM_BASE_ADDRESS_REGISTERS * Self::BASE_ADDRESS_REGISTER_LENGTH;
+    const TYPE1_BASE_ADDRESS_REGISTERS_END: usize = Self::BASE_ADDRESS_REGISTERS_BEGIN + Self::TYPE1_BASE_ADDRESS_REGISTERS_LENGTH;
+    const CARDBUS_CIS_POINTER_BEGIN: usize = Self::TYPE0_BASE_ADDRESS_REGISTERS_END;
     const CARDBUS_CIS_POINTER_LENGTH: usize = mem::size_of::<u32>();
     const CARDBUS_CIS_POINTER_END: usize = Self::CARDBUS_CIS_POINTER_BEGIN + Self::CARDBUS_CIS_POINTER_LENGTH;
     const SUBSYSTEM_VENDOR_ID_BEGIN: usize = Self::CARDBUS_CIS_POINTER_END;
@@ -61,7 +66,7 @@ impl Registers {
     pub fn new(header_layout: &header_type::HeaderLayout, configuration: &[u8; CONFIGURATION_SIZE]) -> Self {
         match header_layout {
             header_type::HeaderLayout::Type0 => {
-                let base_address_registers: [base_address::Register; NUM_BASE_ADDRESS_REGISTERS] = configuration[Self::BASE_ADDRESS_REGISTERS_BEGIN..Self::BASE_ADDRESS_REGISTERS_END]
+                let base_address_registers: [base_address::Register; TYPE0_NUM_BASE_ADDRESS_REGISTERS] = configuration[Self::BASE_ADDRESS_REGISTERS_BEGIN..Self::TYPE0_BASE_ADDRESS_REGISTERS_END]
                     .chunks_exact(mem::size_of::<u32>())
                     .map(|chunk| {
                         let chunk: [u8; mem::size_of::<u32>()] = chunk
@@ -100,7 +105,22 @@ impl Registers {
                     max_lat,
                 }
             },
-            header_type::HeaderLayout::Type1 => Self::Type1,
+            header_type::HeaderLayout::Type1 => {
+                let base_address_registers: [base_address::Register; TYPE1_NUM_BASE_ADDRESS_REGISTERS] = configuration[Self::BASE_ADDRESS_REGISTERS_BEGIN..Self::TYPE1_BASE_ADDRESS_REGISTERS_END]
+                    .chunks_exact(mem::size_of::<u32>())
+                    .map(|chunk| {
+                        let chunk: [u8; mem::size_of::<u32>()] = chunk
+                            .try_into()
+                            .expect("Can't get a PCI device base address register!");
+                        u32::from_le_bytes(chunk).into()
+                    })
+                    .collect::<Vec<base_address::Register>>()
+                    .try_into()
+                    .expect("Can't get a PCI device base address registers!");
+                Self::Type1 {
+                    base_address_registers,
+                }
+            },
             header_type::HeaderLayout::Reserved => Self::Reserved,
         }
     }
