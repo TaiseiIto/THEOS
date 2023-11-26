@@ -2217,7 +2217,7 @@ impl<'a> PageEntry<'a> {
 
     fn set_data_page(&mut self) {
         self.writable = true;
-        self.execute_disable = false;
+        self.execute_disable = true;
         *self.page_entry |= Self::WRITABLE_MASK;
         *self.page_entry &= !Self::EXECUTE_DISABLE_MASK;
     }
