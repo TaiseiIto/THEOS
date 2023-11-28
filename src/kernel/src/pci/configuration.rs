@@ -7,12 +7,15 @@ mod status;
 mod type_specific;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     core::mem,
     super::super::asm,
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Address {
     bus: u8,
     device: u8,
@@ -164,6 +167,15 @@ impl Device {
     const INTERRUPT_PIN_BEGIN: usize = 0x3d;
     const INTERRUPT_PIN_SIZE: usize = mem::size_of::<u8>();
     const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_BEGIN + Self::INTERRUPT_PIN_SIZE;
+
+    pub fn get_all_devices() -> BTreeMap<Address, Self> {
+        let mut address2device = BTreeMap::<Address, Self>::new();
+        let address = Address::new(0, 0, 0);
+        let device: Option<Self> = (&address).into();
+        let device: Self = device.expect("Can't get the host bridge!");
+        address2device.insert(address, device);
+        address2device
+    }
 }
 
 impl From<[u8; CONFIGURATION_SIZE]> for Device {
