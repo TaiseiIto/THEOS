@@ -104,9 +104,7 @@ pub struct Device {
     command: command::Register,
     status: status::Register,
     revision_id: u8,
-    interface: u8,
-    sub_class: u8,
-    base_class: u8,
+    class_code: ClassCode,
     cache_line_size: u8,
     latency_timer: u8,
     header_type: header_type::Register,
@@ -133,10 +131,10 @@ impl Device {
     const REVISION_ID_BEGIN: usize = Self::STATUS_END;
     const REVISION_ID_SIZE: usize = mem::size_of::<u8>();
     const REVISION_ID_END: usize = Self::REVISION_ID_BEGIN + Self::REVISION_ID_SIZE;
-    const INTERFACE_BEGIN: usize = Self::REVISION_ID_END;
-    const INTERFACE_SIZE: usize = mem::size_of::<u8>();
-    const INTERFACE_END: usize = Self::INTERFACE_BEGIN + Self::INTERFACE_SIZE;
-    const SUB_CLASS_BEGIN: usize = Self::INTERFACE_END;
+    const PROGRAMMING_INTERFACE_BEGIN: usize = Self::REVISION_ID_END;
+    const PROGRAMMING_INTERFACE_SIZE: usize = mem::size_of::<u8>();
+    const PROGRAMMING_INTERFACE_END: usize = Self::PROGRAMMING_INTERFACE_BEGIN + Self::PROGRAMMING_INTERFACE_SIZE;
+    const SUB_CLASS_BEGIN: usize = Self::PROGRAMMING_INTERFACE_END;
     const SUB_CLASS_SIZE: usize = mem::size_of::<u8>();
     const SUB_CLASS_END: usize = Self::SUB_CLASS_BEGIN + Self::SUB_CLASS_SIZE;
     const BASE_CLASS_BEGIN: usize = Self::SUB_CLASS_END;
@@ -197,9 +195,10 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
             .expect("Can't get a PCI configuration!");
         let status: status::Register = u16::from_le_bytes(status).into();
         let revision_id: u8 = configuration[Self::REVISION_ID_BEGIN];
-        let interface: u8 = configuration[Self::INTERFACE_BEGIN];
+        let programming_interface: u8 = configuration[Self::PROGRAMMING_INTERFACE_BEGIN];
         let sub_class: u8 = configuration[Self::SUB_CLASS_BEGIN];
         let base_class: u8 = configuration[Self::BASE_CLASS_BEGIN];
+        let class_code: ClassCode = ClassCode::new(base_class, sub_class, programming_interface);
         let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_BEGIN];
         let latency_timer: u8 = configuration[Self::LATENCY_TIMER_BEGIN];
         let header_type: header_type::Register = configuration[Self::HEADER_TYPE_BEGIN].into();
@@ -214,9 +213,7 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
             command,
             status,
             revision_id,
-            interface,
-            sub_class,
-            base_class,
+            class_code,
             cache_line_size,
             latency_timer,
             header_type,
@@ -225,6 +222,26 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
             capabilities_pointer,
             interrupt_line,
             interrupt_pin,
+        }
+    }
+}
+
+// https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_11__v24_Jan_2019.pdf
+#[derive(Debug)]
+enum ClassCode {
+    Other {
+        base_class: u8,
+        sub_class: u8,
+        programming_interface: u8,
+    },
+}
+
+impl ClassCode {
+    fn new(base_class: u8, sub_class: u8, programming_interface: u8) -> Self {
+        Self::Other {
+            base_class,
+            sub_class,
+            programming_interface,
         }
     }
 }
