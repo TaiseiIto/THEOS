@@ -386,6 +386,16 @@ enum ClassCode {
     Voice,                                      // 0f 03 00
     Data,                                       // 0f 04 00
     OtherSatelliteCommunication,                // 0f 80 00
+    NetworkAndComputingEncryptionAndDecryption, // 10 00 00
+    EntertainmentEncryptionAndDecryption,       // 10 10 00
+    OtherEncryptionAndDecryption,               // 10 80 00
+    DPIO,                                       // 11 00 00
+    PerformanceCounter,                         // 11 01 00
+    CommunicationSynchronizationPluTime,        // 11 10 00
+    ManagementCard,                             // 11 20 00
+    OtherDataAcquisitionAndSignalProcessing,    // 11 80 00
+    ProcessingAccelerator,                      // 12 00 00
+    NonEssentialInstrumentationFunction,        // 13 00 00
     Other {
         base_class: u8,
         sub_class: u8,
