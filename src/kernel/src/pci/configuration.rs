@@ -460,7 +460,7 @@ impl ClassCode {
             (0x03, 0x80, 0x00) => Self::OtherDisplay,                               // 03 80 00
             (0x04, 0x00, 0x00) => Self::Video,                                      // 04 00 00
             (0x04, 0x01, 0x00) => Self::AudioDevice,                                // 04 01 00
-            (0x05, 0x02, 0x00) => Self::ComputerTelephony,                          // 05 02 00
+            (0x04, 0x02, 0x00) => Self::ComputerTelephony,                          // 04 02 00
             (0x04, 0x03, 0x00) => Self::HighDefinitionAudio,                        // 04 03 00
             (0x04, 0x03, 0x80) => Self::HighDefinitionAudioVendorSpecific,          // 04 03 80
             (0x04, 0x80, 0x00) => Self::OtherMultimedia,                            // 04 80 00
@@ -570,7 +570,7 @@ impl ClassCode {
             (0x0d, 0x12, 0x00) => Self::Broadband,                                  // 0d 12 00
             (0x0d, 0x20, 0x00) => Self::Ethernet80211a,                             // 0d 20 00
             (0x0d, 0x21, 0x00) => Self::Ethernet20811b,                             // 0d 21 00
-            (0x0c, 0x40, 0x00) => Self::Cellular,                                   // 0c 40 00
+            (0x0d, 0x40, 0x00) => Self::Cellular,                                   // 0d 40 00
             (0x0d, 0x41, 0x00) => Self::CellularPlusEthernet,                       // 0d 41 00
             (0x0d, 0x80, 0x00) => Self::OtherWireless,                              // 0d 80 00
             (0x0e, 0x00, 0x00) => Self::MessageFIFO,                                // 0e 00 00
