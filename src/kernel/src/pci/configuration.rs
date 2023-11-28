@@ -229,6 +229,8 @@ impl From<[u8; CONFIGURATION_SIZE]> for Device {
 // https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_11__v24_Jan_2019.pdf
 #[derive(Debug)]
 enum ClassCode {
+    AllCurrentlyImplementedDevice,
+    VGACompatibleDevice,
     Other {
         base_class: u8,
         sub_class: u8,
@@ -238,10 +240,14 @@ enum ClassCode {
 
 impl ClassCode {
     fn new(base_class: u8, sub_class: u8, programming_interface: u8) -> Self {
-        Self::Other {
-            base_class,
-            sub_class,
-            programming_interface,
+        match (base_class, sub_class, programming_interface) {
+            (0, 0, 0) => Self::AllCurrentlyImplementedDevice,
+            (0, 1, 0) => Self::VGACompatibleDevice,
+            (base_class, sub_class, programming_interface) => Self::Other {
+                base_class,
+                sub_class,
+                programming_interface,
+            },
         }
     }
 }
