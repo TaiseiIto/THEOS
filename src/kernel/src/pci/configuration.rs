@@ -274,7 +274,7 @@ enum ClassCode {
     OtherDisplay,                               // 03 80 00
     Video,                                      // 04 00 00
     AudioDevice,                                // 04 01 00
-    ComputerTelephony,                          // 05 02 00
+    ComputerTelephony,                          // 04 02 00
     HighDefinitionAudio,                        // 04 03 00
     HighDefinitionAudioVendorSpecific,          // 04 03 80
     OtherMultimedia,                            // 04 80 00
@@ -319,7 +319,7 @@ enum ClassCode {
     HayesCompatibleModem16750Compatible,        // 07 03 04
     GPIB,                                       // 07 04 00
     SmartCard,                                  // 07 05 00
-    OtherCommunications,                        // 07 80 00
+    OtherCommunication,                         // 07 80 00
     Generic8259PIC,                             // 08 00 00
     ISAPIC,                                     // 08 00 01
     EISAPIC,                                    // 08 00 02
@@ -384,7 +384,7 @@ enum ClassCode {
     Broadband,                                  // 0d 12 00
     Ethernet80211a,                             // 0d 20 00
     Ethernet20811b,                             // 0d 21 00
-    Cellular,                                   // 0c 40 00
+    Cellular,                                   // 0d 40 00
     CellularPlusEthernet,                       // 0d 41 00
     OtherWireless,                              // 0d 80 00
     IntelligentIO {
@@ -401,7 +401,7 @@ enum ClassCode {
     OtherEncryptionAndDecryption,               // 10 80 00
     DPIO,                                       // 11 00 00
     PerformanceCounter,                         // 11 01 00
-    CommunicationSynchronizationPluTime,        // 11 10 00
+    CommunicationSynchronizationPlusTime,       // 11 10 00
     ManagementCard,                             // 11 20 00
     OtherDataAcquisitionAndSignalProcessing,    // 11 80 00
     ProcessingAccelerator,                      // 12 00 00
@@ -505,7 +505,7 @@ impl ClassCode {
             (0x07, 0x03, 0x04) => Self::HayesCompatibleModem16750Compatible,        // 07 03 01
             (0x07, 0x04, 0x00) => Self::GPIB,                                       // 07 04 00
             (0x07, 0x05, 0x00) => Self::SmartCard,                                  // 07 05 00
-            (0x07, 0x80, 0x00) => Self::OtherCommunications,                        // 07 80 00
+            (0x07, 0x80, 0x00) => Self::OtherCommunication,                         // 07 80 00
             (0x08, 0x00, 0x00) => Self::Generic8259PIC,                             // 08 00 00
             (0x08, 0x00, 0x01) => Self::ISAPIC,                                     // 08 00 01
             (0x08, 0x00, 0x02) => Self::EISAPIC,                                    // 08 00 02
@@ -587,7 +587,7 @@ impl ClassCode {
             (0x10, 0x80, 0x00) => Self::OtherEncryptionAndDecryption,               // 10 80 00
             (0x11, 0x00, 0x00) => Self::DPIO,                                       // 11 00 00
             (0x11, 0x01, 0x00) => Self::PerformanceCounter,                         // 11 01 00
-            (0x11, 0x10, 0x00) => Self::CommunicationSynchronizationPluTime,        // 11 10 00
+            (0x11, 0x10, 0x00) => Self::CommunicationSynchronizationPlusTime,       // 11 10 00
             (0x11, 0x20, 0x00) => Self::ManagementCard,                             // 11 20 00
             (0x11, 0x80, 0x00) => Self::OtherDataAcquisitionAndSignalProcessing,    // 11 80 00
             (0x12, 0x00, 0x00) => Self::ProcessingAccelerator,                      // 12 00 00
