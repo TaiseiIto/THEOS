@@ -70,6 +70,17 @@ impl Address {
     fn scan_device(self, address2device: &mut BTreeMap<Self, Device>) {
         let device: Option<Device> = (&self).into();
         if let Some(device) = device {
+            match device.class_code {
+                ClassCode::HostBridge => {
+                    let bus: u8 = self.function;
+                    let function: u8 = 0;
+                    (u8::MIN..=u8::MAX)
+                        .map(|device| Self::new(bus, device, function))
+                        .filter(|address| address != &self)
+                        .for_each(|address| address.scan_device(address2device))
+                },
+                _ => (),
+            }
             address2device.insert(self, device);
         }
     }
