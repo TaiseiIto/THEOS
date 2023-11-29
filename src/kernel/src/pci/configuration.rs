@@ -74,13 +74,16 @@ impl Address {
         let device: Option<Device> = (&self).into();
         if let Some(device) = device {
             let mut next_addresses: BTreeSet<Self> = BTreeSet::<Self>::new();
-            if let ClassCode::HostBridge = device.class_code {
-                let bus: u8 = self.function;
-                let function: u8 = 0;
-                next_addresses
-                    .extend((u8::MIN..=Self::DEVICE_MAX)
-                        .map(|device| Self::new(bus, device, function))
-                        .filter(|address| address != &self));
+            match device.class_code {
+                ClassCode::HostBridge => {
+                    let bus: u8 = self.function;
+                    let function: u8 = 0;
+                    next_addresses
+                        .extend((u8::MIN..=Self::DEVICE_MAX)
+                            .map(|device| Self::new(bus, device, function))
+                            .filter(|address| address != &self && !address2device.contains_key(address)));
+                },
+                _ => {},
             }
             if self.function == 0 && device.is_multi_function() {
                 let bus: u8 = self.bus;
@@ -88,7 +91,7 @@ impl Address {
                 next_addresses
                     .extend((u8::MIN..=Self::FUNCTION_MAX)
                         .map(|function| Self::new(bus, device, function))
-                        .filter(|address| address != &self));
+                        .filter(|address| address != &self && !address2device.contains_key(address)));
             }
             address2device.insert(self, device);
             next_addresses
