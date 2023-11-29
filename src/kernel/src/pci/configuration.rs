@@ -8,7 +8,10 @@ mod type_specific;
 
 use {
     alloc::{
-        collections::btree_map::BTreeMap,
+        collections::{
+            btree_map::BTreeMap,
+            btree_set::BTreeSet,
+        },
         vec::Vec,
     },
     core::mem,
@@ -70,18 +73,28 @@ impl Address {
     fn scan_device(self, address2device: &mut BTreeMap<Self, Device>) {
         let device: Option<Device> = (&self).into();
         if let Some(device) = device {
-            match device.class_code {
-                ClassCode::HostBridge => {
-                    let bus: u8 = self.function;
-                    let function: u8 = 0;
-                    (u8::MIN..=Self::DEVICE_MAX)
+            let mut next_addresses: BTreeSet<Self> = BTreeSet::<Self>::new();
+            if let ClassCode::HostBridge = device.class_code {
+                let bus: u8 = self.function;
+                let function: u8 = 0;
+                next_addresses
+                    .extend((u8::MIN..=Self::DEVICE_MAX)
                         .map(|device| Self::new(bus, device, function))
-                        .filter(|address| address != &self)
-                        .for_each(|address| address.scan_device(address2device))
-                },
-                _ => (),
+                        .filter(|address| address != &self));
+            }
+            if self.function == 0 && device.is_multi_function() {
+                let bus: u8 = self.bus;
+                let device: u8 = self.device;
+                next_addresses
+                    .extend((u8::MIN..=Self::FUNCTION_MAX)
+                        .map(|function| Self::new(bus, device, function))
+                        .filter(|address| address != &self));
             }
             address2device.insert(self, device);
+            next_addresses
+                .into_iter()
+                .for_each(|next_address| next_address
+                    .scan_device(address2device))
         }
     }
 }
@@ -185,6 +198,10 @@ impl Device {
         let mut address2device = BTreeMap::<Address, Self>::new();
         Address::new(0, 0, 0).scan_device(&mut address2device);
         address2device
+    }
+
+    fn is_multi_function(&self) -> bool {
+        self.header_type.is_multi_function()
     }
 }
 

@@ -13,6 +13,10 @@ impl Register {
     pub fn header_layout(&self) -> &HeaderLayout {
         &self.header_layout
     }
+
+    pub fn is_multi_function(&self) -> bool {
+        self.multi_function_device
+    }
 }
 
 impl From<u8> for Register {
