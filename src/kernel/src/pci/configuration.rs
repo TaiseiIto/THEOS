@@ -66,6 +66,13 @@ impl Address {
         asm::outl(Self::ADDRESS_PORT, self.address(offset));
         asm::inl(Self::VALUE_PORT)
     }
+
+    fn scan_device(self, address2device: &mut BTreeMap<Self, Device>) {
+        let device: Option<Device> = (&self).into();
+        if let Some(device) = device {
+            address2device.insert(self, device);
+        }
+    }
 }
 
 const CONFIGURATION_SIZE: usize = 0x100;
@@ -168,10 +175,7 @@ impl Device {
 
     pub fn get_all_devices() -> BTreeMap<Address, Self> {
         let mut address2device = BTreeMap::<Address, Self>::new();
-        let address = Address::new(0, 0, 0);
-        let device: Option<Self> = (&address).into();
-        let device: Self = device.expect("Can't get the host bridge!");
-        address2device.insert(address, device);
+        Address::new(0, 0, 0).scan_device(&mut address2device);
         address2device
     }
 }
