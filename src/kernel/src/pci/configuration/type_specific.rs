@@ -261,5 +261,31 @@ impl Registers {
             header_type::HeaderLayout::Reserved => Self::Reserved,
         }
     }
+
+    pub fn secondary_bus_number(&self) -> Option<u8> {
+        match self {
+            Self::Type1 {
+                base_address_registers: _,
+                primary_bus_number: _,
+                secondary_bus_number,
+                subordinate_bus_number: _,
+                secondary_latency_timer: _,
+                io_base: _,
+                io_limit: _,
+                secondary_status: _,
+                memory_base: _,
+                memory_limit: _,
+                prefetchable_memory_base: _,
+                prefetchable_memory_limit: _,
+                prefetchable_memory_base_upper_32bits: _,
+                prefetchable_memory_limit_upper_32bits: _,
+                io_base_upper_16bits: _,
+                io_base_limit_16bits: _,
+                expansion_rom_base_address: _,
+                bridge_control: _,
+            } => Some(*secondary_bus_number),
+            _ => None,
+        }
+    }
 }
 

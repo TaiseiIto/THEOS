@@ -83,6 +83,15 @@ impl Address {
                             .map(|device| Self::new(bus, device, function))
                             .filter(|address| address != &self && !address2device.contains_key(address)));
                 },
+                ClassCode::PCI2PCIBridge |
+                ClassCode::SubtractiveDecodePCI2PCIBridge => if let Some(secondary_bus_number) = device.type_specific.secondary_bus_number() {
+                    let bus: u8 = secondary_bus_number;
+                    let function: u8 = 0;
+                    next_addresses
+                        .extend((u8::MIN..=Self::DEVICE_MAX)
+                            .map(|device| Self::new(bus, device, function))
+                            .filter(|address| address != &self && !address2device.contains_key(address)));
+                },
                 _ => {},
             }
             if self.function == 0 && device.is_multi_function() {
