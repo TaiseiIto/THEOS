@@ -74,7 +74,7 @@ impl Address {
                 ClassCode::HostBridge => {
                     let bus: u8 = self.function;
                     let function: u8 = 0;
-                    (u8::MIN..=u8::MAX)
+                    (u8::MIN..=Self::DEVICE_MAX)
                         .map(|device| Self::new(bus, device, function))
                         .filter(|address| address != &self)
                         .for_each(|address| address.scan_device(address2device))
