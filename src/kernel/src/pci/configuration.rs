@@ -105,11 +105,8 @@ impl Into<[u8; CONFIGURATION_SIZE]> for &Address {
 impl Into<Option<Device>> for &Address {
     fn into(self) -> Option<Device> {
         let configuration: [u8; CONFIGURATION_SIZE] = self.into();
-        let configuration: Device = configuration.into();
-        match &configuration.vendor_id {
-            0xffffu16 => None,
-            _ => Some(configuration),
-        }
+        let configuration: Result<Device, ()> = configuration.try_into();
+        configuration.ok()
     }
 }
 
@@ -191,52 +188,59 @@ impl Device {
     }
 }
 
-impl From<[u8; CONFIGURATION_SIZE]> for Device {
-    fn from(configuration: [u8; CONFIGURATION_SIZE]) -> Self {
+impl TryFrom<[u8; CONFIGURATION_SIZE]> for Device {
+    type Error = ();
+
+    fn try_from(configuration: [u8; CONFIGURATION_SIZE]) -> Result<Self, Self::Error> {
         let vendor_id: [u8; Self::VENDOR_ID_SIZE] = configuration[Self::VENDOR_ID_BEGIN..Self::VENDOR_ID_END]
             .try_into()
             .expect("Can't get a PCI configuration!");
         let vendor_id: u16 = u16::from_le_bytes(vendor_id);
-        let device_id: [u8; Self::DEVICE_ID_SIZE] = configuration[Self::DEVICE_ID_BEGIN..Self::DEVICE_ID_END]
-            .try_into()
-            .expect("Can't get a PCI configuration!");
-        let device_id: u16 = u16::from_le_bytes(device_id);
-        let command: [u8; Self::COMMAND_SIZE] = configuration[Self::COMMAND_BEGIN..Self::COMMAND_END]
-            .try_into()
-            .expect("Can't get a PCI configuration!");
-        let command: command::Register = u16::from_le_bytes(command).into();
-        let status: [u8; Self::STATUS_SIZE] = configuration[Self::STATUS_BEGIN..Self::STATUS_END]
-            .try_into()
-            .expect("Can't get a PCI configuration!");
-        let status: status::Register = u16::from_le_bytes(status).into();
-        let revision_id: u8 = configuration[Self::REVISION_ID_BEGIN];
-        let programming_interface: u8 = configuration[Self::PROGRAMMING_INTERFACE_BEGIN];
-        let sub_class: u8 = configuration[Self::SUB_CLASS_BEGIN];
-        let base_class: u8 = configuration[Self::BASE_CLASS_BEGIN];
-        let class_code: ClassCode = ClassCode::new(base_class, sub_class, programming_interface);
-        let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_BEGIN];
-        let latency_timer: u8 = configuration[Self::LATENCY_TIMER_BEGIN];
-        let header_type: header_type::Register = configuration[Self::HEADER_TYPE_BEGIN].into();
-        let bist: bist::Register = configuration[Self::BIST_BEGIN].into();
-        let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
-        let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
-        let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
-        let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
-        Self {
-            vendor_id,
-            device_id,
-            command,
-            status,
-            revision_id,
-            class_code,
-            cache_line_size,
-            latency_timer,
-            header_type,
-            bist,
-            type_specific,
-            capabilities_pointer,
-            interrupt_line,
-            interrupt_pin,
+        match vendor_id {
+            0xffffu16 => Err(()),
+            vendor_id => {
+                let device_id: [u8; Self::DEVICE_ID_SIZE] = configuration[Self::DEVICE_ID_BEGIN..Self::DEVICE_ID_END]
+                    .try_into()
+                    .expect("Can't get a PCI configuration!");
+                let device_id: u16 = u16::from_le_bytes(device_id);
+                let command: [u8; Self::COMMAND_SIZE] = configuration[Self::COMMAND_BEGIN..Self::COMMAND_END]
+                    .try_into()
+                    .expect("Can't get a PCI configuration!");
+                let command: command::Register = u16::from_le_bytes(command).into();
+                let status: [u8; Self::STATUS_SIZE] = configuration[Self::STATUS_BEGIN..Self::STATUS_END]
+                    .try_into()
+                    .expect("Can't get a PCI configuration!");
+                let status: status::Register = u16::from_le_bytes(status).into();
+                let revision_id: u8 = configuration[Self::REVISION_ID_BEGIN];
+                let programming_interface: u8 = configuration[Self::PROGRAMMING_INTERFACE_BEGIN];
+                let sub_class: u8 = configuration[Self::SUB_CLASS_BEGIN];
+                let base_class: u8 = configuration[Self::BASE_CLASS_BEGIN];
+                let class_code: ClassCode = ClassCode::new(base_class, sub_class, programming_interface);
+                let cache_line_size: u8 = configuration[Self::CACHE_LINE_SIZE_BEGIN];
+                let latency_timer: u8 = configuration[Self::LATENCY_TIMER_BEGIN];
+                let header_type: header_type::Register = configuration[Self::HEADER_TYPE_BEGIN].into();
+                let bist: bist::Register = configuration[Self::BIST_BEGIN].into();
+                let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
+                let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
+                let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
+                let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
+                Ok(Self {
+                    vendor_id,
+                    device_id,
+                    command,
+                    status,
+                    revision_id,
+                    class_code,
+                    cache_line_size,
+                    latency_timer,
+                    header_type,
+                    bist,
+                    type_specific,
+                    capabilities_pointer,
+                    interrupt_line,
+                    interrupt_pin,
+                })
+            },
         }
     }
 }
