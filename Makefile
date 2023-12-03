@@ -25,7 +25,7 @@ rebuild:
 	make clean
 	make $(THEOS)
 
-$(THEOS):
+$(THEOS): $(shell git ls-files)
 	make -C imager
 	make -C src
 	$(COPY) $(BOOT_SOURCE) $(BOOT)
@@ -55,7 +55,7 @@ permission:
 
 # Run THEOS on QEMU.
 # Usage: $ make run
-run: rebuild
+run: $(THEOS)
 	make run -C .tmux
 
 # Stop THEOS on QEMU.
