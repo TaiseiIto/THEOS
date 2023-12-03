@@ -44,19 +44,13 @@ const FREQUENCY: u32 = 115200;
 impl Serial {
     pub fn com1<'a>() -> &'a mut Self {
         unsafe {
-            match COM1 {
-                Some(ref mut com1) => com1,
-                None => panic!("Can't get a serial port COM1!"),
-            }
+            COM1.as_mut().expect("Can't get a serial port COM1!")
         }
     }
 
     pub fn com2<'a>() -> &'a mut Self {
         unsafe {
-            match COM2 {
-                Some(ref mut com2) => com2,
-                None => panic!("Can't get a serial port COM2!"),
-            }
+            COM2.as_mut().expect("Can't get a serial port COM2!")
         }
     }
 
@@ -242,8 +236,8 @@ impl Into<line_status_register::LineStatusRegister> for &Serial {
 }
 
 impl Write for Serial {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        s.bytes().for_each(|byte| self.write_byte(byte));
+    fn write_str(&mut self, string: &str) -> fmt::Result {
+        string.bytes().for_each(|byte| self.write_byte(byte));
         Ok(())
     }
 }

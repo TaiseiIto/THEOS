@@ -92,7 +92,12 @@ impl Kernel<'_> {
             None => false,
         };
         serial_println!("supports_5_level_paging = {:?}", supports_5_level_paging);
-        let ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
+        let mut ia32_efer: Option<ia32_efer::Ia32Efer> = ia32_efer::Ia32Efer::get(&cpuid);
+        if let Some(ia32_efer) = ia32_efer.as_mut() {
+            if !ia32_efer.nxe() {
+                ia32_efer.set_nxe();
+            }
+        }
         let cr0 = control::register0::Cr0::get();
         let cr2 = control::register2::Cr2::get();
         let cr3 = control::register3::Cr3::get();

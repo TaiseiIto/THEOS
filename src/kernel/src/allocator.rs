@@ -102,10 +102,10 @@ unsafe impl GlobalAlloc for Allocator<'_> {
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
-        match &mut *self.chunk_list.get() {
-            Some(chunk_list) => chunk_list.dealloc(pointer as usize),
-            None => panic!("Can't dealloc memory!"),
-        }
+        (&mut *self.chunk_list.get())
+            .as_mut()
+            .expect("Can't dealloc memory!")
+            .dealloc(pointer as usize);
         if let Some(chunk_list) = &mut *self.chunk_list.get() {
             chunk_list.delete_unnecessary_chunk_lists();
         }
@@ -154,6 +154,7 @@ impl<'a> ChunkList<'a> {
         available_chunk.address = allocated_chunk_address;
         available_chunk.size = allocated_chunk_size;
         available_chunk.allocated = true;
+        serial_println!("allocated chunk = {:#x?}", available_chunk);
         *previous_free_chunk = if previous_free_chunk_size == 0 {
             None
         } else {
@@ -231,6 +232,7 @@ impl<'a> ChunkList<'a> {
         let mut drop_deallocated_chunk: bool = false;
         match deallocated_chunk {
             Some(deallocated_chunk) => {
+                serial_println!("deallocated chunk = {:#x?}", deallocated_chunk);
                 deallocated_chunk.allocated = false;
                 if let Some(previous_chunk) = &mut previous_chunk {
                     let mut merge_previous_chunk: bool = false;
@@ -239,9 +241,21 @@ impl<'a> ChunkList<'a> {
                             merge_previous_chunk = true;
                             deallocated_chunk.address = previous_chunk.address;
                             deallocated_chunk.size += previous_chunk.size;
+                            match (&mut deallocated_chunk.pages, &mut previous_chunk.pages) {
+                                (Some(deallocated_chunk_pages), Some(previous_chunk_pages)) => {
+                                    deallocated_chunk_pages.merge(previous_chunk_pages.copy());
+                                },
+                                (Some(_), None) => {},
+                                (deallocated_chunk_pages @ None, Some(previous_chunk_pages)) => {
+                                    *deallocated_chunk_pages = Some(previous_chunk_pages.copy());
+                                },
+                                (None, None) => {},
+                            }
+                            previous_chunk.pages = None;
                         }
                     }
                     if merge_previous_chunk {
+                        serial_println!("Delete previous chunk {:#x?}", previous_chunk);
                         **previous_chunk = None;
                     }
                 }
@@ -265,6 +279,7 @@ impl<'a> ChunkList<'a> {
                         }
                     }
                     if merge_next_chunk {
+                        serial_println!("Delete next chunk {:#x?}", next_chunk);
                         **next_chunk = None;
                     }
                 }
@@ -275,6 +290,7 @@ impl<'a> ChunkList<'a> {
             None => panic!("Can't deallocate memory!"),
         }
         if drop_deallocated_chunk {
+            serial_println!("Delete deallocated chunk {:#x?}", deallocated_chunk);
             *deallocated_chunk = None;
         }
     }
@@ -317,6 +333,7 @@ impl<'a> ChunkList<'a> {
     fn delete_unnecessary_chunk_lists(&'a mut self) {
         if let Some(ref mut next) = self.next {
             *next = next.delete_unnecessary_chunk_list();
+            next.delete_unnecessary_chunk_lists();
         }
     }
 

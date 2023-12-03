@@ -44,10 +44,7 @@ impl Content {
             long_file_name: _,
             checksum: _,
         } = directory_entry {
-            let cluster: u32 = match *cluster.borrow() {
-                Some(cluster) => cluster,
-                None => panic!("Can't read a content."),
-            };
+            let cluster: u32 = (*cluster.borrow()).expect("Can't read a content!");
             let mut bytes: Vec<u8> = clusters.cluster_chain_bytes(cluster);
             if attribute.is_directory() {
                 let directory_entries: Vec<directory_entry::DirectoryEntry> = directory_entry::DirectoryEntry::read(&bytes);

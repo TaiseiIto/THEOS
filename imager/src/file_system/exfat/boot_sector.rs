@@ -151,9 +151,7 @@ impl From<&Vec<u8>> for BootSector {
             .iter()
             .map(|byte| *byte == 0)
             .fold(true, |entire_validation, byte_validation| entire_validation && byte_validation);
-        if !validation {
-            panic!("The boot sector is broken.");
-        }
+        assert!(validation);
         boot_sector
     }
 }

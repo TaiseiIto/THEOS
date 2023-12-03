@@ -548,64 +548,52 @@ impl<'a> PageMapLevel4Entry<'a> {
     }
 
     fn divide_child(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            let writable: bool = true;
-            let user_mode_access: bool = false;
-            let page_write_through: bool = false;
-            let page_cache_disable: bool = false;
-            let restart: bool = false;
-            let execute_disable: bool = false;
-            self.enable(
-                writable,
-                user_mode_access,
-                page_write_through,
-                page_cache_disable,
-                restart,
-                execute_disable);
-            self.page_directory_pointer_entries
-                .iter_mut()
-                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't divide a page!")
-                .divide_child(virtual_address);
-        } else {
-            panic!("Can't divide a page!")
-        }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        let writable: bool = true;
+        let user_mode_access: bool = false;
+        let page_write_through: bool = false;
+        let page_cache_disable: bool = false;
+        let restart: bool = false;
+        let execute_disable: bool = false;
+        self.enable(
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            restart,
+            execute_disable);
+        self.page_directory_pointer_entries
+            .iter_mut()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't divide a page!")
+            .divide_child(virtual_address);
     }
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.page_directory_pointer_entries
-                .iter_mut()
-                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't set a physical address!")
-                .set_physical_address(virtual_address, physical_address);
-        } else {
-            panic!("Can't set a physical address!")
-        }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.page_directory_pointer_entries
+            .iter_mut()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a physical address!")
+            .set_physical_address(virtual_address, physical_address);
     }
 
     fn set_code_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.page_directory_pointer_entries
-                .iter_mut()
-                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't set a code page!")
-                .set_code_page(virtual_address);
-        } else {
-            panic!("Can't set a code page!")
-        }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.page_directory_pointer_entries
+            .iter_mut()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a code page!")
+            .set_code_page(virtual_address);
     }
 
     fn set_data_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.page_directory_pointer_entries
-                .iter_mut()
-                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't set a data page!")
-                .set_data_page(virtual_address);
-        } else {
-            panic!("Can't set a data page!")
-        }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.page_directory_pointer_entries
+            .iter_mut()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a data page!")
+            .set_data_page(virtual_address);
     }
 
     fn set_page(
@@ -622,34 +610,31 @@ impl<'a> PageMapLevel4Entry<'a> {
         restart: bool,
         protection_key: u8,
         execute_disable: bool) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.enable(
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.enable(
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            restart,
+            execute_disable);
+        self.page_directory_pointer_entries
+            .iter_mut()
+            .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a page!")
+            .set_page(
+                virtual_address,
+                physical_address,
+                page_size,
                 writable,
                 user_mode_access,
                 page_write_through,
                 page_cache_disable,
+                page_attribute_table,
+                global,
                 restart,
+                protection_key,
                 execute_disable);
-            self.page_directory_pointer_entries
-                .iter_mut()
-                .find(|page_directory_pointer_entry| page_directory_pointer_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't set a page!")
-                .set_page(
-                    virtual_address,
-                    physical_address,
-                    page_size,
-                    writable,
-                    user_mode_access,
-                    page_write_through,
-                    page_cache_disable,
-                    page_attribute_table,
-                    global,
-                    restart,
-                    protection_key,
-                    execute_disable);
-        } else {
-            panic!("Can't set a page!")
-        }
     }
 
     fn print_state_at_address(&self, virtual_address: usize) {
@@ -1202,20 +1187,17 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     }
 
     fn divide_child(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if !self.divided() {
-                self.divide();
-            }
-            self.page_directory_entries
-                .as_mut()
-                .expect("Can't divide a page!")
-                .iter_mut()
-                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't divide a page!")
-                .divide();
-        } else {
-            panic!("Can't divide a page!")
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        if !self.divided() {
+            self.divide();
         }
+        self.page_directory_entries
+            .as_mut()
+            .expect("Can't divide a page!")
+            .iter_mut()
+            .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't divide a page!")
+            .divide();
     }
 
     fn divided(&self) -> bool {
@@ -1223,60 +1205,49 @@ impl<'a> PageDirectoryPointerEntry<'a> {
     }
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
-        if !self.divided() {
-            panic!("Can't set a physical address!")
-        }
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.page_directory_entries
-                .as_mut()
-                .expect("Can't set a physical address!")
-                .iter_mut()
-                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
-                .expect("Can't set a physical address!")
-                .set_physical_address(virtual_address, physical_address);
-        } else {
-            panic!("Can't set a physical address!")
-        }
+        assert!(self.divided());
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.page_directory_entries
+            .as_mut()
+            .expect("Can't set a physical address!")
+            .iter_mut()
+            .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+            .expect("Can't set a physical address!")
+            .set_physical_address(virtual_address, physical_address);
     }
 
     fn set_code_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if self.page_size_1_gib {
-                self.writable = false;
-                self.execute_disable = false;
-                *self.page_directory_pointer_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
-            } else {
-                self.page_directory_entries
-                    .as_mut()
-                    .expect("Can't set a code page!")
-                    .iter_mut()
-                    .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
-                    .expect("Can't set a code page!")
-                    .set_code_page(virtual_address);
-            }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        if self.page_size_1_gib {
+            self.writable = false;
+            self.execute_disable = false;
+            *self.page_directory_pointer_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
         } else {
-            panic!("Can't set a code page!")
+            self.page_directory_entries
+                .as_mut()
+                .expect("Can't set a code page!")
+                .iter_mut()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a code page!")
+                .set_code_page(virtual_address);
         }
     }
 
     fn set_data_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if self.page_size_1_gib {
-                self.writable = true;
-                self.execute_disable = false;
-                *self.page_directory_pointer_entry |= Self::WRITABLE_MASK;
-                *self.page_directory_pointer_entry &= !Self::EXECUTE_DISABLE_MASK;
-            } else {
-                self.page_directory_entries
-                    .as_mut()
-                    .expect("Can't set a data page!")
-                    .iter_mut()
-                    .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
-                    .expect("Can't set a data page!")
-                    .set_data_page(virtual_address);
-            }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        if self.page_size_1_gib {
+            self.writable = true;
+            self.execute_disable = false;
+            *self.page_directory_pointer_entry |= Self::WRITABLE_MASK;
+            *self.page_directory_pointer_entry &= !Self::EXECUTE_DISABLE_MASK;
         } else {
-            panic!("Can't set a data page!")
+            self.page_directory_entries
+                .as_mut()
+                .expect("Can't set a data page!")
+                .iter_mut()
+                .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                .expect("Can't set a data page!")
+                .set_data_page(virtual_address);
         }
     }
 
@@ -1294,128 +1265,125 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         restart: bool,
         protection_key: u8,
         execute_disable: bool) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            match page_size {
-                PageSize::PageSize1GiB => {
-                    self.present = true;
-                    self.writable = writable;
-                    self.user_mode_access = user_mode_access;
-                    self.page_write_through = page_write_through;
-                    self.page_cache_disable = page_cache_disable;
-                    self.accessed = false;
-                    self.dirty = false;
-                    self.page_size_1_gib = true;
-                    self.global = Some(global);
-                    self.restart = restart;
-                    self.page_attribute_table = Some(page_attribute_table);
-                    self.page_directory_table_page = None;
-                    self.page_directory_entries = None;
-                    self.page_1_gib_physical_address = Some(physical_address);
-                    self.protection_key = Some(protection_key);
-                    self.execute_disable = execute_disable;
-                    let present_in_entry: u64 = if self.present {
-                        Self::PRESENT_MASK
-                    } else {
-                        0
-                    };
-                    let writable_in_entry: u64 = if self.writable {
-                        Self::WRITABLE_MASK
-                    } else {
-                        0
-                    };
-                    let user_mode_access_in_entry: u64 = if self.user_mode_access {
-                        Self::USER_MODE_ACCESS_MASK
-                    } else {
-                        0
-                    };
-                    let page_write_through_in_entry: u64 = if self.page_write_through {
-                        Self::PAGE_WRITE_THROUGH_MASK
-                    } else {
-                        0
-                    };
-                    let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
-                        Self::PAGE_CACHE_DISABLE_MASK
-                    } else {
-                        0
-                    };
-                    let accessed_in_entry: u64 = if self.accessed {
-                        Self::ACCESSED_MASK
-                    } else {
-                        0
-                    };
-                    let dirty_in_entry: u64 = if self.dirty {
-                        Self::DIRTY_MASK
-                    } else {
-                        0
-                    };
-                    let page_size_1_gib_in_entry: u64 = if self.page_size_1_gib {
-                        Self::PAGE_SIZE_1_GIB_MASK
-                    } else {
-                        0
-                    };
-                    let global_in_entry: u64 = match self.global {
-                        Some(true) => Self::GLOBAL_MASK,
-                        _ => 0,
-                    };
-                    let restart_in_entry: u64 = if self.restart {
-                        Self::RESTART_MASK
-                    } else {
-                        0
-                    };
-                    let page_attribute_table_in_entry: u64 = match self.page_attribute_table {
-                        Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
-                        _ => 0,
-                    };
-                    let page_1_gib_physical_address_in_entry: u64 = (self.page_1_gib_physical_address.unwrap_or(0) as u64) & Self::PAGE_1_GIB_MASK;
-                    let protection_key_in_entry: u64 = (self.protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
-                    let execute_disable_in_entry: u64 = if self.execute_disable {
-                        Self::EXECUTE_DISABLE_MASK
-                    } else {
-                        0
-                    };
-                    *(self.page_directory_pointer_entry) =
-                        present_in_entry           
-                        | writable_in_entry
-                        | user_mode_access_in_entry
-                        | page_write_through_in_entry
-                        | page_cache_disable_in_entry
-                        | accessed_in_entry
-                        | dirty_in_entry
-                        | page_size_1_gib_in_entry
-                        | global_in_entry
-                        | restart_in_entry
-                        | page_attribute_table_in_entry
-                        | page_1_gib_physical_address_in_entry
-                        | protection_key_in_entry
-                        | execute_disable_in_entry;
-                },
-                page_size => {
-                    if !self.divided() {
-                        self.divide();
-                    }
-                    self.page_directory_entries
-                        .as_mut()
-                        .expect("Can't set a page!")
-                        .iter_mut()
-                        .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
-                        .expect("Can't set a page!")
-                        .set_page(
-                            virtual_address,
-                            physical_address,
-                            page_size,
-                            writable,
-                            user_mode_access,
-                            page_write_through,
-                            page_cache_disable,
-                            page_attribute_table,
-                            global,
-                            restart,
-                            protection_key,
-                            execute_disable);
-                },
-            }
-        } else {
-            panic!("Can't set a page!")
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        match page_size {
+            PageSize::PageSize1GiB => {
+                self.present = true;
+                self.writable = writable;
+                self.user_mode_access = user_mode_access;
+                self.page_write_through = page_write_through;
+                self.page_cache_disable = page_cache_disable;
+                self.accessed = false;
+                self.dirty = false;
+                self.page_size_1_gib = true;
+                self.global = Some(global);
+                self.restart = restart;
+                self.page_attribute_table = Some(page_attribute_table);
+                self.page_directory_table_page = None;
+                self.page_directory_entries = None;
+                self.page_1_gib_physical_address = Some(physical_address);
+                self.protection_key = Some(protection_key);
+                self.execute_disable = execute_disable;
+                let present_in_entry: u64 = if self.present {
+                    Self::PRESENT_MASK
+                } else {
+                    0
+                };
+                let writable_in_entry: u64 = if self.writable {
+                    Self::WRITABLE_MASK
+                } else {
+                    0
+                };
+                let user_mode_access_in_entry: u64 = if self.user_mode_access {
+                    Self::USER_MODE_ACCESS_MASK
+                } else {
+                    0
+                };
+                let page_write_through_in_entry: u64 = if self.page_write_through {
+                    Self::PAGE_WRITE_THROUGH_MASK
+                } else {
+                    0
+                };
+                let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+                    Self::PAGE_CACHE_DISABLE_MASK
+                } else {
+                    0
+                };
+                let accessed_in_entry: u64 = if self.accessed {
+                    Self::ACCESSED_MASK
+                } else {
+                    0
+                };
+                let dirty_in_entry: u64 = if self.dirty {
+                    Self::DIRTY_MASK
+                } else {
+                    0
+                };
+                let page_size_1_gib_in_entry: u64 = if self.page_size_1_gib {
+                    Self::PAGE_SIZE_1_GIB_MASK
+                } else {
+                    0
+                };
+                let global_in_entry: u64 = match self.global {
+                    Some(true) => Self::GLOBAL_MASK,
+                    _ => 0,
+                };
+                let restart_in_entry: u64 = if self.restart {
+                    Self::RESTART_MASK
+                } else {
+                    0
+                };
+                let page_attribute_table_in_entry: u64 = match self.page_attribute_table {
+                    Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
+                    _ => 0,
+                };
+                let page_1_gib_physical_address_in_entry: u64 = (self.page_1_gib_physical_address.unwrap_or(0) as u64) & Self::PAGE_1_GIB_MASK;
+                let protection_key_in_entry: u64 = (self.protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+                let execute_disable_in_entry: u64 = if self.execute_disable {
+                    Self::EXECUTE_DISABLE_MASK
+                } else {
+                    0
+                };
+                *(self.page_directory_pointer_entry) =
+                    present_in_entry           
+                    | writable_in_entry
+                    | user_mode_access_in_entry
+                    | page_write_through_in_entry
+                    | page_cache_disable_in_entry
+                    | accessed_in_entry
+                    | dirty_in_entry
+                    | page_size_1_gib_in_entry
+                    | global_in_entry
+                    | restart_in_entry
+                    | page_attribute_table_in_entry
+                    | page_1_gib_physical_address_in_entry
+                    | protection_key_in_entry
+                    | execute_disable_in_entry;
+            },
+            page_size => {
+                if !self.divided() {
+                    self.divide();
+                }
+                self.page_directory_entries
+                    .as_mut()
+                    .expect("Can't set a page!")
+                    .iter_mut()
+                    .find(|page_directory_entry| page_directory_entry.virtual_address == virtual_address & (usize::MAX << PageDirectoryEntry::INDEX_SHIFT_BEGIN))
+                    .expect("Can't set a page!")
+                    .set_page(
+                        virtual_address,
+                        physical_address,
+                        page_size,
+                        writable,
+                        user_mode_access,
+                        page_write_through,
+                        page_cache_disable,
+                        page_attribute_table,
+                        global,
+                        restart,
+                        protection_key,
+                        execute_disable);
+            },
         }
     }
 
@@ -1819,60 +1787,49 @@ impl<'a> PageDirectoryEntry<'a> {
     }
 
     fn set_physical_address(&mut self, virtual_address: usize, physical_address: usize) {
-        if !self.divided() {
-            panic!("Can't set a physical address!")
-        }
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.page_entries
-                .as_mut()
-                .expect("Can't set a physical address!")
-                .iter_mut()
-                .find(|page_entry| page_entry.virtual_address == virtual_address)
-                .expect("Can't set a physical address!")
-                .set_physical_address(physical_address);
-        } else {
-            panic!("Can't set a physical address!")
-        }
+        assert!(self.divided());
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.page_entries
+            .as_mut()
+            .expect("Can't set a physical address!")
+            .iter_mut()
+            .find(|page_entry| page_entry.virtual_address == virtual_address)
+            .expect("Can't set a physical address!")
+            .set_physical_address(physical_address);
     }
 
     fn set_code_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if self.page_size_2_mib {
-                self.writable = false;
-                self.execute_disable = false;
-                *self.page_directory_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
-            } else {
-                self.page_entries
-                    .as_mut()
-                    .expect("Can't set a code page!")
-                    .iter_mut()
-                    .find(|page_entry| page_entry.virtual_address == virtual_address)
-                    .expect("Can't set a code page!")
-                    .set_code_page();
-            }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        if self.page_size_2_mib {
+            self.writable = false;
+            self.execute_disable = false;
+            *self.page_directory_entry &= !(Self::WRITABLE_MASK | Self::EXECUTE_DISABLE_MASK);
         } else {
-            panic!("Can't set a code page!")
+            self.page_entries
+                .as_mut()
+                .expect("Can't set a code page!")
+                .iter_mut()
+                .find(|page_entry| page_entry.virtual_address == virtual_address)
+                .expect("Can't set a code page!")
+                .set_code_page();
         }
     }
 
     fn set_data_page(&mut self, virtual_address: usize) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            if self.page_size_2_mib {
-                self.writable = true;
-                self.execute_disable = false;
-                *self.page_directory_entry |= Self::WRITABLE_MASK;
-                *self.page_directory_entry &= !Self::EXECUTE_DISABLE_MASK;
-            } else {
-                self.page_entries
-                    .as_mut()
-                    .expect("Can't set a data page!")
-                    .iter_mut()
-                    .find(|page_entry| page_entry.virtual_address == virtual_address)
-                    .expect("Can't set a data page!")
-                    .set_data_page();
-            }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        if self.page_size_2_mib {
+            self.writable = true;
+            self.execute_disable = false;
+            *self.page_directory_entry |= Self::WRITABLE_MASK;
+            *self.page_directory_entry &= !Self::EXECUTE_DISABLE_MASK;
         } else {
-            panic!("Can't set a data page!")
+            self.page_entries
+                .as_mut()
+                .expect("Can't set a data page!")
+                .iter_mut()
+                .find(|page_entry| page_entry.virtual_address == virtual_address)
+                .expect("Can't set a data page!")
+                .set_data_page();
         }
     }
 
@@ -1890,123 +1847,118 @@ impl<'a> PageDirectoryEntry<'a> {
         restart: bool,
         protection_key: u8,
         execute_disable: bool) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            match page_size {
-                PageSize::PageSize1GiB => panic!("Can't set a page!"),
-                PageSize::PageSize2MiB => {
-                    self.writable = writable;
-                    self.user_mode_access = user_mode_access;
-                    self.page_write_through = page_write_through;
-                    self.page_cache_disable = page_cache_disable;
-                    self.accessed = false;
-                    self.dirty = false;
-                    self.page_size_2_mib = true;
-                    self.global = Some(global);
-                    self.restart = restart;
-                    self.page_attribute_table = Some(page_attribute_table);
-                    self.page_table_page = None;
-                    self.page_entries = None;
-                    self.page_2_mib_physical_address = Some(physical_address);
-                    self.protection_key = Some(protection_key);
-                    self.execute_disable = execute_disable;
-                    let present_in_entry: u64 = Self::PRESENT_MASK;
-                    let writable_in_entry: u64 = if self.writable {
-                        Self::WRITABLE_MASK
-                    } else {
-                        0
-                    };
-                    let user_mode_access_in_entry: u64 = if self.user_mode_access {
-                        Self::USER_MODE_ACCESS_MASK
-                    } else {
-                        0
-                    };
-                    let page_write_through_in_entry: u64 = if self.page_write_through {
-                        Self::PAGE_WRITE_THROUGH_MASK
-                    } else {
-                        0
-                    };
-                    let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
-                        Self::PAGE_CACHE_DISABLE_MASK
-                    } else {
-                        0
-                    };
-                    let accessed_in_entry: u64 = if self.accessed {
-                        Self::ACCESSED_MASK
-                    } else {
-                        0
-                    };
-                    let dirty_in_entry: u64 = if self.dirty {
-                        Self::DIRTY_MASK
-                    } else {
-                        0
-                    };
-                    let page_size_2_mib_in_entry: u64 = if self.page_size_2_mib {
-                        Self::PAGE_SIZE_2_MIB_MASK
-                    } else {
-                        0
-                    };
-                    let global_in_entry: u64 = match self.global {
-                        Some(true) => Self::GLOBAL_MASK,
-                        _ => 0,
-                    };
-                    let restart_in_entry: u64 = if self.restart {
-                        Self::RESTART_MASK
-                    } else {
-                        0
-                    };
-                    let page_attribute_table_in_entry: u64 = match self.page_attribute_table {
-                        Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
-                        _ => 0,
-                    };
-                    let page_2_mib_physical_address_in_entry: u64 = (physical_address as u64) & Self::PAGE_2_MIB_MASK;
-                    let protection_key_in_entry: u64 = (self.protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
-                    let execute_disable_in_entry: u64 = if self.execute_disable {
-                        Self::EXECUTE_DISABLE_MASK
-                    } else {
-                        0
-                    };
-                    *(self.page_directory_entry) =
-                        present_in_entry
-                        | writable_in_entry
-                        | user_mode_access_in_entry
-                        | page_write_through_in_entry
-                        | page_cache_disable_in_entry
-                        | accessed_in_entry
-                        | dirty_in_entry
-                        | page_size_2_mib_in_entry
-                        | global_in_entry
-                        | restart_in_entry
-                        | page_attribute_table_in_entry
-                        | page_2_mib_physical_address_in_entry
-                        | protection_key_in_entry
-                        | execute_disable_in_entry;
-                },
-                PageSize::PageSize4KiB => {
-                    if !self.divided() {
-                        panic!("Can't set a page!")
-                    }
-                    self.page_entries
-                        .as_mut()
-                        .expect("Can't set a page!")
-                        .iter_mut()
-                        .find(|page_entry| page_entry.virtual_address == virtual_address)
-                        .expect("Can't set a page!")
-                        .set_page(
-                            virtual_address,
-                            physical_address,
-                            writable,
-                            user_mode_access,
-                            page_write_through,
-                            page_cache_disable,
-                            page_attribute_table,
-                            global,
-                            restart,
-                            protection_key,
-                            execute_disable);
-                }
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        match page_size {
+            PageSize::PageSize1GiB => panic!("Can't set a page!"),
+            PageSize::PageSize2MiB => {
+                self.writable = writable;
+                self.user_mode_access = user_mode_access;
+                self.page_write_through = page_write_through;
+                self.page_cache_disable = page_cache_disable;
+                self.accessed = false;
+                self.dirty = false;
+                self.page_size_2_mib = true;
+                self.global = Some(global);
+                self.restart = restart;
+                self.page_attribute_table = Some(page_attribute_table);
+                self.page_table_page = None;
+                self.page_entries = None;
+                self.page_2_mib_physical_address = Some(physical_address);
+                self.protection_key = Some(protection_key);
+                self.execute_disable = execute_disable;
+                let present_in_entry: u64 = Self::PRESENT_MASK;
+                let writable_in_entry: u64 = if self.writable {
+                    Self::WRITABLE_MASK
+                } else {
+                    0
+                };
+                let user_mode_access_in_entry: u64 = if self.user_mode_access {
+                    Self::USER_MODE_ACCESS_MASK
+                } else {
+                    0
+                };
+                let page_write_through_in_entry: u64 = if self.page_write_through {
+                    Self::PAGE_WRITE_THROUGH_MASK
+                } else {
+                    0
+                };
+                let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+                    Self::PAGE_CACHE_DISABLE_MASK
+                } else {
+                    0
+                };
+                let accessed_in_entry: u64 = if self.accessed {
+                    Self::ACCESSED_MASK
+                } else {
+                    0
+                };
+                let dirty_in_entry: u64 = if self.dirty {
+                    Self::DIRTY_MASK
+                } else {
+                    0
+                };
+                let page_size_2_mib_in_entry: u64 = if self.page_size_2_mib {
+                    Self::PAGE_SIZE_2_MIB_MASK
+                } else {
+                    0
+                };
+                let global_in_entry: u64 = match self.global {
+                    Some(true) => Self::GLOBAL_MASK,
+                    _ => 0,
+                };
+                let restart_in_entry: u64 = if self.restart {
+                    Self::RESTART_MASK
+                } else {
+                    0
+                };
+                let page_attribute_table_in_entry: u64 = match self.page_attribute_table {
+                    Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
+                    _ => 0,
+                };
+                let page_2_mib_physical_address_in_entry: u64 = (physical_address as u64) & Self::PAGE_2_MIB_MASK;
+                let protection_key_in_entry: u64 = (self.protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+                let execute_disable_in_entry: u64 = if self.execute_disable {
+                    Self::EXECUTE_DISABLE_MASK
+                } else {
+                    0
+                };
+                *(self.page_directory_entry) =
+                    present_in_entry
+                    | writable_in_entry
+                    | user_mode_access_in_entry
+                    | page_write_through_in_entry
+                    | page_cache_disable_in_entry
+                    | accessed_in_entry
+                    | dirty_in_entry
+                    | page_size_2_mib_in_entry
+                    | global_in_entry
+                    | restart_in_entry
+                    | page_attribute_table_in_entry
+                    | page_2_mib_physical_address_in_entry
+                    | protection_key_in_entry
+                    | execute_disable_in_entry;
+            },
+            PageSize::PageSize4KiB => {
+                assert!(self.divided());
+                self.page_entries
+                    .as_mut()
+                    .expect("Can't set a page!")
+                    .iter_mut()
+                    .find(|page_entry| page_entry.virtual_address == virtual_address)
+                    .expect("Can't set a page!")
+                    .set_page(
+                        virtual_address,
+                        physical_address,
+                        writable,
+                        user_mode_access,
+                        page_write_through,
+                        page_cache_disable,
+                        page_attribute_table,
+                        global,
+                        restart,
+                        protection_key,
+                        execute_disable);
             }
-        } else {
-            panic!("Can't set a page!")
         }
     }
     
@@ -2265,7 +2217,7 @@ impl<'a> PageEntry<'a> {
 
     fn set_data_page(&mut self) {
         self.writable = true;
-        self.execute_disable = false;
+        self.execute_disable = true;
         *self.page_entry |= Self::WRITABLE_MASK;
         *self.page_entry &= !Self::EXECUTE_DISABLE_MASK;
     }
@@ -2283,89 +2235,86 @@ impl<'a> PageEntry<'a> {
         restart: bool,
         protection_key: u8,
         execute_disable: bool) {
-        if virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address {
-            self.writable = writable;
-            self.user_mode_access = user_mode_access;
-            self.page_write_through = page_write_through;
-            self.page_cache_disable = page_cache_disable;
-            self.accessed = false;
-            self.dirty = false;
-            self.page_attribute_table = page_attribute_table;
-            self.global = global;
-            self.restart = restart;
-            self.physical_address = physical_address;
-            self.protection_key = protection_key;
-            self.execute_disable = execute_disable;
-            let present_in_entry: u64 = Self::PRESENT_MASK;
-            let writable_in_entry: u64 = if self.writable {
-                Self::WRITABLE_MASK
-            } else {
-                0
-            };
-            let user_mode_access_in_entry: u64 = if self.user_mode_access {
-                Self::USER_MODE_ACCESS_MASK
-            } else {
-                0
-            };
-            let page_write_through_in_entry: u64 = if self.page_write_through {
-                Self::PAGE_WRITE_THROUGH_MASK
-            } else {
-                0
-            };
-            let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
-                Self::PAGE_CACHE_DISABLE_MASK
-            } else {
-                0
-            };
-            let accessed_in_entry: u64 = if self.accessed {
-                Self::ACCESSED_MASK
-            } else {
-                0
-            };
-            let dirty_in_entry: u64 = if self.dirty {
-                Self::DIRTY_MASK
-            } else {
-                0
-            };
-            let page_attribute_table_in_entry: u64 = if self.page_attribute_table {
-                Self::PAGE_ATTRIBUTE_TABLE_MASK
-            } else {
-                0
-            };
-            let global_in_entry: u64 = if self.global {
-                Self::PAGE_ATTRIBUTE_TABLE_MASK
-            } else {
-                0
-            };
-            let restart_in_entry: u64 = if self.restart {
-                Self::RESTART_MASK
-            } else {
-                0
-            };
-            let physical_address_in_entry: u64 = self.physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
-            let protection_key_in_entry: u64 = (self.protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
-            let execute_disable_in_entry: u64 = if self.execute_disable {
-                Self::EXECUTE_DISABLE_MASK
-            } else {
-                0
-            };
-            *(self.page_entry) =
-                present_in_entry
-                | writable_in_entry
-                | user_mode_access_in_entry
-                | page_write_through_in_entry
-                | page_cache_disable_in_entry
-                | accessed_in_entry
-                | dirty_in_entry
-                | page_attribute_table_in_entry
-                | global_in_entry
-                | restart_in_entry
-                | physical_address_in_entry
-                | protection_key_in_entry
-                | execute_disable_in_entry;
+        assert!(virtual_address & (usize::MAX << Self::INDEX_SHIFT_BEGIN) == self.virtual_address);
+        self.writable = writable;
+        self.user_mode_access = user_mode_access;
+        self.page_write_through = page_write_through;
+        self.page_cache_disable = page_cache_disable;
+        self.accessed = false;
+        self.dirty = false;
+        self.page_attribute_table = page_attribute_table;
+        self.global = global;
+        self.restart = restart;
+        self.physical_address = physical_address;
+        self.protection_key = protection_key;
+        self.execute_disable = execute_disable;
+        let present_in_entry: u64 = Self::PRESENT_MASK;
+        let writable_in_entry: u64 = if self.writable {
+            Self::WRITABLE_MASK
         } else {
-            panic!("Can't set a page!")
-        }
+            0
+        };
+        let user_mode_access_in_entry: u64 = if self.user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_in_entry: u64 = if self.page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_in_entry: u64 = if self.page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed_in_entry: u64 = if self.accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let dirty_in_entry: u64 = if self.dirty {
+            Self::DIRTY_MASK
+        } else {
+            0
+        };
+        let page_attribute_table_in_entry: u64 = if self.page_attribute_table {
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
+        } else {
+            0
+        };
+        let global_in_entry: u64 = if self.global {
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
+        } else {
+            0
+        };
+        let restart_in_entry: u64 = if self.restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let physical_address_in_entry: u64 = self.physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
+        let protection_key_in_entry: u64 = (self.protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+        let execute_disable_in_entry: u64 = if self.execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *(self.page_entry) =
+            present_in_entry
+            | writable_in_entry
+            | user_mode_access_in_entry
+            | page_write_through_in_entry
+            | page_cache_disable_in_entry
+            | accessed_in_entry
+            | dirty_in_entry
+            | page_attribute_table_in_entry
+            | global_in_entry
+            | restart_in_entry
+            | physical_address_in_entry
+            | protection_key_in_entry
+            | execute_disable_in_entry;
     }
 
     fn print_state_at_address(&self) {

@@ -1,10 +1,13 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
+
 mod allocator;
 mod asm;
 mod display;
 mod memory;
+mod pci;
 mod serial;
 mod uefi;
 
@@ -13,6 +16,7 @@ use {
         control,
         msr::architectural::ia32_efer,
     },
+    alloc::collections::btree_map::BTreeMap,
     core::panic::PanicInfo,
     memory::physical_page,
     uefi::{
@@ -85,9 +89,9 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let foreground_color_green: u8 = 0xff;
     let foreground_color_blue: u8 = 0xff;
     let foreground_color = display::Color::new(foreground_color_red, foreground_color_green, foreground_color_blue);
+    let address2device: BTreeMap<pci::configuration::Address, pci::configuration::Device> = pci::configuration::Device::get_all_devices();
+    serial_println!("address2device = {:#x?}", address2device);
     display.print(&coordinates, &background_color, &foreground_color, "Hello, World!");
-    // Global allocator test
-    allocator::Allocated::new(1, 1);
     loop {
         asm::hlt();
     }

@@ -91,10 +91,12 @@ pub struct Glyph {
 }
 
 impl Glyph {
+    #[allow(dead_code)]
     pub fn width(&self) -> u16 {
         self.width
     }
 
+    #[allow(dead_code)]
     pub fn height(&self) -> u16 {
         self.height
     }
@@ -166,13 +168,16 @@ impl FontProtocol {
         let baseline: &mut usize = unsafe {
             &mut *baseline
         };
-        self.get_glyph.0(
+        match self.get_glyph.0(
             self,
             character,
             font,
             &mut blt,
             baseline,
-        );
+        ) {
+            status::SUCCESS => (),
+            _ => panic!("Can't get a glyph!"),
+        };
         let width: u16 = blt.width();
         let height: u16 = blt.height();
         let bitmap: &[graphics_output::BltPixel] = blt.bitmap();
@@ -210,18 +215,22 @@ impl<'a> Iterator for FontIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let input_font_display_info: &'a font_ex::FontDisplayInfo = font_ex::FontDisplayInfo::null();
         let mut output_font_display_info: &'a font_ex::FontDisplayInfo = font_ex::FontDisplayInfo::null();
-        self.protocol.get_font_info.0(
+        match self.protocol.get_font_info.0(
             self.protocol,
             &mut self.handle,
             input_font_display_info,
             &mut output_font_display_info,
             char16::String::null(),
-        );
-        let output_checker: *const font_ex::FontDisplayInfo = output_font_display_info as *const font_ex::FontDisplayInfo;
-        let output_checker: usize = output_checker as usize;
-        match output_checker {
-            0 => None,
-            _ => Some(output_font_display_info),
+        ) {
+            status::SUCCESS => {
+                let output_checker: *const font_ex::FontDisplayInfo = output_font_display_info as *const font_ex::FontDisplayInfo;
+                let output_checker: usize = output_checker as usize;
+                match output_checker {
+                    0 => None,
+                    _ => Some(output_font_display_info),
+                }
+            },
+            _ => None,
         }
     }
 }

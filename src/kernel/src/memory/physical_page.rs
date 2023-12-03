@@ -59,16 +59,19 @@ impl<'a> Manager<'a> {
             .expect("Can't allocate physical pages!");
         self.alloc_pages(start_page, pages);
         self.search_point = start_page + pages;
-        Chunk {
+        let chunk: Chunk = Chunk {
             start_page,
             pages,
-        }
+        };
+        serial_println!("allocated pages = {:#x?}", chunk);
+        chunk
     }
 
     pub fn dealloc(
         &mut self,
         chunk: &mut Chunk,
     ) {
+        serial_println!("deallocated pages = {:#x?}", chunk);
         let start_pages: usize = chunk.start_page;
         let pages: usize = chunk.pages;
         self.dealloc_pages(start_pages, pages);
@@ -267,12 +270,10 @@ pub struct Request {
 
 impl Request {
     pub fn new(size: usize, align: usize) -> Self {
-        match align.count_ones() {
-            1 => Self {
-                size,
-                align,
-            },
-            _ => panic!("Can't create an allocate request!"),
+        assert_eq!(align.count_ones(), 1);
+        Self {
+            size,
+            align,
         }
     }
 }

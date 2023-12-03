@@ -92,9 +92,7 @@ impl From<&Vec<u8>> for Exfat {
                 .map(|(main_boot_region_byte, backup_boot_region_byte)| main_boot_region_byte == backup_boot_region_byte)
                 .fold(true, |sector_equality, byte_equality| sector_equality && byte_equality))
             .fold(true, |region_equality, sector_equality| region_equality && sector_equality);
-        if !main_boot_region_equals_backup_boot_region {
-            panic!("The main boot region is not equal to the backup boot region.");
-        }
+        assert!(main_boot_region_equals_backup_boot_region);
         let mut sector_offset: usize = 1;
         let extended_boot_sectors: Vec<extended_boot_sector::ExtendedBootSector> = main_boot_region_sectors[sector_offset..sector_offset + NUM_OF_EXTENDED_BOOT_SECTORS]
             .iter()
