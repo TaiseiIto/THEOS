@@ -241,6 +241,17 @@ impl<'a> ChunkList<'a> {
                             merge_previous_chunk = true;
                             deallocated_chunk.address = previous_chunk.address;
                             deallocated_chunk.size += previous_chunk.size;
+                            match (&mut deallocated_chunk.pages, &mut previous_chunk.pages) {
+                                (Some(deallocated_chunk_pages), Some(previous_chunk_pages)) => {
+                                    deallocated_chunk_pages.merge(previous_chunk_pages.copy());
+                                },
+                                (Some(_), None) => {},
+                                (deallocated_chunk_pages @ None, Some(previous_chunk_pages)) => {
+                                    *deallocated_chunk_pages = Some(previous_chunk_pages.copy());
+                                },
+                                (None, None) => {},
+                            }
+                            previous_chunk.pages = None;
                         }
                     }
                     if merge_previous_chunk {
