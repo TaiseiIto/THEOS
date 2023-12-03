@@ -90,7 +90,9 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let foreground_color_blue: u8 = 0xff;
     let foreground_color = display::Color::new(foreground_color_red, foreground_color_green, foreground_color_blue);
     let address2device: BTreeMap<pci::configuration::Address, pci::configuration::Device> = pci::configuration::Device::get_all_devices();
-    serial_println!("address2device = {:#x?}", address2device);
+    address2device
+        .iter()
+        .for_each(|(address, device)| device.initialize());
     display.print(&coordinates, &background_color, &foreground_color, "Hello, World!");
     loop {
         asm::hlt();

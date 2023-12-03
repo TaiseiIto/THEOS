@@ -216,6 +216,24 @@ impl Device {
         address2device
     }
 
+    pub fn initialize(&self) {
+        match self.class_code {
+            ClassCode::USBUHCI => {
+                serial_println!("Initialize USB UHCI {:#x?}", self);
+            },
+            ClassCode::USBOHCI => {
+                serial_println!("Initialize USB OHCI {:#x?}", self);
+            },
+            ClassCode::USBEHCI => {
+                serial_println!("Initialize USB EHCI {:#x?}", self);
+            },
+            ClassCode::USBxHCI => {
+                serial_println!("Initialize USB xHCI {:#x?}", self);
+            },
+            _ => (),
+        }
+    }
+
     fn is_multi_function(&self) -> bool {
         self.header_type.is_multi_function()
     }
