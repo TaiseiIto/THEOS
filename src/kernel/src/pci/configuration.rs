@@ -15,6 +15,10 @@ use {
         vec::Vec,
     },
     core::mem,
+    crate::{
+        serial_print,
+        serial_println,
+    },
     super::super::asm,
 };
 
@@ -71,42 +75,42 @@ impl Address {
     }
 
     fn scan_device(self, address2device: &mut BTreeMap<Self, Device>) {
-        let device: Option<Device> = (&self).into();
-        if let Some(device) = device {
-            let mut next_addresses: BTreeSet<Self> = BTreeSet::<Self>::new();
-            match device.class_code {
-                ClassCode::HostBridge => {
-                    let bus: u8 = self.function;
-                    let function: u8 = 0;
+        if !address2device.contains_key(&self) {
+            serial_println!("Scan PCI device {:#x?}", self);
+            let device: Option<Device> = (&self).into();
+            if let Some(device) = device {
+                let mut next_addresses: BTreeSet<Self> = BTreeSet::<Self>::new();
+                match device.class_code {
+                    ClassCode::HostBridge => {
+                        let bus: u8 = self.function;
+                        let function: u8 = 0;
+                        next_addresses
+                            .extend((u8::MIN..=Self::DEVICE_MAX)
+                                .map(|device| Self::new(bus, device, function)));
+                    },
+                    ClassCode::PCI2PCIBridge |
+                    ClassCode::SubtractiveDecodePCI2PCIBridge => if let Some(secondary_bus_number) = device.type_specific.secondary_bus_number() {
+                        let bus: u8 = secondary_bus_number;
+                        let function: u8 = 0;
+                        next_addresses
+                            .extend((u8::MIN..=Self::DEVICE_MAX)
+                                .map(|device| Self::new(bus, device, function)));
+                    },
+                    _ => {},
+                }
+                if self.function == 0 && device.is_multi_function() {
+                    let bus: u8 = self.bus;
+                    let device: u8 = self.device;
                     next_addresses
-                        .extend((u8::MIN..=Self::DEVICE_MAX)
-                            .map(|device| Self::new(bus, device, function))
-                            .filter(|address| address != &self && !address2device.contains_key(address)));
-                },
-                ClassCode::PCI2PCIBridge |
-                ClassCode::SubtractiveDecodePCI2PCIBridge => if let Some(secondary_bus_number) = device.type_specific.secondary_bus_number() {
-                    let bus: u8 = secondary_bus_number;
-                    let function: u8 = 0;
-                    next_addresses
-                        .extend((u8::MIN..=Self::DEVICE_MAX)
-                            .map(|device| Self::new(bus, device, function))
-                            .filter(|address| address != &self && !address2device.contains_key(address)));
-                },
-                _ => {},
-            }
-            if self.function == 0 && device.is_multi_function() {
-                let bus: u8 = self.bus;
-                let device: u8 = self.device;
+                        .extend((u8::MIN..=Self::FUNCTION_MAX)
+                            .map(|function| Self::new(bus, device, function)));
+                }
+                address2device.insert(self, device);
                 next_addresses
-                    .extend((u8::MIN..=Self::FUNCTION_MAX)
-                        .map(|function| Self::new(bus, device, function))
-                        .filter(|address| address != &self && !address2device.contains_key(address)));
+                    .into_iter()
+                    .for_each(|next_address| next_address
+                        .scan_device(address2device));
             }
-            address2device.insert(self, device);
-            next_addresses
-                .into_iter()
-                .for_each(|next_address| next_address
-                    .scan_device(address2device))
         }
     }
 }
