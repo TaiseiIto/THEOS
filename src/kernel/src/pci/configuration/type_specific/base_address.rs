@@ -80,7 +80,8 @@ impl Into<u32> for &Register {
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Address {
-    Memory(usize),
+    Memory32(u32),
+    Memory64(u64),
     IO(u16),
 }
 
@@ -96,12 +97,12 @@ impl Address {
                     } => {
                         let lower_address: u32 = last_address.into();
                         let lower_address: u32 = lower_address & Register::MEMORY_BASE_ADDRESS_MASK;
-                        let lower_address: usize = lower_address as usize;
+                        let lower_address: u64 = lower_address as u64;
                         let higher_address: u32 = next_address.into();
-                        let higher_address: usize = higher_address as usize;
-                        let higher_address: usize = higher_address << 32;
-                        let address: usize = lower_address | higher_address;
-                        let address = Self::Memory(address);
+                        let higher_address: u64 = higher_address as u64;
+                        let higher_address: u64 = higher_address << 32;
+                        let address: u64 = lower_address | higher_address;
+                        let address = Self::Memory64(address);
                         addresses.insert(address);
                         (addresses, None)
                     },
@@ -111,10 +112,19 @@ impl Address {
                 },
                 None => match next_address {
                     next_address @ Register::Memory {
-                        memory_type: _,
+                        memory_type,
                         prefetchable: _,
                         base_address: _,
-                    } => (addresses, Some(next_address)),
+                    } => match memory_type {
+                        0 => { // Memory type 0 indicates that this is 32 bit address.
+                            let address: u32 = next_address.into();
+                            let address = Self::Memory32(address);
+                            addresses.insert(address);
+                            (addresses, None)
+                        },
+                        2 => (addresses, Some(next_address)), // Memory type 2 indicates that this is 64 bit address.
+                        _ => (addresses, None),
+                    },
                     next_address @ Register::IO {
                         base_address: _,
                     } => {
