@@ -1,12 +1,15 @@
 extern crate alloc;
 
-mod base_address;
+pub mod base_address;
 mod bridge_control;
 mod expansion_rom_base_address;
 mod secondary_status;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_set::BTreeSet,
+        vec::Vec,
+    },
     core::mem,
     super::{
         CONFIGURATION_SIZE,
@@ -259,6 +262,41 @@ impl Registers {
                 }
             },
             header_type::HeaderLayout::Reserved => Self::Reserved,
+        }
+    }
+
+    pub fn get_addresses(&self) -> BTreeSet<base_address::Address> {
+        match self {
+            Self::Type0 {
+                base_address_registers,
+                cardbus_cis_pointer: _,
+                subsystem_vendor_id: _,
+                subsystem_id: _,
+                expansion_rom_base_address: _,
+                min_gnt: _,
+                max_lat: _,
+            } => base_address::Address::get(base_address_registers.iter()),
+            Self::Type1 {
+                base_address_registers,
+                primary_bus_number: _,
+                secondary_bus_number: _,
+                subordinate_bus_number: _,
+                secondary_latency_timer: _,
+                io_base: _,
+                io_limit: _,
+                secondary_status: _,
+                memory_base: _,
+                memory_limit: _,
+                prefetchable_memory_base: _,
+                prefetchable_memory_limit: _,
+                prefetchable_memory_base_upper_32bits: _,
+                prefetchable_memory_limit_upper_32bits: _,
+                io_base_upper_16bits: _,
+                io_base_limit_16bits: _,
+                expansion_rom_base_address: _,
+                bridge_control: _,
+            } => base_address::Address::get(base_address_registers.iter()),
+            Self::Reserved => panic!("Can't get PCI device addresses!"),
         }
     }
 

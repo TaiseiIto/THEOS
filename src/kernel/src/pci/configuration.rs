@@ -20,6 +20,7 @@ use {
         serial_println,
     },
     super::super::asm,
+    type_specific::base_address,
 };
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -210,7 +211,11 @@ impl Device {
     const INTERRUPT_PIN_SIZE: usize = mem::size_of::<u8>();
     const INTERRUPT_PIN_END: usize = Self::INTERRUPT_PIN_BEGIN + Self::INTERRUPT_PIN_SIZE;
 
-    pub fn get_all_devices() -> BTreeMap<Address, Self> {
+    pub fn get_addresses(&self) -> BTreeSet<base_address::Address> {
+        self.type_specific.get_addresses()
+    }
+
+    pub fn get_devices() -> BTreeMap<Address, Self> {
         let mut address2device = BTreeMap::<Address, Self>::new();
         Address::new(0, 0, 0).scan_device(&mut address2device);
         address2device
@@ -229,6 +234,8 @@ impl Device {
             },
             ClassCode::USBxHCI => {
                 serial_println!("Initialize USB xHCI {:#x?}", self);
+                let addresses: BTreeSet<base_address::Address> = self.get_addresses();
+                serial_println!("addresses = {:#x?}", addresses);
             },
             _ => (),
         }

@@ -1,4 +1,9 @@
-use core::mem;
+extern crate alloc;
+
+use {
+    alloc::collections::btree_set::BTreeSet,
+    core::mem,
+};
 
 // PCI Express Base Specification Revision 5.0 Version 1.0 7.5.1.2.1 Base Address Registers
 #[derive(Debug)]
@@ -52,3 +57,77 @@ impl From<u32> for Register {
         }
     }
 }
+
+impl Into<u32> for &Register {
+    fn into(self) -> u32 {
+        match self {
+            Register::Memory {
+                memory_type,
+                prefetchable,
+                base_address,
+            } => (*memory_type as u32) << Register::MEMORY_TYPE_SHIFT_BEGIN
+                | if *prefetchable {
+                    Register::PREFETCHABLE_MASK
+                } else {
+                    0
+                } | base_address,
+            Register::IO {
+                base_address,
+            } => base_address | Register::MEMORY_IO_MASK,
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub enum Address {
+    Memory(usize),
+    IO(u16),
+}
+
+impl Address {
+    pub fn get<'a, I>(register_iterator: I) -> BTreeSet<Self> where I: Iterator<Item = &'a Register> {
+        register_iterator
+            .fold((BTreeSet::<Self>::new(), None::<&Register>), |(mut addresses, last_address), next_address| match last_address {
+                Some(last_address) => match next_address {
+                    next_address @ Register::Memory {
+                        memory_type: _,
+                        prefetchable: _,
+                        base_address: _,
+                    } => {
+                        let lower_address: u32 = last_address.into();
+                        let lower_address: u32 = lower_address & Register::MEMORY_BASE_ADDRESS_MASK;
+                        let lower_address: usize = lower_address as usize;
+                        let higher_address: u32 = next_address.into();
+                        let higher_address: usize = higher_address as usize;
+                        let higher_address: usize = higher_address << 32;
+                        let address: usize = lower_address | higher_address;
+                        let address = Self::Memory(address);
+                        addresses.insert(address);
+                        (addresses, None)
+                    },
+                    Register::IO {
+                        base_address: _,
+                    } => panic!("Can't get a PCI device memory mapped address!"),
+                },
+                None => match next_address {
+                    next_address @ Register::Memory {
+                        memory_type: _,
+                        prefetchable: _,
+                        base_address: _,
+                    } => (addresses, Some(next_address)),
+                    next_address @ Register::IO {
+                        base_address: _,
+                    } => {
+                        let address: u32 = next_address.into();
+                        let address: u32 = address & Register::IO_BASE_ADDRESS_MASK;
+                        let address: u16 = address as u16;
+                        let address = Self::IO(address);
+                        addresses.insert(address);
+                        (addresses, None)
+                    },
+                },
+            })
+            .0
+    }
+}
+
