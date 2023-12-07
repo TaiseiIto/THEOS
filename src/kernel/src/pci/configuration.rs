@@ -234,8 +234,14 @@ impl Device {
             },
             ClassCode::USBxHCI => {
                 serial_println!("Initialize USB xHCI {:#x?}", self);
-                let addresses: BTreeSet<base_address::Address> = self.get_addresses();
-                serial_println!("addresses = {:#x?}", addresses);
+                let address: base_address::Address = self.get_addresses()
+                    .into_iter()
+                    .find(|address| match address {
+                        base_address::Address::Memory64(_) => true,
+                        _ => false,
+                    })
+                    .expect("Can't get a xHCI memory address!");
+                serial_println!("address = {:#x?}", address);
             },
             _ => (),
         }
