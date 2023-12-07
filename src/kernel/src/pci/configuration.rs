@@ -4,7 +4,7 @@ mod bist;
 mod command;
 mod header_type;
 mod status;
-mod type_specific;
+pub mod type_specific;
 
 use {
     alloc::{
@@ -19,7 +19,10 @@ use {
         serial_print,
         serial_println,
     },
-    super::super::asm,
+    super::{
+        super::asm,
+        xhci,
+    },
     type_specific::base_address,
 };
 
@@ -234,14 +237,15 @@ impl Device {
             },
             ClassCode::USBxHCI => {
                 serial_println!("Initialize USB xHCI {:#x?}", self);
-                let address: base_address::Address = self.get_addresses()
+                let registers: xhci::Registers = self.get_addresses()
                     .into_iter()
                     .find(|address| match address {
-                        base_address::Address::Memory64(_) => true,
+                        base_address::Address::Memory64(address) => true,
                         _ => false,
                     })
-                    .expect("Can't get a xHCI memory address!");
-                serial_println!("address = {:#x?}", address);
+                    .expect("Can't get a xHCI memory address!")
+                    .into();
+                serial_println!("registers = {:#x?}", registers);
             },
             _ => (),
         }
