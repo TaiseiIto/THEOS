@@ -32,5 +32,9 @@ cat ../.ssh/config >> /root/.ssh/config
 chmod 600 /root/.github/key
 chmod -R 600 /root/.gnupg
 /root/.cargo/bin/cargo login $(cat /root/.crates.io/key)
+cd /root/mikanos
+git remote set-url origin git@github.com:TaiseiIto/mikanos.git
+cd /root/osbook
+git remote set-url origin git@github.com:TaiseiIto/mikanos-build.git
 cd $curdir
 
