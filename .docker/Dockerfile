@@ -60,7 +60,6 @@ RUN apt install tzdata -y
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 # Install an editor.
-RUN apt install ed -y
 RUN apt install vim -y
 
 # Clone this repository.
