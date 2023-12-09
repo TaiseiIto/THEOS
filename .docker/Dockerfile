@@ -109,6 +109,7 @@ RUN apt install ansible -y
 WORKDIR /root/osbool/devenv
 RUN ansible-playbook -i ansible_inventory ansible_provision.yml
 WORKDIR /root/edk2
+RUN git checkout mikanos
 RUN ln -s /root/mikanos/MikanLoaderPkg ./
 
 # bash settings.
