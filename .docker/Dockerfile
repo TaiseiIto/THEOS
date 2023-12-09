@@ -66,10 +66,6 @@ RUN apt install vim -y
 WORKDIR /root
 RUN git clone --single-branch --branch $branch --depth 1 --recursive --shallow-submodules https://github.com/TaiseiIto/THEOS.git
 
-# Clone MikanOS for reference.
-RUN git clone --single-branch --branch master --depth 1 https://github.com/uchan-nos/mikanos.git
-RUN git clone --single-branch --branch master --depth 1 https://github.com/uchan-nos/mikanos-build.git
-
 # Build EDK2.
 RUN apt install acpica-tools -y
 RUN apt install nasm -y
@@ -103,6 +99,17 @@ RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-i
 RUN make
 RUN make install
 RUN cp /root/THEOS/.gdb/.conf /root/.gdbinit
+
+# Clone MikanOS for reference.
+WORKDIR /root
+RUN git clone --single-branch --branch master --depth 1 https://github.com/TaiseiIto/mikanos.git
+RUN git clone --single-branch --branch master --depth 1 https://github.com/TaiseiIto/mikanos-build.git osbook
+WORKDIR /root/osbook
+RUN apt install ansible -y
+WORKDIR /root/osbool/devenv
+RUN ansible-playbook -K -i ansible_inventory ansible_provision.yml
+WORKDIR /root/edk2
+RUN ln -s /root/mikanos/MikanLoaderPkg ./
 
 # bash settings.
 WORKDIR /root/THEOS
