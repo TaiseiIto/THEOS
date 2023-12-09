@@ -107,7 +107,7 @@ RUN git clone --single-branch --branch master --depth 1 https://github.com/Taise
 WORKDIR /root/osbook
 RUN apt install ansible -y
 WORKDIR /root/osbool/devenv
-RUN ansible-playbook -K -i ansible_inventory ansible_provision.yml
+RUN ansible-playbook -i ansible_inventory ansible_provision.yml
 WORKDIR /root/edk2
 RUN ln -s /root/mikanos/MikanLoaderPkg ./
 
