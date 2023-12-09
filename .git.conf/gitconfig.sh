@@ -36,5 +36,7 @@ cd /root/mikanos
 git remote set-url origin git@github.com:TaiseiIto/mikanos.git
 cd /root/osbook
 git remote set-url origin git@github.com:TaiseiIto/mikanos-build.git
+cd /root/edk2
+git remote set-url origin git@github.com:TaiseiIto/edk2.git
 cd $curdir
 
