@@ -106,7 +106,7 @@ RUN git clone --single-branch --branch master --depth 1 https://github.com/Taise
 RUN git clone --single-branch --branch master --depth 1 https://github.com/TaiseiIto/mikanos-build.git osbook
 WORKDIR /root/osbook
 RUN apt install ansible -y
-WORKDIR /root/osbool/devenv
+WORKDIR /root/osbook/devenv
 RUN ansible-playbook -i ansible_inventory ansible_provision.yml
 WORKDIR /root/edk2
 RUN git checkout mikanos
