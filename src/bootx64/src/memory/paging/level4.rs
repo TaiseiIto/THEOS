@@ -188,6 +188,42 @@ impl Cr3<'_> {
     }
 }
 
+impl<'a> Clone for Cr3<'a> {
+    fn clone(&self) -> Self {
+        let Self {
+            pwt,
+            pcd,
+            page_map_level_4_table_page,
+            page_map_level_4_entries,
+        } = self;
+        let pwt: bool = *pwt;
+        let pcd: bool = *pcd;
+        let mut page_map_level_4_table_page: Option<Pages> = Some(Pages::new(1));
+        let page_map_level_4_table: &mut [u8] = page_map_level_4_table_page
+            .as_mut()
+            .expect("Can't create a new CR3 structure!")
+            .bytes();
+        let page_map_level_4_table_len: usize = page_map_level_4_table.len();
+        let page_map_level_4_table: *mut u8 = page_map_level_4_table.as_mut_ptr();
+        let page_map_level_4_table: *mut u64 = page_map_level_4_table as *mut u64;
+        let page_map_level_4_table_len: usize = page_map_level_4_table_len / 8;
+        let page_map_level_4_table: &mut [u64] = unsafe {
+            slice::from_raw_parts_mut(page_map_level_4_table, page_map_level_4_table_len)
+        };
+        let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_entries
+            .iter()
+            .zip(page_map_level_4_table.into_iter())
+            .map(|(page_map_level_4_entry, page_map_level_4_entry_pointer)| page_map_level_4_entry.clone(page_map_level_4_entry_pointer))
+            .collect();
+        Self {
+            pwt,
+            pcd,
+            page_map_level_4_table_page,
+            page_map_level_4_entries,
+        }
+    }
+}
+
 impl fmt::Debug for Cr3<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter
@@ -438,6 +474,70 @@ impl<'a> PageMapLevel4Entry<'a> {
             })
         } else {
             None
+        }
+    }
+
+    fn clone(&self, page_map_level_4_entry: &'a mut u64) -> Self {
+        let Self {
+            present,
+            virtual_address,
+            page_map_level_4_entry: _,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            restart,
+            page_directory_pointer_table_page,
+            page_directory_pointer_entries,
+            execute_disable,
+        } = self;
+        let present: bool = *present;
+        let virtual_address: usize = *virtual_address;
+        let writable: bool = *writable;
+        let user_mode_access: bool = *user_mode_access;
+        let page_write_through: bool = *page_write_through;
+        let page_cache_disable: bool = *page_cache_disable;
+        let accessed: bool = *accessed;
+        let restart: bool = *restart;
+        let execute_disable: bool = *execute_disable;
+        let page_directory_pointer_table_page: Option<Pages<'a>> = if present {
+            Some(Pages::new(1))
+        } else {
+            None
+        };
+        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>> = match page_directory_pointer_table_page {
+            Some(page_directory_pointer_table_page) => {
+                let page_directory_pointer_table_address: u64 = page_directory_pointer_table_page.physical_address();
+                let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page.bytes();
+                let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
+                let page_directory_pointer_table: *mut u8 = page_directory_pointer_table.as_mut_ptr();
+                let page_directory_pointer_table: *mut u64 = page_directory_pointer_table as *mut u64;
+                let page_directory_pointer_table_len: usize = page_directory_pointer_table_len / 8;
+                let page_directory_pointer_table: &mut [u64] = unsafe {
+                    slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
+                };
+                page_directory_pointer_entries
+                    .iter()
+                    .zip(page_directory_pointer_table.into_iter())
+                    .map(|(page_directory_pointer_entry, page_directory_pointer_entry_pointer)| page_directory_pointer_entry.clone(page_directory_pointer_entry_pointer))
+                    .collect()
+            },
+            None => Vec::<PageDirectoryPointerEntry<'a>>::new(),
+        };
+        Self {
+            present,
+            virtual_address,
+            page_map_level_4_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            restart,
+            page_directory_pointer_table_page,
+            page_directory_pointer_entries,
+            execute_disable,
         }
     }
 

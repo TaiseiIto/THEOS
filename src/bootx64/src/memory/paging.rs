@@ -206,3 +206,22 @@ impl State<'_> {
     }
 }
 
+impl<'a> Clone for State<'a> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Disable => Self::Disable,
+            Self::Bit32 => Self::Bit32,
+            Self::Pae => Self::Pae,
+            Self::Level4 {
+                cr3,
+            }  => {
+                let cr3: level4::Cr3<'a> = cr3.clone();
+                Self::Level4 {
+                    cr3,
+                }
+            },
+            Self::Level5 => Self::Level5,
+        }
+    }
+}
+
