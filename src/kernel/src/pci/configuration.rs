@@ -292,6 +292,12 @@ impl TryFrom<[u8; CONFIGURATION_SIZE]> for Device {
                 let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
                 let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
                 let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
+                if let ClassCode::USBxHCI = class_code {
+                    let configuration: [u32; CONFIGURATION_SIZE / mem::size_of::<u32>()] = unsafe {
+                        mem::transmute::<[u8; CONFIGURATION_SIZE], [u32; CONFIGURATION_SIZE / mem::size_of::<u32>()]>(configuration)
+                    };
+                    serial_println!("xHCI configuration space = {:#x?}", configuration);
+                }
                 Ok(Self {
                     vendor_id,
                     device_id,
