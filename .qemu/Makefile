@@ -2,14 +2,15 @@
 # Don't execute it directly.
 
 QEMU = qemu-system-x86_64
+MEMORY_SIZE = -m 1G
 ENABLE_5_LEVEL_PAGING = -cpu qemu64,+la57
 LOG_FILE = ../qemu.log
 LOG = -d int,cpu_reset -D $(LOG_FILE)
 NO_REBOOT = --no-reboot
 OVMF_CODE = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
-OVMF_CODE_OPTION = -drive file=$(OVMF_CODE),format=raw,if=pflash
+OVMF_CODE_OPTION = -drive file=$(OVMF_CODE),format=raw,if=pflash,readonly
 OVMF_VARS = ../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
-OVMF_VARS_OPTION = -drive file=$(OVMF_VARS),format=raw,if=pflash
+OVMF_VARS_OPTION = -drive file=$(OVMF_VARS),format=raw,if=pflash,readonly
 THEOS = ../theos.img
 THEOS_OPTION = -drive file=$(THEOS),format=raw,id=theos,if=none -device ide-hd,drive=theos,bootindex=1
 SERIAL_LOG = ../serial.log
@@ -17,13 +18,13 @@ SERIAL_OPTION = -serial stdio
 VNC_OPTION = -vnc :0
 DEBUG_PORT = 2159
 DEBUG_OPTION = -S -gdb tcp::$(DEBUG_PORT)
-XHCI = -device qemu-xhci
+XHCI = -device nec-usb-xhci,id=xhci
 USB_KEYBOARD = -device usb-kbd
 USB_MOUSE = -device usb-mouse
 
 # Run THEOS on QEMU.
 run:
-	$(QEMU) $(ENABLE_5_LEVEL_PAGING) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(XHCI) $(USB_KEYBOARD) $(USB_MOUSE) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) | tee $(SERIAL_LOG)
+	$(QEMU) $(MEMORY_SIZE) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(XHCI) $(USB_KEYBOARD) $(USB_MOUSE) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) | tee $(SERIAL_LOG)
 
 # Stop THEOS on QEMU.
 stop:
@@ -31,5 +32,5 @@ stop:
 
 # Debug THEOS on QEMU.
 debug:
-	$(QEMU) $(ENABLE_5_LEVEL_PAGING) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(XHCI) $(USB_KEYBOARD) $(USB_MOUSE) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) $(DEBUG_OPTION) | tee $(SERIAL_LOG)
+	$(QEMU) $(MEMORY_SIZE) $(THEOS_OPTION) $(OVMF_CODE_OPTION) $(OVMF_VARS_OPTION) $(XHCI) $(USB_KEYBOARD) $(USB_MOUSE) $(LOG) $(NO_REBOOT) $(SERIAL_OPTION) $(VNC_OPTION) $(DEBUG_OPTION) | tee $(SERIAL_LOG)
 
