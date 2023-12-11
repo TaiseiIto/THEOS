@@ -486,7 +486,7 @@ impl<'a> PageMapLevel4Entry<'a> {
             user_mode_access,
             page_write_through,
             page_cache_disable,
-            accessed,
+            accessed: _,
             restart,
             page_directory_pointer_table_page,
             page_directory_pointer_entries,
@@ -498,7 +498,7 @@ impl<'a> PageMapLevel4Entry<'a> {
         let user_mode_access: bool = *user_mode_access;
         let page_write_through: bool = *page_write_through;
         let page_cache_disable: bool = *page_cache_disable;
-        let accessed: bool = *accessed;
+        let accessed: bool = false;
         let restart: bool = *restart;
         let execute_disable: bool = *execute_disable;
         let page_directory_pointer_table_page: Option<Pages<'a>> = if present {
@@ -1251,8 +1251,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
             user_mode_access,
             page_write_through,
             page_cache_disable,
-            accessed,
-            dirty,
+            accessed: _,
+            dirty: _,
             page_size_1_gib,
             global,
             restart,
@@ -1269,8 +1269,8 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         let user_mode_access: bool = *user_mode_access;
         let page_write_through: bool = *page_write_through;
         let page_cache_disable: bool = *page_cache_disable;
-        let accessed: bool = *accessed;
-        let dirty: bool = *dirty;
+        let accessed: bool = false;
+        let dirty: bool = false;
         let page_size_1_gib: bool = *page_size_1_gib;
         let global: Option<bool> = *global;
         let restart: bool = *restart;
@@ -2012,8 +2012,8 @@ impl<'a> PageDirectoryEntry<'a> {
             user_mode_access,
             page_write_through,
             page_cache_disable,
-            accessed,
-            dirty,
+            accessed: _,
+            dirty: _,
             page_size_2_mib,
             global,
             restart,
@@ -2029,8 +2029,8 @@ impl<'a> PageDirectoryEntry<'a> {
         let user_mode_access: bool = *user_mode_access;
         let page_write_through: bool = *page_write_through;
         let page_cache_disable: bool = *page_cache_disable;
-        let accessed: bool = *accessed;
-        let dirty: bool = *dirty;
+        let accessed: bool = false;
+        let dirty: bool = false;
         let page_size_2_mib: bool = *page_size_2_mib;
         let global: Option<bool> = *global;
         let restart: bool = *restart;
@@ -2676,7 +2676,7 @@ impl<'a> PageEntry<'a> {
             page_write_through,
             page_cache_disable,
             accessed: _,
-            dirty,
+            dirty: _,
             page_attribute_table,
             global,
             restart,
@@ -2690,7 +2690,7 @@ impl<'a> PageEntry<'a> {
         let page_write_through: bool = *page_write_through;
         let page_cache_disable: bool = *page_cache_disable;
         let accessed: bool = false;
-        let dirty: bool = *dirty;
+        let dirty: bool = false;
         let page_attribute_table: bool = *page_attribute_table;
         let global: bool = *global;
         let restart: bool = *restart;
