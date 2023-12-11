@@ -501,13 +501,13 @@ impl<'a> PageMapLevel4Entry<'a> {
         let accessed: bool = false;
         let restart: bool = *restart;
         let execute_disable: bool = *execute_disable;
-        let page_directory_pointer_table_page: Option<Pages<'a>> = if present {
+        let mut page_directory_pointer_table_page: Option<Pages<'a>> = if present {
             Some(Pages::new(1))
         } else {
             None
         };
         let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>> = match page_directory_pointer_table_page {
-            Some(page_directory_pointer_table_page) => {
+            Some(mut page_directory_pointer_table_page) => {
                 let page_directory_pointer_table_address: u64 = page_directory_pointer_table_page.physical_address();
                 let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page.bytes();
                 let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
@@ -1278,28 +1278,31 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         let page_1_gib_physical_address: Option<usize> = *page_1_gib_physical_address;
         let protection_key: Option<u8> = *protection_key;
         let execute_disable: bool = *execute_disable;
-        let page_directory_table_page: Option<Pages<'a>> = if page_size_1_gib {
+        let mut page_directory_table_page: Option<Pages<'a>> = if page_size_1_gib {
             None
         } else {
             Some(Pages::new(1))
         };
-        let page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>> = page_directory_table_page.map(|page_directory_table_page| {
-            let page_directory_table_address: u64 = page_directory_table_page.physical_address();
-            let page_directory_table: &mut [u8] = page_directory_table_page.bytes();
-            let page_directory_table_len: usize = page_directory_table.len();
-            let page_directory_table: *mut u8 = page_directory_table.as_mut_ptr();
-            let page_directory_table: *mut u64 = page_directory_table as *mut u64;
-            let page_directory_table_len: usize = page_directory_table_len / 8;
-            let page_directory_table: &mut [u64] = unsafe {
-                slice::from_raw_parts_mut(page_directory_table, page_directory_table_len)
-            };
-            page_directory_entries
-                .expect("Can't clone a page directory entries!")
-                .iter()
-                .zip(page_directory_table.into_iter())
-                .map(|(page_directory_entry, page_directory_entry_pointer)| page_directory_entry.clone(page_directory_entry_pointer))
-                .collect()
-        });
+        let page_directory_entries: Option<Vec<PageDirectoryEntry<'a>>> = page_directory_table_page
+            .as_mut()
+            .map(|page_directory_table_page| {
+                let page_directory_table_address: u64 = page_directory_table_page.physical_address();
+                let page_directory_table: &mut [u8] = page_directory_table_page.bytes();
+                let page_directory_table_len: usize = page_directory_table.len();
+                let page_directory_table: *mut u8 = page_directory_table.as_mut_ptr();
+                let page_directory_table: *mut u64 = page_directory_table as *mut u64;
+                let page_directory_table_len: usize = page_directory_table_len / 8;
+                let page_directory_table: &mut [u64] = unsafe {
+                    slice::from_raw_parts_mut(page_directory_table, page_directory_table_len)
+                };
+                page_directory_entries
+                    .as_ref()
+                    .expect("Can't clone a page directory entries!")
+                    .iter()
+                    .zip(page_directory_table.into_iter())
+                    .map(|(page_directory_entry, page_directory_entry_pointer)| page_directory_entry.clone(page_directory_entry_pointer))
+                    .collect()
+            });
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
         } else {
