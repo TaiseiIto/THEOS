@@ -71,9 +71,17 @@ impl Hcsparams2 {
     const ISOCHRONOUS_SCHEDULING_THRESHOLD_LENGTH: usize = 4;
     const ISOCHRONOUS_SCHEDULING_THRESHOLD_END: usize = Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_BEGIN + Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_LENGTH;
     const ISOCHRONOUS_SCHEDULING_THRESHOLD_MASK: u32 = (1 << Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_END) - (1 << Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_BEGIN);
+    const EVENT_RING_SEGMENT_TABLE_MAX_BEGIN: usize = Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_END;
+    const EVENT_RING_SEGMENT_TABLE_MAX_LENGTH: usize = 4;
+    const EVENT_RING_SEGMENT_TABLE_MAX_END: usize = Self::EVENT_RING_SEGMENT_TABLE_MAX_BEGIN + Self::EVENT_RING_SEGMENT_TABLE_MAX_LENGTH;
+    const EVENT_RING_SEGMENT_TABLE_MAX_MASK: u32 = (1 << Self::EVENT_RING_SEGMENT_TABLE_MAX_END) - (1 << Self::EVENT_RING_SEGMENT_TABLE_MAX_BEGIN);
 
     fn isochronous_scheduling_threshold(&self) -> u8 {
         ((self.0 & Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_MASK) >> Self::ISOCHRONOUS_SCHEDULING_THRESHOLD_BEGIN) as u8
+    }
+
+    fn event_ring_segment_table_max(&self) -> u8 {
+        ((self.0 & Self::EVENT_RING_SEGMENT_TABLE_MAX_MASK) >> Self::EVENT_RING_SEGMENT_TABLE_MAX_BEGIN) as u8
     }
 }
 
@@ -82,6 +90,7 @@ impl fmt::Debug for Hcsparams2 {
         formatter
             .debug_struct("HCSPARAMS2")
             .field("isochronous_scheduling_threshold", &self.isochronous_scheduling_threshold())
+            .field("event_ring_segment_table_max", &self.event_ring_segment_table_max())
             .finish()
     }
 }
