@@ -61,13 +61,10 @@ struct Kernel<'a> {
     elf: elf::Elf<'a>,
     cpuid: Option<cpuid::Cpuid>,
     gdt: gdt::Gdt,
-    memory_size: usize,
-    highest_parallel_offset: usize,
     physical_page_present_bit_map: memory::PhysicalPagePresentBitMap,
     page_map: BTreeMap<usize, usize>,
     paging: paging::State<'a>,
     stack: memory::Pages<'a>,
-    stack_floor: &'a void::Void,
     cr0: control::register0::Cr0,
     cr2: control::register2::Cr2,
     cr3: control::register3::Cr3,
@@ -80,10 +77,6 @@ struct Kernel<'a> {
 impl Kernel<'_> {
     fn new() -> Self {
         let memory_map = memory_allocation::Map::new();
-        let memory_size: memory_allocation::PhysicalAddress = memory_map.get_memory_size();
-        let memory_size = memory_size as usize;
-        let highest_parallel_offset: usize = usize::MAX - (memory_size - 1);
-        serial_println!("memory_size = {:#x?}", memory_size);
         let memory_map: Vec<memory_allocation::MemoryDescriptor> = (&memory_map).into();
         let physical_page_present_bit_map: memory::PhysicalPagePresentBitMap = (&memory_map).into();
         let cpuid: Option<cpuid::Cpuid> = cpuid::Cpuid::new();
@@ -103,7 +96,6 @@ impl Kernel<'_> {
         let cr3 = control::register3::Cr3::get();
         let cr4 = control::register4::Cr4::get();
         let mut paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer).clone();
-        paging.map_highest_parallel(memory_size);
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
         let elf: Vec<u8> = simple_file_system.read_file("/kernel.elf");
@@ -113,15 +105,13 @@ impl Kernel<'_> {
         let gdt = gdt::Gdt::new();
         serial_println!("new gdt = {:#x?}", gdt);
         let code_page_map: BTreeMap<usize, usize> = elf.page_map();
-        let stack_floor = highest_parallel_offset;
         let stack = memory::Pages::new(0x10);
         let stack_pages: usize = stack.pages();
         let stack_page_map: BTreeMap<usize, usize> = stack
             .physical_addresses()
             .enumerate()
-            .map(|(i, physical_address)| (physical_address, stack_floor - (stack_pages - i) * memory_allocation::PAGE_SIZE))
+            .map(|(i, physical_address)| (physical_address, usize::MAX - (stack_pages - i) * memory_allocation::PAGE_SIZE + 1))
             .collect();
-        let stack_floor: &void::Void = stack_floor.into();
         let mut page_map: BTreeMap<usize, usize> = BTreeMap::<usize, usize>::new();
         code_page_map
             .iter()
@@ -153,13 +143,10 @@ impl Kernel<'_> {
             elf,
             cpuid,
             gdt,
-            memory_size,
-            highest_parallel_offset,
             physical_page_present_bit_map,
             page_map,
             paging,
             stack,
-            stack_floor,
             cr0,
             cr2,
             cr3,
@@ -182,13 +169,10 @@ impl Kernel<'_> {
             elf,
             cpuid,
             gdt,
-            memory_size,
-            highest_parallel_offset,
             physical_page_present_bit_map,
             page_map,
             paging,
             stack,
-            stack_floor,
             cr0,
             cr2,
             cr3,
@@ -207,11 +191,8 @@ impl Kernel<'_> {
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
-            memory_size,
-            highest_parallel_offset,
             physical_page_present_bit_map,
             memory_map,
-            stack_floor,
             cr0,
             cr2,
             cr3,

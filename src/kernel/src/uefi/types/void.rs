@@ -21,11 +21,6 @@ impl Void {
     pub fn mut_null<'a>() -> &'a mut Self {
         0usize.into()
     }
-
-    pub fn move_to_higher_half<'a>(&self, highest_parallel_offset: usize) -> &'a Self {
-        let address: usize = self.into();
-        (highest_parallel_offset + address).into()
-    }
 }
 
 impl fmt::Debug for Void {

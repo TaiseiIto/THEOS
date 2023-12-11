@@ -38,11 +38,8 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let KernelArguments {
         image,
         system,
-        memory_size,
-        highest_parallel_offset,
         physical_page_present_bit_map,
         memory_map,
-        stack_floor,
         cr0,
         cr2,
         cr3,
@@ -56,7 +53,6 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     serial::Serial::init_com1(com1);
     serial::Serial::init_com2(com2);
     serial_println!("Hello, kernel.elf!");
-    serial_println!("stack_floor = {:#x?}", stack_floor);
     serial_println!("RSP = {:#x?}", asm::get_rsp());
     system::init_system(image, *system);
     let image: handle::Handle = system::image();
@@ -64,8 +60,6 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let image: usize = image as usize;
     serial_println!("image = {:#x?}", image);
     serial_println!("system = {:#x?}", system::system());
-    serial_println!("memory_size = {:#x?}", memory_size);
-    serial_println!("highest_parallel_offset = {:#x?}", highest_parallel_offset);
     let physical_page_present_bit_map: &'static mut [u8] = *physical_page_present_bit_map;
     serial_println!("physical_page_present_bit_map");
     let memory_map: memory_allocation::MemoryDescriptors = (*memory_map).into();
@@ -102,11 +96,8 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
 pub struct KernelArguments<'a> {
     image: handle::Handle<'static>,
     system: &'a mut system::System<'a>,
-    memory_size: usize,
-    highest_parallel_offset: usize,
     physical_page_present_bit_map: &'a mut [u8],
     memory_map: &'a memory_allocation::PassedMap<'a>,
-    stack_floor: &'a void::Void,
     cr0: &'a control::register0::Cr0,
     cr2: &'a control::register2::Cr2,
     cr3: &'a control::register3::Cr3,

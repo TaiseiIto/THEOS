@@ -82,17 +82,14 @@ impl Header {
     pub fn run(&self, kernel_arguments: KernelArguments) {
         serial_println!("Header.run()");
         serial_println!("self.e_entry = {:#x}", self.e_entry);
-        let stack_floor: usize = kernel_arguments.stack_floor.into();
-        serial_println!("stack_floor = {:#x}", stack_floor);
         let kernel_arguments: usize = (&kernel_arguments).into();
         serial_println!("kernel_arguments = {:#x}", kernel_arguments);
         unsafe {
             asm!(
-                "mov rsp, rcx",
+                "xor rsp, rsp",
                 "call rax",
                 in("rax") self.e_entry,
                 in("rdi") kernel_arguments,
-                in("rcx") stack_floor,
             );
         }
     }
