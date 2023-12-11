@@ -1294,7 +1294,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
                 slice::from_raw_parts_mut(page_directory_table, page_directory_table_len)
             };
             page_directory_entries
-                .expect("Can't clone a page directory entry!")
+                .expect("Can't clone a page directory entries!")
                 .iter()
                 .zip(page_directory_table.into_iter())
                 .map(|(page_directory_entry, page_directory_entry_pointer)| page_directory_entry.clone(page_directory_entry_pointer))
@@ -1355,7 +1355,7 @@ impl<'a> PageDirectoryPointerEntry<'a> {
         } else {
             0
         };
-        let page_1_gib_physical_address_in_entry: u64 = page_1_gib_physical_address.unwrap_or(0) as u64;
+        let page_1_gib_physical_address_in_entry: u64 = page_1_gib_physical_address.unwrap_or(0) as u64 & Self::PAGE_1_GIB_MASK;
         let protection_key_in_entry: u64 = (protection_key.unwrap_or(0) as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
         let page_directory_table_in_entry: u64 = page_directory_table_page
             .as_ref()
@@ -2001,6 +2001,157 @@ impl<'a> PageDirectoryEntry<'a> {
             })
         } else {
             None
+        }
+    }
+
+    fn clone(&self, page_directory_entry: &'a mut u64) -> Self {
+        let Self {
+            virtual_address,
+            page_directory_entry: _,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            dirty,
+            page_size_2_mib,
+            global,
+            restart,
+            page_attribute_table,
+            page_table_page,
+            page_entries,
+            page_2_mib_physical_address,
+            protection_key,
+            execute_disable,
+        } = self;
+        let virtual_address: usize = *virtual_address;
+        let writable: bool = *writable;
+        let user_mode_access: bool = *user_mode_access;
+        let page_write_through: bool = *page_write_through;
+        let page_cache_disable: bool = *page_cache_disable;
+        let accessed: bool = *accessed;
+        let dirty: bool = *dirty;
+        let page_size_2_mib: bool = *page_size_2_mib;
+        let global: Option<bool> = *global;
+        let restart: bool = *restart;
+        let page_attribute_table: Option<bool> = *page_attribute_table;
+        let page_table_page: Option<Pages<'a>> = if page_size_2_mib {
+            None
+        } else {
+            Some(Pages::new(1))
+        };
+        let page_entries: Option<Vec<PageEntry<'a>>> = page_table_page.map(|page_table_page| {
+            let page_table_address: u64 = page_table_page.physical_address();
+            let page_table: &mut [u8] = page_table_page.bytes();
+            let page_table_len: usize = page_table.len();
+            let page_table: *mut u8 = page_table.as_mut_ptr();
+            let page_table: *mut u64 = page_table as *mut u64;
+            let page_table_len: usize = page_table_len / 8;
+            let page_table: &mut [u64] = unsafe {
+                slice::from_raw_parts_mut(page_table, page_table_len)
+            };
+            page_entries
+                .expect("Can't clone a page entries!")
+                .iter()
+                .zip(page_table.into_iter())
+                .map(|(page_entry, page_entry_pointer)| page_entry.clone(page_entry_pointer))
+                .collect()
+        });
+        let page_2_mib_physical_address: Option<usize> = *page_2_mib_physical_address;
+        let protection_key: Option<u8> = *protection_key;
+        let execute_disable: bool = *execute_disable;
+        let present_in_entry: u64 = Self::PRESENT_MASK;
+        let writable_in_entry: u64 = if writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access_in_entry: u64 = if user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_in_entry: u64 = if page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_in_entry: u64 = if page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed_in_entry: u64 = if accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let dirty_in_entry: u64 = if dirty {
+            Self::DIRTY_MASK
+        } else {
+            0
+        };
+        let page_size_2_mib_in_entry: u64 = if page_size_2_mib {
+            Self::PAGE_SIZE_2_MIB_MASK
+        } else {
+            0
+        };
+        let global_in_entry: u64 = match global {
+            Some(true) => Self::GLOBAL_MASK,
+            _ => 0,
+        };
+        let restart_in_entry: u64 = if restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let page_attribute_table_in_entry: u64 = match page_attribute_table {
+            Some(true) => Self::PAGE_ATTRIBUTE_TABLE_MASK,
+            _ => 0,
+        };
+        let page_2_mib_physical_address_in_entry: u64 = page_2_mib_physical_address.unwrap_or(0) as u64 & Self::PAGE_2_MIB_MASK;
+        let protection_key_in_entry: u64 = match protection_key {
+            Some(protection_key) => (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN,
+            None => 0,
+        };
+        let execute_disable_in_entry: u64 = if execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *page_directory_entry =
+            present_in_entry
+            | writable_in_entry
+            | user_mode_access_in_entry
+            | page_write_through_in_entry
+            | page_cache_disable_in_entry
+            | accessed_in_entry
+            | dirty_in_entry
+            | page_size_2_mib_in_entry
+            | global_in_entry
+            | restart_in_entry
+            | page_attribute_table_in_entry
+            | page_2_mib_physical_address_in_entry
+            | protection_key_in_entry
+            | execute_disable_in_entry;
+        Self {
+            virtual_address,
+            page_directory_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            dirty,
+            page_size_2_mib,
+            global,
+            restart,
+            page_attribute_table,
+            page_table_page,
+            page_entries,
+            page_2_mib_physical_address,
+            protection_key,
+            execute_disable,
         }
     }
 
