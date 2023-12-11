@@ -248,7 +248,7 @@ impl From<u64> for Cr3<'_> {
         let page_map_level_4_entries: Vec<PageMapLevel4Entry> = page_map_level_4_table
             .iter_mut()
             .enumerate()
-            .filter_map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read(cannonicalize(i << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
+            .map(|(i, page_map_level_4_entry)| PageMapLevel4Entry::read(cannonicalize(i << PageMapLevel4Entry::INDEX_SHIFT_BEGIN), page_map_level_4_entry))
             .collect();
         Self {
             pwt,
@@ -437,43 +437,43 @@ impl<'a> PageMapLevel4Entry<'a> {
         }
     }
 
-    fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Option<Self> {
-        if *page_map_level_4_entry & Self::PRESENT_MASK != 0 {
-            let present: bool = *page_map_level_4_entry & Self::PRESENT_MASK != 0;
-            let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
-            let user_mode_access: bool = *page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
-            let page_write_through: bool = *page_map_level_4_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
-            let page_cache_disable: bool = *page_map_level_4_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
-            let accessed: bool = *page_map_level_4_entry & Self::ACCESSED_MASK != 0;
-            let restart: bool = *page_map_level_4_entry & Self::RESTART_MASK != 0;
-            let page_directory_pointer_table_page: Option<Pages> = None;
+    fn read(virtual_address: usize, page_map_level_4_entry: &'a mut u64) -> Self {
+        let present: bool = *page_map_level_4_entry & Self::PRESENT_MASK != 0;
+        let writable: bool = *page_map_level_4_entry & Self::WRITABLE_MASK != 0;
+        let user_mode_access: bool = *page_map_level_4_entry & Self::USER_MODE_ACCESS_MASK != 0;
+        let page_write_through: bool = *page_map_level_4_entry & Self::PAGE_WRITE_THROUGH_MASK != 0;
+        let page_cache_disable: bool = *page_map_level_4_entry & Self::PAGE_CACHE_DISABLE_MASK != 0;
+        let accessed: bool = *page_map_level_4_entry & Self::ACCESSED_MASK != 0;
+        let restart: bool = *page_map_level_4_entry & Self::RESTART_MASK != 0;
+        let page_directory_pointer_table_page: Option<Pages> = None;
+        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = if present {
             let page_directory_pointer_table: u64 = *page_map_level_4_entry & Self::PAGE_DIRECTORY_POINTER_TABLE_MASK;
             let page_directory_pointer_table: *mut [u64; ENTRIES] = page_directory_pointer_table as *mut [u64; ENTRIES];
             let page_directory_pointer_table: &mut [u64; ENTRIES] = unsafe {
                 &mut *page_directory_pointer_table
             };
-            let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry> = page_directory_pointer_table
+            page_directory_pointer_table
                 .iter_mut()
                 .enumerate()
                 .filter_map(|(i, page_directory_pointer_entry)| PageDirectoryPointerEntry::read(virtual_address + (i << PageDirectoryPointerEntry::INDEX_SHIFT_BEGIN), page_directory_pointer_entry))
-                .collect();
-            let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
-            Some(Self {
-                present,
-                virtual_address,
-                page_map_level_4_entry,
-                writable,
-                user_mode_access,
-                page_write_through,
-                page_cache_disable,
-                accessed,
-                restart,
-                page_directory_pointer_table_page,
-                page_directory_pointer_entries,
-                execute_disable,
-            })
+                .collect()
         } else {
-            None
+            Vec::<PageDirectoryPointerEntry>::new()
+        };
+        let execute_disable: bool = *page_map_level_4_entry & Self::EXECUTE_DISABLE_MASK != 0;
+        Self {
+            present,
+            virtual_address,
+            page_map_level_4_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            restart,
+            page_directory_pointer_table_page,
+            page_directory_pointer_entries,
+            execute_disable,
         }
     }
 
