@@ -2035,28 +2035,31 @@ impl<'a> PageDirectoryEntry<'a> {
         let global: Option<bool> = *global;
         let restart: bool = *restart;
         let page_attribute_table: Option<bool> = *page_attribute_table;
-        let page_table_page: Option<Pages<'a>> = if page_size_2_mib {
+        let mut page_table_page: Option<Pages<'a>> = if page_size_2_mib {
             None
         } else {
             Some(Pages::new(1))
         };
-        let page_entries: Option<Vec<PageEntry<'a>>> = page_table_page.map(|page_table_page| {
-            let page_table_address: u64 = page_table_page.physical_address();
-            let page_table: &mut [u8] = page_table_page.bytes();
-            let page_table_len: usize = page_table.len();
-            let page_table: *mut u8 = page_table.as_mut_ptr();
-            let page_table: *mut u64 = page_table as *mut u64;
-            let page_table_len: usize = page_table_len / 8;
-            let page_table: &mut [u64] = unsafe {
-                slice::from_raw_parts_mut(page_table, page_table_len)
-            };
-            page_entries
-                .expect("Can't clone a page entries!")
-                .iter()
-                .zip(page_table.into_iter())
-                .map(|(page_entry, page_entry_pointer)| page_entry.clone(page_entry_pointer))
-                .collect()
-        });
+        let page_entries: Option<Vec<PageEntry<'a>>> = page_table_page
+            .as_mut()
+            .map(|page_table_page| {
+                let page_table_address: u64 = page_table_page.physical_address();
+                let page_table: &mut [u8] = page_table_page.bytes();
+                let page_table_len: usize = page_table.len();
+                let page_table: *mut u8 = page_table.as_mut_ptr();
+                let page_table: *mut u64 = page_table as *mut u64;
+                let page_table_len: usize = page_table_len / 8;
+                let page_table: &mut [u64] = unsafe {
+                    slice::from_raw_parts_mut(page_table, page_table_len)
+                };
+                page_entries
+                    .as_ref()
+                    .expect("Can't clone a page entries!")
+                    .iter()
+                    .zip(page_table.into_iter())
+                    .map(|(page_entry, page_entry_pointer)| page_entry.clone(page_entry_pointer))
+                    .collect()
+            });
         let page_2_mib_physical_address: Option<usize> = *page_2_mib_physical_address;
         let protection_key: Option<u8> = *protection_key;
         let execute_disable: bool = *execute_disable;
