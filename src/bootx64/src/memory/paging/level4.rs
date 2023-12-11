@@ -2667,6 +2667,121 @@ impl<'a> PageEntry<'a> {
         }
     }
 
+    fn clone(&self, page_entry: &'a mut u64) -> Self {
+        let Self {
+            virtual_address,
+            page_entry: _,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed: _,
+            dirty,
+            page_attribute_table,
+            global,
+            restart,
+            physical_address,
+            protection_key,
+            execute_disable,
+        } = self;
+        let virtual_address: usize = *virtual_address;
+        let writable: bool = *writable;
+        let user_mode_access: bool = *user_mode_access;
+        let page_write_through: bool = *page_write_through;
+        let page_cache_disable: bool = *page_cache_disable;
+        let accessed: bool = false;
+        let dirty: bool = *dirty;
+        let page_attribute_table: bool = *page_attribute_table;
+        let global: bool = *global;
+        let restart: bool = *restart;
+        let physical_address: usize = *physical_address;
+        let protection_key: u8 = *protection_key;
+        let execute_disable: bool = *execute_disable;
+        let present_in_entry: u64 = Self::PRESENT_MASK;
+        let writable_in_entry: u64 = if writable {
+            Self::WRITABLE_MASK
+        } else {
+            0
+        };
+        let user_mode_access_in_entry: u64 = if user_mode_access {
+            Self::USER_MODE_ACCESS_MASK
+        } else {
+            0
+        };
+        let page_write_through_in_entry: u64 = if page_write_through {
+            Self::PAGE_WRITE_THROUGH_MASK
+        } else {
+            0
+        };
+        let page_cache_disable_in_entry: u64 = if page_cache_disable {
+            Self::PAGE_CACHE_DISABLE_MASK
+        } else {
+            0
+        };
+        let accessed_in_entry: u64 = if accessed {
+            Self::ACCESSED_MASK
+        } else {
+            0
+        };
+        let dirty_in_entry: u64 = if dirty {
+            Self::DIRTY_MASK
+        } else {
+            0
+        };
+        let page_attribute_table_in_entry: u64 = if page_attribute_table {
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
+        } else {
+            0
+        };
+        let global_in_entry: u64 = if global {
+            Self::PAGE_ATTRIBUTE_TABLE_MASK
+        } else {
+            0
+        };
+        let restart_in_entry: u64 = if restart {
+            Self::RESTART_MASK
+        } else {
+            0
+        };
+        let physical_address_in_entry: u64 = physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
+        let protection_key_in_entry: u64 = (protection_key as u64) << Self::PROTECTION_KEY_SHIFT_BEGIN;
+        let execute_disable_in_entry: u64 = if execute_disable {
+            Self::EXECUTE_DISABLE_MASK
+        } else {
+            0
+        };
+        *page_entry =
+            present_in_entry
+            | writable_in_entry
+            | user_mode_access_in_entry
+            | page_write_through_in_entry
+            | page_cache_disable_in_entry
+            | accessed_in_entry
+            | dirty_in_entry
+            | page_attribute_table_in_entry
+            | global_in_entry
+            | restart_in_entry
+            | physical_address_in_entry
+            | protection_key_in_entry
+            | execute_disable_in_entry;
+        Self {
+            virtual_address,
+            page_entry,
+            writable,
+            user_mode_access,
+            page_write_through,
+            page_cache_disable,
+            accessed,
+            dirty,
+            page_attribute_table,
+            global,
+            restart,
+            physical_address,
+            protection_key,
+            execute_disable,
+        }
+    }
+
     fn set_physical_address(&mut self, physical_address: usize) {
         *self.page_entry &= !Self::PHYSICAL_ADDRESS_MASK;
         *self.page_entry |= physical_address as u64 & Self::PHYSICAL_ADDRESS_MASK;
