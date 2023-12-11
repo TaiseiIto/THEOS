@@ -27,9 +27,26 @@ impl Hcsparams1 {
     const MAX_DEVICE_SLOTS_LENGTH: usize = 8;
     const MAX_DEVICE_SLOTS_END: usize = Self::MAX_DEVICE_SLOTS_BEGIN + Self::MAX_DEVICE_SLOTS_LENGTH;
     const MAX_DEVICE_SLOTS_MASK: u32 = (1 << Self::MAX_DEVICE_SLOTS_END) - (1 << Self::MAX_DEVICE_SLOTS_BEGIN);
+    const MAX_INTERRUPTERS_BEGIN: usize = Self::MAX_DEVICE_SLOTS_END;
+    const MAX_INTERRUPTERS_LENGTH: usize = 11;
+    const MAX_INTERRUPTERS_END: usize = Self::MAX_INTERRUPTERS_BEGIN + Self::MAX_INTERRUPTERS_LENGTH;
+    const MAX_INTERRUPTERS_MASK: u32 = (1 << Self::MAX_INTERRUPTERS_END) - (1 << Self::MAX_INTERRUPTERS_BEGIN);
+    const RESERVED_BEGIN: usize = Self::MAX_INTERRUPTERS_END;
+    const RESERVED_LENGTH: usize = 4;
+    const RESERVED_END: usize = Self::RESERVED_BEGIN + Self::RESERVED_LENGTH;
+    const MAX_PORTS_BEGIN: usize = Self::RESERVED_END;
+    const MAX_PORTS_MASK: u32 = u32::MAX - (1 << Self::MAX_PORTS_BEGIN) + 1;
 
     fn max_device_slots(&self) -> u8 {
         (self.0 & Self::MAX_DEVICE_SLOTS_MASK) as u8
+    }
+
+    fn max_interrupters(&self) -> u16 {
+        ((self.0 & Self::MAX_INTERRUPTERS_MASK) >> Self::MAX_INTERRUPTERS_BEGIN) as u16
+    }
+
+    fn max_ports(&self) -> u8 {
+        ((self.0 & Self::MAX_PORTS_MASK) >> Self::MAX_PORTS_BEGIN) as u8
     }
 }
 
@@ -38,6 +55,8 @@ impl fmt::Debug for Hcsparams1 {
         formatter
             .debug_struct("HCSPARAMS1")
             .field("max_device_slots", &self.max_device_slots())
+            .field("max_interrupters", &self.max_interrupters())
+            .field("max_ports", &self.max_ports())
             .finish()
     }
 }
