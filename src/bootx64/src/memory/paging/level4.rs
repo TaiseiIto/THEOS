@@ -506,8 +506,8 @@ impl<'a> PageMapLevel4Entry<'a> {
         } else {
             None
         };
-        let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>> = match page_directory_pointer_table_page {
-            Some(mut page_directory_pointer_table_page) => {
+        let (page_directory_pointer_entries, page_directory_pointer_table_in_entry): (Vec<PageDirectoryPointerEntry<'a>>, u64) = match page_directory_pointer_table_page.as_mut() {
+            Some(page_directory_pointer_table_page) => {
                 let page_directory_pointer_table_address: u64 = page_directory_pointer_table_page.physical_address();
                 let page_directory_pointer_table: &mut [u8] = page_directory_pointer_table_page.bytes();
                 let page_directory_pointer_table_len: usize = page_directory_pointer_table.len();
@@ -517,13 +517,14 @@ impl<'a> PageMapLevel4Entry<'a> {
                 let page_directory_pointer_table: &mut [u64] = unsafe {
                     slice::from_raw_parts_mut(page_directory_pointer_table, page_directory_pointer_table_len)
                 };
-                page_directory_pointer_entries
+                let page_directory_pointer_entries: Vec<PageDirectoryPointerEntry<'a>> = page_directory_pointer_entries
                     .iter()
                     .zip(page_directory_pointer_table.into_iter())
                     .map(|(page_directory_pointer_entry, page_directory_pointer_entry_pointer)| page_directory_pointer_entry.clone(page_directory_pointer_entry_pointer))
-                    .collect()
+                    .collect();
+                (page_directory_pointer_entries, page_directory_pointer_table_address)
             },
-            None => Vec::<PageDirectoryPointerEntry<'a>>::new(),
+            None => (Vec::<PageDirectoryPointerEntry<'a>>::new(), 0),
         };
         let present_in_entry: u64 = if present {
             Self::PRESENT_MASK
@@ -560,9 +561,6 @@ impl<'a> PageMapLevel4Entry<'a> {
         } else {
             0
         };
-        let page_directory_pointer_table_in_entry: u64 = page_directory_pointer_table_page
-            .as_ref()
-            .map_or(0, |page_directory_pointer_table_page| page_directory_pointer_table_page.physical_address());
         let execute_disable_in_entry: u64 = if execute_disable {
             Self::EXECUTE_DISABLE_MASK
         } else {
