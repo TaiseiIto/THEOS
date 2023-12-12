@@ -13,7 +13,7 @@ pub struct Registers {
     hcsparams3: Hcsparams3,
     hccparams1: Hccparams1,
     dbof: Dbof,
-    rtsoff: u32,
+    rtsoff: Rtsoff,
     hccparams2: u32,
 }
 
@@ -297,6 +297,29 @@ impl fmt::Debug for Dbof {
         formatter
             .debug_struct("DBOF")
             .field("doorbell_array_offset", &self.doorbell_array_offset())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.8 RuntimeRegisterSpaceOffset (RTSOFF)
+#[derive(Clone, Copy)]
+struct Rtsoff(u32);
+
+impl Rtsoff {
+    const RUNTIME_REGISTER_SPACE_OFFSET_BEGIN: usize = 5;
+    const RUNTIME_REGISTER_SPACE_OFFSET_MASK: u32 = u32::MAX - (1 << Self::RUNTIME_REGISTER_SPACE_OFFSET_BEGIN) + 1;
+
+    fn runtime_register_space_offset(&self) -> u32 {
+        self.0 & Self::RUNTIME_REGISTER_SPACE_OFFSET_MASK
+    }
+}
+
+impl fmt::Debug for Rtsoff {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RTSOFF")
+            .field("runtime_register_space_offset", &self.runtime_register_space_offset())
             .finish()
     }
 }
