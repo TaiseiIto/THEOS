@@ -14,7 +14,7 @@ pub struct Registers {
     hccparams1: Hccparams1,
     dbof: Dbof,
     rtsoff: Rtsoff,
-    hccparams2: u32,
+    hccparams2: Hccparams2,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -320,6 +320,92 @@ impl fmt::Debug for Rtsoff {
         formatter
             .debug_struct("RTSOFF")
             .field("runtime_register_space_offset", &self.runtime_register_space_offset())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.9 Capability Parameters 2 (HCCPARAMS2)
+#[derive(Clone, Copy)]
+struct Hccparams2(u32);
+
+impl Hccparams2 {
+    const U3C_SHIFT: usize = 0;
+    const U3C_MASK: u32 = 1 << Self::U3C_SHIFT;
+    const CMC_SHIFT: usize = Self::U3C_SHIFT + 1;
+    const CMC_MASK: u32 = 1 << Self::CMC_SHIFT;
+    const FSC_SHIFT: usize = Self::CMC_SHIFT + 1;
+    const FSC_MASK: u32 = 1 << Self::FSC_SHIFT;
+    const CTC_SHIFT: usize = Self::FSC_SHIFT + 1;
+    const CTC_MASK: u32 = 1 << Self::CTC_SHIFT;
+    const LEC_SHIFT: usize = Self::CTC_SHIFT + 1;
+    const LEC_MASK: u32 = 1 << Self::LEC_SHIFT;
+    const CIC_SHIFT: usize = Self::LEC_SHIFT + 1;
+    const CIC_MASK: u32 = 1 << Self::CIC_SHIFT;
+    const ETC_SHIFT: usize = Self::CIC_SHIFT + 1;
+    const ETC_MASK: u32 = 1 << Self::ETC_SHIFT;
+    const TSC_SHIFT: usize = Self::ETC_SHIFT + 1;
+    const TSC_MASK: u32 = 1 << Self::TSC_SHIFT;
+    const GSC_SHIFT: usize = Self::TSC_SHIFT + 1;
+    const GSC_MASK: u32 = 1 << Self::GSC_SHIFT;
+    const VTC_SHIFT: usize = Self::GSC_SHIFT + 1;
+    const VTC_MASK: u32 = 1 << Self::VTC_SHIFT;
+
+    fn u3c(&self) -> bool {
+        (self.0 & Self::U3C_MASK) != 0
+    }
+
+    fn cmc(&self) -> bool {
+        (self.0 & Self::CMC_MASK) != 0
+    }
+
+    fn fsc(&self) -> bool {
+        (self.0 & Self::FSC_MASK) != 0
+    }
+
+    fn ctc(&self) -> bool {
+        (self.0 & Self::CTC_MASK) != 0
+    }
+
+    fn lec(&self) -> bool {
+        (self.0 & Self::LEC_MASK) != 0
+    }
+
+    fn cic(&self) -> bool {
+        (self.0 & Self::CIC_MASK) != 0
+    }
+
+    fn etc(&self) -> bool {
+        (self.0 & Self::ETC_MASK) != 0
+    }
+
+    fn tsc(&self) -> bool {
+        (self.0 & Self::TSC_MASK) != 0
+    }
+
+    fn gsc(&self) -> bool {
+        (self.0 & Self::GSC_MASK) != 0
+    }
+
+    fn vtc(&self) -> bool {
+        (self.0 & Self::VTC_MASK) != 0
+    }
+}
+
+impl fmt::Debug for Hccparams2 {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("HCCPARAMS2")
+            .field("u3c", &self.u3c())
+            .field("cmc", &self.cmc())
+            .field("fsc", &self.fsc())
+            .field("ctc", &self.ctc())
+            .field("lec", &self.lec())
+            .field("cic", &self.cic())
+            .field("etc", &self.etc())
+            .field("tsc", &self.tsc())
+            .field("gsc", &self.gsc())
+            .field("vtc", &self.vtc())
             .finish()
     }
 }
