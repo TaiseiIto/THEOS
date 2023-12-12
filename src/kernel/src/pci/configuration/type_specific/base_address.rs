@@ -139,5 +139,14 @@ impl Address {
             })
             .0
     }
+
+    pub fn is_not_null(&self) -> bool {
+        let address: usize = match self {
+            Self::Memory32(address) => *address as usize,
+            Self::Memory64(address) => *address as usize,
+            Self::IO(address) => *address as usize,
+        };
+        address != 0
+    }
 }
 
