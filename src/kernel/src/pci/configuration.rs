@@ -239,11 +239,8 @@ impl Device {
                 serial_println!("Initialize USB xHCI {:#x?}", self);
                 let registers: xhci::Registers = self.get_addresses()
                     .into_iter()
-                    .find(|address| match address {
-                        base_address::Address::Memory64(address) => true,
-                        _ => false,
-                    })
-                    .expect("Can't get a xHCI memory address!")
+                    .next()
+                    .expect("Can't get xHCI registers!")
                     .into();
                 serial_println!("registers = {:#x?}", registers);
             },
