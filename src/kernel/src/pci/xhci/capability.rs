@@ -12,7 +12,7 @@ pub struct Registers {
     hcsparams2: Hcsparams2,
     hcsparams3: Hcsparams3,
     hccparams1: Hccparams1,
-    dbof: u32,
+    dbof: Dbof,
     rtsoff: u32,
     hccparams2: u32,
 }
@@ -274,6 +274,29 @@ impl fmt::Debug for Hccparams1 {
             .field("cfc", &self.cfc())
             .field("maximum_primary_stream_array_size", &self.maximum_primary_stream_array_size())
             .field("xhci_extended_capabilities_pointer", &self.xhci_extended_capabilities_pointer())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.7 Doorbell Offset (DBOF)
+#[derive(Clone, Copy)]
+struct Dbof(u32);
+
+impl Dbof {
+    const DOORBELL_ARRAY_OFFSET_BEGIN: usize = 2;
+    const DOORBELL_ARRAY_OFFSET_MASK: u32 = u32::MAX - (1 << Self::DOORBELL_ARRAY_OFFSET_BEGIN) + 1;
+
+    fn doorbell_array_offset(&self) -> u32 {
+        self.0 & Self::DOORBELL_ARRAY_OFFSET_MASK
+    }
+}
+
+impl fmt::Debug for Dbof {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DBOF")
+            .field("doorbell_array_offset", &self.doorbell_array_offset())
             .finish()
     }
 }
