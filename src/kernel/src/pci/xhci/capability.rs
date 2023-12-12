@@ -10,7 +10,7 @@ pub struct Registers {
     hciversion: u16,
     hcsparams1: Hcsparams1,
     hcsparams2: Hcsparams2,
-    hcsparams3: u32,
+    hcsparams3: Hcsparams3,
     hccparams1: u32,
     dbof: u32,
     rtsoff: u32,
@@ -124,6 +124,40 @@ impl fmt::Debug for Hcsparams2 {
             .field("event_ring_segment_table_max", &self.event_ring_segment_table_max())
             .field("max_scratchpad_buffers", &self.max_scratchpad_buffers())
             .field("scratchpad_restore", &self.scratchpad_restore())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.5  Structural Parameters 3 (HCSPARAMS3)
+#[derive(Clone, Copy)]
+struct Hcsparams3(u32);
+
+impl Hcsparams3 {
+    const U1_DEVICE_EXIT_LATENCY_BEGIN: usize = 0;
+    const U1_DEVICE_EXIT_LATENCY_LENGTH: usize = 8;
+    const U1_DEVICE_EXIT_LATENCY_END: usize = Self::U1_DEVICE_EXIT_LATENCY_BEGIN + Self::U1_DEVICE_EXIT_LATENCY_LENGTH;
+    const U1_DEVICE_EXIT_LATENCY_MASK: u32 = (1 << Self::U1_DEVICE_EXIT_LATENCY_END) - (1 << Self::U1_DEVICE_EXIT_LATENCY_BEGIN);
+    const U2_DEVICE_EXIT_LATENCY_BEGIN: usize = Self::U1_DEVICE_EXIT_LATENCY_END;
+    const U2_DEVICE_EXIT_LATENCY_LENGTH: usize = 8;
+    const U2_DEVICE_EXIT_LATENCY_END: usize = Self::U2_DEVICE_EXIT_LATENCY_BEGIN + Self::U2_DEVICE_EXIT_LATENCY_LENGTH;
+    const U2_DEVICE_EXIT_LATENCY_MASK: u32 = (2 << Self::U2_DEVICE_EXIT_LATENCY_END) - (2 << Self::U2_DEVICE_EXIT_LATENCY_BEGIN);
+
+    fn u1_device_exit_latency(&self) -> u8 {
+        ((self.0 & Self::U1_DEVICE_EXIT_LATENCY_MASK) >> Self::U1_DEVICE_EXIT_LATENCY_BEGIN) as u8
+    }
+
+    fn u2_device_exit_latency(&self) -> u8 {
+        ((self.0 & Self::U2_DEVICE_EXIT_LATENCY_MASK) >> Self::U2_DEVICE_EXIT_LATENCY_BEGIN) as u8
+    }
+}
+
+impl fmt::Debug for Hcsparams3 {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("HCSPARAMS2")
+            .field("u1_device_exit_latency", &self.u1_device_exit_latency())
+            .field("u2_device_exit_latency", &self.u2_device_exit_latency())
             .finish()
     }
 }
