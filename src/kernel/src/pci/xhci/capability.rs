@@ -192,6 +192,12 @@ impl Hccparams1 {
     const SEC_MASK: u32 = 1 << Self::SEC_SHIFT;
     const CFC_SHIFT: usize = Self::SEC_SHIFT + 1;
     const CFC_MASK: u32 = 1 << Self::CFC_SHIFT;
+    const MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_BEGIN: usize = Self::CFC_SHIFT + 1;
+    const MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_LENGTH: usize = 4;
+    const MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_END: usize = Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_BEGIN + Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_LENGTH;
+    const MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_MASK: u32 = (1 << Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_END) - (1 << Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_BEGIN);
+    const XHCI_EXTENDED_CAPABILITIES_POINTER_BEGIN: usize = Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_END;
+    const XHCI_EXTENDED_CAPABILITIES_POINTER_MASK: u32 = u32::MAX - (1 << Self::XHCI_EXTENDED_CAPABILITIES_POINTER_BEGIN) + 1;
 
     fn ac64(&self) -> bool {
         (self.0 & Self::AC64_MASK) != 0
@@ -240,6 +246,14 @@ impl Hccparams1 {
     fn cfc(&self) -> bool {
         (self.0 & Self::CFC_MASK) != 0
     }
+
+    fn maximum_primary_stream_array_size(&self) -> u8 {
+        ((self.0 & Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_MASK) >> Self::MAXIMUM_PRIMARY_STREAM_ARRAY_SIZE_BEGIN) as u8
+    }
+
+    fn xhci_extended_capabilities_pointer(&self) -> u16 {
+        ((self.0 & Self::XHCI_EXTENDED_CAPABILITIES_POINTER_MASK) >> Self::XHCI_EXTENDED_CAPABILITIES_POINTER_BEGIN) as u16
+    }
 }
 
 impl fmt::Debug for Hccparams1 {
@@ -258,6 +272,8 @@ impl fmt::Debug for Hccparams1 {
             .field("spc", &self.spc())
             .field("sec", &self.sec())
             .field("cfc", &self.cfc())
+            .field("maximum_primary_stream_array_size", &self.maximum_primary_stream_array_size())
+            .field("xhci_extended_capabilities_pointer", &self.xhci_extended_capabilities_pointer())
             .finish()
     }
 }
