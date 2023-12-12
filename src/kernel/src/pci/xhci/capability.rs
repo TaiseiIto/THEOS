@@ -11,7 +11,7 @@ pub struct Registers {
     hcsparams1: Hcsparams1,
     hcsparams2: Hcsparams2,
     hcsparams3: Hcsparams3,
-    hccparams1: u32,
+    hccparams1: Hccparams1,
     dbof: u32,
     rtsoff: u32,
     hccparams2: u32,
@@ -158,6 +158,106 @@ impl fmt::Debug for Hcsparams3 {
             .debug_struct("HCSPARAMS2")
             .field("u1_device_exit_latency", &self.u1_device_exit_latency())
             .field("u2_device_exit_latency", &self.u2_device_exit_latency())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.6 Capability Parameters 1 (HCCPARAMS1)
+#[derive(Clone, Copy)]
+struct Hccparams1(u32);
+
+impl Hccparams1 {
+    const AC64_SHIFT: usize = 0;
+    const AC64_MASK: u32 = 1 << Self::AC64_SHIFT;
+    const BNC_SHIFT: usize = Self::AC64_SHIFT + 1;
+    const BNC_MASK: u32 = 1 << Self::BNC_SHIFT;
+    const CSZ_SHIFT: usize = Self::BNC_SHIFT + 1;
+    const CSZ_MASK: u32 = 1 << Self::CSZ_SHIFT;
+    const PPC_SHIFT: usize = Self::CSZ_SHIFT + 1;
+    const PPC_MASK: u32 = 1 << Self::PPC_SHIFT;
+    const PIND_SHIFT: usize = Self::PPC_SHIFT + 1;
+    const PIND_MASK: u32 = 1 << Self::PIND_SHIFT;
+    const LHRC_SHIFT: usize = Self::PIND_SHIFT + 1;
+    const LHRC_MASK: u32 = 1 << Self::LHRC_SHIFT;
+    const LTC_SHIFT: usize = Self::LHRC_SHIFT + 1;
+    const LTC_MASK: u32 = 1 << Self::LTC_SHIFT;
+    const NSS_SHIFT: usize = Self::LTC_SHIFT + 1;
+    const NSS_MASK: u32 = 1 << Self::NSS_SHIFT;
+    const PAE_SHIFT: usize = Self::NSS_SHIFT + 1;
+    const PAE_MASK: u32 = 1 << Self::PAE_SHIFT;
+    const SPC_SHIFT: usize = Self::PAE_SHIFT + 1;
+    const SPC_MASK: u32 = 1 << Self::SPC_SHIFT;
+    const SEC_SHIFT: usize = Self::SPC_SHIFT + 1;
+    const SEC_MASK: u32 = 1 << Self::SEC_SHIFT;
+    const CFC_SHIFT: usize = Self::SEC_SHIFT + 1;
+    const CFC_MASK: u32 = 1 << Self::CFC_SHIFT;
+
+    fn ac64(&self) -> bool {
+        (self.0 & Self::AC64_MASK) != 0
+    }
+
+    fn bnc(&self) -> bool {
+        (self.0 & Self::BNC_MASK) != 0
+    }
+
+    fn csz(&self) -> bool {
+        (self.0 & Self::CSZ_MASK) != 0
+    }
+
+    fn ppc(&self) -> bool {
+        (self.0 & Self::PPC_MASK) != 0
+    }
+
+    fn pind(&self) -> bool {
+        (self.0 & Self::PIND_MASK) != 0
+    }
+
+    fn lhrc(&self) -> bool {
+        (self.0 & Self::LHRC_MASK) != 0
+    }
+
+    fn ltc(&self) -> bool {
+        (self.0 & Self::LTC_MASK) != 0
+    }
+
+    fn nss(&self) -> bool {
+        (self.0 & Self::NSS_MASK) != 0
+    }
+
+    fn pae(&self) -> bool {
+        (self.0 & Self::PAE_MASK) != 0
+    }
+
+    fn spc(&self) -> bool {
+        (self.0 & Self::SPC_MASK) != 0
+    }
+
+    fn sec(&self) -> bool {
+        (self.0 & Self::SEC_MASK) != 0
+    }
+
+    fn cfc(&self) -> bool {
+        (self.0 & Self::CFC_MASK) != 0
+    }
+}
+
+impl fmt::Debug for Hccparams1 {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("HCCPARAMS3")
+            .field("ac64", &self.ac64())
+            .field("bnc", &self.bnc())
+            .field("csz", &self.csz())
+            .field("ppc", &self.ppc())
+            .field("pind", &self.pind())
+            .field("lhrc", &self.lhrc())
+            .field("ltc", &self.ltc())
+            .field("nss", &self.nss())
+            .field("pae", &self.pae())
+            .field("spc", &self.spc())
+            .field("sec", &self.sec())
+            .field("cfc", &self.cfc())
             .finish()
     }
 }
