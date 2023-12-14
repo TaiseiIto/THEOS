@@ -1,4 +1,7 @@
-use core::fmt;
+use {
+    alloc::format,
+    core::fmt,
+};
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.4 Host Controller Operational Registers
@@ -9,7 +12,7 @@ pub struct Registers {
     usbsts: Usbsts,
     pagesize: u32,
     rsvd0: u64,
-    dnctrl: u32,
+    dnctrl: Dnctrl,
     crcr: u32,
     rsvd1: u128,
     dcbaap: u64,
@@ -106,6 +109,7 @@ impl fmt::Debug for Usbcmd {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("USBCMD")
+            .field("self", &self.0)
             .field("RS", &self.rs())
             .field("HCRST", &self.hcrst())
             .field("INTE", &self.inte())
@@ -189,6 +193,7 @@ impl fmt::Debug for Usbsts {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("USBSTS")
+            .field("self", &self.0)
             .field("HCH", &self.hch())
             .field("HSE", &self.hse())
             .field("EINT", &self.eint())
@@ -198,6 +203,28 @@ impl fmt::Debug for Usbsts {
             .field("SRE", &self.sre())
             .field("CNR", &self.cnr())
             .field("HCE", &self.hce())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.4 Device Notification Control Register (DNCTRL)
+#[derive(Clone, Copy)]
+struct Dnctrl(u32);
+
+impl Dnctrl {
+    const MAX_DEVICE_NOTIFICATION_TYPE: usize = 0xf;
+
+    fn nx(&self, device_notification_type: usize) -> bool {
+        assert!(device_notification_type <= Self::MAX_DEVICE_NOTIFICATION_TYPE);
+        self.0 & (1 << device_notification_type) != 0
+    }
+}
+
+impl fmt::Debug for Dnctrl {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        (0..=Self::MAX_DEVICE_NOTIFICATION_TYPE)
+            .fold(&mut formatter.debug_struct("DNCTRL"), |formatter, device_notification_type| formatter.field(&format!("N{}", device_notification_type), &self.nx(device_notification_type)))
             .finish()
     }
 }

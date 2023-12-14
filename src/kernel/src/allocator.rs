@@ -9,10 +9,6 @@ use {
         mem,
         ptr,
     },
-    crate::{
-        serial_print,
-        serial_println,
-    },
     super::{
         memory::physical_page,
         uefi::services::boot::memory_allocation,
@@ -154,7 +150,6 @@ impl<'a> ChunkList<'a> {
         available_chunk.address = allocated_chunk_address;
         available_chunk.size = allocated_chunk_size;
         available_chunk.allocated = true;
-        serial_println!("allocated chunk = {:#x?}", available_chunk);
         *previous_free_chunk = if previous_free_chunk_size == 0 {
             None
         } else {
@@ -232,7 +227,6 @@ impl<'a> ChunkList<'a> {
         let mut drop_deallocated_chunk: bool = false;
         match deallocated_chunk {
             Some(deallocated_chunk) => {
-                serial_println!("deallocated chunk = {:#x?}", deallocated_chunk);
                 deallocated_chunk.allocated = false;
                 if let Some(previous_chunk) = &mut previous_chunk {
                     let mut merge_previous_chunk: bool = false;
@@ -255,7 +249,6 @@ impl<'a> ChunkList<'a> {
                         }
                     }
                     if merge_previous_chunk {
-                        serial_println!("Delete previous chunk {:#x?}", previous_chunk);
                         **previous_chunk = None;
                     }
                 }
@@ -279,7 +272,6 @@ impl<'a> ChunkList<'a> {
                         }
                     }
                     if merge_next_chunk {
-                        serial_println!("Delete next chunk {:#x?}", next_chunk);
                         **next_chunk = None;
                     }
                 }
@@ -290,7 +282,6 @@ impl<'a> ChunkList<'a> {
             None => panic!("Can't deallocate memory!"),
         }
         if drop_deallocated_chunk {
-            serial_println!("Delete deallocated chunk {:#x?}", deallocated_chunk);
             *deallocated_chunk = None;
         }
     }

@@ -61,6 +61,7 @@ impl fmt::Debug for Hcsparams1 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("HCSPARAMS1")
+            .field("self", &self.0)
             .field("max_device_slots", &self.max_device_slots())
             .field("max_interrupters", &self.max_interrupters())
             .field("max_ports", &self.max_ports())
@@ -127,6 +128,7 @@ impl fmt::Debug for Hcsparams2 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("HCSPARAMS2")
+            .field("self", &self.0)
             .field("isochronous_scheduling_threshold", &self.isochronous_scheduling_threshold())
             .field("event_ring_segment_table_max", &self.event_ring_segment_table_max())
             .field("max_scratchpad_buffers", &self.max_scratchpad_buffers())
@@ -163,6 +165,7 @@ impl fmt::Debug for Hcsparams3 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("HCSPARAMS2")
+            .field("self", &self.0)
             .field("u1_device_exit_latency", &self.u1_device_exit_latency())
             .field("u2_device_exit_latency", &self.u2_device_exit_latency())
             .finish()
@@ -267,6 +270,7 @@ impl fmt::Debug for Hccparams1 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("HCCPARAMS3")
+            .field("self", &self.0)
             .field("ac64", &self.ac64())
             .field("bnc", &self.bnc())
             .field("csz", &self.csz())
@@ -303,6 +307,7 @@ impl fmt::Debug for Dbof {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("DBOF")
+            .field("self", &self.0)
             .field("doorbell_array_offset", &self.doorbell_array_offset())
             .finish()
     }
@@ -326,6 +331,7 @@ impl fmt::Debug for Rtsoff {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("RTSOFF")
+            .field("self", &self.0)
             .field("runtime_register_space_offset", &self.runtime_register_space_offset())
             .finish()
     }
@@ -403,6 +409,7 @@ impl fmt::Debug for Hccparams2 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("HCCPARAMS2")
+            .field("self", &self.0)
             .field("u3c", &self.u3c())
             .field("cmc", &self.cmc())
             .field("fsc", &self.fsc())
@@ -435,6 +442,7 @@ impl fmt::Debug for Vtiosoff {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("VTIOSOFF")
+            .field("self", &self.0)
             .field("vtio_register_space_offset", &self.vtio_register_space_offset())
             .finish()
     }

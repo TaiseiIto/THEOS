@@ -63,7 +63,6 @@ impl<'a> Manager<'a> {
             start_page,
             pages,
         };
-        serial_println!("allocated pages = {:#x?}", chunk);
         chunk
     }
 
@@ -71,7 +70,6 @@ impl<'a> Manager<'a> {
         &mut self,
         chunk: &mut Chunk,
     ) {
-        serial_println!("deallocated pages = {:#x?}", chunk);
         let start_pages: usize = chunk.start_page;
         let pages: usize = chunk.pages;
         self.dealloc_pages(start_pages, pages);
