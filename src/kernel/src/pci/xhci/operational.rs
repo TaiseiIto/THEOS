@@ -13,7 +13,7 @@ pub struct Registers {
     pagesize: u32,
     rsvd0: u64,
     dnctrl: Dnctrl,
-    crcr: u32,
+    crcr: Crcr,
     rsvd1: u128,
     dcbaap: u64,
     config: u32,
@@ -224,7 +224,52 @@ impl Dnctrl {
 impl fmt::Debug for Dnctrl {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         (0..=Self::MAX_DEVICE_NOTIFICATION_TYPE)
-            .fold(&mut formatter.debug_struct("DNCTRL"), |formatter, device_notification_type| formatter.field(&format!("N{}", device_notification_type), &self.nx(device_notification_type)))
+            .fold(formatter.debug_struct("DNCTRL").field("self", &self.0), |formatter, device_notification_type| formatter.field(&format!("N{}", device_notification_type), &self.nx(device_notification_type)))
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.5 Command Ring Control Register (CRCR)
+#[derive(Clone, Copy)]
+struct Crcr(u64);
+
+impl Crcr {
+    const RCS_SHIFT: usize = 0;
+    const RCS_MASK: u64 = 1 << Self::RCS_SHIFT;
+    const CS_SHIFT: usize = Self::RCS_SHIFT + 1;
+    const CS_MASK: u64 = 1 << Self::CS_SHIFT;
+    const CA_SHIFT: usize = Self::CS_SHIFT + 1;
+    const CA_MASK: u64 = 1 << Self::CA_SHIFT;
+    const CRR_SHIFT: usize = Self::CA_SHIFT + 1;
+    const CRR_MASK: u64 = 1 << Self::CRR_SHIFT;
+
+    fn rcs(&self) -> bool {
+        self.0 & Self::RCS_MASK != 0
+    }
+
+    fn cs(&self) -> bool {
+        self.0 & Self::CS_MASK != 0
+    }
+
+    fn ca(&self) -> bool {
+        self.0 & Self::CA_MASK != 0
+    }
+
+    fn crr(&self) -> bool {
+        self.0 & Self::CRR_MASK != 0
+    }
+}
+
+impl fmt::Debug for Crcr {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("CRCR")
+            .field("self", &self.0)
+            .field("RCS", &self.rcs())
+            .field("CS", &self.cs())
+            .field("CA", &self.ca())
+            .field("CRR", &self.crr())
             .finish()
     }
 }
