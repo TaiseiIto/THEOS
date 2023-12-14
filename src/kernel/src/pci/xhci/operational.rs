@@ -215,7 +215,7 @@ struct Dnctrl(u32);
 impl Dnctrl {
     const MAX_DEVICE_NOTIFICATION_TYPE: usize = 0xf;
 
-    fn nx(&self, device_notification_type: usize) -> bool {
+    fn notification_enable(&self, device_notification_type: usize) -> bool {
         assert!(device_notification_type <= Self::MAX_DEVICE_NOTIFICATION_TYPE);
         self.0 & (1 << device_notification_type) != 0
     }
@@ -224,7 +224,7 @@ impl Dnctrl {
 impl fmt::Debug for Dnctrl {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         (0..=Self::MAX_DEVICE_NOTIFICATION_TYPE)
-            .fold(formatter.debug_struct("DNCTRL").field("self", &self.0), |formatter, device_notification_type| formatter.field(&format!("N{}", device_notification_type), &self.nx(device_notification_type)))
+            .fold(formatter.debug_struct("DNCTRL").field("self", &self.0), |formatter, device_notification_type| formatter.field(&format!("N{}", device_notification_type), &self.notification_enable(device_notification_type)))
             .finish()
     }
 }
@@ -243,6 +243,8 @@ impl Crcr {
     const CA_MASK: u64 = 1 << Self::CA_SHIFT;
     const CRR_SHIFT: usize = Self::CA_SHIFT + 1;
     const CRR_MASK: u64 = 1 << Self::CRR_SHIFT;
+    const COMMAND_RING_POINTER_BEGIN: usize = Self::CRR_SHIFT + 3;
+    const COMMAND_RING_POINTER_MASK: u64 = u64::MAX - (1 << Self::COMMAND_RING_POINTER_BEGIN) + 1;
 
     fn rcs(&self) -> bool {
         self.0 & Self::RCS_MASK != 0
@@ -259,6 +261,10 @@ impl Crcr {
     fn crr(&self) -> bool {
         self.0 & Self::CRR_MASK != 0
     }
+
+    fn command_ring_pointer(&self) -> u64 {
+        self.0 & Self::COMMAND_RING_POINTER_MASK
+    }
 }
 
 impl fmt::Debug for Crcr {
@@ -270,6 +276,7 @@ impl fmt::Debug for Crcr {
             .field("CS", &self.cs())
             .field("CA", &self.ca())
             .field("CRR", &self.crr())
+            .field("command_ring_pointer", &self.command_ring_pointer())
             .finish()
     }
 }
