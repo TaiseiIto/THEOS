@@ -15,7 +15,7 @@ pub struct Registers {
     dnctrl: Dnctrl,
     crcr: Crcr,
     rsvd1: u128,
-    dcbaap: u64,
+    dcbaap: Dcbaap,
     config: u32,
 }
 
@@ -277,6 +277,30 @@ impl fmt::Debug for Crcr {
             .field("CA", &self.ca())
             .field("CRR", &self.crr())
             .field("command_ring_pointer", &self.command_ring_pointer())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.6 Device Context Base Address Array Pointer Register (DCBAAP)
+#[derive(Clone, Copy)]
+struct Dcbaap(u64);
+
+impl Dcbaap {
+    const DEVICE_CONTEXT_BASE_ADDRESS_ARRAY_POINTER_BEGIN: usize = 6;
+    const DEVICE_CONTEXT_BASE_ADDRESS_ARRAY_POINTER_MASK: u64 = u64::MAX - (1 << Self::DEVICE_CONTEXT_BASE_ADDRESS_ARRAY_POINTER_BEGIN) + 1;
+
+    fn device_context_base_address_array_pointer(&self) -> u64 {
+        self.0 & Self::DEVICE_CONTEXT_BASE_ADDRESS_ARRAY_POINTER_MASK
+    }
+}
+
+impl fmt::Debug for Dcbaap {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Dcbaap")
+            .field("self", &self.0)
+            .field("device_context_base_address_array_pointer", &self.device_context_base_address_array_pointer())
             .finish()
     }
 }
