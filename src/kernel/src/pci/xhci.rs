@@ -1,4 +1,5 @@
 mod capability;
+mod operational;
 
 use super::configuration::type_specific::base_address;
 
@@ -6,6 +7,7 @@ use super::configuration::type_specific::base_address;
 pub struct Registers<'a> {
     base: usize,
     capability: &'a capability::Registers,
+    operational: &'a operational::Registers,
 }
 
 impl From<base_address::Address> for Registers<'_> {
@@ -23,9 +25,16 @@ impl From<base_address::Address> for Registers<'_> {
         let capability: &capability::Registers = unsafe {
             &*capability
         };
+        let caplength: usize = capability.caplength() as usize;
+        let operational: usize = base + caplength;
+        let operational: *const operational::Registers = operational as *const operational::Registers;
+        let operational: &operational::Registers = unsafe {
+            &*operational
+        };
         Self {
             base,
             capability,
+            operational,
         }
     }
 }

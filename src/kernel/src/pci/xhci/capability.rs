@@ -18,6 +18,12 @@ pub struct Registers {
     vtiosoff: Vtiosoff,
 }
 
+impl Registers {
+    pub fn caplength(&self) -> u8 {
+        self.caplength
+    }
+}
+
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.3.3 Structural Parameters 1 (HCSPARAMS1)
 #[derive(Clone, Copy)]
