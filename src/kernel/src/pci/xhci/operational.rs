@@ -6,7 +6,7 @@ use core::fmt;
 #[repr(packed)]
 pub struct Registers {
     usbcmd: Usbcmd,
-    usbsts: u32,
+    usbsts: Usbsts,
     pagesize: u32,
     rsvd0: u64,
     dnctrl: u32,
@@ -119,6 +119,85 @@ impl fmt::Debug for Usbcmd {
             .field("ETE", &self.ete())
             .field("TSCEN", &self.tscen())
             .field("VTIOEN", &self.vtioen())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.2 USB Status Register (USBSTS)
+#[derive(Clone, Copy)]
+struct Usbsts(u32);
+
+impl Usbsts {
+    const HCH_SHIFT: usize = 0;
+    const HCH_MASK: u32 = 1 << Self::HCH_SHIFT;
+    const HSE_SHIFT: usize = Self::HCH_SHIFT + 2;
+    const HSE_MASK: u32 = 1 << Self::HSE_SHIFT;
+    const EINT_SHIFT: usize = Self::HSE_SHIFT + 1;
+    const EINT_MASK: u32 = 1 << Self::EINT_SHIFT;
+    const PCD_SHIFT: usize = Self::EINT_SHIFT + 1;
+    const PCD_MASK: u32 = 1 << Self::PCD_SHIFT;
+    const SSS_SHIFT: usize = Self::PCD_SHIFT + 4;
+    const SSS_MASK: u32 = 1 << Self::SSS_SHIFT;
+    const RSS_SHIFT: usize = Self::SSS_SHIFT + 1;
+    const RSS_MASK: u32 = 1 << Self::RSS_SHIFT;
+    const SRE_SHIFT: usize = Self::RSS_SHIFT + 1;
+    const SRE_MASK: u32 = 1 << Self::SRE_SHIFT;
+    const CNR_SHIFT: usize = Self::SRE_SHIFT + 1;
+    const CNR_MASK: u32 = 1 << Self::CNR_SHIFT;
+    const HCE_SHIFT: usize = Self::CNR_SHIFT + 1;
+    const HCE_MASK: u32 = 1 << Self::HCE_SHIFT;
+
+    fn hch(&self) -> bool {
+        self.0 & Self::HCH_MASK != 0
+    }
+
+    fn hse(&self) -> bool {
+        self.0 & Self::HSE_MASK != 0
+    }
+
+    fn eint(&self) -> bool {
+        self.0 & Self::EINT_MASK != 0
+    }
+
+    fn pcd(&self) -> bool {
+        self.0 & Self::PCD_MASK != 0
+    }
+
+    fn sss(&self) -> bool {
+        self.0 & Self::SSS_MASK != 0
+    }
+
+    fn rss(&self) -> bool {
+        self.0 & Self::RSS_MASK != 0
+    }
+
+    fn sre(&self) -> bool {
+        self.0 & Self::SRE_MASK != 0
+    }
+
+    fn cnr(&self) -> bool {
+        self.0 & Self::CNR_MASK != 0
+    }
+
+    fn hce(&self) -> bool {
+        self.0 & Self::HCE_MASK != 0
+    }
+}
+
+impl fmt::Debug for Usbsts {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("USBSTS")
+            .field("HCH", &self.hch())
+            .field("HSE", &self.hse())
+            .field("EINT", &self.eint())
+            .field("PCD", &self.pcd())
+            .field("SSS", &self.sss())
+            .field("RSS", &self.rss())
+            .field("SRE", &self.sre())
+            .field("CNR", &self.cnr())
+            .field("HCE", &self.hce())
             .finish()
     }
 }
