@@ -16,7 +16,7 @@ pub struct Registers {
     crcr: Crcr,
     rsvd1: u128,
     dcbaap: Dcbaap,
-    config: u32,
+    config: Config,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -305,3 +305,40 @@ impl fmt::Debug for Dcbaap {
     }
 }
 
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.7 Configure Register (CONFIG)
+#[derive(Clone, Copy)]
+struct Config(u32);
+
+impl Config {
+    const DEVICE_SLOTS_ENABLED_LENGTH: usize = 8;
+    const DEVICE_SLOTS_ENABLED_MASK: u32 = (1 << Self::DEVICE_SLOTS_ENABLED_LENGTH) - 1;
+    const U3E_SHIFT: usize = Self::DEVICE_SLOTS_ENABLED_LENGTH;
+    const U3E_MASK: u32 = 1 << Self::U3E_SHIFT;
+    const CIE_SHIFT: usize = Self::U3E_SHIFT + 1;
+    const CIE_MASK: u32 = 1 << Self::CIE_SHIFT;
+
+    fn device_slots_enabled(&self) -> u8 {
+        (self.0 & Self::DEVICE_SLOTS_ENABLED_MASK) as u8
+    }
+
+    fn u3e(&self) -> bool {
+        self.0 & Self::U3E_MASK != 0
+    }
+
+    fn cie(&self) -> bool {
+        self.0 & Self::CIE_MASK != 0
+    }
+}
+
+impl fmt::Debug for Config {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Config")
+            .field("self", &self.0)
+            .field("device_slots_enabled", &self.device_slots_enabled())
+            .field("u3e", &self.u3e())
+            .field("cie", &self.cie())
+            .finish()
+    }
+}
