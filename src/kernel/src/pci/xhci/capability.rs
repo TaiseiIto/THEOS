@@ -15,6 +15,7 @@ pub struct Registers {
     dbof: Dbof,
     rtsoff: Rtsoff,
     hccparams2: Hccparams2,
+    vtiosoff: Vtiosoff,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -406,6 +407,29 @@ impl fmt::Debug for Hccparams2 {
             .field("tsc", &self.tsc())
             .field("gsc", &self.gsc())
             .field("vtc", &self.vtc())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.3.10 Virtualization Based Trusted IO Register Space Offset (VTIOSOFF)
+#[derive(Clone, Copy)]
+struct Vtiosoff(u32);
+
+impl Vtiosoff {
+    const VTIO_REGISTER_SPACE_OFFSET_BEGIN: usize = 12;
+    const VTIO_REGISTER_SPACE_OFFSET_MASK: u32 = u32::MAX - (1 << Self::VTIO_REGISTER_SPACE_OFFSET_BEGIN) + 1;
+
+    fn vtio_register_space_offset(&self) -> u32 {
+        self.0 & Self::VTIO_REGISTER_SPACE_OFFSET_MASK
+    }
+}
+
+impl fmt::Debug for Vtiosoff {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("VTIOSOFF")
+            .field("vtio_register_space_offset", &self.vtio_register_space_offset())
             .finish()
     }
 }
