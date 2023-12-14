@@ -22,6 +22,11 @@ impl Registers {
     pub fn caplength(&self) -> u8 {
         self.caplength
     }
+
+    pub fn max_ports(&self) -> u8 {
+        let hcsparams1 = self.hcsparams1;
+        hcsparams1.max_ports()
+    }
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
