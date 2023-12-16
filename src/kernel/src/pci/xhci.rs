@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod capability;
+mod doorbell;
 mod operational;
 mod port;
 mod runtime;
@@ -19,6 +20,7 @@ pub struct Registers<'a> {
     operational: &'a operational::Registers,
     ports: Vec<&'a mut port::Registers>,
     runtime: &'a runtime::Registers,
+    doorbells: Vec<&'a mut doorbell::Registers>,
 }
 
 impl From<base_address::Address> for Registers<'_> {
@@ -57,12 +59,23 @@ impl From<base_address::Address> for Registers<'_> {
         let runtime: &runtime::Registers = unsafe {
             &*runtime
         };
+        let doorbells: usize = base + capability.doorbell_array_offset() as usize;
+        let doorbells: Vec<&mut doorbell::Registers> = (0..max_ports)
+            .map(|port_number| {
+                let doorbell: usize = doorbells + port_number * mem::size_of::<doorbell::Registers>();
+                let doorbell: *mut doorbell::Registers = doorbell as *mut doorbell::Registers;
+                unsafe {
+                    &mut *doorbell
+                }
+            })
+            .collect();
         Self {
             base,
             capability,
             operational,
             ports,
             runtime,
+            doorbells,
         }
     }
 }
