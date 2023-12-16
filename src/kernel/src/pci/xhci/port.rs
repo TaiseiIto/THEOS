@@ -9,7 +9,7 @@ pub struct Registers {
     portsc: Portsc,
     portpmsc: Portpmsc,
     portli: Portli,
-    porthlpmc: u32,
+    porthlpmc: Porthlpmc,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -196,6 +196,32 @@ impl fmt::Debug for Portsc {
 struct Portpmsc(u32);
 
 impl Portpmsc {
+    const USB3_U1_TIMEOUT_BEGIN: usize = 0;
+    const USB3_U1_TIMEOUT_LENGTH: usize = 8;
+    const USB3_U1_TIMEOUT_END: usize = Self::USB3_U1_TIMEOUT_BEGIN + Self::USB3_U1_TIMEOUT_LENGTH;
+    const USB3_U2_TIMEOUT_BEGIN: usize = Self::USB3_U1_TIMEOUT_END;
+    const USB3_U2_TIMEOUT_LENGTH: usize = 8;
+    const USB3_U2_TIMEOUT_END: usize = Self::USB3_U2_TIMEOUT_BEGIN + Self::USB3_U2_TIMEOUT_LENGTH;
+    const USB3_FLA_BEGIN: usize = Self::USB3_U2_TIMEOUT_END;
+    const USB3_FLA_LENGTH: usize = 1;
+    const USB3_FLA_END: usize = Self::USB3_FLA_BEGIN + Self::USB3_FLA_LENGTH;
+
+    const USB3_U1_TIMEOUT_MASK: u32 = (1 << Self::USB3_U1_TIMEOUT_END) - (1 << Self::USB3_U1_TIMEOUT_BEGIN);
+    const USB3_U2_TIMEOUT_MASK: u32 = (1 << Self::USB3_U2_TIMEOUT_END) - (1 << Self::USB3_U2_TIMEOUT_BEGIN);
+    const USB3_FLA_MASK: u32 = (1 << Self::USB3_FLA_END) - (1 << Self::USB3_FLA_BEGIN);
+
+    fn usb3_u1_timeout(&self) -> u8 {
+        ((self.0 & Self::USB3_U1_TIMEOUT_MASK) >> Self::USB3_U1_TIMEOUT_BEGIN) as u8
+    }
+
+    fn usb3_u2_timeout(&self) -> u8 {
+        ((self.0 & Self::USB3_U2_TIMEOUT_MASK) >> Self::USB3_U2_TIMEOUT_BEGIN) as u8
+    }
+
+    fn usb3_fla(&self) -> bool {
+        self.0 & Self::USB3_FLA_MASK != 0
+    }
+
     const USB2_L1S_BEGIN: usize = 0;
     const USB2_L1S_LENGTH: usize = 3;
     const USB2_L1S_END: usize = Self::USB2_L1S_BEGIN + Self::USB2_L1S_LENGTH;
@@ -245,32 +271,6 @@ impl Portpmsc {
     fn usb2_test_mode(&self) -> u8 {
         ((self.0 & Self::USB2_TEST_MODE_MASK) >> Self::USB2_TEST_MODE_BEGIN) as u8
     }
-
-    const USB3_U1_TIMEOUT_BEGIN: usize = 0;
-    const USB3_U1_TIMEOUT_LENGTH: usize = 8;
-    const USB3_U1_TIMEOUT_END: usize = Self::USB3_U1_TIMEOUT_BEGIN + Self::USB3_U1_TIMEOUT_LENGTH;
-    const USB3_U2_TIMEOUT_BEGIN: usize = Self::USB3_U1_TIMEOUT_END;
-    const USB3_U2_TIMEOUT_LENGTH: usize = 8;
-    const USB3_U2_TIMEOUT_END: usize = Self::USB3_U2_TIMEOUT_BEGIN + Self::USB3_U2_TIMEOUT_LENGTH;
-    const USB3_FLA_BEGIN: usize = Self::USB3_U2_TIMEOUT_END;
-    const USB3_FLA_LENGTH: usize = 1;
-    const USB3_FLA_END: usize = Self::USB3_FLA_BEGIN + Self::USB3_FLA_LENGTH;
-
-    const USB3_U1_TIMEOUT_MASK: u32 = (1 << Self::USB3_U1_TIMEOUT_END) - (1 << Self::USB3_U1_TIMEOUT_BEGIN);
-    const USB3_U2_TIMEOUT_MASK: u32 = (1 << Self::USB3_U2_TIMEOUT_END) - (1 << Self::USB3_U2_TIMEOUT_BEGIN);
-    const USB3_FLA_MASK: u32 = (1 << Self::USB3_FLA_END) - (1 << Self::USB3_FLA_BEGIN);
-
-    fn usb3_u1_timeout(&self) -> u8 {
-        ((self.0 & Self::USB3_U1_TIMEOUT_MASK) >> Self::USB3_U1_TIMEOUT_BEGIN) as u8
-    }
-
-    fn usb3_u2_timeout(&self) -> u8 {
-        ((self.0 & Self::USB3_U2_TIMEOUT_MASK) >> Self::USB3_U2_TIMEOUT_BEGIN) as u8
-    }
-
-    fn usb3_fla(&self) -> bool {
-        self.0 & Self::USB3_FLA_MASK != 0
-    }
 }
 
 impl fmt::Debug for Portpmsc {
@@ -278,15 +278,15 @@ impl fmt::Debug for Portpmsc {
         formatter
             .debug_struct("PORTPMSC")
             .field("self", &self.0)
+            .field("USB3_U1_TIMEOUT", &self.usb3_u1_timeout())
+            .field("USB3_U2_TIMEOUT", &self.usb3_u2_timeout())
+            .field("USB3_FLA", &self.usb3_fla())
             .field("USB2_L1S", &self.usb2_l1s())
             .field("USB2_RWE", &self.usb2_rwe())
             .field("USB2_BESL", &self.usb2_besl())
             .field("USB2_L1_DEVICE_SLOT", &self.usb2_l1_device_slot())
             .field("USB2_HLE", &self.usb2_hle())
             .field("USB2_TEST_MODE", &self.usb2_test_mode())
-            .field("USB3_U1_TIMEOUT", &self.usb3_u1_timeout())
-            .field("USB3_U2_TIMEOUT", &self.usb3_u2_timeout())
-            .field("USB3_FLA", &self.usb3_fla())
             .finish()
     }
 }
@@ -332,6 +332,33 @@ impl fmt::Debug for Portli {
             .field("LINK_ERROR_COUNT", &self.link_error_count())
             .field("RLC", &self.rlc())
             .field("TLC", &self.tlc())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.11 Port Hardware LPM Control Register (PORTHLPMC)
+#[derive(Clone, Copy)]
+struct Porthlpmc(u32);
+
+impl Porthlpmc {
+    const USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_BEGIN: usize = 0;
+    const USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_LENGTH: usize = 16;
+    const USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_END: usize = Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_BEGIN + Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_LENGTH;
+
+    const USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_MASK: u32 = (1 << Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_END) - (1 << Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_BEGIN);
+
+    fn usb3_portexsc_link_soft_error_count(&self) -> u16 {
+        ((self.0 & Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_MASK) >> Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_BEGIN) as u16
+    }
+}
+
+impl fmt::Debug for Porthlpmc {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("PORTHLPMC")
+            .field("self", &self.0)
+            .field("USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT", &self.usb3_portexsc_link_soft_error_count())
             .finish()
     }
 }
