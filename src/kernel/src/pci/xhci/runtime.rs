@@ -12,7 +12,7 @@ mod interrupter;
 pub struct Registers {
     mfindex: Mfindex,
     reserved: [u8; 0x20 - mem::size_of::<Mfindex>()],
-    interrupter: interrupter::Registers,
+    interrupter: [interrupter::Registers; 0x400],
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
