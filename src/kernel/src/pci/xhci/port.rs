@@ -7,7 +7,7 @@ use core::fmt;
 #[repr(packed)]
 pub struct Registers {
     portsc: Portsc,
-    portpmsc: u32,
+    portpmsc: Portpmsc,
     portli: u32,
     porthlpmc: u32,
 }
@@ -186,6 +186,78 @@ impl fmt::Debug for Portsc {
             .field("WOE", &self.woe())
             .field("DR", &self.dr())
             .field("WPR", &self.wpr())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.9 Port PM Status and Control Register (PORTPMSC)
+#[derive(Clone, Copy)]
+struct Portpmsc(u32);
+
+impl Portpmsc {
+    const USB2_L1S_BEGIN: usize = 0;
+    const USB2_L1S_LENGTH: usize = 3;
+    const USB2_L1S_END: usize = Self::USB2_L1S_BEGIN + Self::USB2_L1S_LENGTH;
+    const USB2_RWE_BEGIN: usize = Self::USB2_L1S_END;
+    const USB2_RWE_LENGTH: usize = 1;
+    const USB2_RWE_END: usize = Self::USB2_RWE_BEGIN + Self::USB2_RWE_LENGTH;
+    const USB2_BESL_BEGIN: usize = Self::USB2_RWE_END;
+    const USB2_BESL_LENGTH: usize = 4;
+    const USB2_BESL_END: usize = Self::USB2_BESL_BEGIN + Self::USB2_BESL_LENGTH;
+    const USB2_L1_DEVICE_SLOT_BEGIN: usize = Self::USB2_BESL_END;
+    const USB2_L1_DEVICE_SLOT_LENGTH: usize = 8;
+    const USB2_L1_DEVICE_SLOT_END: usize = Self::USB2_L1_DEVICE_SLOT_BEGIN + Self::USB2_L1_DEVICE_SLOT_LENGTH;
+    const USB2_HLE_BEGIN: usize = Self::USB2_L1_DEVICE_SLOT_END;
+    const USB2_HLE_LENGTH: usize = 1;
+    const USB2_HLE_END: usize = Self::USB2_HLE_BEGIN + Self::USB2_HLE_LENGTH;
+    const USB2_TEST_MODE_BEGIN: usize = Self::USB2_HLE_END + 11;
+    const USB2_TEST_MODE_LENGTH: usize = 4;
+    const USB2_TEST_MODE_END: usize = Self::USB2_TEST_MODE_BEGIN + Self::USB2_TEST_MODE_LENGTH;
+
+    const USB2_L1S_MASK: u32 = (1 << Self::USB2_L1S_END) - (1 << Self::USB2_L1S_BEGIN);
+    const USB2_RWE_MASK: u32 = (1 << Self::USB2_RWE_END) - (1 << Self::USB2_RWE_BEGIN);
+    const USB2_BESL_MASK: u32 = (1 << Self::USB2_BESL_END) - (1 << Self::USB2_BESL_BEGIN);
+    const USB2_L1_DEVICE_SLOT_MASK: u32 = (1 << Self::USB2_L1_DEVICE_SLOT_END) - (1 << Self::USB2_L1_DEVICE_SLOT_BEGIN);
+    const USB2_HLE_MASK: u32 = (1 << Self::USB2_HLE_END) - (1 << Self::USB2_HLE_BEGIN);
+    const USB2_TEST_MODE_MASK: u32 = u32::MAX - (1 << Self::USB2_TEST_MODE_BEGIN) + 1;
+
+    fn usb2_l1s(&self) -> u8 {
+        ((self.0 & Self::USB2_L1S_MASK) >> Self::USB2_L1S_BEGIN) as u8
+    }
+
+    fn usb2_rwe(&self) -> bool {
+        self.0 & Self::USB2_RWE_MASK != 0
+    }
+
+    fn usb2_besl(&self) -> u8 {
+        ((self.0 & Self::USB2_BESL_MASK) >> Self::USB2_BESL_BEGIN) as u8
+    }
+
+    fn usb2_l1_device_slot(&self) -> u8 {
+        ((self.0 & Self::USB2_L1_DEVICE_SLOT_MASK) >> Self::USB2_L1_DEVICE_SLOT_BEGIN) as u8
+    }
+
+    fn usb2_hle(&self) -> bool {
+        self.0 & Self::USB2_HLE_MASK != 0
+    }
+
+    fn usb2_test_mode(&self) -> u8 {
+        ((self.0 & Self::USB2_TEST_MODE_MASK) >> Self::USB2_TEST_MODE_BEGIN) as u8
+    }
+}
+
+impl fmt::Debug for Portpmsc {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("PORTPMSC")
+            .field("self", &self.0)
+            .field("USB2_L1S", &self.usb2_l1s())
+            .field("USB2_RWE", &self.usb2_rwe())
+            .field("USB2_BESL", &self.usb2_besl())
+            .field("USB2_L1_DEVICE_SLOT", &self.usb2_l1_device_slot())
+            .field("USB2_HLE", &self.usb2_hle())
+            .field("USB2_TEST_MODE", &self.usb2_test_mode())
             .finish()
     }
 }
