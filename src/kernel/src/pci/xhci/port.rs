@@ -245,6 +245,32 @@ impl Portpmsc {
     fn usb2_test_mode(&self) -> u8 {
         ((self.0 & Self::USB2_TEST_MODE_MASK) >> Self::USB2_TEST_MODE_BEGIN) as u8
     }
+
+    const USB3_U1_TIMEOUT_BEGIN: usize = 0;
+    const USB3_U1_TIMEOUT_LENGTH: usize = 8;
+    const USB3_U1_TIMEOUT_END: usize = Self::USB3_U1_TIMEOUT_BEGIN + Self::USB3_U1_TIMEOUT_LENGTH;
+    const USB3_U2_TIMEOUT_BEGIN: usize = Self::USB3_U1_TIMEOUT_END;
+    const USB3_U2_TIMEOUT_LENGTH: usize = 8;
+    const USB3_U2_TIMEOUT_END: usize = Self::USB3_U2_TIMEOUT_BEGIN + Self::USB3_U2_TIMEOUT_LENGTH;
+    const USB3_FLA_BEGIN: usize = Self::USB3_U2_TIMEOUT_END;
+    const USB3_FLA_LENGTH: usize = 1;
+    const USB3_FLA_END: usize = Self::USB3_FLA_BEGIN + Self::USB3_FLA_LENGTH;
+
+    const USB3_U1_TIMEOUT_MASK: u32 = (1 << Self::USB3_U1_TIMEOUT_END) - (1 << Self::USB3_U1_TIMEOUT_BEGIN);
+    const USB3_U2_TIMEOUT_MASK: u32 = (1 << Self::USB3_U2_TIMEOUT_END) - (1 << Self::USB3_U2_TIMEOUT_BEGIN);
+    const USB3_FLA_MASK: u32 = (1 << Self::USB3_FLA_END) - (1 << Self::USB3_FLA_BEGIN);
+
+    fn usb3_u1_timeout(&self) -> u8 {
+        ((self.0 & Self::USB3_U1_TIMEOUT_MASK) >> Self::USB3_U1_TIMEOUT_BEGIN) as u8
+    }
+
+    fn usb3_u2_timeout(&self) -> u8 {
+        ((self.0 & Self::USB3_U2_TIMEOUT_MASK) >> Self::USB3_U2_TIMEOUT_BEGIN) as u8
+    }
+
+    fn usb3_fla(&self) -> bool {
+        self.0 & Self::USB3_FLA_MASK != 0
+    }
 }
 
 impl fmt::Debug for Portpmsc {
@@ -258,6 +284,9 @@ impl fmt::Debug for Portpmsc {
             .field("USB2_L1_DEVICE_SLOT", &self.usb2_l1_device_slot())
             .field("USB2_HLE", &self.usb2_hle())
             .field("USB2_TEST_MODE", &self.usb2_test_mode())
+            .field("USB3_U1_TIMEOUT", &self.usb3_u1_timeout())
+            .field("USB3_U2_TIMEOUT", &self.usb3_u2_timeout())
+            .field("USB3_FLA", &self.usb3_fla())
             .finish()
     }
 }
