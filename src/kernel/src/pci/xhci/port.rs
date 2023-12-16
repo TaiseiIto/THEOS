@@ -8,7 +8,7 @@ use core::fmt;
 pub struct Registers {
     portsc: Portsc,
     portpmsc: Portpmsc,
-    portli: u32,
+    portli: Portli,
     porthlpmc: u32,
 }
 
@@ -287,6 +287,51 @@ impl fmt::Debug for Portpmsc {
             .field("USB3_U1_TIMEOUT", &self.usb3_u1_timeout())
             .field("USB3_U2_TIMEOUT", &self.usb3_u2_timeout())
             .field("USB3_FLA", &self.usb3_fla())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.4.10 Port LInk Info Register (PORTLI)
+#[derive(Clone, Copy)]
+struct Portli(u32);
+
+impl Portli {
+    const LINK_ERROR_COUNT_BEGIN: usize = 0;
+    const LINK_ERROR_COUNT_LENGTH: usize = 16;
+    const LINK_ERROR_COUNT_END: usize = Self::LINK_ERROR_COUNT_BEGIN + Self::LINK_ERROR_COUNT_LENGTH;
+    const RLC_BEGIN: usize = Self::LINK_ERROR_COUNT_END;
+    const RLC_LENGTH: usize = 4;
+    const RLC_END: usize = Self::RLC_BEGIN + Self::RLC_LENGTH;
+    const TLC_BEGIN: usize = Self::RLC_END;
+    const TLC_LENGTH: usize = 4;
+    const TLC_END: usize = Self::TLC_BEGIN + Self::TLC_LENGTH;
+
+    const LINK_ERROR_COUNT_MASK: u32 = (1 << Self::LINK_ERROR_COUNT_END) - (1 << Self::LINK_ERROR_COUNT_BEGIN);
+    const RLC_MASK: u32 = (1 << Self::RLC_END) - (1 << Self::RLC_BEGIN);
+    const TLC_MASK: u32 = (1 << Self::TLC_END) - (1 << Self::TLC_BEGIN);
+
+    fn link_error_count(&self) -> u16 {
+        ((self.0 & Self::LINK_ERROR_COUNT_MASK) >> Self::LINK_ERROR_COUNT_BEGIN) as u16
+    }
+
+    fn rlc(&self) -> u8 {
+        ((self.0 & Self::RLC_MASK) >> Self::RLC_BEGIN) as u8
+    }
+
+    fn tlc(&self) -> u8 {
+        ((self.0 & Self::TLC_MASK) >> Self::TLC_BEGIN) as u8
+    }
+}
+
+impl fmt::Debug for Portli {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("PORTLI")
+            .field("self", &self.0)
+            .field("LINK_ERROR_COUNT", &self.link_error_count())
+            .field("RLC", &self.rlc())
+            .field("TLC", &self.tlc())
             .finish()
     }
 }
