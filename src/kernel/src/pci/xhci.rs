@@ -11,6 +11,7 @@ use {
     super::configuration::type_specific::base_address,
 };
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Registers<'a> {
     base: usize,

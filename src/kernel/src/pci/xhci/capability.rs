@@ -2,6 +2,7 @@ use core::fmt;
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.3 Host Controller Capability Registers
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
@@ -106,6 +107,7 @@ impl Hcsparams2 {
     const SCRATCHPAD_RESTORE_MASK: u32 = (1 << Self::SCRATCHPAD_RESTORE_END) - (1 << Self::SCRATCHPAD_RESTORE_BEGIN);
     const MAX_SCRATCHPAD_BUFFERS_LOW_BEGIN: usize = Self::SCRATCHPAD_RESTORE_END;
     const MAX_SCRATCHPAD_BUFFERS_LOW_LENGTH: usize = 5;
+    #[allow(dead_code)]
     const MAX_SCRATCHPAD_BUFFERS_LOW_END: usize = Self::MAX_SCRATCHPAD_BUFFERS_LOW_BEGIN + Self::MAX_SCRATCHPAD_BUFFERS_LOW_LENGTH;
     const MAX_SCRATCHPAD_BUFFERS_LOW_MASK: u32 = u32::MAX - (1 << Self::MAX_SCRATCHPAD_BUFFERS_LOW_BEGIN) + 1;
 

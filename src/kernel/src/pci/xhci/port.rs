@@ -3,6 +3,7 @@ use core::fmt;
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.4 Host Controller Operational Registers
 // Table 5-19: Host Controller USB Port Register Set
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
@@ -239,6 +240,7 @@ impl Portpmsc {
     const USB2_HLE_END: usize = Self::USB2_HLE_BEGIN + Self::USB2_HLE_LENGTH;
     const USB2_TEST_MODE_BEGIN: usize = Self::USB2_HLE_END + 11;
     const USB2_TEST_MODE_LENGTH: usize = 4;
+    #[allow(dead_code)]
     const USB2_TEST_MODE_END: usize = Self::USB2_TEST_MODE_BEGIN + Self::USB2_TEST_MODE_LENGTH;
 
     const USB2_L1S_MASK: u32 = (1 << Self::USB2_L1S_END) - (1 << Self::USB2_L1S_BEGIN);

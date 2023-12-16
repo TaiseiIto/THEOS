@@ -86,7 +86,7 @@ pub extern "C" fn main(kernel_arguments: &'static mut KernelArguments) -> ! {
     let address2device: BTreeMap<pci::configuration::Address, pci::configuration::Device> = pci::configuration::Device::get_devices();
     address2device
         .iter()
-        .for_each(|(address, device)| device.initialize());
+        .for_each(|(_address, device)| device.initialize());
     display.print(&coordinates, &background_color, &foreground_color, "Hello, World!");
     loop {
         asm::hlt();

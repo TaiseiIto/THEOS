@@ -7,6 +7,7 @@ mod interrupter;
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.5 Host Controller Runtime Registers
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
