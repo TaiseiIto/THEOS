@@ -1,4 +1,9 @@
-use core::fmt;
+use core::{
+    fmt,
+    mem,
+};
+
+mod interrupter;
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
 // 5.5 Host Controller Runtime Registers
@@ -6,6 +11,8 @@ use core::fmt;
 #[repr(packed)]
 pub struct Registers {
     mfindex: Mfindex,
+    reserved: [u8; 0x20 - mem::size_of::<Mfindex>()],
+    interrupter: interrupter::Registers,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
