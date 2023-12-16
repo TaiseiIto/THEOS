@@ -351,6 +351,32 @@ impl Porthlpmc {
     fn usb3_portexsc_link_soft_error_count(&self) -> u16 {
         ((self.0 & Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_MASK) >> Self::USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT_BEGIN) as u16
     }
+
+    const USB2_PORTEXSC_HIRDM_BEGIN: usize = 0;
+    const USB2_PORTEXSC_HIRDM_LENGTH: usize = 2;
+    const USB2_PORTEXSC_HIRDM_END: usize = Self::USB2_PORTEXSC_HIRDM_BEGIN + Self::USB2_PORTEXSC_HIRDM_LENGTH;
+    const USB2_PORTEXSC_L1_TIMEOUT_BEGIN: usize = Self::USB2_PORTEXSC_HIRDM_END;
+    const USB2_PORTEXSC_L1_TIMEOUT_LENGTH: usize = 8;
+    const USB2_PORTEXSC_L1_TIMEOUT_END: usize = Self::USB2_PORTEXSC_L1_TIMEOUT_BEGIN + Self::USB2_PORTEXSC_L1_TIMEOUT_LENGTH;
+    const USB2_PORTEXSC_BESLD_BEGIN: usize = Self::USB2_PORTEXSC_L1_TIMEOUT_BEGIN;
+    const USB2_PORTEXSC_BESLD_LENGTH: usize = 4;
+    const USB2_PORTEXSC_BESLD_END: usize = Self::USB2_PORTEXSC_BESLD_BEGIN + Self::USB2_PORTEXSC_BESLD_LENGTH;
+
+    const USB2_PORTEXSC_HIRDM_MASK: u32 = (1 << Self::USB2_PORTEXSC_HIRDM_END) - (1 << Self::USB2_PORTEXSC_HIRDM_BEGIN);
+    const USB2_PORTEXSC_L1_TIMEOUT_MASK: u32 = (1 << Self::USB2_PORTEXSC_L1_TIMEOUT_END) - (1 << Self::USB2_PORTEXSC_L1_TIMEOUT_BEGIN);
+    const USB2_PORTEXSC_BESLD_MASK: u32 = (1 << Self::USB2_PORTEXSC_BESLD_END) - (1 << Self::USB2_PORTEXSC_BESLD_BEGIN);
+
+    fn usb2_portexsc_hirdm(&self) -> u8 {
+        ((self.0 & Self::USB2_PORTEXSC_HIRDM_MASK) >> Self::USB2_PORTEXSC_HIRDM_BEGIN) as u8
+    }
+
+    fn usb2_portexsc_l1_timeout(&self) -> u8 {
+        ((self.0 & Self::USB2_PORTEXSC_L1_TIMEOUT_MASK) >> Self::USB2_PORTEXSC_L1_TIMEOUT_BEGIN) as u8
+    }
+
+    fn usb2_portexsc_besld(&self) -> u8 {
+        ((self.0 & Self::USB2_PORTEXSC_BESLD_MASK) >> Self::USB2_PORTEXSC_BESLD_BEGIN) as u8
+    }
 }
 
 impl fmt::Debug for Porthlpmc {
@@ -359,6 +385,9 @@ impl fmt::Debug for Porthlpmc {
             .debug_struct("PORTHLPMC")
             .field("self", &self.0)
             .field("USB3_PORTEXSC_LINK_SOFT_ERROR_COUNT", &self.usb3_portexsc_link_soft_error_count())
+            .field("USB2_PORTEXSC_HIRDM", &self.usb2_portexsc_hirdm())
+            .field("USB2_PORTEXSC_L1_TIMEOUT", &self.usb2_portexsc_l1_timeout())
+            .field("USB2_PORTEXSC_BESLD", &self.usb2_portexsc_besld())
             .finish()
     }
 }
