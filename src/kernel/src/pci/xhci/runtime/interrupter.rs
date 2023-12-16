@@ -11,7 +11,7 @@ pub struct Registers {
     erstsz: Erstsz,
     reserved: u32,
     erstba: Erstba,
-    erdp: u64,
+    erdp: Erdp,
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -130,6 +130,49 @@ impl fmt::Debug for Erstba {
             .debug_struct("ERSTBA")
             .field("self", &self.0)
             .field("ERSTBA", &self.erstba())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.5.2.3.3 Event Ring Dequeue Pointer Register (ERDP)
+#[derive(Clone, Copy)]
+struct Erdp(u64);
+
+impl Erdp {
+    const DESI_BEGIN: usize = 0;
+    const DESI_LENGTH: usize = 3;
+    const DESI_END: usize = Self::DESI_BEGIN + Self::DESI_LENGTH;
+    const EHB_BEGIN: usize = Self::DESI_END;
+    const EHB_LENGTH: usize = 1;
+    const EHB_END: usize = Self::EHB_BEGIN + Self::EHB_LENGTH;
+    const EVENT_RING_DEQUEUE_POINTER_BEGIN: usize = Self::EHB_END;
+
+    const DESI_MASK: u64 = (1 << Self::DESI_END) - (1 << Self::DESI_BEGIN);
+    const EHB_MASK: u64 = (1 << Self::EHB_END) - (1 << Self::EHB_BEGIN);
+    const EVENT_RING_DEQUEUE_POINTER_MASK: u64 = u64::MAX - (1 << Self::EVENT_RING_DEQUEUE_POINTER_BEGIN) + 1;
+
+    fn desi(&self) -> u8 {
+        ((self.0 & Self::DESI_MASK) >> Self::DESI_BEGIN) as u8
+    }
+
+    fn ehb(&self) -> bool {
+        self.0 & Self::EHB_MASK != 0
+    }
+
+    fn event_ring_dequeue_pointer(&self) -> u64 {
+        self.0 & Self::EVENT_RING_DEQUEUE_POINTER_MASK
+    }
+}
+
+impl fmt::Debug for Erdp {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ERDP")
+            .field("self", &self.0)
+            .field("DESI", &self.desi())
+            .field("EHB", &self.ehb())
+            .field("EVENT_RING_DEQUEUE_POINTER", &self.event_ring_dequeue_pointer())
             .finish()
     }
 }
