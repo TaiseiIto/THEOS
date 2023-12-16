@@ -5,6 +5,7 @@ mod doorbell;
 mod operational;
 mod port;
 mod runtime;
+mod vtio;
 
 use {
     alloc::vec::Vec,
@@ -21,6 +22,7 @@ pub struct Registers<'a> {
     ports: Vec<&'a mut port::Registers>,
     runtime: &'a runtime::Registers,
     doorbells: Vec<&'a mut doorbell::Registers>,
+    vtio: &'a vtio::Registers,
 }
 
 impl From<base_address::Address> for Registers<'_> {
@@ -69,6 +71,11 @@ impl From<base_address::Address> for Registers<'_> {
                 }
             })
             .collect();
+        let vtio: usize = base + capability.vtio_register_space_offset() as usize;
+        let vtio: *const vtio::Registers = vtio as *const vtio::Registers;
+        let vtio: &vtio::Registers = unsafe {
+            &*vtio
+        };
         Self {
             base,
             capability,
@@ -76,6 +83,7 @@ impl From<base_address::Address> for Registers<'_> {
             ports,
             runtime,
             doorbells,
+            vtio,
         }
     }
 }

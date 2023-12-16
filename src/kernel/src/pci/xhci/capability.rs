@@ -38,6 +38,11 @@ impl Registers {
         let dbof = self.dbof;
         dbof.doorbell_array_offset()
     }
+
+    pub fn vtio_register_space_offset(&self) -> u32 {
+        let vtiosoff = self.vtiosoff;
+        vtiosoff.vtio_register_space_offset()
+    }
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
