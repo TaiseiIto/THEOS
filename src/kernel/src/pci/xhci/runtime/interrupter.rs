@@ -8,7 +8,7 @@ use core::fmt;
 pub struct Registers {
     iman: Iman,
     imod: Imod,
-    erstsz: u32,
+    erstsz: Erstsz,
     reserved: u32,
     erstba: u64,
     erdp: u64,
@@ -79,6 +79,33 @@ impl fmt::Debug for Imod {
             .field("self", &self.0)
             .field("IMODI", &self.imodi())
             .field("IMODC", &self.imodc())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.5.2.3.1 Event Ring Segment Table Size Register (ERSTSZ)
+#[derive(Clone, Copy)]
+struct Erstsz(u32);
+
+impl Erstsz {
+    const ERSTSZ_BEGIN: usize = 0;
+    const ERSTSZ_LENGTH: usize = 16;
+    const ERSTSZ_END: usize = Self::ERSTSZ_BEGIN + Self::ERSTSZ_LENGTH;
+
+    const ERSTSZ_MASK: u32 = (1 << Self::ERSTSZ_END) - (1 << Self::ERSTSZ_BEGIN);
+
+    fn erstsz(&self) -> u16 {
+        ((self.0 & Self::ERSTSZ_MASK) >> Self::ERSTSZ_BEGIN) as u16
+    }
+}
+
+impl fmt::Debug for Erstsz {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ERSTSZ")
+            .field("self", &self.0)
+            .field("ERSTSZ", &self.erstsz())
             .finish()
     }
 }
