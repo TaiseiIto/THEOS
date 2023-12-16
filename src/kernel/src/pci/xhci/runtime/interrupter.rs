@@ -10,7 +10,7 @@ pub struct Registers {
     imod: Imod,
     erstsz: Erstsz,
     reserved: u32,
-    erstba: u64,
+    erstba: Erstba,
     erdp: u64,
 }
 
@@ -106,6 +106,30 @@ impl fmt::Debug for Erstsz {
             .debug_struct("ERSTSZ")
             .field("self", &self.0)
             .field("ERSTSZ", &self.erstsz())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.5.2.3.2 Event Ring Segment Table Base Address Register (ERSTBA)
+#[derive(Clone, Copy)]
+struct Erstba(u64);
+
+impl Erstba {
+    const ERSTBA_BEGIN: usize = 6;
+    const ERSTBA_MASK: u64 = u64::MAX - (1 << Self::ERSTBA_BEGIN) + 1;
+
+    fn erstba(&self) -> u64 {
+        self.0 & Self::ERSTBA_MASK
+    }
+}
+
+impl fmt::Debug for Erstba {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ERSTBA")
+            .field("self", &self.0)
+            .field("ERSTBA", &self.erstba())
             .finish()
     }
 }
