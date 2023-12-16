@@ -3,6 +3,7 @@ extern crate alloc;
 mod capability;
 mod operational;
 mod port;
+mod runtime;
 
 use {
     alloc::vec::Vec,
@@ -16,6 +17,7 @@ pub struct Registers<'a> {
     capability: &'a capability::Registers,
     operational: &'a operational::Registers,
     ports: Vec<&'a mut port::Registers>,
+    runtime: &'a runtime::Registers,
 }
 
 impl From<base_address::Address> for Registers<'_> {
@@ -49,11 +51,17 @@ impl From<base_address::Address> for Registers<'_> {
                 }
             })
             .collect();
+        let runtime: usize = base + capability.runtime_register_space_offset() as usize;
+        let runtime: *const runtime::Registers = runtime as *const runtime::Registers;
+        let runtime: &runtime::Registers = unsafe {
+            &*runtime
+        };
         Self {
             base,
             capability,
             operational,
             ports,
+            runtime,
         }
     }
 }

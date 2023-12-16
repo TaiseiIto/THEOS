@@ -27,6 +27,11 @@ impl Registers {
         let hcsparams1 = self.hcsparams1;
         hcsparams1.max_ports()
     }
+
+    pub fn runtime_register_space_offset(&self) -> u32 {
+        let rtsoff = self.rtsoff;
+        rtsoff.runtime_register_space_offset()
+    }
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
