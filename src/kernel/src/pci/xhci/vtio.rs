@@ -10,7 +10,7 @@ pub struct Registers {
     ca: Ca,
     da: Da,
     reserved0: [u8; 8],
-    ia: [u32; 32],
+    ia: Ia,
     reserved1: [u8; 0x50],
     ea: [u32; 255],
 }
@@ -25,7 +25,9 @@ impl Cap {
     const PDMAID_LENGTH: usize = 16;
     const PDMAID_END: usize = Self::PDMAID_BEGIN + Self::PDMAID_LENGTH;
     const ADMAID_BEGIN: usize = Self::PDMAID_END;
+    #[allow(dead_code)]
     const ADMAID_LENGTH: usize = 16;
+    #[allow(dead_code)]
     const ADMAID_END: usize = Self::ADMAID_BEGIN + Self::ADMAID_LENGTH;
 
     const PDMAID_MASK: u32 = (1 << Self::PDMAID_END) - (1 << Self::PDMAID_BEGIN);
@@ -145,6 +147,28 @@ impl Da {
 }
 
 impl fmt::Debug for Da {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries((0..self.0.len() * u32::BITS as usize)
+                .map(|index| (index, self.bit(index))))
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.7.4 VTIO Interrupter Assignment Registers 1 to 32 (VTIOIA{1..32})
+#[derive(Clone, Copy)]
+struct Ia([u32; 32]);
+
+impl Ia {
+    fn bit(&self, index: usize) -> bool {
+        let (index, shift): (usize, usize) = (index / u32::BITS as usize, index % u32::BITS as usize);
+        self.0[index] & (1 << shift) != 0
+    }
+}
+
+impl fmt::Debug for Ia {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
