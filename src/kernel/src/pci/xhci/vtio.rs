@@ -8,7 +8,7 @@ use core::fmt;
 pub struct Registers {
     cap: Cap,
     ca: Ca,
-    da: [u32; 8],
+    da: Da,
     reserved0: [u8; 8],
     ia: [u32; 32],
     reserved1: [u8; 0x50],
@@ -128,6 +128,28 @@ impl fmt::Debug for Ca {
             .field("PBDIDA", &self.pbdida())
             .field("DCDIDA", &self.dcdida())
             .field("EPDIDA", &self.epdida())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.7.3 VTIO Device Assignment Registers 1 to 8 (VTIODA{1..8})
+#[derive(Clone, Copy)]
+struct Da([u32; 8]);
+
+impl Da {
+    fn bit(&self, index: usize) -> bool {
+        let (index, shift): (usize, usize) = (index / u32::BITS as usize, index % u32::BITS as usize);
+        self.0[index] & (1 << shift) != 0
+    }
+}
+
+impl fmt::Debug for Da {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries((0..self.0.len() * u32::BITS as usize)
+                .map(|index| (index, self.bit(index))))
             .finish()
     }
 }
