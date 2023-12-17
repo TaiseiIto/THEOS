@@ -7,7 +7,7 @@ use core::fmt;
 #[repr(packed)]
 pub struct Registers {
     cap: Cap,
-    ca: u32,
+    ca: Ca,
     da: [u32; 8],
     reserved0: [u8; 8],
     ia: [u32; 32],
@@ -47,6 +47,87 @@ impl fmt::Debug for Cap {
             .field("self", &self.0)
             .field("PDMAID", &self.pdmaid())
             .field("ADMAID", &self.admaid())
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.7.2 VTIO Common Assignment Register 1 (VTIOCA1)
+#[derive(Clone, Copy)]
+struct Ca(u32);
+
+impl Ca {
+    const CRDIDA_SHIFT: usize = 1;
+    const DCBAADIDA_SHIFT: usize = 2;
+    const SPBADIDA_SHIFT: usize = 3;
+    const SPBDIDA_SHIFT: usize = 4;
+    const ICDIDA_SHIFT: usize = 6;
+    const MSIDIDA_SHIFT: usize = 7;
+    const PBDIDA_SHIFT: usize = 8;
+    const DCDIDA_SHIFT: usize = 9;
+    const EPDIDA_SHIFT: usize = 10;
+
+    const CRDIDA_MASK: u32 = 1 << Self::CRDIDA_SHIFT;
+    const DCBAADIDA_MASK: u32 = 1 << Self::DCBAADIDA_SHIFT;
+    const SPBADIDA_MASK: u32 = 1 << Self::SPBADIDA_SHIFT;
+    const SPBDIDA_MASK: u32 = 1 << Self::SPBDIDA_SHIFT;
+    const ICDIDA_MASK: u32 = 1 << Self::ICDIDA_SHIFT;
+    const MSIDIDA_MASK: u32 = 1 << Self::MSIDIDA_SHIFT;
+    const PBDIDA_MASK: u32 = 1 << Self::PBDIDA_SHIFT;
+    const DCDIDA_MASK: u32 = 1 << Self::DCDIDA_SHIFT;
+    const EPDIDA_MASK: u32 = 1 << Self::EPDIDA_SHIFT;
+
+    fn crdida(&self) -> bool {
+        self.0 & Self::CRDIDA_MASK != 0
+    }
+
+    fn dcbaadida(&self) -> bool {
+        self.0 & Self::DCBAADIDA_MASK != 0
+    }
+
+    fn spbadida(&self) -> bool {
+        self.0 & Self::SPBADIDA_MASK != 0
+    }
+
+    fn spbdida(&self) -> bool {
+        self.0 & Self::SPBDIDA_MASK != 0
+    }
+
+    fn icdida(&self) -> bool {
+        self.0 & Self::ICDIDA_MASK != 0
+    }
+
+    fn msidida(&self) -> bool {
+        self.0 & Self::MSIDIDA_MASK != 0
+    }
+
+    fn pbdida(&self) -> bool {
+        self.0 & Self::PBDIDA_MASK != 0
+    }
+
+    fn dcdida(&self) -> bool {
+        self.0 & Self::DCDIDA_MASK != 0
+    }
+
+    fn epdida(&self) -> bool {
+        self.0 & Self::EPDIDA_MASK != 0
+    }
+}
+
+impl fmt::Debug for Ca {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("CA")
+            .field("self", &self.0)
+            .field("CRDIDA", &self.crdida())
+            .field("DCBAADIDA", &self.dcbaadida())
+            .field("SPBADIDA", &self.spbadida())
+            .field("SPBDIDA", &self.spbdida())
+            .field("ICDIDA", &self.icdida())
+            .field("MSIDIDA", &self.msidida())
+            .field("PBDIDA", &self.pbdida())
+            .field("DCDIDA", &self.dcdida())
+            .field("EPDIDA", &self.epdida())
             .finish()
     }
 }
