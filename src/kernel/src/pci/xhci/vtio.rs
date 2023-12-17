@@ -12,7 +12,7 @@ pub struct Registers {
     reserved0: [u8; 8],
     ia: Ia,
     reserved1: [u8; 0x50],
-    ea: [u32; 255],
+    ea: [Ea; 255],
 }
 
 // https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
@@ -174,6 +174,28 @@ impl fmt::Debug for Ia {
             .debug_map()
             .entries((0..self.0.len() * u32::BITS as usize)
                 .map(|index| (index, self.bit(index))))
+            .finish()
+    }
+}
+
+// https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf
+// 5.7.5 VTIO Endpoint Assignment Registers 1 to 255 (VTIOEA{1.255})
+#[derive(Clone, Copy)]
+struct Ea(u32);
+
+impl Ea {
+    fn dci(&self, index: usize) -> bool {
+        assert!(0 < index && index < u32::BITS as usize);
+        self.0 & (1 << index) != 0
+    }
+}
+
+impl fmt::Debug for Ea {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries((1..u32::BITS as usize)
+                .map(|index| (index, self.dci(index))))
             .finish()
     }
 }
