@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod bist;
+mod capability;
 mod command;
 mod header_type;
 mod status;
@@ -119,7 +120,7 @@ impl Address {
     }
 }
 
-const CONFIGURATION_SIZE: usize = 0x100;
+pub const CONFIGURATION_SIZE: usize = 0x100;
 
 impl Into<[u8; CONFIGURATION_SIZE]> for &Address {
     fn into(self) -> [u8; CONFIGURATION_SIZE] {
@@ -158,7 +159,7 @@ pub struct Device {
     header_type: header_type::Register,
     bist: bist::Register,
     type_specific: type_specific::Registers,
-    capabilities_pointer: u8,
+    capabilities: Vec<capability::Structure>,
     interrupt_line: u8,
     interrupt_pin: u8,
 }
@@ -286,7 +287,8 @@ impl TryFrom<[u8; CONFIGURATION_SIZE]> for Device {
                 let header_type: header_type::Register = configuration[Self::HEADER_TYPE_BEGIN].into();
                 let bist: bist::Register = configuration[Self::BIST_BEGIN].into();
                 let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
-                let capabilities_pointer: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
+                let capabilities: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
+                let capabilities: Vec<capability::Structure> = capability::Structure::get_all(&configuration, capabilities);
                 let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
                 let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
                 if let ClassCode::USBxHCI = class_code {
@@ -307,7 +309,7 @@ impl TryFrom<[u8; CONFIGURATION_SIZE]> for Device {
                     header_type,
                     bist,
                     type_specific,
-                    capabilities_pointer,
+                    capabilities,
                     interrupt_line,
                     interrupt_pin,
                 })
