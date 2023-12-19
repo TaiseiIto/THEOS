@@ -9,6 +9,10 @@ use {
         ptr,
         slice,
     },
+    crate::{
+        serial_print,
+        serial_println,
+    },
     super::uefi::{
         services::boot::memory_allocation,
         tables::system,
@@ -146,10 +150,13 @@ impl From<&Vec<memory_allocation::MemoryDescriptor>> for PhysicalPagePresentBitM
             .map(|descriptor| descriptor.physical_end())
             .max()
             .expect("Can't create a physical page present bit map!") as usize;
+        serial_println!("PhysicalPagePresentBitMap from Memorydescriptor memory_size = {:#x?}", memory_size);
         let pages: usize = memory_size / memory_allocation::PAGE_SIZE;
+        serial_println!("PhysicalPagePresentBitMap from Memorydescriptor pages = {:#x?}", pages);
         let physical_page_present_bit_map: Vec<u8> = (0..pages / 8)
             .map(|_| 0x00u8)
             .collect();
+        serial_println!("PhysicalPagePresentBitMap from Memorydescriptor physical_page_present_bit_map.len() = {:#x?}", physical_page_present_bit_map.len());
         Self(physical_page_present_bit_map)
     }
 }
