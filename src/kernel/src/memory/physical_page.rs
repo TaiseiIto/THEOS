@@ -103,8 +103,11 @@ impl<'a> Manager<'a> {
                 let memory_type: memory_allocation::MemoryType = descriptor.memory_type();
                 (physical_page_start..physical_page_end)
                     .for_each(|page| {
+                        serial_println!("memro::physical_page::Manager::new page = {:#x?}", page);
                         let bit_map_index: usize = page / 8;
+                        serial_println!("memro::physical_page::Manager::new bit_map_index = {:#x?}", bit_map_index);
                         let bit_map_offset: usize = page % 8;
+                        serial_println!("memro::physical_page::Manager::new bit_map_offset = {:#x?}", bit_map_offset);
                         let byte: &mut u8 = &mut present_bit_map[bit_map_index];
                         let mask: u8 = 0x01u8 << bit_map_offset;
                         match memory_type {
