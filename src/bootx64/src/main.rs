@@ -47,6 +47,7 @@ fn efi_main(image_handle: handle::Handle<'static>, system_table: &'static mut sy
     serial::Serial::init_com2();
     system::init_system(image_handle, system_table);
     uefi_println!("Hello, World!");
+    serial_println!("system_table = {:#x?}", system::system());
     let mut kernel = Kernel::new();
     let memory_map: &memory_allocation::Map = &system::exit_boot_services();
     serial_println!("memory_map = {:#x?}", memory_map);
@@ -178,6 +179,7 @@ impl Kernel<'_> {
         com1: &serial::Serial,
         com2: &serial::Serial,
     ) {
+        serial_println!("Kernel.run()0");
         let Self {
             elf,
             cpuid,
@@ -197,13 +199,21 @@ impl Kernel<'_> {
             graphics_output,
             font,
         } = self;
+        serial_println!("Kernel.run()1");
         let physical_page_present_bit_map: &[u8] = (&physical_page_present_bit_map).into();
+        serial_println!("Kernel.run()2");
         let cr0: &control::register0::Cr0 = &cr0;
+        serial_println!("Kernel.run()3");
         let cr2: &control::register2::Cr2 = &cr2;
+        serial_println!("Kernel.run()4");
         let cr4: &control::register4::Cr4 = &cr4;
+        serial_println!("Kernel.run()5");
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &ia32_efer;
+        serial_println!("Kernel.run()6");
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(paging.get_cr3());
+        serial_println!("Kernel.run()7");
         let font: &font::Font = &font;
+        serial_println!("Kernel.run()8");
         let kernel_arguments = elf::KernelArguments::new(
             image,
             system,
@@ -222,13 +232,15 @@ impl Kernel<'_> {
             graphics_output,
             font,
         );
+        serial_println!("Kernel.run()9");
         gdt.set();
-        serial_println!("Kernel.run()");
         serial_println!("kernel.page_map = {:#x?}", &page_map);
         page_map
             .values()
             .for_each(|virtual_address| paging.print_state_at_address(*virtual_address));
-        elf.run(kernel_arguments)
+        serial_println!("Kernel.run()10");
+        elf.run(kernel_arguments);
+        serial_println!("Kernel.run()11");
     }
 }
 
