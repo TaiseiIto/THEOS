@@ -41,6 +41,8 @@ impl Manager<'static> {
 }
 
 impl<'a> Manager<'a> {
+    const BITS: usize = u8::BITS as usize;
+
     pub fn alloc(
         &mut self,
         request: Request,
@@ -122,8 +124,8 @@ impl<'a> Manager<'a> {
     }
 
     fn page_is_available(&self, page: usize) -> bool {
-        let index: usize = page / 8;
-        let offset: usize = page % 8;
+        let index: usize = page / Self::BITS;
+        let offset: usize = page % Self::BITS;
         let mask: u8 = 0x01u8 << offset;
         page != 0 && self.present_bit_map[index] & mask == 0
     }
@@ -134,8 +136,8 @@ impl<'a> Manager<'a> {
     }
 
     fn alloc_page(&mut self, page: usize) {
-        let index: usize = page / 8;
-        let offset: usize = page % 8;
+        let index: usize = page / Self::BITS;
+        let offset: usize = page % Self::BITS;
         let mask: u8 = 0x01u8 << offset;
         self.present_bit_map[index] |= mask;
     }
@@ -148,8 +150,8 @@ impl<'a> Manager<'a> {
     }
 
     fn dealloc_page(&mut self, page: usize) {
-        let index: usize = page / 8;
-        let offset: usize = page % 8;
+        let index: usize = page / Self::BITS;
+        let offset: usize = page % Self::BITS;
         let mask: u8 = 0x01u8 << offset;
         self.present_bit_map[index] &= !mask;
     }
