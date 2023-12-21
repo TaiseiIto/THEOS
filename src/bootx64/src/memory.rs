@@ -139,6 +139,10 @@ impl Iterator for PageRange {
 #[derive(Debug)]
 pub struct PhysicalPagePresentBitMap(Vec<u8>);
 
+impl PhysicalPagePresentBitMap {
+    const BITS: usize = u8::BITS as usize;
+}
+
 impl From<&Vec<memory_allocation::MemoryDescriptor>> for PhysicalPagePresentBitMap {
     fn from(map: &Vec<memory_allocation::MemoryDescriptor>) -> Self {
         let memory_size: usize = map
@@ -146,8 +150,8 @@ impl From<&Vec<memory_allocation::MemoryDescriptor>> for PhysicalPagePresentBitM
             .map(|descriptor| descriptor.physical_end())
             .max()
             .expect("Can't create a physical page present bit map!") as usize;
-        let pages: usize = memory_size / memory_allocation::PAGE_SIZE;
-        let physical_page_present_bit_map: Vec<u8> = (0..pages / 8)
+        let pages: usize = (memory_size + memory_allocation::PAGE_SIZE - 1) / memory_allocation::PAGE_SIZE;
+        let physical_page_present_bit_map: Vec<u8> = (0..(pages + Self::BITS - 1) / Self::BITS)
             .map(|_| 0x00u8)
             .collect();
         Self(physical_page_present_bit_map)
