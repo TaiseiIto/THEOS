@@ -1,7 +1,13 @@
 // References
 // Intel 64 an IA-32 Architectures Software Developer's Manual, Volume 3, Chapter 2.5 Control Registers
 
-use core::arch::asm;
+use {
+        core::arch::asm,
+        crate::{
+            serial_print,
+            serial_println,
+        },
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -20,6 +26,7 @@ impl Cr3 {
     }
 
     pub fn set(cr3: u64) -> Self {
+        serial_println!("new cr3 = {:#x?}", cr3);
         unsafe {
             asm!(
                 "mov cr3, rcx",
