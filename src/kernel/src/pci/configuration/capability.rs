@@ -2,6 +2,7 @@ extern crate alloc;
 
 use {
     alloc::vec::Vec,
+    core::mem,
     super::CONFIGURATION_SIZE,
 };
 
@@ -82,7 +83,11 @@ enum Registers {
     MSI,
     // 7.7.2 MSI-X Capability and Table Structure
     // Capability ID 0x11
-    MSIX,
+    MSIX {
+        message_control: u16,
+        // table_offset: u32,
+        // pba_offset: u32,
+    },
     // 7.8.5 Enhanced Allocation Capability Structure (EA)
     // Capability ID 0x14
     EnhancedAllocation,
@@ -102,6 +107,13 @@ enum Registers {
 }
 
 impl Registers {
+    const MSIX_MESSAGE_CONTROL_OFFSET: usize = 2;
+    const MSIX_MESSAGE_CONTROL_SIZE: usize = mem::size_of::<u16>();
+    const MSIX_TABLE_OFFSET_OFFSET: usize = Self::MSIX_MESSAGE_CONTROL_OFFSET + Self::MSIX_MESSAGE_CONTROL_SIZE;
+    const MSIX_TABLE_OFFSET_SIZE: usize = mem::size_of::<u32>();
+    const MSIX_PBA_OFFSET_OFFSET: usize = Self::MSIX_TABLE_OFFSET_OFFSET + Self::MSIX_TABLE_OFFSET_SIZE;
+    const MSIX_PBA_OFFSET_SIZE: usize = mem::size_of::<u32>();
+
     fn new(configuration: &[u8; CONFIGURATION_SIZE], capability_pointer: usize) -> Self {
         match configuration[capability_pointer] {
             0x01 => Self::PCIPowerManagement,
@@ -109,7 +121,20 @@ impl Registers {
             0x09 => Self::VendorSpecific,
             0x0d => Self::SubsystemIDandSubsystemVendorID,
             0x10 => Self::PCIExpress,
-            0x11 => Self::MSIX,
+            0x11 => {
+                let message_control_begin: usize = capability_pointer + Self::MSIX_MESSAGE_CONTROL_OFFSET;
+                let message_control_end: usize = message_control_begin + Self::MSIX_MESSAGE_CONTROL_SIZE;
+                let message_control: &[u8] = &configuration[message_control_begin..message_control_end];
+                let message_control: [u8; Self::MSIX_MESSAGE_CONTROL_SIZE] = message_control
+                    .try_into()
+                    .expect("Can't get message control!");
+                let message_control: u16 = u16::from_le_bytes(message_control);
+                Self::MSIX {
+                    message_control,
+                    // table_offset,
+                    // pba_offset,
+                }
+            },
             0x13 => Self::ConventionalPCIAdvancedFeatures,
             0x14 => Self::EnhancedAllocation,
             0x15 => Self::FlatteningPortalBridge,
