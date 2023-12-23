@@ -226,18 +226,9 @@ impl Device {
     }
 
     pub fn initialize(&self) {
+        serial_println!("Initialize {:#x?}", self);
         match self.class_code {
-            ClassCode::USBUHCI => {
-                serial_println!("Initialize USB UHCI {:#x?}", self);
-            },
-            ClassCode::USBOHCI => {
-                serial_println!("Initialize USB OHCI {:#x?}", self);
-            },
-            ClassCode::USBEHCI => {
-                serial_println!("Initialize USB EHCI {:#x?}", self);
-            },
             ClassCode::USBxHCI => {
-                serial_println!("Initialize USB xHCI {:#x?}", self);
                 let registers: xhci::Registers = self.get_addresses()
                     .into_iter()
                     .find(|address| address.is_not_null())
