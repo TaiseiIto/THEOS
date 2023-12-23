@@ -1,5 +1,7 @@
 extern crate alloc;
 
+mod msi;
+
 use {
     alloc::vec::Vec,
     core::mem,
@@ -81,7 +83,7 @@ enum Registers {
     // 7.7.1 MSI Capability Structure
     // Capability ID 0x05
     MSI {
-        message_control: u16,
+        message_control: msi::MessageControl,
     },
     // 7.7.2 MSI-X Capability and Table Structure
     // Capability ID 0x11
@@ -130,6 +132,7 @@ impl Registers {
                     .try_into()
                     .expect("Can't get message control!");
                 let message_control: u16 = u16::from_le_bytes(message_control);
+                let message_control: msi::MessageControl = message_control.into();
                 Self::MSI {
                     message_control,
                 }
