@@ -196,6 +196,9 @@ impl Kernel<'_> {
         serial_println!("Kernel.run() 5");
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &ia32_efer;
         serial_println!("Kernel.run() 6");
+        let rsp: usize = asm::get_rsp() as usize;
+        serial_println!("rsp = {:#x?}", rsp);
+        paging.print_state_at_address(rsp);
         let rip: usize = asm::get_rip() as usize;
         serial_println!("rip = {:#x?}", rip);
         paging.print_state_at_address(rip);

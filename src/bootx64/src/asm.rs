@@ -23,6 +23,18 @@ pub fn get_rip() -> u64 {
         rip
 }
 
+pub fn get_rsp() -> u64 {
+        let rsp: u64;
+        unsafe {
+            asm!(
+                "push rsp",
+                "pop rax",
+                out("rax") rsp,
+            );
+        }
+        rsp
+}
+
 fn get_rflags() -> u64 {
     let mut rflags: u64;
     unsafe {
