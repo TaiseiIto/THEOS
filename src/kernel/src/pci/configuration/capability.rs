@@ -75,19 +75,45 @@ enum Registers {
     // Capability ID 0x01
     PCIPowerManagement,
     // 7.5.3 PCI Express Capability Structure
+    // Capability ID 0x10
     PCIExpress,
     // 7.7.1 MSI Capability Structure
+    // Capability ID 0x05
     MSI,
     // 7.7.2 MSI-X Capability and Table Structure
+    // Capability ID 0x11
     MSIX,
+    // 7.8.5 Enhanced Allocation Capability Structure (EA)
+    // Capability ID 0x14
+    EnhancedAllocation,
+    // 7.8.10 Flattening Portal Bridge (FPB) Capability
+    // Capability ID 0x15
+    FlatteningPortalBridge,
+    // 7.9.4 Vender Specific Capability
+    // Capability ID 0x09
+    VendorSpecific,
+    // 7.9.22 Conventional PCI Advanced Features Capability (AF)
+    // Capability ID 0x13
+    ConventionalPCIAdvancedFeatures,
+    // 7.9.24 Subsystem ID and Subsystem Vendor ID Capability
+    // Capability ID 0x0d
+    SubsystemIDandSubsystemVendorID,
     Other,
 }
 
 impl Registers {
     fn new(configuration: &[u8; CONFIGURATION_SIZE], capability_pointer: usize) -> Self {
         match configuration[capability_pointer] {
-           0x01 => Self::PCIPowerManagement,
-           _ => Self::Other,
+            0x01 => Self::PCIPowerManagement,
+            0x05 => Self::MSI,
+            0x09 => Self::VendorSpecific,
+            0x0d => Self::SubsystemIDandSubsystemVendorID,
+            0x10 => Self::PCIExpress,
+            0x11 => Self::MSIX,
+            0x13 => Self::ConventionalPCIAdvancedFeatures,
+            0x14 => Self::EnhancedAllocation,
+            0x15 => Self::FlatteningPortalBridge,
+            _ => Self::Other,
         }
     }
 }
