@@ -159,7 +159,7 @@ pub struct Device {
     header_type: header_type::Register,
     bist: bist::Register,
     type_specific: type_specific::Registers,
-    capabilities: Vec<capability::Structure>,
+    capabilities: Vec<capability::List>,
     interrupt_line: u8,
     interrupt_pin: u8,
 }
@@ -279,7 +279,7 @@ impl TryFrom<[u8; CONFIGURATION_SIZE]> for Device {
                 let bist: bist::Register = configuration[Self::BIST_BEGIN].into();
                 let type_specific = type_specific::Registers::new(header_type.header_layout(), &configuration);
                 let capabilities: u8 = configuration[Self::CAPABILITIES_POINTER_BEGIN];
-                let capabilities: Vec<capability::Structure> = capability::Structure::get_all(&configuration, capabilities);
+                let capabilities: Vec<capability::List> = capability::List::get_all(&configuration, capabilities);
                 let interrupt_line: u8 = configuration[Self::INTERRUPT_LINE_BEGIN];
                 let interrupt_pin: u8 = configuration[Self::INTERRUPT_PIN_BEGIN];
                 if let ClassCode::USBxHCI = class_code {

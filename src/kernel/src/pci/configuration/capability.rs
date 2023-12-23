@@ -6,14 +6,15 @@ use {
 };
 
 #[derive(Clone, Debug)]
-pub struct Structure {
+pub struct List {
     capability_id: u8,
     next_capability_pointer: u8,
+    registers: Registers,
 }
 
-impl Structure {
+impl List {
     pub fn get_all(configuration: &[u8; CONFIGURATION_SIZE], first_capability_pointer: u8) -> Vec<Self> {
-        StructureIterator::new(configuration, first_capability_pointer).collect()
+        ListIterator::new(configuration, first_capability_pointer).collect()
     }
 
     fn get_one(configuration: &[u8; CONFIGURATION_SIZE], capability_pointer: u8) -> Option<Self> {
@@ -23,9 +24,11 @@ impl Structure {
                 let capability_pointer: usize = capability_pointer as usize;
                 let capability_id: u8 = configuration[capability_pointer];
                 let next_capability_pointer: u8 = configuration[capability_pointer + 1];
+                let registers = Registers::new(configuration, capability_pointer);
                 Some(Self {
                     capability_id,
                     next_capability_pointer,
+                    registers,
                 })
             },
         }
@@ -33,14 +36,14 @@ impl Structure {
 }
 
 #[derive(Clone)]
-struct StructureIterator<'a> {
+struct ListIterator<'a> {
     configuration: &'a [u8; CONFIGURATION_SIZE],
-    structure: Option<Structure>,
+    structure: Option<List>,
 }
 
-impl<'a> StructureIterator<'a> {
+impl<'a> ListIterator<'a> {
     fn new(configuration: &'a [u8; CONFIGURATION_SIZE], first_capability_pointer: u8) -> Self {
-        let structure: Option<Structure> = Structure::get_one(configuration, first_capability_pointer);
+        let structure: Option<List> = List::get_one(configuration, first_capability_pointer);
         Self {
             configuration,
             structure,
@@ -48,19 +51,44 @@ impl<'a> StructureIterator<'a> {
     }
 }
 
-impl<'a> Iterator for StructureIterator<'a> {
-    type Item = Structure;
+impl<'a> Iterator for ListIterator<'a> {
+    type Item = List;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let StructureIterator {
+        let ListIterator {
             configuration,
             structure,
         } = self.clone();
         if let Some(structure) = &structure {
             let next_capability_pointer: u8 = structure.next_capability_pointer;
-            self.structure = Structure::get_one(configuration, next_capability_pointer);
+            self.structure = List::get_one(configuration, next_capability_pointer);
         }
         structure
+    }
+}
+
+// PCI Express Base Specification Revision 5.0 Version 1.0
+// from 7.5.2 to 7.9.24
+#[derive(Clone, Debug)]
+enum Registers {
+    // 7.5.2 PCI Power Management Capability Structure
+    // Capability ID 0x01
+    PCIPowerManagement,
+    // 7.5.3 PCI Express Capability Structure
+    PCIExpress,
+    // 7.7.1 MSI Capability Structure
+    MSI,
+    // 7.7.2 MSI-X Capability and Table Structure
+    MSIX,
+    Other,
+}
+
+impl Registers {
+    fn new(configuration: &[u8; CONFIGURATION_SIZE], capability_pointer: usize) -> Self {
+        match configuration[capability_pointer] {
+           0x01 => Self::PCIPowerManagement,
+           _ => Self::Other,
+        }
     }
 }
 
