@@ -820,8 +820,8 @@ impl fmt::Debug for PageMapLevel4Entry<'_> {
             .field("page_cache_disable", &self.page_cache_disable)
             .field("accessed", &self.accessed)
             .field("restart", &self.restart)
-            .field("execute_disable", &self.execute_disable)
             .field("page_directory_pointer_entries", &self.page_directory_pointer_entries)
+            .field("execute_disable", &self.execute_disable)
             .finish()
     }
 }

@@ -98,7 +98,6 @@ impl Kernel<'_> {
         let cr4 = control::register4::Cr4::get();
         serial_println!("old cr3 = {:#x?}", cr3);
         let old_paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer);
-        serial_println!("old_paging = {:#x?}", old_paging);
         let mut paging = paging::State::get(&cr0, &cr3, &cr4, &ia32_efer).clone();
         // Open the file system.
         let simple_file_system = simple_file_system::SimpleFileSystem::new();
@@ -186,7 +185,6 @@ impl Kernel<'_> {
             graphics_output,
             font,
         } = self;
-        serial_println!("new paging = {:#x?}", paging);
         serial_println!("Kernel.run() 1");
         let physical_page_present_bit_map: &[u8] = (&physical_page_present_bit_map).into();
         serial_println!("Kernel.run() 2");
@@ -198,6 +196,9 @@ impl Kernel<'_> {
         serial_println!("Kernel.run() 5");
         let ia32_efer: &Option<ia32_efer::Ia32Efer> = &ia32_efer;
         serial_println!("Kernel.run() 6");
+        let rip: usize = asm::get_rip() as usize;
+        serial_println!("rip = {:#x?}", rip);
+        paging.print_state_at_address(rip);
         let cr3: &control::register3::Cr3 = &control::register3::Cr3::set(paging.get_cr3());
         serial_println!("Kernel.run() 7");
         let font: &font::Font = &font;

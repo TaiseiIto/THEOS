@@ -10,6 +10,19 @@ use core::arch::asm;
 
 pub type Port = u16;
 
+pub fn get_rip() -> u64 {
+        let mut rip: u64;
+        unsafe {
+            asm!(
+                "call 0f",
+                "0:",
+                "pop rax",
+                out("rax") rip,
+            );
+        }
+        rip
+}
+
 fn get_rflags() -> u64 {
     let mut rflags: u64;
     unsafe {
