@@ -85,8 +85,8 @@ enum Registers {
     // Capability ID 0x11
     MSIX {
         message_control: u16,
-        // table_offset: u32,
-        // pba_offset: u32,
+        table_offset: u32,
+        pba_offset: u32,
     },
     // 7.8.5 Enhanced Allocation Capability Structure (EA)
     // Capability ID 0x14
@@ -129,10 +129,24 @@ impl Registers {
                     .try_into()
                     .expect("Can't get message control!");
                 let message_control: u16 = u16::from_le_bytes(message_control);
+                let table_offset_begin: usize = capability_pointer + Self::MSIX_TABLE_OFFSET_OFFSET;
+                let table_offset_end: usize = table_offset_begin + Self::MSIX_TABLE_OFFSET_SIZE;
+                let table_offset: &[u8] = &configuration[table_offset_begin..table_offset_end];
+                let table_offset: [u8; Self::MSIX_TABLE_OFFSET_SIZE] = table_offset
+                    .try_into()
+                    .expect("Can't get table offset!");
+                let table_offset: u32 = u32::from_le_bytes(table_offset);
+                let pba_offset_begin: usize = capability_pointer + Self::MSIX_PBA_OFFSET_OFFSET;
+                let pba_offset_end: usize = pba_offset_begin + Self::MSIX_PBA_OFFSET_SIZE;
+                let pba_offset: &[u8] = &configuration[pba_offset_begin..pba_offset_end];
+                let pba_offset: [u8; Self::MSIX_PBA_OFFSET_SIZE] = pba_offset
+                    .try_into()
+                    .expect("Can't get pba offset!");
+                let pba_offset: u32 = u32::from_le_bytes(pba_offset);
                 Self::MSIX {
                     message_control,
-                    // table_offset,
-                    // pba_offset,
+                    table_offset,
+                    pba_offset,
                 }
             },
             0x13 => Self::ConventionalPCIAdvancedFeatures,
